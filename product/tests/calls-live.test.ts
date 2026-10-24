@@ -241,4 +241,20 @@ test('recordings: call.get gives a fresh signed link the runtime plays and seeks
   await pool.query("UPDATE conversation SET ended_at = now() - interval '91 days' WHERE id = $1", [cid]);
   const late = await registry.execute<any>(pool, 'call.get', { conversationId: cid }, a.ctx);
   assert.match(late.status === 'confirmed' ? late.result.recording.why : '', /past this workspace's retention of 90 days/);
+
+  // The audio itself is deleted on the runtime (calls/recording-purge.ts), never another workspace's.
+  const { purgeRecordings } = await import('../server/modules/calls/recording-purge.ts');
+  const live = (await import('../server/runtime-client.ts')).runtime();
+  const refused = await live.purgeRecording!(cid, b.ws, 'erased');
+  assert.equal(refused.ok, false, "a purge naming another workspace is refused by the runtime");
+  assert.match(refused.reason ?? '', /403/);
+  assert.equal((await fetch(recordingLink(cid, a.ws)!.url)).status, 200, 'and the file is still there');
+  const ran = await purgeRecordings(pool, { workspaceId: a.ws });
+  assert.equal(ran.failed, 0);
+  assert.equal((await fetch(recordingLink(cid, a.ws)!.url)).status, 404, 'the audio is gone from the runtime');
+  const purgedRow = await one<{ recording_uri: string | null; recording_purge_reason: string }>(pool, 'SELECT recording_uri, recording_purge_reason FROM conversation WHERE id = $1', [cid]);
+  assert.deepEqual(purgedRow, { recording_uri: null, recording_purge_reason: 'retention' });
+  const after = await registry.execute<any>(pool, 'call.get', { conversationId: cid }, a.ctx);
+  assert.match(after.status === 'confirmed' ? after.result.recording.why : '', /deleted when this workspace's recordings retention ended/);
+  assert.deepEqual(await live.purgeRecording!(cid, a.ws, 'retention'), { ok: true, deleted: false }, 'a repeat is harmless');
 });

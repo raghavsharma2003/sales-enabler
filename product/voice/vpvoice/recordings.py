@@ -57,6 +57,25 @@ def save(folder, call_id, workspace_id, write):
     return 'file://' + wav
 
 
+def purge(folder, call_id, workspace_id):
+    """Delete one call's recording for good (retention passed, or the person asked to be erased). Idempotent: a recording
+    already gone returns False. Refuses (RecordingError) when the recording was made for another workspace. A recording
+    with no .json (saved before the workspace was written beside it) is deleted: the signed request is the control
+    plane's, and deleting is the safe direction."""
+    if not _ok_id(workspace_id): raise RecordingError('malformed workspace')
+    wav, meta = paths(folder, call_id)
+    try:
+        with open(meta, encoding='utf-8') as f: owner = json.load(f).get('workspaceId')
+    except (OSError, ValueError):
+        owner = None
+    if owner is not None and not hmac.compare_digest(str(owner), workspace_id): raise RecordingError("not this workspace's recording")
+    gone = False
+    for p in (wav, meta):
+        try: os.remove(p); gone = gone or p == wav
+        except FileNotFoundError: pass
+    return gone
+
+
 def tone_wav(path, seconds=3.0, rate=16000):
     """A short, soft two-channel tone: devsim's stand-in recording (no microphone or voice in a text call)."""
     import wave

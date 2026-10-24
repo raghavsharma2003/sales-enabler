@@ -79,6 +79,36 @@ class Route(unittest.IsolatedAsyncioTestCase):
         self.assertIn((await self.client.get('/v1/recordings/')).status, (404, 405), 'no listing')
 
 
+class Purge(Route):
+    def signed(self, obj, secret=SECRET):
+        from vpvoice import signing
+        body = json.dumps(obj).encode()
+        return body, {'content-type': 'application/json', signing.HEADER: signing.sign(secret, body)}
+
+    async def purge(self, obj, secret=SECRET, call=CALL):
+        body, hdr = self.signed(obj, secret)
+        return await self.client.post(f'/v1/recordings/{call}/purge', data=body, headers=hdr)
+
+    async def test_signed_purge_deletes_the_audio_once_and_the_link_stops_working(self):
+        wav = os.path.join(self.dir.name, f'{CALL}.wav')
+        r = await self.purge({'conversationId': CALL, 'workspaceId': WS, 'reason': 'erased'})
+        self.assertEqual(r.status, 200); self.assertEqual(await r.json(), {'ok': True, 'deleted': True})
+        self.assertFalse(os.path.exists(wav)); self.assertEqual(os.listdir(self.dir.name), [], 'the audio and its .json')
+        self.assertEqual((await self.client.get(self.link())).status, 404, 'a link signed before the purge plays nothing')
+        r = await self.purge({'conversationId': CALL, 'workspaceId': WS})
+        self.assertEqual(await r.json(), {'ok': True, 'deleted': False}, 'idempotent: a retry after a restart is safe')
+
+    async def test_refusals_leave_the_file(self):
+        wav = os.path.join(self.dir.name, f'{CALL}.wav')
+        self.assertEqual((await self.purge({'conversationId': CALL, 'workspaceId': OTHER_WS})).status, 403, "another workspace's purge")
+        self.assertEqual((await self.purge({'conversationId': CALL, 'workspaceId': WS}, secret='another-secret')).status, 401, 'unsigned or wrongly signed')
+        r = await self.purge({'conversationId': '0b6f6e1a-1c2d-4e5f-8a9b-000000000002', 'workspaceId': WS})
+        self.assertEqual(r.status, 400, 'the body names this call: a captured signature cannot purge another')
+        r = await self.client.post(f'/v1/recordings/{CALL}/purge', data=b'{}')
+        self.assertEqual(r.status, 401)
+        self.assertTrue(os.path.exists(wav))
+
+
 class SimRecording(unittest.IsolatedAsyncioTestCase):
     async def test_devsim_style_text_call_saves_a_tone_with_its_workspace(self):
         with tempfile.TemporaryDirectory() as d:

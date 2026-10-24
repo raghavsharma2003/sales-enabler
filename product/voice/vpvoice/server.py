@@ -180,6 +180,24 @@ class Runtime:
         if rec.call_uuid or rec.request_uuid: asyncio.ensure_future(self.carrier_hangup(rec))
         return web.json_response({'ok': True, 'endReason': rec.session.ended if rec.session else reason})
 
+    async def purge_recording(self, req):
+        """Signed like every control-plane request. The body names the call (replay guard, as in end_call) and the workspace;
+        the recording's own .json must name the same workspace. Idempotent: {ok: true, deleted: false} when nothing is left."""
+        body = await self.verified(req)
+        cid = req.match_info['id']
+        try: d = json.loads(body or b'')
+        except ValueError: d = None
+        if not isinstance(d, dict) or d.get('conversationId') != cid or not isinstance(d.get('workspaceId'), str):
+            return self.err(400, 'bad_request', 'body must be {"conversationId": <this call>, "workspaceId": <its workspace>, "reason"?}')
+        folder = self.env.get('VP_RECORDINGS_DIR')
+        if not folder: return web.json_response({'ok': True, 'deleted': False})
+        try:
+            deleted = recordings.purge(folder, cid, d['workspaceId'])
+        except recordings.RecordingError as e:
+            return self.err(403, 'forbidden', str(e))
+        log.info('recording %s purged (%s): %s', cid, d.get('reason') or 'unspecified', 'deleted' if deleted else 'already gone')
+        return web.json_response({'ok': True, 'deleted': deleted})
+
     async def call_status(self, req):
         await self.verified(req)
         rec = self.calls.get(req.match_info['id'])
@@ -450,6 +468,7 @@ class Runtime:
         a.router.add_get('/v1/calls/{id}', self.call_status)
         a.router.add_get('/v1/health', self.health)
         a.router.add_get('/v1/recordings/{id}', recordings.handler(lambda: self.secret, lambda: self.env.get('VP_RECORDINGS_DIR')))
+        a.router.add_post('/v1/recordings/{id}/purge', self.purge_recording)
         a.router.add_get('/v1/media/browser/{id}', self.media_browser)
         a.router.add_get('/v1/media/sim/{id}', self.media_sim)
         a.router.add_get('/v1/media/listen/{id}', self.media_listen)

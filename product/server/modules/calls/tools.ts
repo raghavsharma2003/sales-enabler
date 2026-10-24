@@ -77,6 +77,9 @@ export function atCapacity(rep: { accepted: boolean; reason?: string; retryable?
  *  person close it. There is no separate per-workspace recording switch to respect. */
 export async function recordingFor(ctx: ToolCtx, c: Record<string, any>): Promise<{ url: string | null; expiresAt: string | null; why: string | null }> {
   const no = (why: string) => ({ url: null, expiresAt: null, why });
+  if (c.recording_purged_at) return no(c.recording_purge_reason === 'erased'
+    ? 'The recording was deleted because the person asked to be erased.'
+    : 'The recording was deleted when this workspace\'s recordings retention ended.');
   const uri: string | null = c.recording_uri;
   if (!uri) return no('No recording was made on this call.');
   const { policy } = await retentionPolicy(ctx.q, ctx.workspaceId);

@@ -54,6 +54,9 @@ export interface Runtime {
   /** null when no runtime has reported (the fake, or the runtime unreachable): availability is then unknown, never assumed.
    *  Optional so a stand-in runtime in a test need not implement it; absent means unknown. */
   health?(): Promise<RuntimeHealth | null>;
+  /** Delete a call's recording on the runtime for good (POST /v1/recordings/{id}/purge, signed). ok: the file is gone
+   *  (deleted now, or already). refused: the runtime said no (another workspace's recording). Optional: absent = cannot purge. */
+  purgeRecording?(conversationId: string, workspaceId: string, reason: 'retention' | 'erased'): Promise<{ ok: boolean; deleted?: boolean; reason?: string }>;
 }
 
 export class HttpRuntime implements Runtime {
@@ -83,6 +86,13 @@ export class HttpRuntime implements Runtime {
   async control(id: string, action: string, body: Record<string, unknown> = {}) {
     const r = await this.post(`/v1/calls/${encodeURIComponent(id)}/${action}`, { ...body, conversationId: id });
     return { ok: r.ok, detail: await r.json().catch(() => null) };
+  }
+  async purgeRecording(id: string, workspaceId: string, reason: 'retention' | 'erased') {
+    try {
+      const r = await this.post(`/v1/recordings/${encodeURIComponent(id)}/purge`, { conversationId: id, workspaceId, reason });
+      const j = await r.json().catch(() => null) as { deleted?: unknown; message?: unknown } | null;
+      return r.ok ? { ok: true, deleted: j?.deleted === true } : { ok: false, reason: `runtime returned ${r.status}${typeof j?.message === 'string' ? ': ' + j.message : ''}` };
+    } catch (e) { return { ok: false, reason: e instanceof Error ? e.message : String(e) }; }
   }
   /** GET /v1/health carries no secrets and is not signed. The launcher answers 503 when no worker is up: that is "unknown". */
   async health(): Promise<RuntimeHealth | null> {
@@ -118,6 +128,15 @@ export class FakeRuntime implements Runtime {
     return { accepted: true, join: { kind: 'sim', url: `/dev/call/${ticket.conversationId}`, token: 'fake', expiresAtMs: Date.now() + 600_000 } };
   }
   async control(id: string, action: string, body?: Record<string, unknown>) { this.controls.push({ id, action, body }); return { ok: true }; }
+  purged: { id: string; workspaceId: string; reason: string }[] = [];
+  /** Tests set it to make the next purges fail (the runtime unreachable). */
+  purgeFails = false;
+  async purgeRecording(id: string, workspaceId: string, reason: 'retention' | 'erased') {
+    if (this.purgeFails) return { ok: false, reason: 'runtime unreachable' };
+    const deleted = !this.purged.some(p => p.id === id);
+    this.purged.push({ id, workspaceId, reason });
+    return { ok: true, deleted };
+  }
   /** What health() returns; tests set it. null by default: the fake runtime reports nothing about stacks. */
   healthReply: RuntimeHealth | null = null;
   async health() { return this.healthReply; }
