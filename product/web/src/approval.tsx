@@ -1,7 +1,7 @@
 // The approval sheet: what, why, impact, who, expiry. Only a deliberate hold (or two presses) approves; model text never does.
 import { useEffect, useState } from 'react';
 import { listActions } from './api.ts';
-import { fieldLabel, fieldValue, toolAsk } from './labels.ts';
+import { fieldLabel, fieldValue, serverDetail, toolAsk } from './labels.ts';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { useApp, undoLine } from './store.tsx';
 import { Btn, Chip, HoldButton, Sheet } from './ui.tsx';
@@ -35,6 +35,9 @@ export function ApprovalSheet() {
       <div className="stack-s">
         <div className="row"><Chip tone={p.risk === 'spend' || p.risk === 'external' ? 'terra' : 'marigold'} icon={<ShieldCheck size={13} aria-hidden />}>{w.label}</Chip><span className="small muted">{p.by === 'you' ? 'You asked for this' : p.requester ?? 'Waiting for approval'} · expires {date(p.expiresAt, true)}</span></div>
         <p style={{ fontSize: '1.0625rem', fontWeight: 600 }}>{toolAsk(p.tool, p.summary)}</p>
+        {/* The server's own account of this change (for a publish: the version, the stack, the last practice call and what
+            changed since the last version), sentence by sentence, when it says more than the label above. */}
+        {serverDetail(p.summary, toolAsk(p.tool, p.summary), p.tool) && <ul className="approval-detail small" aria-label="What this does">{serverDetail(p.summary, toolAsk(p.tool, p.summary), p.tool)!.map((x, i) => <li key={i}>{x}</li>)}</ul>}
         {args.length > 0 && <dl className="kv small">{args.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <p className="muted">{w.line} {undoLine(p.risk)}</p>
       </div>
@@ -54,3 +57,4 @@ export function ApprovalSheet() {
     </Sheet>
   );
 }
+

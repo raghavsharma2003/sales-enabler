@@ -113,6 +113,8 @@ const FIX_PAGE: Record<string, string> = {
   'wallet.topup': '/settings/billing', 'cap.raise': '/settings/billing', 'cap.lower': '/settings/billing',
   'stack.set': '/agents', 'version.publish': '/agents', 'version.restore': '/agents', 'version.language_variant': '/agents', 'brief.edit': '/agents', 'campaign.audience.add': '/contacts',
   'policy.window.set': '/settings/compliance', 'brand.update': '/settings/brand',
+  // A fact no column fills is fixed where columns are matched: the import, with the agent chosen.
+  'source.map': '/contacts/import', 'source.commit': '/contacts/import',
 };
 
 /** A launch blocker as a person reads it. Newer servers send a plain `message`, an optional `why` and a structured `fix`;
@@ -259,4 +261,34 @@ export function requesterLine(r: { type: 'member' | 'assistant' | 'api_key' | 's
   if (r.type === 'api_key') return r.name ? `API key "${r.name}" asked` : 'An API key asked';
   if (r.type === 'system') return 'Vyakti asked';
   return r.memberId && r.memberId === meId ? 'You asked for this' : r.name ? `${r.name} asked` : 'A team member asked';
+}
+
+/** The runtime reports cost per turn; a person reads one line per part and provider, summed, in the order first seen. */
+export function groupCost<T extends { component: string; provider: string; inr_milli: number }>(lines: T[]): T[] {
+  const m = new Map<string, T>();
+  for (const l of lines) { const k = l.component + '|' + l.provider, g = m.get(k); if (g) m.set(k, { ...g, inr_milli: g.inr_milli + l.inr_milli }); else m.set(k, { ...l }); }
+  return [...m.values()];
+}
+
+/** The server's summary as plain sentences, or null when it adds nothing to the label or carries an id or hash. A one-line
+ *  summary (most actions: "Add ₹500 to the prepaid wallet") repeats what the label and the detail rows already say. */
+export function serverDetail(summary: string | undefined, label: string, tool = ''): string[] | null {
+  const t = (summary ?? '').trim();
+  if (!t || t === label || /\b[0-9a-f]{8,}\b/i.test(t)) return null;
+  const parts = t.split(/(?<=[.!?])\s+(?=[A-Z])/).map(x => x.trim()).filter(Boolean);
+  return parts.length >= 2 || (tool === 'version.publish' && parts.length) ? parts : null;
+}
+
+/** Where a brief check points, as a person finds it: the tab, the field and its number ("Persona", "note 2"). */
+export function lintWhere(path: string | undefined): { tab: string; tabId: string; field: string } | null {
+  if (!path) return null;
+  const n = (rx: RegExp) => Number(rx.exec(path)?.[1] ?? 0) + 1;
+  if (/^persona\.notes\[\d+\]/.test(path)) return { tab: 'Persona', tabId: 'persona', field: `note ${n(/\[(\d+)\]/)}` };
+  if (/^goals\[\d+\]/.test(path)) return { tab: 'Job and facts', tabId: 'job', field: `goal ${n(/\[(\d+)\]/)}` };
+  if (/^objections\[\d+\]\.trigger/.test(path)) return { tab: 'Objections, hand-off', tabId: 'rules', field: `objection ${n(/\[(\d+)\]/)}, when they say or feel` };
+  if (/^objections\[\d+\]/.test(path)) return { tab: 'Objections, hand-off', tabId: 'rules', field: `objection ${n(/\[(\d+)\]/)}, her approach` };
+  if (path === 'opening.usefulFirst') return { tab: 'Job and facts', tabId: 'job', field: 'something useful to say first' };
+  if (path.startsWith('opening.')) return { tab: 'Job and facts', tabId: 'job', field: 'the opening' };
+  if (path === 'jobDescription') return { tab: 'Basics', tabId: 'basics', field: 'what the calls are for' };
+  return null;
 }

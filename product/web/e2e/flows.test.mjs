@@ -1307,8 +1307,8 @@ test('Security: set up single sign-on, see the failed connection test, reveal a 
   // Test connection against an issuer that does not exist: each check is shown with a pass or fail mark and its detail.
   await page.getByRole('button', { name: 'Test connection' }).click();
   await page.getByText('The connection test found a problem.').waitFor({ timeout: 15000 });
-  assert.ok(await page.locator('.checks li', { hasText: 'Failed' }).count() >= 1, 'a failed check is marked Failed');
-  assert.ok(await page.locator('.checks li', { hasText: 'Passed' }).count() >= 1, 'a passed check is marked Passed');
+  assert.ok(await page.getByRole('list', { name: 'Connection checks' }).locator('li', { hasText: 'Failed' }).count() >= 1, 'a failed check is marked Failed');
+  assert.ok(await page.getByRole('list', { name: 'Connection checks' }).locator('li', { hasText: 'Passed' }).count() >= 1, 'a passed check is marked Passed');
   // Requiring single sign-on asks for a break-glass owner and warns plainly.
   await page.getByRole('button', { name: /^Require single sign-on/ }).click();
   await sheet().getByText(/loses their password and must use single sign-on/).waitFor();
@@ -1609,4 +1609,122 @@ test('Numbers: a number bound to a published agent says it answers calls with he
   fs.mkdirSync(shotDir, { recursive: true });
   await line.screenshot({ path: path.join(shotDir, 'numbers-inbound.png') });
   void free;
+});
+
+// ---- Third buyer walkthrough (research/2026-10-24/walkthrough-r3/FRICTION.md): each flow is one friction a buyer met ----
+const holdIn = async (p, loc) => { await loc.scrollIntoViewIfNeeded(); const b = await loc.boundingBox(); const el = await loc.elementHandle(); await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await p.mouse.down();
+  try { await p.waitForFunction(e => e.classList.contains('holding'), el, { timeout: 5000 }); await p.waitForFunction(e => !e.classList.contains('holding'), el, { timeout: 10000 }); } finally { await p.mouse.up(); } };
+
+test('Campaign page: launch warnings the server sends are shown, word for word, with a fix that opens the agent', async () => {
+  const camp = (await pool.query('SELECT id FROM campaign WHERE workspace_id = $1 AND state = $2 ORDER BY created_at LIMIT 1', [ws, 'draft'])).rows[0];
+  const warnings = (await tool('campaign.get', { id: camp.id })).result.warnings ?? [];
+  assert.ok(warnings.length > 0, 'the seeded list has Tamil, Telugu, Marathi and Punjabi speakers, so the server warns');
+  await page.goto(`${BASE}/campaigns/${camp.id}`);
+  const list = page.getByRole('list', { name: 'Launch warnings' });
+  for (const w of warnings) await list.getByText(w.message, { exact: true }).waitFor({ timeout: 10000 });
+  const fix = list.getByRole('link', { name: "Change the agent's languages" });
+  if (await fix.count()) await page.waitForFunction(el => /^\/agents\/[0-9a-f-]{36}$/.test(el.getAttribute('href')), await fix.first().elementHandle(), { timeout: 10000 });   // the fix opens that agent once it is known
+});
+
+test('Publish: the approval card says what goes live, sentence by sentence, as the server wrote it', async () => {
+  const id = await riyaId();
+  await page.goto(`${BASE}/agents/${id}?tab=persona`);
+  await page.getByRole('button', { name: 'Add a note' }).click();
+  await page.locator('main input').last().fill(`walkthrough note ${Date.now().toString(36).replace(/[0-9]/g, c => 'abcdefghij'[c])}`);   // letters only: the brief keeps numbers in fact rows
+  await page.getByRole('button', { name: 'Save draft' }).click();
+  await page.getByText(/Draft saved/).first().waitFor({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Publish…' }).click();
+  const sheet = page.getByRole('dialog');
+  const detail = sheet.getByRole('list', { name: 'What this does' });
+  await detail.waitFor({ timeout: 10000 });
+  const summary = (await pool.query("SELECT summary FROM action WHERE workspace_id = $1 AND tool = 'version.publish' AND status = 'proposed' ORDER BY created_at DESC LIMIT 1", [ws])).rows[0].summary;
+  assert.match(summary, /Changes since version \d+/, 'the server described the change');
+  assert.match(await detail.innerText(), /Changes since version \d+/);
+  await holdIn(page, sheet.locator('.hold'));
+  await sheet.waitFor({ state: 'detached', timeout: 15000 });
+});
+
+test('Versions: an earlier version can be gone back to, through an approval that says what changes back', async () => {
+  const id = await riyaId();
+  await page.goto(`${BASE}/agents/${id}?tab=versions`);
+  const back = page.getByRole('button', { name: /^Go back to v\d+…$/ }).first();
+  await back.waitFor({ timeout: 10000 });
+  // Authors are named once agent.get sends author_id on each version (routed: FRICTION round 3); until then "A teammate".
+  if ((await tool('agent.get', { agentId: id })).result.versions?.[0]?.author_id) {
+    const by = (await pool.query("SELECT m.name FROM agent_version v JOIN member m ON m.id::text = v.author_id WHERE v.agent_id = $1 AND v.author_type = 'member' LIMIT 1", [id])).rows[0]?.name;
+    if (by) await page.locator('.versions').getByText(by, { exact: false }).first().waitFor({ timeout: 10000 });
+  }
+  await back.click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByRole('list', { name: 'What this does' }).getByText(/^Roll back .* to version \d+/).waitFor({ timeout: 10000 });
+  await sheet.getByRole('button', { name: 'Decline' }).click();
+  await sheet.waitFor({ state: 'detached' });
+});
+
+test('Import: a file longer than the preview says which rows it shows and where its duplicates and skipped rows are', async () => {
+  const rows = ['Name,Mobile']; for (let i = 0; i < 118; i++) rows.push(`Person ${i},90000${81000 + i}`); rows.push('Repeat,9000081001', 'Short,12345');
+  await page.goto(`${BASE}/contacts/import`);
+  await page.getByLabel('Your list').fill(rows.join('\n') + '\n');
+  await page.getByRole('button', { name: 'Check the file' }).click();
+  await page.getByText('Showing the first 100 of 120 rows', { exact: false }).waitFor({ timeout: 15000 });
+  await page.getByText('The first 100 rows are ready').waitFor();
+  assert.equal(await page.getByText('Every row is ready').count(), 0, 'never "every row is ready" when the file has duplicates or skipped rows');
+});
+
+test('Contacts: a list longer than one page has "Show the next 50", and the rows add up', async () => {
+  const n = (await pool.query('SELECT count(*)::int AS n FROM contact WHERE workspace_id = $1 AND erased_at IS NULL', [ws])).rows[0].n;
+  if (n <= 50) {   // The seeded workspace has a handful; the import above adds two. Add synthetic people through the real import.
+    const csv = ['Name,Mobile', ...Array.from({ length: 60 }, (_, i) => `Paging ${i},90000${82000 + i}`)].join('\n');
+    const up = await tool('source.upload', { kind: 'csv', name: 'paging', text: csv, filename: 'paging.csv' });
+    const c = await tool('source.commit', { uploadId: up.result.uploadId, audienceName: 'Paging test' });
+    assert.equal(c.status, 'confirmed', JSON.stringify(c));
+  }
+  await page.goto(`${BASE}/contacts`);
+  await page.getByText(/^50 shown, and more\./).waitFor({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Show the next 50' }).click();
+  await page.getByText(/^(\d+) shown/).filter({ hasNotText: /^50 shown/ }).waitFor({ timeout: 10000 });
+  assert.ok(await page.locator('table tbody tr').count() > 50);
+});
+
+test('Privacy: how long each kind of data is kept is shown as the server holds it, and a change goes through an approval', async () => {
+  const pol = (await tool('policy.retention.get')).result.policy;
+  await page.goto(`${BASE}/settings/privacy`);
+  const card = page.locator('section, div.card').filter({ has: page.getByRole('heading', { name: 'How long data is kept' }) }).last();
+  const rec = card.getByLabel('Call recordings (days)');
+  await rec.waitFor({ timeout: 10000 });
+  assert.equal(await rec.inputValue(), String(pol.recordings_days));
+  await rec.fill(String(pol.recordings_days === 30 ? 45 : 30));
+  await card.getByLabel('Why the change').fill('counsel advised a shorter time for recordings');
+  await card.getByRole('button', { name: 'Ask to change' }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByText(/recordings \d+ days/i).first().waitFor({ timeout: 10000 });
+  await sheet.getByRole('button', { name: 'Decline' }).click();
+  assert.ok((await page.locator('option[value="erase_me"]').innerText()).includes('details, transcripts and recordings'), 'erasure says it deletes recordings too');
+});
+
+test('Agent basics: "follow the caller" names the languages she may switch to, from the agent itself', async () => {
+  await page.goto(`${BASE}/agents/${await riyaId()}`);
+  const hint = page.getByText(/^If they switch to /);
+  await hint.waitFor();
+  const allowed = (await pool.query("SELECT draft->'languages'->'allowed' AS a FROM agent WHERE id = $1", [await riyaId()])).rows[0].a;
+  assert.ok(allowed.length > 0);
+  assert.doesNotMatch(await hint.innerText(), /^If they switch to Hindi or English, so does she\.$/, 'not the old fixed sentence: this agent also speaks Hinglish');
+  assert.match(await hint.innerText(), /Hinglish/);
+});
+
+test('Agent: a check on the draft says once where it is, as a link to that tab and field', async () => {
+  const id = await riyaId();
+  await page.goto(`${BASE}/agents/${id}?tab=persona`);
+  await page.getByRole('button', { name: 'Add a note' }).click();
+  await page.locator('main input').last().fill('keep it under 2 minutes');
+  await page.getByRole('button', { name: 'Save draft' }).click();
+  const alert = page.locator('.state-failed', { hasText: 'Checks on the draft' });
+  await alert.waitFor({ timeout: 10000 });
+  const link = alert.getByRole('link', { name: /^Persona, note \d+$/ });
+  await link.waitFor();
+  assert.equal(await alert.locator('li').count(), new Set(await alert.locator('li').allInnerTexts()).size, 'no line twice');
+  // Put the draft back: remove the note that holds a number.
+  await page.locator('.editrow').filter({ has: page.locator('input[value="keep it under 2 minutes"]') }).getByRole('button').last().click();
+  await page.getByRole('button', { name: 'Save draft' }).click();
+  await alert.waitFor({ state: 'detached', timeout: 10000 });
 });

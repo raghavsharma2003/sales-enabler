@@ -60,8 +60,12 @@ export function ImportReview({ pv, setPv, srcText, agentId, onSaved, saveSub }: 
             <div><b className="tnum serif">{count(pv.counts.duplicate)}</b><span>duplicates</span></div><div><b className="tnum serif">{count(pv.counts.skipped)}</b><span>skipped</span></div>
           </div>
           {pv.questions.map((q, i) => <div className="qcard" key={i}><p><strong>{q.text}</strong></p></div>)}
-          <div className="row" style={{ margin: '12px 0' }}><Tabs label="Rows to show" value={filter} onChange={setFilter} items={[{ id: 'problems', label: 'Needs a look', count: pv.rows.filter(r => r.verdict !== 'ok').length }, { id: 'all', label: 'All rows', count: pv.rows.length }]} /></div>
-          {rows.length ? <Table caption="Per-row verdicts" cols={vcols} rows={rows} rowKey={r => String(r.row)} /> : <Empty title="Every row is ready" icon={<Check size={26} aria-hidden />} body="Nothing needs fixing. Switch to All rows to see them." />}
+          <div className="row" style={{ margin: '12px 0' }}><Tabs label="Rows to show" value={filter} onChange={setFilter} items={[{ id: 'problems', label: 'Needs a look', count: pv.rows.filter(r => r.verdict !== 'ok').length }, { id: 'all', label: pv.rows.length < pv.counts.in ? `First ${pv.rows.length} rows` : 'All rows', count: pv.rows.length }]} /></div>
+          {pv.rows.length < pv.counts.in && <p className="small muted">Showing the first {count(pv.rows.length)} of {count(pv.counts.in)} rows. The counts above are for the whole file.</p>}
+          {rows.length ? <Table caption="Per-row verdicts" cols={vcols} rows={rows} rowKey={r => String(r.row)} />
+            : (pv.counts.duplicate + pv.counts.skipped > 0)
+              ? <Empty title={`The first ${count(pv.rows.length)} rows are ready`} body={`${count(pv.counts.duplicate)} duplicate and ${count(pv.counts.skipped)} skipped rows are further down the file. They are left out when you save; the rest is saved.`} />
+              : <Empty title="Every row is ready" icon={<Check size={26} aria-hidden />} body="Nothing needs fixing. Switch to All rows to see them." />}
         </Card>
         <Card><CardHead title="4. Save" sub={saveSub ?? "Saves contacts and an audience. It does not call anyone."} />
           <div className="formgrid"><SelectField label="Record that these people agreed to be called for" value={purpose} onChange={e => setPurpose(e.target.value)} hint="Only choose one if it is true. It is written on every contact and decides which calls are allowed. Leave it if unsure."><option value="">Do not record any consent</option><option value="service">Service calls (about their own account)</option><option value="transactional">Transactional calls (orders, appointments)</option><option value="promotional">Promotional calls</option></SelectField>

@@ -218,9 +218,10 @@ function Privacy() {
       <Async q={q} what="Memory policy" tool="memory.policy.get">{d => <Card><CardHead title="Memory" sub="What a later call remembers from an earlier one. Facts need the person's exact words and a purpose; you can approve or forget each one." />
         <Toggle checked={d.enabled} onChange={async on => { if (!policy) return; const r = await act('memory.policy.set', { enabled: on }, { describe: on ? 'Memory turned on.' : 'Memory turned off.' }); if (r.ok) q.reload(); else refresh(); }} label="Remember what callers say" hint={policy ? 'Changing this is a policy change and asks for approval. Practice calls never write memory.' : 'Only an owner or compliance lead can change this.'} />
         <p className="small muted">Undo window for new facts: <span className="tnum">{d.undoMinutes}</span> minutes. Never remembered: {d.refusedCategories.map(c => c.replace(/_/g, ' ')).join(', ')}.</p></Card>}</Async>
-      <Card><CardHead title="A person's data request" sub="Forget what is remembered, or erase the person. The number stays suppressed so they are never called again by mistake." />
+      <Retention canSet={policy} />
+      <Card><CardHead title="A person's data request" sub="Forget what is remembered, or erase the person: their details, transcripts and call recordings. The number stays suppressed so they are never called again by mistake." />
         {can(['owner', 'compliance']) ? <><div className="formgrid"><TextField label="Their phone number" inputMode="tel" value={e164} onChange={e => setE164(e.target.value)} placeholder="+91 …" />
-          <SelectField label="What they asked for" value={scope} onChange={e => setScope(e.target.value)}><option value="forget_memory">Forget what is remembered</option><option value="erase_me">Erase me completely</option></SelectField>
+          <SelectField label="What they asked for" value={scope} onChange={e => setScope(e.target.value)}><option value="forget_memory">Forget what is remembered</option><option value="erase_me">Erase me completely (details, transcripts and recordings)</option></SelectField>
           <SelectField label="Who asked" value={by} onChange={e => setBy(e.target.value)}><option value="person">The person</option><option value="compliance">Our compliance lead</option><option value="tenant">Our business</option></SelectField>
           <TextField label="Where it was asked" value={ev} onChange={e => setEv(e.target.value)} hint="For example: email from the person, 21 Oct." /></div>
           <div style={{ marginTop: 12 }}>{e164.replace(/\D/g, '').length >= 10 && ev.trim().length >= 3 ? <Btn kind="danger" onClick={() => void act('dpdp.request.execute', { e164, scope, requestedBy: by, evidence: ev.trim(), suppress: true }, { describe: 'Request carried out.' })}>Ask to carry out…</Btn> : <Btn disabled reason="Enter their number and where the request came from.">Ask to carry out</Btn>}</div></> : <Locked role="owner or compliance lead" />}</Card>
@@ -285,3 +286,30 @@ const byRule = (reply: Rules['rules']['reply']) => {
 const ruleWords = (r: string) => { const t = r.replace(/\s*\(allow-list:[^)]*\)/, '. She may only mention her own nature to say she is an AI').replace(/neverSay/g, 'never-say list').replace(/([a-z])([A-Z])/g, '$1 $2'); return t.charAt(0).toUpperCase() + t.slice(1); };
 
 const walletNote = (x: string) => /^no money available/i.test(x) ? 'There is no money to spend. New attempts wait; calls already live always finish.' : x.charAt(0).toUpperCase() + x.slice(1);
+
+// How long each kind of data is kept (policy.retention.*). Recordings are deleted on the voice server too when their time is
+// up. Changing it is a policy change, so it asks for approval and needs a reason.
+const RETENTION: [string, string][] = [['recordings_days', 'Call recordings'], ['transcripts_days', 'Transcripts'], ['upload_files_days', 'Uploaded list files'], ['receipt_issues_days', 'Import problem rows'], ['audit_logs_days', 'Activity log']];
+const KEPT: Record<string, string> = { consent: 'consent records', suppression: 'do-not-call records', tombstones: 'erasure records', aggregates: 'counts with no personal data' };
+function Retention({ canSet }: { canSet: boolean }) {
+  const { act } = useApp();
+  const q = useData('retention', () => run<{ version: number; policy: Record<string, number>; alwaysKept: string[] }>('policy.retention.get', {}));
+  const [edit, setEdit] = useState<Record<string, string>>({}); const [reason, setReason] = useState(''); const [busy, setBusy] = useState(false);
+  return (
+    <Card aria-labelledby="ret-h"><CardHead id="ret-h" title="How long data is kept" sub="After this many days the data is deleted, recordings included. Shorter is safer; keep what disputes and audits need." />
+      <Async q={q} what="Retention" tool="policy.retention.get">{d => {
+        const changed = Object.fromEntries(RETENTION.filter(([k]) => edit[k] !== undefined && Number(edit[k]) !== d.policy[k]).map(([k]) => [k, Number(edit[k])]));
+        const bad = Object.values(changed).some(n => !Number.isInteger(n) || n < 1 || n > 3650);
+        return <>
+          {canSet ? <div className="formgrid">{RETENTION.map(([k, l]) => <TextField key={k} label={`${l} (days)`} type="number" inputMode="numeric" min={1} max={3650} value={edit[k] ?? String(d.policy[k] ?? '')} onChange={e => setEdit(x => ({ ...x, [k]: e.target.value }))} />)}</div>
+            : <dl className="kv">{RETENTION.map(([k, l]) => <div key={k}><dt>{l}</dt><dd className="tnum">{d.policy[k] != null ? `${count(d.policy[k])} days` : '—'}</dd></div>)}</dl>}
+          <p className="small muted" style={{ marginTop: 8 }}>Always kept: {d.alwaysKept.map(x => KEPT[x] ?? x.replace(/_/g, ' ')).join(', ')}. They hold no call content and stop a person from being called again by mistake.</p>
+          {canSet && Object.keys(changed).length > 0 && <div className="stack-s" style={{ marginTop: 12 }}>
+            <TextField label="Why the change" value={reason} onChange={e => setReason(e.target.value)} hint="Recorded with the new policy, for example: counsel advised 30 days for recordings." />
+            <div>{bad ? <Btn disabled reason="Each value is a whole number of days, from 1 to 3,650.">Ask to change</Btn> : reason.trim().length < 5 ? <Btn disabled reason="Say why, in a few words.">Ask to change</Btn>
+              : <Btn kind="primary" busy={busy} onClick={async () => { setBusy(true); const r = await act('policy.retention.set', { ...changed, reason: reason.trim() }, { describe: 'Retention changed.' }); setBusy(false); if (r.ok) { setEdit({}); setReason(''); q.reload(); } }}>Ask to change</Btn>}</div></div>}
+          {!canSet && <p className="small muted">Only an owner or the compliance lead can change these.</p>}
+        </>;
+      }}</Async></Card>
+  );
+}

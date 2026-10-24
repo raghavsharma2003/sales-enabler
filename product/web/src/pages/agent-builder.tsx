@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link2, Lock, Plus, Trash2 } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
-import { agentGet, diffOps } from '../data.ts';
+import { agentGet, diffOps, memberList } from '../data.ts';
 import { Link, useQuery } from '../router.tsx';
+import { lintWhere } from '../labels.ts';
 import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
 import { StackPicker, BETA_REASON, type StackChange } from '../stack-picker.tsx';
 import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, PURPOSE_LABEL, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
@@ -78,7 +79,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
       {voiceStackOf(cfg.voice)?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
-      {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{doc.lint.map((l, i) => <li key={i}>{l.message}</li>)}</ul></div>}
+      {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{[...new Map(doc.lint.map(l => [`${l.path ?? ''}|${l.message}`, l])).values()].map((l, i) => { const w = lintWhere(l.path); const msg = l.message.charAt(0).toUpperCase() + l.message.slice(1); return <li key={i}>{w ? <><Link to={`?tab=${w.tabId}`}>{w.tab}, {w.field}</Link>: {msg}</> : msg}</li>; })}</ul></div>}
       <Tabs label="Builder sections" value={tab} onChange={t => setQs({ tab: t === 'basics' ? null : t })} items={TABS} />
       {tab === 'basics' && <Basics cfg={cfg} set={set} />}
       {tab === 'persona' && <Persona cfg={cfg} set={set} />}
@@ -88,10 +89,13 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
       {tab === 'voice' && <Card><StackPicker agentId={doc.id} stackId={cfg.voice.stackId} components={cfg.voice.components} voiceId={cfg.voice.voiceId ?? null} onChanged={onVoiceChanged} />
         <hr className="rule" /><div className="formgrid"><Toggle checked={cfg.recording.enabled} onChange={v => set(c => { c.recording.enabled = v; if (!v) c.recording.announce = false; })} label="Record calls" hint="Recordings stay in India. Retention is set in Settings, Privacy." />
             <Toggle checked={cfg.recording.announce} onChange={v => set(c => { c.recording.announce = v; })} label="Say that the call is recorded" hint={cfg.recording.enabled ? undefined : 'Turn recording on first.'} /></div></Card>}
-      {tab === 'versions' && <Versions doc={doc} dirty={dirty} />}
+      {tab === 'versions' && <Versions doc={doc} dirty={dirty} reload={reload} />}
     </>
   );
 }
+
+/** "Hinglish, English or Tamil": the languages she may switch to, as a person reads them. */
+const listOr = (xs: string[]) => xs.length <= 1 ? (xs[0] ?? 'another language she may use') : `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}`;
 
 // ---------- editors ----------
 function ListEditor<T>({ items, onChange, blank, render, addLabel, empty }: { items: T[]; onChange: (f: (list: T[]) => void) => void; blank: () => T; render: (it: T, patch: (f: (x: T) => void) => void, i: number) => ReactNode; addLabel: string; empty?: string }) {
@@ -136,7 +140,7 @@ function Basics({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
       <Card><CardHead title="Languages" />
         <div className="formgrid">
           <SelectField label="She starts in" value={cfg.languages.primary} onChange={e => set(c => { c.languages.primary = e.target.value; if (!c.languages.allowed.includes(e.target.value)) c.languages.allowed.push(e.target.value); })}>{LANGUAGES.map(l => <option key={l} value={l}>{LANG_LABEL[l]}</option>)}</SelectField>
-          <Toggle checked={cfg.languages.mirrorCaller} onChange={v => set(c => { c.languages.mirrorCaller = v; })} label="Follow the caller's language" hint="If they switch to Hindi or English, so does she." />
+          <Toggle checked={cfg.languages.mirrorCaller} onChange={v => set(c => { c.languages.mirrorCaller = v; })} label="Follow the caller's language" hint={`If they switch to ${listOr([...new Set(cfg.languages.allowed.map(langShort))])}, so does she.`} />
         </div>
         <fieldset className="chipset"><legend>Languages she may use</legend>{LANGUAGES.map(l => <label key={l} className={`choice${cfg.languages.allowed.includes(l) ? ' on' : ''}`}><input type="checkbox" checked={cfg.languages.allowed.includes(l)} disabled={l === cfg.languages.primary} onChange={() => set(c => { c.languages.allowed = toggle(c.languages.allowed, l); })} />{LANG_LABEL[l]}</label>)}</fieldset>
       </Card>
@@ -239,14 +243,29 @@ function Tools({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
   );
 }
 
-function Versions({ doc, dirty }: { doc: AgentDoc; dirty: boolean }) {
+// Every published version can be gone back to: version.restore publishes a new version equal to the chosen one and sends
+// the agent's calls there, after the same approval as a publish (its card says what changes back).
+function Versions({ doc, dirty, reload }: { doc: AgentDoc; dirty: boolean; reload: () => void }) {
+  const { act, can } = useApp();
+  const members = useData('members', memberList);
+  const who = (v: AgentDoc['versions'][number]) => (v.authorId && members.data?.find(m => m.id === v.authorId)?.name) || v.by;
+  const [busy, setBusy] = useState<string | null>(null);
+  const restore = async (v: AgentDoc['versions'][number]) => {
+    setBusy(v.id);
+    const r = await act('version.restore', { agentId: doc.id, versionId: v.id }, { describe: `Back to version ${v.number}, published as a new version.` });
+    setBusy(null); if (r.ok) reload();
+  };
+  const canRestore = can(['owner', 'builder']);
   return (
-    <Card><CardHead title="How she changed" sub="Each published version is fixed. Campaigns pick a published version, never a draft." />
+    <Card><CardHead title="How she changed" sub="Each published version is fixed. Campaigns pick a published version, never a draft. Going back to an earlier one publishes it again as a new version, so the history stays whole." />
       {dirty && <p className="hint hint-bad">You have changes that are not saved, so they are not in this list yet.</p>}
       {doc.versions.length === 0 ? <p className="muted">Nothing is published yet. Save the draft, choose a voice stack, then publish.</p> :
         <ol className="versions">{doc.versions.map(v => (
           <li key={v.id}><span className={`pill ${v.id === doc.latestVersionId ? 'pill-live' : ''}`} style={{ marginLeft: 0 }}>v{v.number}{v.id === doc.latestVersionId ? ' · Live' : v.candidate ? ' · Test candidate' : ''}</span>
-            <span>{v.candidate ? `${v.note ?? 'A change under test'}. Runs only for the people a test assigns to it; never live.` : v.note ?? 'Published'}</span><span className="small muted">{v.by} · {date(v.createdAt, true)}</span></li>))}</ol>}
+            <span>{v.candidate ? `${v.note ?? 'A change under test'}. Runs only for the people a test assigns to it; never live.` : v.note ?? 'Published'}</span><span className="small muted">{who(v)} · {date(v.createdAt, true)}</span>
+            {v.id !== doc.latestVersionId && !v.candidate && (canRestore
+              ? <Btn size="sm" busy={busy === v.id} onClick={() => void restore(v)}>Go back to v{v.number}…</Btn>
+              : <Btn size="sm" disabled reason="Only an owner or a builder can go back to an earlier version.">Go back to v{v.number}</Btn>)}</li>))}</ol>}
       {doc.briefBytes != null && <p className="small muted" style={{ marginTop: 12 }}>The compiled brief for this draft is {doc.briefBytes.toLocaleString('en-IN')} bytes.</p>}</Card>
   );
 }

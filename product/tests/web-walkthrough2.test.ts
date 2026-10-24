@@ -57,3 +57,21 @@ test('voice samples: only complete, plain-file entries are used, at their plain 
   assert.equal(playableIn(multi.slice(0, 1), t => (t.includes('ogg') ? '' : 'probably')), false, 'Ogg only on a browser without Ogg: say it cannot play');
   assert.deepEqual(parseSamples([]), {}); assert.deepEqual(parseSamples(null), {}); assert.deepEqual(parseSamples({}), {}, 'an empty manifest means no samples');
 });
+
+test('round 3: cost lines group per part and provider; the approval card shows a server summary only when it says more', async () => {
+  const { groupCost, serverDetail } = await import('../web/src/labels.ts');
+  const g = groupCost([{ component: 'brain', provider: 'devsim', inr_milli: 1 }, { component: 'ears', provider: 'azure', inr_milli: 30 }, { component: 'brain', provider: 'devsim', inr_milli: 2 }, { component: 'ears', provider: 'azure', inr_milli: 3 }]);
+  assert.deepEqual(g.map(l => [l.component, l.inr_milli]), [['brain', 3], ['ears', 33]]);
+  assert.equal(serverDetail('Add ₹500 to the prepaid wallet', 'Add money to the wallet', 'wallet.topup'), null, 'a one-line summary repeats the label');
+  assert.deepEqual(serverDetail('Publish Renewals, version 2. Voice: Azure + Gemini. Changes since version 1: added a persona note.', 'Publish this agent', 'version.publish'),
+    ['Publish Renewals, version 2.', 'Voice: Azure + Gemini.', 'Changes since version 1: added a persona note.']);
+  assert.equal(serverDetail('Publish agent 1ab031a3 from the draft (204816021e3e)', 'Publish this agent', 'version.publish'), null, 'never ids or hashes');
+});
+
+test('round 3: a brief check names the tab and field it points to', async () => {
+  const { lintWhere } = await import('../web/src/labels.ts');
+  assert.deepEqual(lintWhere('persona.notes[1]'), { tab: 'Persona', tabId: 'persona', field: 'note 2' });
+  assert.deepEqual(lintWhere('objections[0].approach'), { tab: 'Objections, hand-off', tabId: 'rules', field: 'objection 1, her approach' });
+  assert.equal(lintWhere('opening.usefulFirst')?.field, 'something useful to say first');
+  assert.equal(lintWhere(undefined), null); assert.equal(lintWhere('voice.stackId'), null);
+});

@@ -39,6 +39,15 @@ function People() {
   const supp = qs.get('suppressed') === '1';
   useEffect(() => { const h = setTimeout(() => setQs({ q: text || null }), 300); return () => clearTimeout(h); }, [text]); // eslint-disable-line
   const q = useData(['people', qs.get('q'), supp], () => contactList({ q: qs.get('q') ?? '', suppressed: supp || undefined }));
+  // Lists run to thousands: the next 50 are fetched on request and added below, never a dead end of "narrow the search".
+  const [more, setMore] = useState<{ rows: ContactRow[]; next: string | null; for: unknown } | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const extra = more && more.for === q.data ? more : null;
+  const loadMore = async () => {
+    const after = extra ? extra.next : q.data?.next; if (!after) return;
+    setLoadingMore(true);
+    try { const r = await contactList({ suppressed: supp || undefined, after }); setMore({ rows: [...(extra?.rows ?? []), ...r.rows], next: r.next ?? null, for: q.data }); } finally { setLoadingMore(false); }
+  };
   const cols: Col<ContactRow>[] = [
     { key: 'n', label: 'Name', primary: true, render: c => c.name }, { key: 'p', label: 'Phone', render: c => <span className="tnum">{fmtPhone(c.phone)}</span> },
     { key: 'l', label: 'Language', hideMobile: true, render: c => langShort(c.language) },
@@ -52,7 +61,7 @@ function People() {
       </div>
       <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 8 }}><ExportButton me={me} /></div>
       <Async q={q} what="Contacts" tool="contact.list" empty={d => d.rows.length === 0 ? <Empty title={qs.get('q') || supp ? 'No one matches' : 'No contacts yet'} body={qs.get('q') || supp ? 'Try a shorter search or clear the filter.' : 'Import a CSV or Excel export. You see a verdict for every row before anything is saved.'} action={<Link to="/contacts/import">Import a list</Link>} /> : null}>
-        {d => <><BulkDnd ids={d.rows.map(r => r.id)} allUnchecked={d.rows.length > 0 && d.rows.every(r => r.dnd !== 'clear' && r.dnd !== 'registered' && r.dnd !== 'listed')} onDone={q.reload} /><p className="small muted" style={{ marginBottom: 8 }}>{count(d.rows.length)} shown{d.more ? ', more not shown. Narrow the search.' : ''}</p><Table caption="Contacts" cols={cols} rows={d.rows} rowKey={r => r.id} onRow={r => `/contacts/${r.id}`} /></>}
+        {d => <><BulkDnd ids={[...d.rows, ...(extra?.rows ?? [])].map(r => r.id)} allUnchecked={d.rows.length > 0 && [...d.rows, ...(extra?.rows ?? [])].every(r => r.dnd !== 'clear' && r.dnd !== 'registered' && r.dnd !== 'listed')} onDone={q.reload} /><p className="small muted" style={{ marginBottom: 8 }}>{count(d.rows.length + (extra?.rows.length ?? 0))} shown{(extra ? extra.next : d.more) ? ', and more.' : ''}</p><Table caption="Contacts" cols={cols} rows={[...d.rows, ...(extra?.rows ?? [])]} rowKey={r => r.id} onRow={r => `/contacts/${r.id}`} />{(extra ? extra.next : d.more && !qs.get('q')) && <div style={{ marginTop: 12 }}><Btn busy={loadingMore} onClick={() => void loadMore()}>Show the next 50</Btn></div>}</>}
       </Async>
     </Card>
   );

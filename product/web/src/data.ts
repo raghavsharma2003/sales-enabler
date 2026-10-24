@@ -21,11 +21,11 @@ export function normaliseConfig(d: any): AgentConfigDraft {
 }
 export async function agentGet(id: string): Promise<AgentDoc> {
   const r = await run<any>('agent.get', { agentId: id });
-  const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' ? 'Assistant' : 'Vyakti', candidate: v.kind === 'candidate' }))
+  const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' || v.author_type === 'agent' ? 'The assistant' : 'Vyakti', authorId: v.author_type === 'member' ? v.author_id ?? null : null, candidate: v.kind === 'candidate' }))
     .sort((a, b) => b.number - a.number);
   return {
     id, name: r.agent.name, updatedAt: r.agent.updatedAt, draftHash: r.draftHash, config: normaliseConfig(r.draft), compiles: !!r.compiles,
-    lint: arr<any>(r.lint).map(l => (typeof l === 'string' ? { message: l } : { message: l.message ?? l.rule ?? JSON.stringify(l), severity: l.severity })),
+    lint: arr<any>(r.lint).map(l => (typeof l === 'string' ? { message: l } : { message: l.message ?? l.rule ?? JSON.stringify(l), severity: l.severity, path: typeof l.path === 'string' ? l.path : undefined })),
     briefBytes: r.brief?.bytes ?? null, versions, latestVersionId: r.liveVersion?.id ?? null, latestVersion: r.liveVersion?.number ?? null,
   };
 }
@@ -83,13 +83,13 @@ export async function simulate(agentId: string, callers: PracticeCaller[]): Prom
 }
 
 // ---------- people ----------
-export async function contactList(o: { q?: string; audienceId?: string; suppressed?: boolean }): Promise<{ rows: ContactRow[]; more: boolean }> {
+export async function contactList(o: { q?: string; audienceId?: string; suppressed?: boolean; after?: string }): Promise<{ rows: ContactRow[]; more: boolean; next?: string | null }> {
   if (o.q?.trim()) {
     const r = await run<{ contacts: any[] }>('contact.search', { q: o.q.trim(), limit: 50 });
     return { rows: r.contacts.map(c => ({ id: c.id, name: c.name ?? 'No name', phone: c.e164, language: c.language ?? '', suppressed: false, dnd: 'unknown', dndCheckedAt: null })), more: false };
   }
-  const r = await run<{ contacts: any[]; next: string | null }>('contact.list', { limit: 50, audienceId: o.audienceId, suppressed: o.suppressed });
-  return { rows: r.contacts.map(c => ({ id: c.id, name: c.name ?? 'No name', phone: c.e164, language: c.language ?? '', suppressed: !!c.suppressed, dnd: c.dnd ?? 'unknown', dndCheckedAt: c.dndCheckedAt ?? null })), more: !!r.next };
+  const r = await run<{ contacts: any[]; next: string | null }>('contact.list', { limit: 50, audienceId: o.audienceId, suppressed: o.suppressed, after: o.after });
+  return { rows: r.contacts.map(c => ({ id: c.id, name: c.name ?? 'No name', phone: c.e164, language: c.language ?? '', suppressed: !!c.suppressed, dnd: c.dnd ?? 'unknown', dndCheckedAt: c.dndCheckedAt ?? null })), more: !!r.next, next: r.next };
 }
 export async function contactGet(id: string): Promise<ContactDoc> {
   const [c, mem, att] = await Promise.all([
@@ -183,7 +183,7 @@ export async function campaignGet(id: string): Promise<CampaignDoc> {
   const c = r.campaign, p = c.policy ?? {};
   return { id: c.id, name: c.name, category: c.call_category, state: c.state, policyVersion: c.policy_version, agentVersionId: c.agent_version_id, audienceId: c.audience_id,
     window: p.window ?? { days: [], ranges: [] }, concurrency: p.concurrency ?? null, capInrMilli: p.capInrMilli ?? null, preset: p.preset, counts: arr(r.counts),
-    blockers: arr<Blocker>(r.blockers), version: r.version, retry: r.retry ?? '', callbacks: arr(r.callbacks) };
+    blockers: arr<Blocker>(r.blockers), warnings: arr<any>(r.warnings).filter(w => w && typeof w === 'object' && w.message), version: r.version, retry: r.retry ?? '', callbacks: arr(r.callbacks) };
 }
 export async function campaignEstimate(id: string): Promise<Estimate> { return run<Estimate>('campaign.estimate', { id }); }
 export async function campaignFunnel(campaignId: string, audienceId: string | null): Promise<FunnelStage[]> {
@@ -208,7 +208,7 @@ async function contactNames(): Promise<Map<string, string>> {
 }
 export async function callSearch(o: { campaignId?: string; outcome?: string; includeTest?: boolean }): Promise<CallRow[]> {
   const [r, names] = await Promise.all([run<{ calls: any[] }>('call.search', { campaignId: o.campaignId, outcome: o.outcome, includeTest: o.includeTest, limit: 100 }), contactNames()]);
-  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? (c.direction === 'inbound' ? (c.inbound_note === 'erased' ? 'A caller who asked to be erased' : 'Unknown caller') : 'Unknown person'), direction: c.direction === 'inbound' ? 'inbound' as const : 'outbound' as const, startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null }));
+  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? (c.direction === 'inbound' ? (c.inbound_note === 'erased' ? 'A caller who asked to be erased' : 'Unknown caller') : !c.contact_id && c.channel === 'test' ? 'Practice call in the browser' : 'Unknown person'), direction: c.direction === 'inbound' ? 'inbound' as const : 'outbound' as const, startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null }));
 }
 export async function callGet(id: string): Promise<CallDoc> {
   const c = await run<any>('call.get', { conversationId: id });

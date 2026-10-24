@@ -1,0 +1,129 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "type": "measurement",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Third buyer walkthrough (D2C COD/NDR at 242 rows; university admissions in English and Hinglish), each at 1440 and 390, plus the seeded workspace: 256 steps, 6 failed (walk-script selectors 2, no seeded recording 2, scripted assistant 2), 0 sideways scroll; 10 web frictions fixed (9 new flows, each failing before), 6 routed.",
+   "method": "Playwright on Chromium against web/dev/serve.ts with devsim and a fake microphone; every screenshot opened; research/2026-10-24/walkthrough-r3/FRICTION.md.",
+   "n": 256,
+   "not_verified": "Real assistant replies, her real voice, a recording, tiered analysis output and learning proposals (both need real calls)."
+  },
+  {
+   "id": "rejected.2026-10-24.web-hides-server-signals",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Web screens that drop what the server already says: campaign.get warnings, the version.publish summary (replaced by the web's own label), source.map agentFacts (never asked for), policy.retention.* (no screen) and version.restore (no button).",
+   "tried": "Round 2 routed R2, R3, R8 and recording retention to the server; the server built them; the web was not updated to show them.",
+   "broke": "Buyers met a launch blocker they could not fix (facts with no column), a publish card with no diff, no language warning and no rollback, although every signal existed. Each is now on screen with a flow that checks the server's own words. Rule for the next server item: route it with the web change it needs."
+  },
+  {
+   "id": "open.2026-10-24.fact-blocker-names-key",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The per-contact fact launch blocker quotes a column key (\"order_id\") instead of the buyer's header (\"Order ID\").",
+   "closes_when": "agents/columns.ts:55 and the campaigns launch blocker carry the source header with each attribute key and name it."
+  },
+  {
+   "id": "open.2026-10-24.language-warning-hinglish-wording",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The language warning describes an English and Hinglish agent as speaking \"Hindi, English\" after Hindi was removed.",
+   "closes_when": "campaigns/index.ts:144 names Hinglish as Hinglish when it is the allowed form."
+  },
+  {
+   "id": "open.2026-10-24.import-preview-problem-rows",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "source.map previews at most 100 rows, so duplicates and bad numbers further down a large file cannot be seen or fixed before saving (the web now says where they are).",
+   "closes_when": "intake/sources.ts:186,207 returns every non-ready row (capped separately) as well as the first N rows."
+  },
+  {
+   "id": "open.2026-10-24.agent-get-version-author",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "agent.get versions omit author_id, so the Versions tab says \"A teammate\" for every published version (the web names members once it is sent).",
+   "closes_when": "agents/index.ts:458 selects author_id (or the author's name)."
+  },
+  {
+   "id": "open.2026-10-24.contact-list-total",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "contact.list has no total, so the contacts list can say \"and more\" but not \"of 240\".",
+   "closes_when": "intake/contacts.ts:102 returns a total or an estimate."
+  },
+  {
+   "id": "open.2026-10-24.dev-seed-recording-analysis",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The dev seed has no recorded call and no analysed call, so signed playback, audio erasure and tiered analysis cannot be seen in a walkthrough.",
+   "closes_when": "web/dev/seed.ts seeds one call with a recording through the signed-link path and one analysed call (dev only)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "rejected.2026-10-24.web-hides-server-signals",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "open.2026-10-24.fact-blocker-names-key",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "open.2026-10-24.language-warning-hinglish-wording",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "open.2026-10-24.import-preview-problem-rows",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "open.2026-10-24.agent-get-version-author",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "open.2026-10-24.contact-list-total",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "open.2026-10-24.dev-seed-recording-analysis",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-3",
+   "to": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "kind": "commit",
+   "title": "Web: buyer walkthrough round 3 (D2C COD/NDR, university admissions); 10 web fixes: agent-aware import with fact columns, launch warnings shown, publish and restore cards with the server's summary, rollback, honest large-file preview, contacts paging, retention on Privacy, located brief checks, practice-call page, language hint",
+   "source": "web builder"
+  }
+ ]
+}

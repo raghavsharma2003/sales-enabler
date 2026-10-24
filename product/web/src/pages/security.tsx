@@ -99,7 +99,7 @@ function TestResult({ t }: { t: SsoTest }) {
         <div><strong>{t.ok ? 'The connection works.' : 'The connection test found a problem.'}</strong>
           <p className="small">{t.ok ? `Vyakti read the settings and signing keys published by ${host}. No one was signed in.` : `Vyakti tried ${host}. Fix what failed below, then test again. No one was signed in.`}</p></div>
       </div>
-      <ul className="checks" aria-label="Connection checks">{t.checks.map(c => (
+      <ul className="conn-checks" aria-label="Connection checks">{t.checks.map(c => (
         <li key={c.name}><Chip tone={c.ok ? 'leaf' : 'brick'} icon={c.ok ? <Check size={13} aria-hidden /> : <X size={13} aria-hidden />}>{c.ok ? 'Passed' : 'Failed'}</Chip>
           <div><strong>{c.name}</strong><p className="small muted">{c.detail}</p></div></li>))}</ul>
       {t.endpoints && <dl className="kv small"><div><dt>Sign-in page</dt><dd><code>{t.endpoints.authorization}</code></dd></div><div><dt>Token exchange</dt><dd><code>{t.endpoints.token}</code></dd></div><div><dt>Signing keys</dt><dd><code>{t.endpoints.jwks}</code></dd></div></dl>}

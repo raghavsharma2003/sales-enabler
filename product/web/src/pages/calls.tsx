@@ -8,7 +8,7 @@ import { CallsExportButton } from './calls-export.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, SelectField, Table, Tabs, TextField, type Col, scrollMotion } from '../ui.tsx';
 import { callExplain, callGet, callSearch, campaignList } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
-import { costPart, RULE_LABEL } from '../labels.ts';
+import { costPart, groupCost, RULE_LABEL } from '../labels.ts';
 import { voiceStackOf } from '../catalog.ts';
 import { DID, SHORT, TimingCard, marksFor, playable } from './call-review.tsx';
 import { clock, date, dur, inr, ms } from '../format.ts';
@@ -77,7 +77,7 @@ function Body({ c }: { c: CallDoc }) {
 
   return (
     <>
-      <PageHead crumb={<><Link to="/calls">Calls</Link><span aria-hidden>/</span><span>{c.contactName}</span></>} title={c.contactName} pill={c.test ? <span className="pill">Practice call</span> : undefined}
+      <PageHead crumb={<><Link to="/calls">Calls</Link><span aria-hidden>/</span><span>{callTitle(c)}</span></>} title={callTitle(c)} pill={c.test && c.contactId ? <span className="pill">Practice call</span> : undefined}
         sub={<span className="tnum">{c.startedAt ? date(c.startedAt, true) : '—'} · {dur(c.durationS)} · {prettyCode(c.status)}{c.direction === 'inbound' && ' · Inbound'}{c.campaignId && <> · <CampaignName id={c.campaignId} /></>}</span>}
         actions={c.contactId ? <Link to={`/contacts/${c.contactId}`} className="btn" style={{ textDecoration: 'none' }}><span>Open the contact</span></Link> : undefined} />
       <div className="cols-main">
@@ -124,7 +124,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.allowedBy.at && <p className="small muted">Checked {date(c.allowedBy.at, true)}.</p>}</Card>}
           <Card><CardHead title="What ran and what it cost" />
             <Kv rows={[['Voice stack', c.ran ? ((voiceStackOf({ stackId: c.ran, components: c.ranParts })?.label ?? '') || 'A stack that is no longer listed') : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
-            {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={c.costLines.map(l => [`${costPart(l.component, prettyCode)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
+            {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={groupCost(c.costLines).map(l => [`${costPart(l.component, prettyCode)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
         </div>
       </div>
     </>
@@ -155,3 +155,7 @@ function Lanes({ c, at, onSeek }: { c: CallDoc; at: number; onSeek: (ms: number 
     </div>
   );
 }
+
+/** A practice call has no contact: it is named for what it was, not "Unknown person". */
+const callTitle = (c: CallDoc) => (!c.contactId && c.test ? 'Practice call in the browser' : c.contactName);
+
