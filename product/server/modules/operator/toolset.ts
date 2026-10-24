@@ -25,7 +25,22 @@ const PAGES: Record<string, string[]> = {
   settings: ['workspace.', 'member.', 'operator.', 'apikey.', 'integration.', 'webhook.', 'wallet.', 'invoice.', 'usage.', 'plan.', 'brand.', 'share.', 'activity.'],
   today: ['brief.today', 'issue.', 'activity.', 'usage.get', 'wallet.get'],
 };
-const PAGE_CAP = 18, WORDS_CAP = 8, HISTORY_CAP = 6;
+const PAGE_CAP = 18, WORDS_CAP = 8, HISTORY_CAP = 6, INTENT_CAP = 22;
+
+/** Whole-flow intents (owner directive 2026-10-24: set up from one conversation; "what went wrong on that call?"; reset by
+ *  chat). Each offers its chain of tools ahead of the page's, in the order the flow uses them; a name that is not
+ *  registered yet is skipped here and named to the model as missing (loop.ts, setupNote). */
+export const INTENTS: { key: 'setup' | 'diagnose' | 'reset'; words: RegExp; tools: string[] }[] = [
+  { key: 'setup', words: /\b(set ?(it )?up|onboard\w*|get (me )?started|from (our|my|the) (website|site)|website|import (this|the|my) (sheet|file|list|csv)|call me|ring me|test it|try it on my phone)\b/i,
+    tools: ['knowledge.ingest_url', 'knowledge.ingest', 'knowledge.list', 'knowledge.span.approve', 'brand.update', 'template.list', 'agent.create', 'agent.get', 'brief.edit',
+      'stack.list', 'stack.set', 'source.upload', 'source.map', 'source.commit', 'audience.create', 'test.chat', 'simcaller.list', 'test.simulate_batch',
+      'test.ring_member_phone', 'version.publish', 'campaign.draft', 'campaign.estimate', 'campaign.launch'] },
+  { key: 'diagnose', words: /\b(why did (she|he|it|the agent)|what went wrong|cut (me|him|her|them) off|didn'?t (she|he|it) (answer|reply|say)|hung up|mis-?heard|wrong answer|interrupt\w*|talked over)\b/i,
+    tools: ['call.explain', 'call.get', 'call.search', 'offering.list', 'knowledge.list', 'safety.check', 'agent.get', 'stack.list', 'offering.edit', 'brief.edit', 'stack.set', 'knowledge.span.approve'] },
+  { key: 'reset', words: /\b(start over|start again|from scratch|reset|wipe|archive|unarchive|restore)\b/i,
+    tools: ['workspace.reset', 'workspace.start_over', 'agent.archive', 'agent.restore', 'agent.list', 'version.restore', 'version.list'] },
+];
+export const intentsOf = (text: string) => INTENTS.filter(i => i.words.test(text));
 
 export interface Offerable { name: string; summary: string }
 
@@ -93,6 +108,8 @@ export function selectTools(i: SelectInput): string[] {
     }
   };
   add(i.found);
+  // A whole-flow intent's chain comes before the page's tools.
+  for (const intent of intentsOf(i.text)) add(intent.tools, INTENT_CAP);
   const key = pageKey(i.page);
   if (key) add(PAGES[key]!.flatMap(p => i.allowed.filter(t => (p.endsWith('.') ? t.name.startsWith(p) : t.name === p)).map(t => t.name)), PAGE_CAP);
   add(findTools(i.text, i.allowed, WORDS_CAP).map(t => t.name), WORDS_CAP);

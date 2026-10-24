@@ -13,7 +13,7 @@ const skip = !process.env.DATABASE_URL ? 'DATABASE_URL not set' : false;
 test('the bench has 40-60 tasks across every category, ids unique, three with a scripted model', () => {
   assert.ok(TASKS.length >= 40 && TASKS.length <= 60, `${TASKS.length} tasks`);
   assert.equal(new Set(TASKS.map(t => t.id)).size, TASKS.length);
-  assert.deepEqual([...new Set(TASKS.map(t => t.category))].sort(), ['agent', 'ambiguous', 'campaign', 'cap', 'csv', 'injection', 'insight', 'multi', 'refusal', 'stack', 'template']);
+  assert.deepEqual([...new Set(TASKS.map(t => t.category))].sort(), ['agent', 'ambiguous', 'campaign', 'cap', 'csv', 'diagnose', 'injection', 'insight', 'multi', 'refusal', 'setup', 'stack', 'template']);
   assert.equal(TASKS.filter(t => t.fake).length, 3);
 });
 
