@@ -14,6 +14,7 @@ export type ToolName =
   | "apikey.create"
   | "apikey.list"
   | "apikey.revoke"
+  | "apikey.rotate"
   | "attempt.cancel_for_contact"
   | "attempt.list"
   | "attempt.retry_per_ladder"
@@ -21,6 +22,9 @@ export type ToolName =
   | "audience.get"
   | "audience.list"
   | "audience.preview"
+  | "audit.export"
+  | "audit.export.list"
+  | "audit.export.verify"
   | "brand.cnap_name.set"
   | "brand.get"
   | "brand.update"
@@ -143,6 +147,10 @@ export type ToolName =
   | "revision.list"
   | "safety.cases"
   | "safety.check"
+  | "scim.token.create"
+  | "scim.token.list"
+  | "scim.token.revoke"
+  | "scim.token.rotate"
   | "search.global"
   | "secret.reveal"
   | "share.link.create"
@@ -155,6 +163,11 @@ export type ToolName =
   | "source.map"
   | "source.receipt"
   | "source.upload"
+  | "sso.config.get"
+  | "sso.config.set"
+  | "sso.required.set"
+  | "sso.secret.stage"
+  | "sso.test"
   | "stack.list"
   | "stack.set"
   | "template.list"
@@ -247,6 +260,10 @@ export interface ToolInput {
   "apikey.revoke": {
     id: string;
   };
+  /** Replace an API key with a new secret (same name, scopes and cap); the old one stops working at once (policy, waits for approval) */
+  "apikey.rotate": {
+    id: string;
+  };
   /** Cancel every attempt still queued for a person (erasure and other system paths only) (draft) */
   "attempt.cancel_for_contact": {
     contactId: string;
@@ -311,6 +328,25 @@ export interface ToolInput {
       })[];
     };
     limit?: number;
+  };
+  /** Export the activity ledger for a date range as a signed CSV or JSON-lines file (policy, waits for approval) */
+  "audit.export": {
+    format: "csv" | "jsonl";
+    /** YYYY-MM-DD (India time) or an ISO timestamp */
+    from: string;
+    /** YYYY-MM-DD (inclusive, India time) or an ISO timestamp */
+    to: string;
+    actionPrefix?: string;
+    actorId?: string;
+    privilegedOnly?: boolean;
+  };
+  /** List recent audit exports: range, rows, checksum and whether the file can still be downloaded (read) */
+  "audit.export.list": Record<string, never>;
+  /** Check that an audit export file's checksum and signature are the ones Vyakti produced (read) */
+  "audit.export.verify": {
+    exportId: string;
+    sha256: string;
+    signature: string;
   };
   /** Set the name that shows on the phone of the person we call (policy, waits for approval) */
   "brand.cnap_name.set": {
@@ -1104,6 +1140,21 @@ export interface ToolInput {
       job?: "renewal_reminder" | "payment_reminder" | "lead_qualification" | "appointment_confirmation" | "appointment_booking" | "order_verification" | "delivery_coordination" | "feedback_survey" | "onboarding_welcome" | "win_back" | "event_invitation" | "document_collection" | "service_follow_up" | "inbound_support" | "custom";
     };
   };
+  /** Create a provisioning token an IdP or script uses to add, deactivate and re-role people (policy, waits for approval) */
+  "scim.token.create": {
+    name: string;
+    scopes: ("members:read" | "members:write" | "roles:write")[];
+  };
+  /** List provisioning (SCIM) tokens, never the secret (read) */
+  "scim.token.list": Record<string, never>;
+  /** Revoke a provisioning token so it stops working at once (external, waits for approval) */
+  "scim.token.revoke": {
+    id: string;
+  };
+  /** Replace a provisioning token's secret; the old secret stops working at once (policy, waits for approval) */
+  "scim.token.rotate": {
+    id: string;
+  };
   /** Find contacts, agents, campaigns and calls by name or phone number (read) */
   "search.global": {
     q: string;
@@ -1170,7 +1221,7 @@ export interface ToolInput {
     /** the uploadId (a UUID) that source.upload returned, or the one the assistant was given for a file attached in chat; never a file name */
     uploadId: string;
     overrides?: Record<string, {
-      field: "phone" | "name" | "first_name" | "last_name" | "language" | "timezone" | "consent" | "consent_at" | "opt_out" | "observed_at" | "attribute" | "ignore";
+      field: "phone" | "name" | "first_name" | "last_name" | "language" | "timezone" | "consent" | "consent_at" | "opt_out" | "observed_at" | "voice" | "first_message" | "attribute" | "ignore";
       /** the attribute key to store: letters, digits or underscore in any script, 1-60 characters; format checked by the server */
       key?: string;
       type?: "text" | "number" | "date" | "boolean";
@@ -1187,7 +1238,7 @@ export interface ToolInput {
     /** the uploadId (a UUID) that source.upload returned, or the one the assistant was given for a file attached in chat; never a file name */
     uploadId: string;
     overrides?: Record<string, {
-      field: "phone" | "name" | "first_name" | "last_name" | "language" | "timezone" | "consent" | "consent_at" | "opt_out" | "observed_at" | "attribute" | "ignore";
+      field: "phone" | "name" | "first_name" | "last_name" | "language" | "timezone" | "consent" | "consent_at" | "opt_out" | "observed_at" | "voice" | "first_message" | "attribute" | "ignore";
       /** the attribute key to store: letters, digits or underscore in any script, 1-60 characters; format checked by the server */
       key?: string;
       type?: "text" | "number" | "date" | "boolean";
@@ -1201,12 +1252,39 @@ export interface ToolInput {
   };
   /** Register a source of people: a file (text inline, or parts via POST /v1/uploads/contacts) or a signed webhook for a CRM, form or opt-in (draft) */
   "source.upload": {
-    kind: "csv" | "tsv" | "sheet" | "api_push" | "crm" | "form" | "whatsapp";
+    kind: "csv" | "tsv" | "xlsx" | "sheet" | "api_push" | "crm" | "form" | "whatsapp";
     name: string;
     authority?: "system" | "crm" | "upload" | "agent" | "person";
     maxAgeDays?: number;
     text?: string;
     filename?: string;
+  };
+  /** Read this workspace's single sign-on settings (never the client secret) (read) */
+  "sso.config.get": Record<string, never>;
+  /** Set how people sign in to this workspace with single sign-on (policy, waits for approval) */
+  "sso.config.set": {
+    /** the issuer URL exactly as the IdP publishes it, e.g. https://login.microsoftonline.com/<tenant>/v2.0 */
+    issuer: string;
+    clientId: string;
+    stashId?: string;
+    allowedDomains: string[];
+    defaultRole: "builder" | "operator" | "compliance" | "viewer";
+    emailVerified?: "required" | "not_required";
+    enabled?: boolean;
+  };
+  /** Require single sign-on for everyone except one break-glass owner (other passwords are cleared), or allow passwords again (policy, waits for approval) */
+  "sso.required.set": {
+    required: boolean;
+    breakGlassMemberId?: string;
+  };
+  /** Hand over the SSO client secret; it is encrypted and held until the settings are saved (draft) */
+  "sso.secret.stage": {
+    clientSecret: string;
+  };
+  /** Test a single sign-on connection: read the IdP's discovery document and signing keys (signs nobody in) (test) */
+  "sso.test": {
+    /** the issuer URL exactly as the IdP publishes it, e.g. https://login.microsoftonline.com/<tenant>/v2.0 */
+    issuer?: string;
   };
   /** The curated voice stacks with their figures and grades, the default, and the parts a stack can be built from (read) */
   "stack.list": Record<string, never>;
@@ -1420,6 +1498,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "apikey.create": { risk: "policy", needsApproval: true },
   "apikey.list": { risk: "read", needsApproval: false },
   "apikey.revoke": { risk: "external", needsApproval: true },
+  "apikey.rotate": { risk: "policy", needsApproval: true },
   "attempt.cancel_for_contact": { risk: "draft", needsApproval: false },
   "attempt.list": { risk: "read", needsApproval: false },
   "attempt.retry_per_ladder": { risk: "external", needsApproval: true },
@@ -1427,6 +1506,9 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "audience.get": { risk: "read", needsApproval: false },
   "audience.list": { risk: "read", needsApproval: false },
   "audience.preview": { risk: "read", needsApproval: false },
+  "audit.export": { risk: "policy", needsApproval: true },
+  "audit.export.list": { risk: "read", needsApproval: false },
+  "audit.export.verify": { risk: "read", needsApproval: false },
   "brand.cnap_name.set": { risk: "policy", needsApproval: true },
   "brand.get": { risk: "read", needsApproval: false },
   "brand.update": { risk: "draft", needsApproval: false },
@@ -1549,6 +1631,10 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "revision.list": { risk: "read", needsApproval: false },
   "safety.cases": { risk: "read", needsApproval: false },
   "safety.check": { risk: "read", needsApproval: false },
+  "scim.token.create": { risk: "policy", needsApproval: true },
+  "scim.token.list": { risk: "read", needsApproval: false },
+  "scim.token.revoke": { risk: "external", needsApproval: true },
+  "scim.token.rotate": { risk: "policy", needsApproval: true },
   "search.global": { risk: "read", needsApproval: false },
   "secret.reveal": { risk: "draft", needsApproval: false },
   "share.link.create": { risk: "policy", needsApproval: true },
@@ -1561,6 +1647,11 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "source.map": { risk: "draft", needsApproval: false },
   "source.receipt": { risk: "read", needsApproval: false },
   "source.upload": { risk: "draft", needsApproval: false },
+  "sso.config.get": { risk: "read", needsApproval: false },
+  "sso.config.set": { risk: "policy", needsApproval: true },
+  "sso.required.set": { risk: "policy", needsApproval: true },
+  "sso.secret.stage": { risk: "draft", needsApproval: false },
+  "sso.test": { risk: "test", needsApproval: false },
   "stack.list": { risk: "read", needsApproval: false },
   "stack.set": { risk: "draft", needsApproval: false },
   "template.list": { risk: "read", needsApproval: false },
