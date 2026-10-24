@@ -112,7 +112,7 @@ async function tiered(w: Awaited<ReturnType<typeof workspace>>, threshold = 0.6)
   await pool.query("INSERT INTO call_analysis_setting (workspace_id, mode, model, escalate_model, threshold) VALUES ($1,'tiered','small-model','big-model',$2)", [w.ws, threshold]);
 }
 const costs = (ws: string) => many<{ model: string; tier: string | null }>(pool,
-  "SELECT detail->>'model' AS model, detail->>'tier' AS tier FROM cost_line WHERE workspace_id = $1 AND component = 'analysis' ORDER BY created_at", [ws]);
+  "SELECT detail->>'model' AS model, detail->>'tier' AS tier FROM cost_line WHERE workspace_id = $1 AND component = 'analysis' ORDER BY created_at, (detail->>'tier') = 'escalated'", [ws]);   // both passes share one transaction's now()
 
 test('tiered: no outcome from the first model escalates; the second model decides; both passes are cost lines', { skip }, async () => {
   const w = await workspace();

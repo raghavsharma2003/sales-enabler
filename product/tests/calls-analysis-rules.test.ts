@@ -110,22 +110,25 @@ test('tiered never escalates a call whose reason the engine decided; it still es
   assert.deepEqual(seen, ['gpt-4.1-mini', 'gpt-4.1'], 'an open call with no outcome is still read again');
 });
 
-test('the product default is tiered: gpt-4.1-mini first, gpt-4.1 on escalation at 0.6, when the deployment curates both', { skip }, async () => {
+test('the product default is gpt-4.1-mini, one pass, even when the deployment curates gpt-4.1 too; tiered stays selectable', { skip }, async () => {
   const w = await workspace();
   const s = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w.ws, actor: w.member });
   if (s.status !== 'confirmed') return assert.fail(JSON.stringify(s));
   assert.deepEqual({ mode: s.result.mode, model: s.result.model, escalateModel: s.result.escalateModel, threshold: s.result.threshold, isDefault: s.result.isDefault },
-    { mode: 'tiered', model: 'gpt-4.1-mini', escalateModel: 'gpt-4.1', threshold: 0.6, isDefault: true });
-  assert.equal(s.result.text, "Vyakti's default: GPT-4.1 mini reads every call. A call where it finds no clear outcome, or is less than 60% sure, is read again by GPT-4.1. Calls whose ending is already known (a crisis, an opt-out, an early hang-up, a language the person could not follow) are read once. Each call is billed at the models that read it.");
+    { mode: 'single', model: 'gpt-4.1-mini', escalateModel: undefined, threshold: 0.6, isDefault: true });
+  assert.deepEqual(s.result.models, ['gpt-4.1-mini', 'gpt-4.1'], 'gpt-4.1 is still offered');
   const seen: string[] = [];
   setFakeLlm(guesser(null, null, '', seen));
-  await analysed(w, ['Main abhi soch raha hoon, dekhte hain.']);
-  assert.deepEqual(seen, ['gpt-4.1-mini', 'gpt-4.1'], 'a new workspace escalates an unclear call');
-  const crisis: string[] = [];
-  setFakeLlm(guesser(null, null, '', crisis));
-  await analysed(w, ['Sab khatam ho gaya hai, ab jeene ka mann nahi karta.'], 'crisis_handoff');
-  assert.deepEqual(crisis, ['gpt-4.1-mini'], 'never on an engine code');
-  // A workspace may still choose mini single; and a deployment that curates only mini runs it single.
+  const c = await analysed(w, ['Main abhi soch raha hoon, dekhte hain.']);
+  assert.deepEqual(seen, ['gpt-4.1-mini'], 'a new workspace reads an unclear call once');
+  assert.equal(c.analysis.tier, null);
+  assert.equal(c.analysis.wouldEscalate, 'no outcome', 'and records that tiered would have read it again');
+  // An explicit saved choice keeps its value.
+  const t = await registry.execute(pool, 'analysis.model.set', { mode: 'tiered', model: 'gpt-4.1-mini', escalateModel: 'gpt-4.1' }, { workspaceId: w.ws, actor: w.member });
+  if (t.status !== 'needs_approval') return assert.fail('expected a proposal');
+  await registry.approve(pool, t.actionId, { workspaceId: w.ws, memberId: w.member.id! });
+  const kept = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w.ws, actor: w.member });
+  assert.deepEqual(kept.status === 'confirmed' && [kept.result.mode, kept.result.escalateModel, kept.result.isDefault], ['tiered', 'gpt-4.1', false]);
   const set = await registry.execute(pool, 'analysis.model.set', { mode: 'single', model: 'gpt-4.1-mini' }, { workspaceId: w.ws, actor: w.member });
   if (set.status !== 'needs_approval') return assert.fail('expected a proposal');
   await registry.approve(pool, set.actionId, { workspaceId: w.ws, memberId: w.member.id! });
@@ -140,6 +143,33 @@ test('the product default is tiered: gpt-4.1-mini first, gpt-4.1 on escalation a
     const s3 = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w2.ws, actor: w2.member });
     assert.equal(s3.status === 'confirmed' && s3.result.model, undefined, "neither curated: the deployment's own analysis model");
   } finally { process.env.VP_ANALYSIS_MODELS = 'gpt-4.1-mini,gpt-4.1'; }
+});
+
+/** A fake model whose outcome comes with the given confidence. */
+function sure(confidence: number, seen: string[] = []) {
+  return (req: LlmRequest) => {
+    seen.push(req.model ?? 'deployment-default');
+    return { text: JSON.stringify({ points: [], moments: [], reasonCode: null, forget: null, outcome: { value: 'callback', quote: 'Kal call karna.', confidence } }),
+      toolCalls: [], usage: { inputTokens: 10, outputTokens: 5 }, model: req.model ?? 'deployment-default', provider: 'fake' };
+  };
+}
+test('one model: a call is marked would-escalate below 0.6, not at or above it, never on an engine code; the workspace counts them', { skip }, async () => {
+  const w = await workspace();
+  const flag = async (confidence: number, lines = ['Kal call karna.'], end: EndReason = 'completed', dur = 40) => {
+    const seen: string[] = [];
+    setFakeLlm(sure(confidence, seen));
+    const c = await analysed(w, lines, end, dur);
+    assert.deepEqual(seen, ['gpt-4.1-mini'], 'one pass only');
+    return c.analysis.wouldEscalate;
+  };
+  assert.equal(await flag(0.59), 'low confidence');
+  assert.equal(await flag(0.6), null, 'at the threshold: not escalated');
+  assert.equal(await flag(0.9), null);
+  assert.equal(await flag(0.1, ['Sab khatam ho gaya hai, ab jeene ka mann nahi karta.'], 'crisis_handoff'), null, 'crisis: the engine decided');
+  assert.equal(await flag(0.1, ['Kaun?'], 'caller_hung_up', 5), null, 'early hang-up: the engine decided');
+  assert.equal(await flag(0.1, ['Mujhe dobara call mat karna, mera number list se hata do.'], 'opt_out'), null, 'opt-out: the engine decided');
+  const s = await registry.execute<any>(pool, 'analysis.settings.get', {}, { workspaceId: w.ws, actor: w.member });
+  assert.deepEqual(s.status === 'confirmed' && s.result.wouldEscalate, { calls: 1, ofSinglePassCalls: 6 });
 });
 
 test('call.search: an outcome is one of the defined values (a reason code is refused with the right filter named); the total is given', { skip }, async () => {

@@ -615,7 +615,11 @@ export function registerTools(r: Registry): void {
   r.register(tool(obj({}), {
     name: 'analysis.settings.get', risk: 'read',
     summary: 'Which model analyses calls in this workspace (one model, or a cheaper first pass that escalates unclear calls) and the models to choose from',
-    run: async ctx => { const s = await analysisSetting(ctx.q, ctx.workspaceId); return { ...s, models: curatedAnalysisModels(), text: analysisSettingText(s),
+    run: async ctx => { const s = await analysisSetting(ctx.q, ctx.workspaceId);
+      // Calls read by one model, and how many of them tiered would have read again (open.2026-10-24.analysis-escalation-path-unexercised).
+      const w = (await one<{ calls: number; would: number }>(ctx.q, `SELECT count(*)::int AS calls, count(*) FILTER (WHERE analysis->>'wouldEscalate' IS NOT NULL)::int AS would
+        FROM conversation WHERE workspace_id = $1 AND channel <> 'test' AND analysis ? 'wouldEscalate'`, [ctx.workspaceId]))!;
+      return { ...s, models: curatedAnalysisModels(), text: analysisSettingText(s), wouldEscalate: { calls: w.would, ofSinglePassCalls: w.calls },
       note: 'Tiered: the first model reads every call; a call with no clear outcome, or one below the confidence threshold, is read again by the second model.' }; },
   }));
   const modelId = str({ min: 1, max: 80, pattern: /^[A-Za-z0-9][A-Za-z0-9._:-]*$/, desc: 'a curated model id from analysis.settings.get' });

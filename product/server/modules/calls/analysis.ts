@@ -107,23 +107,17 @@ export const curatedAnalysisModels = () => (process.env.VP_ANALYSIS_MODELS ?? ''
  *  it. VP_ANALYSIS_DEFAULT_MODEL overrides the id (a deployment may name it differently). When the default is not curated
  *  here, analysis uses the deployment's VP_LLM_ANALYSIS_MODEL. Tiered stays available per workspace, never the default. */
 export const DEFAULT_ANALYSIS_MODEL = 'gpt-4.1-mini';
-/** The default second reader (decision.2026-10-24.analysis-default-tiered: tiered scored 250/252 against mini single's
- *  234/252 across three bench rounds, never worse on any call, at about Rs 0.08-0.10 per 3-minute call). */
-export const DEFAULT_ESCALATE_MODEL = 'gpt-4.1';
 export const DEFAULT_THRESHOLD = 0.6;
 export function defaultAnalysisModel(): string | undefined {
   const id = process.env.VP_ANALYSIS_DEFAULT_MODEL?.trim() || DEFAULT_ANALYSIS_MODEL;
   return curatedAnalysisModels().includes(id) ? id : undefined;
 }
-/** A workspace that never chose: tiered (mini first, gpt-4.1 on escalation, threshold 0.6) when the deployment curates
- *  both; single on the first when only it is curated; else the deployment's own VP_LLM_ANALYSIS_MODEL. Tiered never
- *  escalates a call whose reason the engine decided, nor one whose first pass names a no-decision reason. */
+/** A workspace that never chose: gpt-4.1-mini, one pass (decision.2026-10-24.analysis-default-mini-single-outcome-first),
+ *  when the deployment curates it; else the deployment's own VP_LLM_ANALYSIS_MODEL. Tiered and gpt-4.1 stay selectable,
+ *  and a saved choice keeps its value. Each single-pass call records whether tiered would have read it again
+ *  (AnalysisRecord.wouldEscalate), so real traffic shows how often the escalation path would run. */
 export function defaultAnalysisSetting(): AnalysisSetting {
-  const first = defaultAnalysisModel();
-  const second = process.env.VP_ANALYSIS_DEFAULT_ESCALATE_MODEL?.trim() || DEFAULT_ESCALATE_MODEL;
-  return first && curatedAnalysisModels().includes(second) && second !== first
-    ? { mode: 'tiered', model: first, escalateModel: second, threshold: DEFAULT_THRESHOLD }
-    : { mode: 'single', model: first, threshold: DEFAULT_THRESHOLD };
+  return { mode: 'single', model: defaultAnalysisModel(), threshold: DEFAULT_THRESHOLD };
 }
 export async function analysisSetting(q: Queryable, ws: string): Promise<AnalysisSetting & { isDefault: boolean }> {
   const r = await one<{ mode: 'single' | 'tiered'; model: string | null; escalate_model: string | null; threshold: string }>(q,
@@ -236,6 +230,9 @@ export interface AnalysisRecord {
   fieldsDropped?: { key: string; reason: string }[];
   // Tiered analysis: whether a second, stronger model ran and why. null when the workspace runs one model.
   tier?: { escalated: boolean; why: string | null; firstModel: string | null; secondModel: string | null; secondFailed: boolean } | null;
+  // One model only: why tiered would have read this call again (the same predicate, at the setting's threshold), or null.
+  // Absent on tiered calls. analysis.settings.get counts these per workspace.
+  wouldEscalate?: string | null;
   judgeVersionId?: string | null;
   // Read by learning: any reply-door intervention on the call, and the judge's guess with its calibration status.
   safety_violation?: boolean;
@@ -409,18 +406,21 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   // mismatch): a second model's outcome there is thrown away (rejected.2026-10-23.tiered-escalates-no-decision-model-codes).
   const engineDecided = !REFINABLE.has(cv.reason_code ?? 'CONV_INCOMPLETE');
   const firstNoDecision = !('error' in passes[0]) && passes[0].modelCode !== null && NO_DECISION.has(passes[0].modelCode);
-  if (setting.mode === 'tiered' && setting.escalateModel && !engineDecided && !firstNoDecision) {
-    const first = passes[0];
-    const why = 'error' in first ? 'the first pass failed'
-      : cv.def_id && callerSpoke && !first.outcomeGuess ? 'no outcome'
-      : first.outcomeConfidence !== null && first.outcomeConfidence < setting.threshold ? 'low confidence'
-      : null;
+  const first = passes[0];
+  const why = engineDecided || firstNoDecision ? null
+    : 'error' in first ? 'the first pass failed'
+    : cv.def_id && callerSpoke && !first.outcomeGuess ? 'no outcome'
+    : first.outcomeConfidence !== null && first.outcomeConfidence < setting.threshold ? 'low confidence'
+    : null;
+  const tiered = setting.mode === 'tiered' && Boolean(setting.escalateModel);
+  if (tiered && !engineDecided && !firstNoDecision) {
     if (why) passes.push(await runPass(setting.escalateModel));
     tier = { escalated: Boolean(why), why, firstModel: passes[0].model ?? null, secondModel: passes[1]?.model ?? null,
       secondFailed: passes[1] ? 'error' in passes[1] : false };
-  } else if (setting.mode === 'tiered' && setting.escalateModel) {
+  } else if (tiered) {
     tier = { escalated: false, why: engineDecided ? 'the engine decided this call\'s reason; it is never escalated' : 'the first pass found a reason on which no outcome is recorded; it is never escalated', firstModel: passes[0].model ?? null, secondModel: null, secondFailed: false };
   }
+  const wouldEscalate = tiered ? undefined : why;
   // The pass that counts: the escalated one when it succeeded, else the first.
   const done = [...passes].reverse().find((x): x is Ok => !('error' in x));
   const costLines = async (c: pg.PoolClient) => {
@@ -433,7 +433,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   };
   if (!done) {
     const err = passes[passes.length - 1] as Extract<Pass, { error: string }>;
-    return store({ status: 'failed', reason: err.error, reasonCode: cv.reason_code ?? undefined, model: err.model, tier }, costLines);
+    return store({ status: 'failed', reason: err.error, reasonCode: cv.reason_code ?? undefined, model: err.model, tier, ...(wouldEscalate !== undefined ? { wouldEscalate } : {}) }, costLines);
   }
   const { points, moments, outcomeTurn, outcomeConfidence, forgetRequested, modelCode, proposed, dropped, fields } = done;
   let { outcomeGuess, outcomeUnclear } = done;
@@ -452,7 +452,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     quotes: points.map(p => ({ text: p.quote, startMs: p.startMs, speaker: p.speaker })),
     quotesProposed: proposed, quotesDropped: dropped, reasonCode, modelReasonCode: modelCode, outcomeGuess,
     ...(defFields.length ? { fields: fields.values, fieldsProposed: fields.proposed, fieldsDropped: fields.dropped } : {}),
-    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear, outcomeConfidence, tier,
+    judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear, outcomeConfidence, tier, ...(wouldEscalate !== undefined ? { wouldEscalate } : {}),
     judge: outcomeGuess ? { judgeVersionId: judge?.id ?? null, value: outcomeGuess.value, quote: outcomeGuess.quote,
       calibration: judge ? (await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [judge.id]))?.status ?? 'uncalibrated' : 'uncalibrated' } : null,
   };
