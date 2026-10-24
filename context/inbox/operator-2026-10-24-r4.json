@@ -1,0 +1,48 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.reply-checks-numbers-tap",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "The Operator's final reply is checked for unsupported \u20b9 amounts and durations, a tap with no card, and change claims; each check corrects at once and repairs once",
+      "rationale": "Bench r4: the past-tense claim check fired once in 107 runs, falsely, and missed 'Tap to confirm' with no card, a misread duration and \u20b99,608-24,021 for \u20b99.61-\u20b924.02. Figures are held to the turn's tool results and the member's message; InrMilli fields count as thousandths.",
+      "reverse_if": "The number check corrects true replies in the bench or in real threads more than rarely (e.g. figures derived by arithmetic the member asked for)"
+    },
+    {
+      "id": "decision.2026-10-24.retry-scope-guard",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "After a NOT DONE write, a write to another tool the member's words do not point at is held in code",
+      "rationale": "Bench r4: after a refused brief.edit, a retry moved the agent onto a custom test-only stack nobody asked for. Wording alone did not stop guesses.",
+      "reverse_if": "Legitimate multi-step requests get held because the word match misses the tool (then use the plan's declared steps as the scope)"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.reply-checks-numbers-tap",
+      "to": "decision.2026-10-24.claim-check",
+      "relation": "supersedes"
+    },
+    {
+      "from": "decision.2026-10-24.reply-checks-numbers-tap",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.retry-scope-guard",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "operator-bench-r4-fixes",
+      "details": "Operator fixes for bench r4: reply checks (numbers, tap without card, claims without the infinitive false positive, confirm-first nudge); retry scope guard and wording; fixFor reads agent.config.schema for draft paths and names limits; deployment.split on /agents and contact.list on /campaigns; campaign.estimate display strings; bench grader camp-estimate needs the estimate's own figures. tests/operator-bench-r4.test.ts 9 tests; 7 integration tests fail on the previous code, the 2 pure check tests cover the new check module (the old claim function flags the r4 false positive: shown). Gates on a fresh DB: tsc clean, 529/533 (0 fail, 4 skipped), ui-contract strict 177/177. Not verified on real models until the bench re-run."
+    }
+  ]
+}

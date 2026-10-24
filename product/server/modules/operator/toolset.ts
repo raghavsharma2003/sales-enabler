@@ -14,8 +14,10 @@ export const CORE_READS = ['brief.today', 'search.global', 'agent.list', 'campai
 
 /** Page (first path segment of the web app) -> tool-name prefixes, in priority order. */
 const PAGES: Record<string, string[]> = {
-  agents: ['agent.', 'brief.edit', 'brief.compile', 'stack.', 'voice.', 'tool.attach', 'test.', 'version.', 'deployment.', 'simcaller.', 'template.', 'offering.', 'knowledge.'],
-  campaigns: ['campaign.', 'audience.', 'money.estimate', 'number.search', 'policy.', 'cap.', 'attempt.', 'deployment.split'],
+  // Exact names first: the page cap (PAGE_CAP) cut deployment.split off /agents when broad prefixes came first, and
+  // operator_find_tools was offered 31 times and called 0 times (bench r4: multi-deploy 0/4).
+  agents: ['agent.create', 'agent.get', 'brief.edit', 'stack.set', 'version.publish', 'deployment.split', 'deployment.list', 'test.', 'agent.', 'stack.', 'voice.', 'brief.compile', 'tool.attach', 'version.', 'deployment.', 'simcaller.', 'template.', 'offering.', 'knowledge.'],
+  campaigns: ['campaign.draft', 'campaign.estimate', 'campaign.launch', 'audience.list', 'audience.create', 'contact.list', 'version.list', 'campaign.', 'audience.', 'money.estimate', 'number.search', 'policy.', 'cap.', 'attempt.', 'deployment.split'],
   contacts: ['contact.', 'audience.', 'source.', 'consent.', 'fact.', 'memory.', 'dpdp.'],
   calls: ['call.', 'outcome.', 'judge.', 'live.', 'monitor.', 'issue.'],
   insights: ['proposal.', 'experiment.', 'lesson.', 'learning.', 'issue.', 'monitor.', 'report.', 'outcome.'],

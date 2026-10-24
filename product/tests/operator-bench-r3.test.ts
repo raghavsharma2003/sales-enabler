@@ -86,7 +86,7 @@ test('NOT DONE with a fix says retry, not ask; an agent id sent as agentVersionI
   assert.match(refusal, /NOT DONE/);
   assert.match(refusal, new RegExp(`that is the agent id of \\\\"Service follow-up\\\\", not a version id; its latest published version id is ${versionId}`));
   assert.match(refusal, /"fix":"agentVersionId: a PUBLISHED agent version id \(version\.list/);
-  assert.match(refusal, /Retry now with the call corrected/);
+  assert.match(refusal, /Retry the same change now with the call corrected/);
   assert.doesNotMatch(refusal, /or tell the client/);
   assert.match(seen[0]!.messages[0]!.content, /correct the call and retry it at once; ask the client only for a fact no tool can give you/);
   assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM campaign WHERE workspace_id = $1', [ws]))!.n, 1, 'the retry ran');

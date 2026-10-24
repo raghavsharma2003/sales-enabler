@@ -11,6 +11,7 @@ import { HttpError, type Req, type Res } from '../../http.ts';
 import { verify } from '../../runtime-client.ts';
 import { CALL_CATEGORIES, type CallCategory } from '../../../shared/agent-config.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
+import { formatInr } from '../../../shared/money.ts';
 import { stackOf } from '../../../shared/stacks.ts';
 import { arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 import { many, one, type Queryable } from '../../db.ts';
@@ -289,7 +290,11 @@ export function registerCampaignTools(registry: Registry): void {
       const mid = minutes * perMinute * (1 + ESTIMATE_PRIORS.gst);
       const p10 = Math.round(mid * 0.6), p90 = Math.round(mid * 1.5);
       return { people, held: n!.held, attempts: Math.round(attempts), connectedMinutes: Math.round(minutes), perMinuteInrMilli: perMinute,
-        p10InrMilli: p10, p90InrMilli: p90, suggestedCapInrMilli: Math.ceil(p90 / 100_000) * 100_000, basis, gstIncluded: true };
+        p10InrMilli: p10, p90InrMilli: p90, suggestedCapInrMilli: Math.ceil(p90 / 100_000) * 100_000, basis, gstIncluded: true,
+        // Rupees as people read them, so a reader (the Operator's model included) never converts thousandths of a rupee
+        // itself (bench r4: ₹9,608-24,021 quoted for ₹9.61-₹24.02).
+        display: { range: `${formatInr(p10, { paise: true })} to ${formatInr(p90, { paise: true })} (incl. GST)`, perMinute: `${formatInr(perMinute, { paise: true })} a connected minute`,
+          suggestedCap: formatInr(Math.ceil(p90 / 100_000) * 100_000), note: 'fields ending InrMilli are thousandths of a rupee' } };
     },
   }));
 

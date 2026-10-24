@@ -21,18 +21,19 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 51,
-    "total": 51,
+    "passed": 60,
+    "total": 60,
     "files": [
       "tests/operator-bench-fixes.test.ts",
       "tests/operator-bench-r3.test.ts",
+      "tests/operator-bench-r4.test.ts",
       "tests/operator-bench.test.ts",
       "tests/operator-brief.test.ts",
       "tests/operator-results.test.ts",
       "tests/operator-toolset.test.ts",
       "tests/operator.test.ts"
     ],
-    "db": "throwaway cluster; full suite on a fresh database 482/485 (0 fail, 3 skipped) at the 2026-10-24 bench-r3 fix commit; ui-contract --strict 174/174"
+    "db": "throwaway cluster; full suite on a fresh database 529/533 (0 fail, 4 skipped) at the 2026-10-24 bench-r4 fix commit; ui-contract --strict 177/177"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
@@ -58,9 +59,13 @@
     "NOT DONE is retry-first: with a fix (or a reason naming the correction) the model is told to correct the call and retry at once and to ask the client only for a fact no tool can give; campaign.draft names the published version id when it is sent an agent id, or says to publish first",
     "The page note carries an agent's latest published version id, labelled ('use that as agentVersionId, never the agent id'), or says it has none yet",
     "A CSV/TSV attached in chat is staged as a real intake upload as the member (role-checked), and the model is told its uploadId for source.map/source.commit; uploadId fields are described as UUIDs, never file names",
-    "A reply that claims a change with no successful write in the turn gets a plain correction notice at once and one repair turn (never looped)",
     "Product default brain gpt-4.1 (decision.2026-10-24.operator-default-gpt41) when the deployment curates it; VP_OPERATOR_DEFAULT_BRAIN overrides; a workspace's own choice wins",
-    "brief.today: each waiting approval carries requestedBy (member, a member's assistant, an API key, or Vyakti) with a display name; the approval sheet opened from Today says who asked (FRICTION R7)"
+    "brief.today: each waiting approval carries requestedBy (member, a member's assistant, an API key, or Vyakti) with a display name; the approval sheet opened from Today says who asked (FRICTION R7)",
+    "Final-reply checks (check.ts), each correcting in plain words at once and repairing once per kind: a change claimed with no write this turn (infinitives and requests are not claims); 'tap/confirm' with no card this turn or waiting in the thread; ₹ amounts and durations that no tool result or the member's message supports (InrMilli fields count as thousandths); and one nudge (no correction) when the model asks permission for a draft the member already asked for",
+    "Scope guard: after a write comes back NOT DONE, a write to a different tool the member's words do not point at is held; the retry instruction says to change nothing the member did not ask about",
+    "fixFor reads the agent draft's schema (agents' new agent.config.schema read tool) for brief.edit paths and names limits (min/max, lengths, items) and the fields that exist; no 'needs: ;' on empty required lists",
+    "Page tools list exact names first: deployment.split on /agents, contact.list on /campaigns",
+    "campaign.estimate returns display strings (₹ range incl. GST, per minute, suggested cap)"
   ],
   "untested": [
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",

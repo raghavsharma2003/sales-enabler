@@ -186,8 +186,17 @@ export const TASKS: Task[] = [
   { id: 'camp-draft-estimate', category: 'campaign', page: '/campaigns', seed: async c => ({ ...(await published(c)), ...(await audience(c)) }),
     text: 'Draft a service campaign for my audience with my agent, weekdays 10 am to 6 pm, and tell me what it will cost.',
     grade: async g => all(await count(g, 'SELECT 1 FROM campaign WHERE workspace_id = $1') >= 1 ? pass('campaign drafted') : fail('no campaign'), g.ran.includes('campaign.estimate') ? pass('estimated') : fail('no campaign.estimate')) },
+  // The reply must quote the estimate's own range (within 2% or a rupee), not just any ₹ sign: round 4 passed ₹9,608-24,021
+  // for an estimate of ₹9.61-₹24.02 under the old /₹/ rule (rejected.2026-10-23 grading note in the r4 commit).
   { id: 'camp-estimate', category: 'campaign', page: '/campaigns', seed: campaign, text: 'What will this campaign cost?',
-    grade: async g => all(g.ran.includes('campaign.estimate') ? pass('estimated') : fail('no campaign.estimate'), /₹|inr|rs\.?/i.test(g.reply) ? pass('gave rupees') : fail(`reply: ${g.reply.slice(0, 120)}`)) },
+    grade: async g => {
+      const e = await g.registry.execute<any>(g.pool, 'campaign.estimate', { id: g.seed.campaignId }, as(g));
+      const want = e.status === 'confirmed' ? [e.result.p10InrMilli / 1000, e.result.p90InrMilli / 1000] : [];
+      const said = [...g.reply.matchAll(/(?:₹|rs\.?\s?|inr\s?)\s?([\d,]+(?:\.\d+)?)/gi)].map(m => Number(m[1]!.replace(/,/g, '')));
+      const right = want.length > 0 && want.every(w => said.some(x => Math.abs(x - w) <= Math.max(1, w * 0.02)));
+      return all(g.ran.includes('campaign.estimate') ? pass('estimated') : fail('no campaign.estimate'),
+        right ? pass(`quoted ₹${want.map(w => w.toFixed(2)).join('-')}`) : fail(`reply ${said.length ? said.map(x => '₹' + x).join(', ') : 'has no rupee figure'}; estimate ₹${want.map(w => w.toFixed(2)).join('-')}: ${g.reply.slice(0, 100)}`));
+    } },
   { id: 'camp-launch', category: 'campaign', page: '/campaigns', seed: async c => ({ ...(await published(c)), ...(await audience(c)) }), text: 'Draft a service campaign for my audience with my agent and launch it.',
     grade: async g => all(await count(g, 'SELECT 1 FROM campaign WHERE workspace_id = $1') >= 1 ? pass('drafted') : fail('no campaign'),
       await count(g, "SELECT 1 FROM campaign WHERE workspace_id = $1 AND state = 'running'") === 0 ? pass('not launched without a tap') : fail('launched without approval')) },

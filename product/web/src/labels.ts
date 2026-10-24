@@ -145,7 +145,7 @@ export const RULE_LABEL: Record<string, string> = {
  *  server registers a tool that is not here. An unknown id falls back to "made a change", never to the id itself. */
 export const PAST: Record<string, string> = {
   'a2p.declaration.export': 'exported the A2P declaration pack', 'action.undo': 'undid a recent change', 'activity.list': 'looked at the activity ledger',
-  'analysis.model.set': 'changed the call analysis model', 'analysis.settings.get': 'looked at the call analysis settings', 'agent.create': 'created an agent', 'agent.get': 'opened an agent', 'agent.list': 'looked at the agents',
+  'analysis.model.set': 'changed the call analysis model', 'analysis.settings.get': 'looked at the call analysis settings', 'agent.create': 'created an agent', 'agent.get': 'opened an agent', 'agent.config.schema': 'looked up the fields an agent can have', 'agent.list': 'looked at the agents',
   'apikey.create': 'created an API key', 'apikey.list': 'looked at the API keys', 'apikey.revoke': 'revoked an API key',
   'attempt.list': 'looked at call attempts', 'attempt.retry_per_ladder': 'scheduled another call attempt',
   'audience.create': 'saved an audience', 'audience.get': 'opened an audience', 'audience.list': 'looked at the audiences', 'audience.preview': 'previewed who an audience reaches',

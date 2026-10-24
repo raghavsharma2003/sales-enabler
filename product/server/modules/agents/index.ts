@@ -14,7 +14,7 @@ import { many, one } from '../../db.ts';
 import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { runtime, type RuntimeHealth } from '../../runtime-client.ts';
 import { BriefBudgetError, BriefLintError, compile, compileReport } from './compile.ts';
-import { draftHash, validateConfig, versionHashOf } from './config.ts';
+import { agentConfigV, draftHash, validateConfig, versionHashOf } from './config.ts';
 import { DraftError, draftFromDescription } from './draft.ts';
 import { shapeLint } from './lint.ts';
 import { guardDraft } from './guard.ts';
@@ -409,6 +409,13 @@ export function registerAgentTools(r: Registry): void {
       await saveDraft(ctx, row!.id, draft, null);
       return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: !!stackOf(draft.voice), usage };
     },
+  }));
+
+  // The draft's shape as JSON Schema: what brief.edit paths may name, with each field's limits and allowed values.
+  // The Operator reads it to say exactly what a refused brief.edit needs (operator/fix.ts); the UI may use it too.
+  r.register(tool(obj({}), {
+    name: 'agent.config.schema', risk: 'read', summary: "The agent draft's fields as JSON Schema, with each field's limits and allowed values",
+    run: async () => ({ schema: agentConfigV.schema }),
   }));
 
   r.register(tool(obj({}), {
