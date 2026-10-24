@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import { canonicalJson, RISK_CLASSES } from '../../../shared/approval.ts';
 import { CALL_CATEGORIES, JOBS, LANGUAGES, SECTOR_PACKS, type AgentConfig } from '../../../shared/agent-config.ts';
-import { arr, bool, num, obj, opt, record, str, any, ValidationError, type Validator } from '../../../shared/validate.ts';
+import { arr, bool, num, obj, opt, record, str, any, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
 
 const id = str({ min: 1, max: 60, pattern: /^[a-z][a-z0-9_]*$/ });
 const shape = (max = 300) => str({ min: 1, max });
@@ -42,7 +42,7 @@ export const agentConfigV = obj({
     purpose: str({ oneOf: ['service', 'offer', 'identity', 'logistics'] }),
     source: str({ min: 1, max: 120 }), perContact: opt(bool()),
   }), { max: 40 }),
-  neverSay: arr(str({ min: 1, max: 120 }), { max: 20 }),
+  neverSay: arr(str({ min: 1, max: 200 }), { max: 120 }),   // room for linked offerings' never-say once materialised
   opening: obj({ disclosureClause: shape(200), usefulFirst: shape(300) }),
   objections: arr(obj({ trigger: shape(120), approach: shape(300) }), { max: 10 }),
   tools: arr(obj({ name: id, risk: str({ oneOf: RISK_CLASSES }), config: opt(record(any())) }), { max: 12 }),
@@ -58,6 +58,11 @@ export const agentConfigV = obj({
   voice: obj({ stackId: str({ max: 60 }), components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })),
     s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })), voiceId: opt(str({ max: 80 })), speed: opt(num({ min: 0.7, max: 1.3 })) }),
   recording: obj({ enabled: bool(), announce: bool() }),
+  knowledge: opt(obj({
+    offeringIds: arr(uuid(), { max: 5 }),
+    purposes: opt(arr(str({ pattern: /^[a-z][a-z0-9_]{1,23}$/ }), { min: 1, max: 6 })),
+    materialised: opt(obj({ neverSay: arr(str({ min: 1, max: 200 }), { max: 100 }) })),
+  })),
 }) as unknown as Validator<AgentConfig>;
 
 /** Validate and add the cross-field rules the plain shape cannot express. */

@@ -36,13 +36,14 @@ export const REGISTER_INFO: Record<string, { label: string; blurb: string }> = {
   gentle_elder_respect: { label: 'Patient and respectful', blurb: 'Slower, more formal. Good for older callers.' },
 };
 export const HANDOFF_WHEN: Record<string, string> = { asks_for_human: 'Asks for a person', crisis: 'Sounds in crisis', complaint: 'Wants to complain', legal_threat: 'Mentions legal action', out_of_scope: 'Asks something outside the job', payment_dispute: 'Disputes a payment', repeated_misunderstanding: 'She has misunderstood twice' };
-export const TOOL_INFO: Record<string, { label: string; risk: string; blurb: string }> = {
+// available: false means calls cannot use it yet (P7: what you see is what runs), so it shows as not available, never as a switch.
+export const TOOL_INFO: Record<string, { label: string; risk: string; blurb: string; available?: false }> = {
   end_call: { label: 'End the call herself', risk: 'external', blurb: 'Hangs up politely once the job is done.' },
   transfer: { label: 'Connect to a person', risk: 'external', blurb: 'Bridges the call to your team, with a one-line summary.' },
-  send_whatsapp_link: { label: 'Send a link on WhatsApp', risk: 'external', blurb: 'Sends your approved link to the number she is speaking to.' },
-  book_slot: { label: 'Book a slot', risk: 'external', blurb: 'Books a time in your calendar.' },
-  mark_callback: { label: 'Note a callback time', risk: 'draft', blurb: 'Writes down when the person asked to be called.' },
-  lookup_order: { label: 'Look up an order', risk: 'read', blurb: 'Reads an order from your system.' },
+  send_whatsapp_link: { available: false, label: 'Send a link on WhatsApp', risk: 'external', blurb: 'Sends your approved link to the number she is speaking to.' },
+  book_slot: { available: false, label: 'Book a slot', risk: 'external', blurb: 'Books a time in your calendar.' },
+  mark_callback: { available: false, label: 'Note a callback time', risk: 'draft', blurb: 'Writes down when the person asked to be called.' },
+  lookup_order: { available: false, label: 'Look up an order', risk: 'read', blurb: 'Reads an order from your system.' },
 };
 export const PURPOSES = ['service', 'offer', 'identity', 'logistics'] as const;
 export const PURPOSE_LABEL: Record<string, string> = { service: 'Service', offer: 'Offer', identity: 'Identity', logistics: 'Logistics' };

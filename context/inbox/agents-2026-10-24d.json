@@ -1,0 +1,36 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.knowledge-reaches-calls",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Agents link offerings (knowledge.offeringIds, optional purposes); every compile materialises their approved facts into the facts rows and their never-say into the agent's never-say",
+      "rationale": "Must-be audit brief 4: uploaded knowledge and offering facts never reached a call. agents/knowledge.ts withKnowledge() runs before every compile (previews, practice runs, brief.compile, candidates, publish): facts whose span is still approved become facts rows with source kb:<spanId>, purpose from their tags (offer/price/discount -> offer, next_step -> logistics, else service), so the T-L3 fence keeps offers out of service and transactional briefs and the byte budget still throws; the offerings' never-say joins agent.neverSay, which the reply door already reads, recorded in knowledge.materialised. Drafts store only the link. Restore and language variants keep the snapshot they were published with. The budget error now says 'shorten long facts, or use fewer of the linked offerings' facts' instead of the untrue 'move long facts to knowledge'. kb_query is removed from the built-ins until the runtime can retrieve spans.",
+      "reverse_if": "Offering facts need per-call retrieval because they exceed the facts budget (then a real kb_query in the runtime), or businesses want an offering edit to reach live versions without republishing.",
+      "path": "product/server/modules/agents/knowledge.ts"
+    },
+    {
+      "id": "decision.2026-10-24.http-tool-contract",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "In-call HTTP tools: a workspace tool row holds a spec (shared/contracts/http-tool.ts); only read and draft tools, public https hosts, the integration holds the secret, timeout at most 2.5 s; versions snapshot the spec the ticket carries",
+      "rationale": "Must-be audit brief 3 (control-plane half) and P7. The runtime will offer each spec to the brain as a function, validate arguments with validateArgs(), and ask the control plane to run it (POST /hooks/runtime/tools), so secrets never leave the control plane; buildRequest() and readResult() fix the request and what she may use (listed scalar fields, at most 2 KB). Tools that reach people or spend are refused because nothing can be approved mid-call. tool.create/edit/list/test are registered; tool.test is a dry run with a fake answer (no network). Built-ins: end_call and transfer work; mark_callback, send_whatsapp_link and send_sms are declared but Not available yet, so tool.attach refuses them and the agent page shows them as not available instead of a switch; book_slot and lookup_order are now workspace HTTP tools; templates grant nothing that does not run. Private-host checks are by name and literal IP; DNS rebinding must be re-checked by the executor at connect time.",
+      "reverse_if": "A use case needs an in-call action that reaches people (e.g. send a link on WhatsApp) with consent captured in the call; then a consented in-call risk class is designed rather than relaxing this one.",
+      "path": "product/shared/contracts/http-tool.ts"
+    },
+    {
+      "id": "measure.2026-10-24.knowledge-and-tools-tests",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
+      "title": "Knowledge on calls 5/5 (approved fact in a linked agent's brief; offer fact never in a service brief, present in a sales one; purposes filter; published never-say enforced in practice; rejected span drops its fact; unknown offering refused; restore keeps the snapshot; budget advice true) and HTTP tools 7/7 (contract refusals, request building, result filtering, templates grant only working tools, create/list/test, version snapshot, built-ins not available)",
+      "n": 12,
+      "method": "node:test tests/agents-knowledge.test.ts and tests/agents-httptools.test.ts on throwaway Postgres 16 with spans and integrations seeded; all behaviours are new, so every database test fails without the change. Gates in the commit message.",
+      "path": "product/tests/agents-httptools.test.ts"
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.http-tool-contract", "to": "decision.2026-10-24.knowledge-reaches-calls", "relation": "informs" },
+    { "from": "measure.2026-10-24.knowledge-and-tools-tests", "to": "decision.2026-10-24.knowledge-reaches-calls", "relation": "tests" },
+    { "from": "measure.2026-10-24.knowledge-and-tools-tests", "to": "decision.2026-10-24.http-tool-contract", "relation": "tests" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "agents-knowledge-and-tool-contract", "details": "Must-be audit briefs 4 and 3 (control-plane half): linked offerings' approved facts and never-say reach the brief and the door; budget advice made true; kb_query removed; HTTP tool contract in shared/contracts with create/edit/list/test and version snapshots; inert built-ins labelled Not available yet in the server and the agent page. Next with voice: the runtime half of the contract and the /hooks/runtime/tools executor." }
+  ]
+}

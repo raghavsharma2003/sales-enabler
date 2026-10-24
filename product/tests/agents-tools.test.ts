@@ -281,7 +281,11 @@ test('tool.attach grants catalogue and workspace tools with their risk class', {
   assert.ok(r.tools.some((t: { name: string; risk: string }) => t.name === 'end_call' && t.risk === 'read'));
   assert.match(ok<any>(await call('agent.get', { agentId: c.agentId })).brief.text, /writing <end_call>/, 'one marker spelling, whatever the grants');
   refused(await call('tool.attach', { agentId: c.agentId, name: 'wire_money' }), /unknown in-call tool/);
-  const t = await one<{ id: string }>(pool, "INSERT INTO tool (workspace_id, name, kind, risk_class) VALUES ($1, 'crm_lookup', 'http', 'read') RETURNING id", [ws]);
+  // A workspace HTTP tool needs a complete spec (shared/contracts/http-tool.ts); tool.create is the normal way in.
+  const spec = { contract: 1, kind: 'http', name: 'crm_lookup', description: 'Read the customer record when they ask about their account.',
+    input: { type: 'object', properties: { phone: { type: 'string' } } }, request: { method: 'GET', url: 'https://crm.example.test/people', query: ['phone'] },
+    auth: null, timeoutMs: 1500, risk: 'read', result: { fields: ['plan'] } };
+  const t = await one<{ id: string }>(pool, "INSERT INTO tool (workspace_id, name, kind, risk_class, config) VALUES ($1, 'crm_lookup', 'http', 'read', $2) RETURNING id", [ws, JSON.stringify(spec)]);
   const r2 = ok<any>(await call('tool.attach', { agentId: c.agentId, toolId: t!.id }));
   assert.ok(r2.tools.some((x: { name: string }) => x.name === 'crm_lookup'));
   const r3 = ok<any>(await call('tool.attach', { agentId: c.agentId, name: 'end_call', remove: true }));

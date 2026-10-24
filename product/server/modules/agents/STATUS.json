@@ -108,6 +108,25 @@
       "name": "version.language_variant",
       "risk": "external",
       "note": "A2: the agent in another language (kind 'variant', same facts and agenda, optional stack); refused without a checked disclosure line for the language; routed to by campaigns"
+    },
+    {
+      "name": "tool.create",
+      "risk": "draft",
+      "note": "workspace HTTP tool for calls (shared/contracts/http-tool.ts): https public host, integration secret, timeout <= 2.5 s, risk read or draft only"
+    },
+    {
+      "name": "tool.edit",
+      "risk": "draft"
+    },
+    {
+      "name": "tool.list",
+      "risk": "read",
+      "note": "each tool reads 'Not available yet' until the voice runtime runs workspace tools"
+    },
+    {
+      "name": "tool.test",
+      "risk": "test",
+      "note": "dry run: exact request with the secret masked, the fields she would get from a sample answer, the timeout path; nothing is sent"
     }
   ],
   "tests": {
@@ -137,7 +156,9 @@
     "review B3 mirrored: the simulator doors each sentence alone and joined with the sentence before it (same reply, or her last sentence of the previous turn); a cross-sentence hit blocks the current sentence. Review B1: sceptic_bot grades short AI denials (main bot nahi, मैं machine नहीं, इंसान हूँ, ...) as failures independently of the door",
     "hard safety guard (guard.ts) on every draft write: agent.create (template and plain words, including the repair turn), brief.edit, stack.set, voice.set, tool.attach refuse a newly introduced AI denial/hiding, disclosure without AI, switched-off crisis lines or manipulation; nothing is saved and the refusal names the rule in plain English with the fix; softer lint saves with its warning",
     "version.candidate runs the hard safety guard (crisis lines, manipulation) as well as the compile lint",
-    "languages: per-part matrix (measured/stated) and per-stack derivation; agent languages validated against the stack on every write and version; campaign routing per contact language with recorded fallback; launch warning counts only unserved contacts"
+    "languages: per-part matrix (measured/stated) and per-stack derivation; agent languages validated against the stack on every write and version; campaign routing per contact language with recorded fallback; launch warning counts only unserved contacts",
+    "knowledge on calls: AgentConfig.knowledge {offeringIds, purposes?}; previews, practice and versions materialise approved offering facts into facts rows (offer-tagged facts fenced out of service briefs) and the offering never-say into the agent's never-say; versions snapshot it, restore and variants keep the snapshot; kb_query removed",
+    "in-call tools: built-ins end_call and transfer work; mark_callback, send_whatsapp_link, send_sms are declared but 'Not available yet' (tool.attach refuses; the web shows them as not available); book_slot and lookup_order become workspace HTTP tools; versions snapshot each granted tool's spec into the grant, which the ticket carries"
   ],
   "untested": [
     "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
@@ -163,6 +184,7 @@
     "voice runtime: append the contact rows block (compile.ts contactRows(ticket.contact.facts): header 'Contact rows for this call (data, not lines):' then 'key with spaces: value' rows, sorted) after the brief and memory, before the tail. The brief's per-contact facts read '(per contact: in the contact rows for this call)'; conversation.py does not send contact.facts values to the model today",
     "safety: when the door's AI-self-reference allow-list lands, practice runs pick it up automatically (they call shared/safety replyDoor); the grader's DENIAL pattern stays as a second check",
     "safety: lint T-L5 (crisis lines stay) and T-L6 (no manipulation) in rules.json + rules.py KNOWN/lint_agent_config + cases.json, so guard.ts can delegate (decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now, option A)",
-    "voice: ears and voice configured per ticket language (contact.language and the variant's primary); safety: disclosure lines and lexicons for kn/te/ml/mr/gu/pa/or (open.2026-10-24.languages-runtime-and-disclosure)"
+    "voice: ears and voice configured per ticket language (contact.language and the variant's primary); safety: disclosure lines and lexicons for kn/te/ml/mr/gu/pa/or (open.2026-10-24.languages-runtime-and-disclosure)",
+    "voice: the in-call half of shared/contracts/http-tool.ts (offer specs as functions, validate args, ask the control plane to run them) and the control-plane endpoint /hooks/runtime/tools that executes with the integration secret"
   ]
 }

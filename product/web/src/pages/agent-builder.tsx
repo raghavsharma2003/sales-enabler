@@ -231,8 +231,11 @@ function Tools({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
           <Chip tone={n ? 'leaf' : 'neutral'}>{n ? 'On' : 'Off'}</Chip></li>
       </ul>
       <ul className="toollist" aria-label="Abilities you choose">{Object.entries(TOOL_INFO).filter(([k]) => k !== 'end_call' && k !== 'transfer').map(([k, v]) => (
-        <li key={k}><Toggle checked={has(k)} onChange={on => set(c => { c.tools = on ? [...c.tools, { name: k, risk: v.risk }] : c.tools.filter(t => t.name !== k); })} label={v.label} hint={v.blurb} />
-          <Chip tone={v.risk === 'external' ? 'terra' : 'neutral'}>{v.risk === 'external' ? 'Reaches people' : v.risk === 'read' ? 'Reads only' : 'Writes a note'}</Chip></li>))}</ul></Card>
+        v.available === false
+          ? <li key={k}><div className="stack-s"><strong>{v.label}</strong><span className="small muted">{v.blurb} Calls cannot do this yet, so it cannot be switched on.</span></div>
+              <Chip tone="neutral">Not available yet</Chip></li>
+          : <li key={k}><Toggle checked={has(k)} onChange={on => set(c => { c.tools = on ? [...c.tools, { name: k, risk: v.risk }] : c.tools.filter(t => t.name !== k); })} label={v.label} hint={v.blurb} />
+              <Chip tone={v.risk === 'external' ? 'terra' : 'neutral'}>{v.risk === 'external' ? 'Reaches people' : v.risk === 'read' ? 'Reads only' : 'Writes a note'}</Chip></li>))}</ul></Card>
   );
 }
 

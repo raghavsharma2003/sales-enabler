@@ -20,6 +20,9 @@ import { DISCLOSURE, disclosureChecked } from '../../../shared/safety/disclosure
 import { LANGUAGES, type Language } from '../../../shared/agent-config.ts';
 import { shapeLint } from './lint.ts';
 import { guardDraft } from './guard.ts';
+import { withKnowledge } from './knowledge.ts';
+import { loadHttpTool, registerHttpTools } from './httptools.ts';
+import { checkSpec, HttpToolError } from '../../../shared/contracts/http-tool.ts';
 import { agentLanguages, languageName, languageProblems } from './languages.ts';
 import { stackLanguage } from '../../../shared/stacks.ts';
 import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
@@ -36,7 +39,12 @@ async function loadAgent(ctx: ToolCtx, agentId: string, lock = false): Promise<A
 }
 
 /** Every draft write goes through here, so a hard safety finding is never saved (guard.ts). prev is the draft before. */
-async function saveDraft(ctx: ToolCtx, agentId: string, draft: AgentConfig, prev: AgentConfig | null) {
+async function saveDraft(ctx: ToolCtx, agentId: string, input: AgentConfig, prev: AgentConfig | null) {
+  // A draft never holds materialised knowledge (only a version does), so a 'materialised' field here was typed in and is
+  // dropped as it is (it never strips the agent's own never-say); linked offerings must exist in this workspace.
+  const { materialised: _m, ...k } = input.knowledge ?? { offeringIds: [] };
+  const draft: AgentConfig = input.knowledge ? { ...input, knowledge: k } : input;
+  if (draft.knowledge?.offeringIds.length) await withKnowledge(ctx.q, ctx.workspaceId, draft);
   guardDraft(prev, draft);
   guardLanguages(prev, draft);
   await ctx.q.query('UPDATE agent SET draft = $3, job = $4, updated_at = now() WHERE id = $1 AND workspace_id = $2', [agentId, ctx.workspaceId, JSON.stringify(draft), draft.job]);
@@ -48,6 +56,14 @@ function guardLanguages(prev: AgentConfig | null, next: AgentConfig) {
   const before = new Set(prev ? languageProblems(prev).map(p => p.language + '|' + p.stack) : []);
   const added = languageProblems(next).filter(p => !before.has(p.language + '|' + p.stack));
   if (added.length) throw new ValidationError('languages', added[0].message);
+}
+
+/** preview() of the config as it would compile: linked knowledge materialised first (a missing offering is shown, not thrown). */
+async function previewOf(ctx: ToolCtx, c: AgentConfig) {
+  try { return preview(await withKnowledge(ctx.q, ctx.workspaceId, c)); } catch (e) {
+    if (e instanceof ValidationError) return { compiles: false as const, lint: [...shapeLint(c), ...lintAgentConfig(c)], error: { kind: 'knowledge', message: e.message } };
+    throw e;
+  }
 }
 
 /** What the brief editor shows: lint findings, the budget meters, and the compiled text when it compiles. */
@@ -149,10 +165,12 @@ function stackCard(s: VoiceStack, h: RuntimeHealth | null = null, pricePerMinute
     pricePerMinute };
 }
 
-/** In-call tools an agent may be granted by name, with the risk class each carries (workspace tools attach by id). */
-const IN_CALL_TOOLS: Record<string, ToolGrant['risk']> = {
-  end_call: 'read', lookup_order: 'read', kb_query: 'read', mark_callback: 'draft', book_slot: 'draft',
-  transfer: 'external', send_whatsapp_link: 'external', send_sms: 'external',
+/** Built-in in-call tools by name, with their risk class and whether a call can use them today (P7: what you see is
+ *  what runs). Workspace HTTP tools (tool.create) attach by id. kb_query is gone until the runtime can retrieve spans;
+ *  knowledge reaches calls through linked offerings. Booking and order lookups are workspace HTTP tools now. */
+const IN_CALL_TOOLS: Record<string, { risk: ToolGrant['risk']; available: boolean }> = {
+  end_call: { risk: 'read', available: true }, transfer: { risk: 'external', available: true },
+  mark_callback: { risk: 'draft', available: false }, send_whatsapp_link: { risk: 'external', available: false }, send_sms: { risk: 'external', available: false },
 };
 
 // ------------------------------------------------------------------------------------------------ template brand
@@ -186,7 +204,7 @@ const LOCKED = new Set(['schema', 'agentId', 'version', 'versionHash', 'voice', 
 const LOCK_REASON: Record<string, string> = { voice: 'use stack.set or voice.set', tools: 'use tool.attach' };
 
 /** The draft's top-level fields a patch may touch (AgentConfig minus LOCKED). */
-const EDITABLE = ['brand', 'job', 'jobDescription', 'category', 'sectorPacks', 'languages', 'persona', 'goals', 'facts', 'neverSay', 'opening', 'objections', 'handOff', 'memory', 'limits', 'recording'];
+const EDITABLE = ['brand', 'job', 'jobDescription', 'category', 'sectorPacks', 'languages', 'persona', 'goals', 'facts', 'neverSay', 'opening', 'objections', 'handOff', 'memory', 'limits', 'recording', 'knowledge'];
 
 const PATH_FORMS = 'use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-]';
 
@@ -316,7 +334,7 @@ async function publishSummary(ctx: ToolCtx, agentId: string, note?: string): Pro
   }
   if (!prev) parts.push('This is the first version.');
   else {
-    const changes = diff(comparable(prev.config.agent), comparable(a.draft));
+    const changes = diff(comparable(prev.config.agent), comparable(await asCompiled(ctx, a.draft)));
     parts.push(changes.length ? `Changes since version ${prev.number}: ` + changes.slice(0, 6).map(c => changePhrase(c, c.to === null ? prev.config.agent : a.draft)).join('; ') +
       (changes.length > 6 ? `; and ${changes.length - 6} more` : '') + '.' : `No changes since version ${prev.number}.`);
   }
@@ -366,7 +384,24 @@ const libraryRow = (c: LibraryCaller) => ({ id: c.id, source: 'default' as const
 /** The agent's live version: its newest published one. Experiment candidates are newer but never live. */
 const LIVE_VERSION_SQL = `SELECT id, number FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1`;
 
-async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null, kind: 'published' | 'candidate' | 'variant' = 'published') {
+/** The config a version is made from: linked knowledge materialised, as compile() and the reply door will see it. */
+async function asCompiled(ctx: ToolCtx, c: AgentConfig): Promise<AgentConfig> {
+  try { return await withKnowledge(ctx.q, ctx.workspaceId, c); } catch (e) { if (e instanceof ValidationError) return c; throw e; }
+}
+
+async function createVersion(ctx: ToolCtx, agentId: string, input: AgentConfig, parentId: string | null, note: string | null, kind: 'published' | 'candidate' | 'variant' = 'published',
+  knowledge: 'resolve' | 'keep' = 'resolve') {
+  // 'keep' (restore, language variants) reuses the snapshot the source version was published with, so it equals it.
+  const known = knowledge === 'resolve' ? await withKnowledge(ctx.q, ctx.workspaceId, input) : input;
+  // Each granted workspace tool is snapshotted into its grant (config.spec), so the version and its tickets carry the
+  // exact tool that was approved; a later tool.edit changes only versions published after it ('keep' reuses the snapshot).
+  const cfg: AgentConfig = knowledge === 'keep' ? known : { ...known, tools: await Promise.all(known.tools.map(async g => {
+    const id = typeof g.config?.toolId === 'string' ? g.config.toolId : null;
+    if (!id) return g;
+    const t = await loadHttpTool(ctx, id);
+    try { checkSpec(t.config); } catch (e) { if (e instanceof HttpToolError) throw new ValidationError('tools', `the tool "${g.name}" is not complete (${e.message}); fix it with tool.edit`); throw e; }
+    return { name: t.config.name, risk: t.config.risk, config: { ...g.config, toolId: id, spec: t.config } };
+  })) };
   try { resolveStack(cfg.voice); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
   const lp = languageProblems(cfg);                // no version, of any kind, calls in a language its stack cannot serve
   if (lp.length) throw new ValidationError('languages', lp[0].message);
@@ -403,6 +438,7 @@ const simCallerV = obj({
 });
 
 export function registerAgentTools(r: Registry): void {
+  registerHttpTools(r);
   r.register(tool(obj({}), {
     name: 'template.list', risk: 'read', summary: 'List the starter agents by industry and job',
     run: async () => ({ templates: TEMPLATES.map(t => ({ id: t.id, label: t.label, industry: t.industry, job: t.config.job, category: t.config.category,
@@ -431,7 +467,7 @@ export function registerAgentTools(r: Registry): void {
       const row = await one<{ id: string }>(ctx.q, "INSERT INTO agent (workspace_id, name, job, status, draft) VALUES ($1,$2,$3,'draft','{}') RETURNING id", [ctx.workspaceId, i.name, draft.job]);
       draft.agentId = row!.id;
       await saveDraft(ctx, row!.id, draft, null);
-      return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: !!stackOf(draft.voice), usage,
+      return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...(await previewOf(ctx, draft)), stackChosen: !!stackOf(draft.voice), usage,
         review: reviewSummary(await reviewBrief(draft)) };
     },
   }));
@@ -459,7 +495,7 @@ export function registerAgentTools(r: Registry): void {
       const liveVersion = await one<{ id: string; number: number }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
       const tests = await many(ctx.q, 'SELECT id, passed, draft_hash, created_at FROM agent_test_run WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC LIMIT 10', [a.id, ctx.workspaceId]);
       return { agent: { id: a.id, name: a.name, job: a.job, status: a.status, updatedAt: a.updated_at }, draft: a.draft, draftHash: draftHash(a.draft),
-        ...preview(a.draft), stack: stack ? stackCard(stack) : null, stackChosen: !!stack,
+        ...(await previewOf(ctx, a.draft)), stack: stack ? stackCard(stack) : null, stackChosen: !!stack,
         // liveVersion is what a new campaign or inbound line runs; versions[0] may be an experiment candidate.
         liveVersion, versions, tests };
     },
@@ -478,7 +514,7 @@ export function registerAgentTools(r: Registry): void {
       let next: AgentConfig;
       try { next = validateConfig(patched); } catch (e) { throw e instanceof ValidationError ? withKnownFields(e, patched) : e; }
       await saveDraft(ctx, a.id, next, a.draft);
-      return { agentId: a.id, draftHash: draftHash(next), changes: diff(comparable(a.draft), comparable(next)), ...preview(next), review: reviewSummary(await reviewBrief(next)) };
+      return { agentId: a.id, draftHash: draftHash(next), changes: diff(comparable(a.draft), comparable(next)), ...(await previewOf(ctx, next)), review: reviewSummary(await reviewBrief(next)) };
     },
   }));
 
@@ -509,7 +545,7 @@ export function registerAgentTools(r: Registry): void {
       const next: AgentConfig = { ...a.draft, voice: keepVoice ? { ...a.draft.voice, ...nextVoice, ...(nextVoice.components ? {} : { components: undefined }) } : nextVoice };
       if (!next.voice.components) delete next.voice.components;
       await saveDraft(ctx, a.id, next, a.draft);
-      return { agentId: a.id, stack: stackCard(s), voiceCleared: !keepVoice && !!a.draft.voice.voiceId, draftHash: draftHash(next), ...preview(next) };
+      return { agentId: a.id, stack: stackCard(s), voiceCleared: !keepVoice && !!a.draft.voice.voiceId, draftHash: draftHash(next), ...(await previewOf(ctx, next)) };
     },
   }));
 
@@ -536,13 +572,14 @@ export function registerAgentTools(r: Registry): void {
       if (!!i.name === !!i.toolId) throw new ValidationError('name', 'give either a tool name or a toolId');
       let grant: ToolGrant;
       if (i.toolId) {
-        const t = await one<{ name: string; risk_class: ToolGrant['risk'] }>(ctx.q, 'SELECT name, risk_class FROM tool WHERE id = $1 AND workspace_id = $2', [i.toolId, ctx.workspaceId]);
-        if (!t) throw new ValidationError('toolId', 'no such tool in this workspace');
-        grant = { name: t.name, risk: t.risk_class, config: { ...(i.config ?? {}), toolId: i.toolId } };
+        const t = await loadHttpTool(ctx, i.toolId);
+        try { checkSpec(t.config); } catch (e) { if (e instanceof HttpToolError) throw new ValidationError('toolId', `that tool is not complete (${e.message}); fix it with tool.edit`); throw e; }
+        grant = { name: t.config.name, risk: t.config.risk, config: { ...(i.config ?? {}), toolId: i.toolId } };
       } else {
-        const risk = IN_CALL_TOOLS[i.name!];
-        if (!risk) throw new ValidationError('name', `unknown in-call tool; choose one of: ${Object.keys(IN_CALL_TOOLS).join(', ')}`);
-        grant = { name: i.name!, risk, ...(i.config ? { config: i.config } : {}) };
+        const b = IN_CALL_TOOLS[i.name!];
+        if (!b) throw new ValidationError('name', `unknown in-call tool; choose one of: ${Object.keys(IN_CALL_TOOLS).join(', ')}, or define your own with tool.create`);
+        if (!b.available && !i.remove) throw new ValidationError('name', `${i.name} is not available yet: calls cannot use it, so it cannot be switched on`);
+        grant = { name: i.name!, risk: b.risk, ...(i.config ? { config: i.config } : {}) };
       }
       if (!RISK_CLASSES.includes(grant.risk)) throw new ValidationError('toolId', 'that tool has an unknown risk class');
       const tools = a.draft.tools.filter(t => t.name !== grant.name);
@@ -587,7 +624,8 @@ export function registerAgentTools(r: Registry): void {
     run: async (ctx, i) => {
       if (!!i.simCallerId === !!i.simCaller) throw new ValidationError('simCallerId', 'give either a simCallerId or an inline simCaller');
       const a = await loadAgent(ctx, i.agentId);
-      const brief = compile(a.draft);                 // throws on lint or budget: an untestable draft is said so, not run
+      const cfg = await withKnowledge(ctx.q, ctx.workspaceId, a.draft);   // practice runs on what a call would carry
+      const brief = compile(cfg);                     // throws on lint or budget: an untestable draft is said so, not run
       let sc: SimCaller, scId: string;
       if (i.simCallerId) {
         sc = await loadSimCaller(ctx, a.id, i.simCallerId);
@@ -597,7 +635,7 @@ export function registerAgentTools(r: Registry): void {
         scId = (await one<{ id: string }>(ctx.q, 'INSERT INTO sim_caller (workspace_id, agent_id, persona, scenario, hidden_keys, contact, pass_criteria) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id',
           [ctx.workspaceId, a.id, sc.persona, sc.scenario, JSON.stringify(sc.hiddenKeys), JSON.stringify(sc.contact), JSON.stringify(sc.passCriteria)]))!.id;
       }
-      const res = await simulate(a.draft, brief, sc, i.maxTurns ?? 12);
+      const res = await simulate(cfg, brief, sc, i.maxTurns ?? 12);
       const runId = await storeRun(ctx, a.id, scId, a.draft, brief.hash, res, null);
       return { runId, simCallerId: scId, briefHash: brief.hash, ...res };
     },
@@ -650,7 +688,7 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({ config: any('an AgentConfig') }), {
     name: 'brief.compile', risk: 'read', summary: 'Compile an agent config into its brief (the one compile(), for previews and other modules)',
-    run: async (_ctx, i) => compileOrRefuse(validateConfig(i.config)),
+    run: async (ctx, i) => compileOrRefuse(await withKnowledge(ctx.q, ctx.workspaceId, validateConfig(i.config))),
   }));
 
   r.register(tool(obj({ agentId: uuid(), config: any('an AgentConfig'), parentVersionId: uuid(), note: str({ min: 1, max: 300 }) }), {
@@ -661,7 +699,7 @@ export function registerAgentTools(r: Registry): void {
       if (!parent) throw new ValidationError('parentVersionId', 'must be a published version of this agent');
       const cfg = validateConfig(i.config);
       guardDraft(null, cfg);                         // a treatment arm reaches people: the hard safety guard applies here too
-      compileOrRefuse({ ...cfg, agentId: a.id });   // refuse with the lint or budget reason before numbering anything
+      compileOrRefuse(await withKnowledge(ctx.q, ctx.workspaceId, { ...cfg, agentId: a.id }));   // refuse with the lint or budget reason before numbering anything
       const review = await assertPublishable(cfg);  // a candidate can take traffic without a publish: the same review gate
       return { ...await createVersion(ctx, a.id, cfg, parent.id, i.note, 'candidate'), review: reviewSummary(review) };
     },
@@ -675,7 +713,7 @@ export function registerAgentTools(r: Registry): void {
     name: 'test.simulate_batch', risk: 'test', summary: 'Run seeded text simulations of a config against saved simulated callers, graded by code',
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
-      const cfg = i.config === undefined ? a.draft : validateConfig(i.config);
+      const cfg = await withKnowledge(ctx.q, ctx.workspaceId, i.config === undefined ? a.draft : validateConfig(i.config));
       const brief = compileOrRefuse(cfg);
       const callers = await Promise.all([...new Set(i.simCallerIds)].map(async id => [id, await loadSimCaller(ctx, a.id, id)] as const));
       const runs = [];
@@ -753,7 +791,7 @@ export function registerAgentTools(r: Registry): void {
         (DISCLOSURE.lines[language] ? 'A draft line is waiting for a native speaker to review it.' : 'The safety team adds it to the shared disclosure file.'));
       const cfg = variantConfig(base.config.agent, { ...i, language, components: i.components as StackComponents | undefined });
       guardDraft(null, cfg);
-      const v = await createVersion(ctx, a.id, cfg, base.id, i.note ?? `${languageName(language)} version of version ${base.number}`, 'variant');
+      const v = await createVersion(ctx, a.id, cfg, base.id, i.note ?? `${languageName(language)} version of version ${base.number}`, 'variant', 'keep');
       return { ...v, language, languageName: languageName(language), from: base.number };
     },
   }));
@@ -807,7 +845,7 @@ export function registerAgentTools(r: Registry): void {
       if (live?.id === target.id) throw new ValidationError('versionId', `version ${target.number} is already live`);
       // The hard safety guard holds for restores too: a version published before the guard cannot come back with a breach.
       guardDraft(null, target.config.agent);
-      const v = await createVersion(ctx, a.id, target.config.agent, live?.id ?? target.id, `rolled back to version ${target.number}` + (i.reason ? `: ${i.reason}` : ''));
+      const v = await createVersion(ctx, a.id, target.config.agent, live?.id ?? target.id, `rolled back to version ${target.number}` + (i.reason ? `: ${i.reason}` : ''), 'published', 'keep');
       // Every binding that has a deployment moves wholly to the restored version (new rows; history is never rewritten).
       const bindings = await many<{ binding: string }>(ctx.q, 'SELECT DISTINCT binding FROM deployment WHERE agent_id = $1 AND workspace_id = $2', [a.id, ctx.workspaceId]);
       for (const b of bindings) await ctx.q.query('INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,$3,$4)',
@@ -850,8 +888,8 @@ export function registerAgentTools(r: Registry): void {
         return { label: `version ${v.number}`, agent: v.config.agent, brief: v.config.brief };
       };
       const latest = await one<{ id: string }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
-      const draftSide = () => { const p = preview(a.draft); return { label: 'draft', agent: a.draft, brief: p.compiles ? { hash: p.brief.hash, bytes: p.brief.bytes } : null }; };
-      const to = !i.to || i.to === 'draft' ? draftSide() : await get(uuid()(i.to, 'to'));
+      const draftSide = async () => { const p = await previewOf(ctx, a.draft); return { label: 'draft', agent: await asCompiled(ctx, a.draft), brief: p.compiles ? { hash: p.brief.hash, bytes: p.brief.bytes } : null }; };
+      const to = !i.to || i.to === 'draft' ? await draftSide() : await get(uuid()(i.to, 'to'));
       const fromId = i.from ?? latest?.id;
       const from = fromId ? await get(fromId) : null;
       return { from: from ? { label: from.label, brief: from.brief } : null, to: { label: to.label, brief: to.brief },

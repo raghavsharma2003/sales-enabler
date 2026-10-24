@@ -29,7 +29,7 @@ export class BriefBudgetError extends Error {
   constructor(public section: SectionName, public bytes: number, public cap: number, total = false) {
     super((total ? `the brief is ${bytes} bytes, over its ${cap}-byte cap; its largest section is ${section}: cut ${section}`
       : `the brief's ${section} section is ${bytes} bytes, over its ${cap}-byte cap: cut ${section}`) +
-      (section === 'FACTS_ROWS' ? ' (move long facts to knowledge)' : '') + '; nothing is truncated');
+      (section === 'FACTS_ROWS' ? ' (shorten long facts, or use fewer of the linked offerings\' facts)' : '') + '; nothing is truncated');
     this.name = 'BriefBudgetError';
   }
 }

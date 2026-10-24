@@ -92,6 +92,10 @@ export interface AgentConfig {
   // ids). New agents start on DEFAULT_STACK_ID. The runtime runs exactly these parts or refuses the call.
   voice: { stackId: string; components?: StackComponents; voiceId?: string; speed?: number };
   recording: { enabled: boolean; announce: boolean };
+  /** Offerings whose approved facts this agent may state (workspace offering.edit; each fact stands on an approved
+   *  knowledge span). Optional: purposes limits which tagged facts are used. A published version is materialised: the
+   *  facts sit in facts[] (source 'kb:<spanId>') and the offerings' never-say in neverSay, listed in materialised. */
+  knowledge?: { offeringIds: string[]; purposes?: string[]; materialised?: { neverSay: string[] } };
 }
 
 export const BRIEF_MAX_BYTES = 1200;
