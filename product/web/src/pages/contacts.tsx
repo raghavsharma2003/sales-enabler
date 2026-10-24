@@ -22,12 +22,12 @@ export const prettyCode = (s: string | null | undefined) => (s ? s.replace(/^(PR
 export default function Contacts({ id, tab }: { id?: string; tab?: string }) {
   const go = useNav();
   if (id) return <ContactPage id={id} />;
-  const t = (tab ?? 'people') as 'people' | 'audiences' | 'import';
+  const t = (tab ?? 'people') as 'people' | 'audiences' | 'import' | 'review';
   return (
     <div className="page">
       <PageHead title="Contacts" sub="People you may call, with consent, DND and what happened on every attempt." actions={t !== 'import' && <Link to="/contacts/import" className="btn btn-primary" style={{ textDecoration: 'none' }}><Upload size={16} aria-hidden /><span>Import a list</span></Link>} />
-      <Tabs label="Contacts sections" value={t} onChange={v => go(v === 'people' ? '/contacts' : v === 'audiences' ? '/audiences' : '/contacts/import')} items={[{ id: 'people', label: 'People' }, { id: 'audiences', label: 'Audiences' }, { id: 'import', label: 'Import' }]} />
-      {t === 'people' && <People />}{t === 'audiences' && <Audiences />}{t === 'import' && <Import />}
+      <Tabs label="Contacts sections" value={t} onChange={v => go(v === 'people' ? '/contacts' : v === 'audiences' ? '/audiences' : v === 'review' ? '/contacts/review' : '/contacts/import')} items={[{ id: 'people', label: 'People' }, { id: 'audiences', label: 'Audiences' }, { id: 'import', label: 'Import' }, { id: 'review', label: 'Memory review' }]} />
+      {t === 'people' && <People />}{t === 'audiences' && <Audiences />}{t === 'import' && <Import />}{t === 'review' && <Suspense fallback={<Card><Skeleton rows={3} /></Card>}><MemoryReview /></Suspense>}
     </div>
   );
 }
@@ -111,6 +111,8 @@ Vikram Rao,9000000015,Telugu,Patna,03/02/2027,A-10238
 
 // The CRM import is its own chunk: only people who import from a CRM download it.
 const CrmImport = lazy(() => import('./import-crm.tsx'));
+// The memory review queue is its own chunk too.
+const MemoryReview = lazy(() => import('./memory-review.tsx'));
 const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }, { id: 'salesforce', label: 'From Salesforce' }] as const;
 type ImportFrom = (typeof SOURCES)[number]['id'];
 

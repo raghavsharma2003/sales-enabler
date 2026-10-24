@@ -143,7 +143,7 @@ export const PAST: Record<string, string> = {
   'deployment.revert_to_last_good': 'put the previous version of an agent back', 'deployment.split': 'changed which agent versions take calls',
   'dpdp.request.execute': 'carried out a person\'s data request', 'experiment.check': 'checked a test on real calls',
   'experiment.start': 'started a test on real calls', 'experiment.stop': 'stopped a test on real calls',
-  'fact.approve': 'approved something remembered about a person', 'fact.forget': 'forgot one remembered fact',
+  'fact.approve': 'approved something remembered about a person', 'fact.review.decide': 'reviewed what callers said for memory', 'fact.forget': 'forgot one remembered fact',
   'integration.connect': 'connected an outside service', 'integration.disconnect': 'disconnected an outside service', 'integration.stage_secrets': 'handed over credentials for an outside service',
   'insight.refresh': 'rebuilt the call insights', 'issue.resolve': 'resolved an issue',
   'judge.calibrate': 'measured how well an outcome judge agrees with people', 'judge.edit': 'changed how an outcome is judged',

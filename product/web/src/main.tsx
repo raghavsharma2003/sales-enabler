@@ -25,7 +25,7 @@ function Routes() {
   if (path === '/') return <Today />;
   if ((m = match('/agents/:id', path))) return <Agents id={m.id} />;
   if (path === '/agents') return <Agents />;
-  if ((m = match('/contacts/:id', path))) return m.id === 'import' ? <Contacts tab="import" /> : <Contacts id={m.id} />;
+  if ((m = match('/contacts/:id', path))) return m.id === 'import' || m.id === 'review' ? <Contacts tab={m.id} /> : <Contacts id={m.id} />;
   if (path === '/contacts') return <Contacts />;
   if (path.startsWith('/audiences')) return <Contacts tab="audiences" />;
   if (path === '/campaigns/new') return <Campaigns create />;

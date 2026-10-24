@@ -92,6 +92,11 @@ export async function contactList(o: { q?: string; audienceId?: string; suppress
   const r = await run<{ contacts: any[]; next: string | null }>('contact.list', { limit: 50, audienceId: o.audienceId, suppressed: o.suppressed, after: o.after });
   return { rows: r.contacts.map(c => ({ id: c.id, name: c.name ?? 'No name', phone: c.e164, language: c.language ?? '', suppressed: !!c.suppressed, dnd: c.dnd ?? 'unknown', dndCheckedAt: c.dndCheckedAt ?? null })), more: !!r.next, next: r.next };
 }
+export interface ReviewItem { id: string; contactId: string; contactName: string | null; kind: string; key: string; value: unknown; quote: string; conversationId: string | null; saidAt: string; proposedAt: string; dropsAt: string }
+export async function factReview(): Promise<{ total: number; unreviewedDays: number; items: ReviewItem[] }> {
+  const r = await run<any>('fact.review.list', { limit: 50 });
+  return { total: r.total ?? 0, unreviewedDays: r.unreviewedDays ?? 14, items: arr<ReviewItem>(r.items) };
+}
 export async function contactGet(id: string): Promise<ContactDoc> {
   const [c, mem, att] = await Promise.all([
     run<any>('contact.get', { id }),

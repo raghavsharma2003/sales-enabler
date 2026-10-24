@@ -10,12 +10,12 @@ import type { Module } from '../../app.ts';
 import { many, one, type Queryable } from '../../db.ts';
 import { complete } from '../../llm.ts';
 import { tool, type PrepareCtx, type Registry, type ToolCtx } from '../../tools.ts';
-import { bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
+import { arr, bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { compileBrief, type BriefFact, type BriefLead } from './brief.ts';
 import { forgetContactMemory } from './forget.ts';
 import { contactMinorStatus } from './minor.ts';
 import { purgeTranscripts } from './transcript-purge.ts';
-import { retentionStatus, sweepMemory } from './retention.ts';
+import { retentionStatus, sweepMemory, UNREVIEWED_DAYS } from './retention.ts';
 import { dayTime } from '../campaigns/retry.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
 
@@ -248,6 +248,17 @@ async function forgetContact(ctx: ToolCtx, i: { contactId: string; requestId?: s
   return { requestId: reqId, ...receipt };
 }
 
+/** A person makes a fact usable now: proposed or waiting facts become active with the undo window closed. */
+async function approveFact(ctx: ToolCtx, factId: string, value?: string) {
+  const f = await one<{ status: string; superseded_by: string | null }>(ctx.q, 'SELECT status, superseded_by FROM memory_fact WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [factId, ctx.workspaceId]);
+  if (!f) throw new Error('no such fact in this workspace');
+  if (f.status !== 'proposed' && f.status !== 'active') throw new Error(`this fact is ${f.status}`);
+  if (value !== undefined && !valueOk(value.trim())) throw new Error('that value reads like an instruction or is too long');
+  await ctx.q.query(`UPDATE memory_fact SET status = 'active', undo_until = now(), approved_by = $3, approved_at = now(), value = coalesce($4::jsonb, value)
+    WHERE id = $1 AND workspace_id = $2`, [factId, ctx.workspaceId, ctx.actor.id ?? null, value === undefined ? null : JSON.stringify(value.trim())]);
+  return { factId, status: 'active', supersededBy: f.superseded_by };
+}
+
 // ---- module -----------------------------------------------------------------------------------------------
 
 const PEOPLE = ['owner', 'builder', 'operator', 'compliance'] as const;
@@ -296,13 +307,46 @@ export const module: Module = {
       name: 'fact.approve', risk: 'draft', roles: PEOPLE, summary: 'approve a remembered fact so the next call may use it',
       run: async (ctx, i) => {
         if (ctx.actor.type !== 'member') throw new Error('only a person can approve a remembered fact');
-        const f = await one<{ status: string; superseded_by: string | null }>(ctx.q, 'SELECT status, superseded_by FROM memory_fact WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.factId, ctx.workspaceId]);
-        if (!f) throw new Error('no such fact in this workspace');
-        if (f.status !== 'proposed' && f.status !== 'active') throw new Error(`this fact is ${f.status}`);
-        if (i.value !== undefined && !valueOk(i.value.trim())) throw new Error('that value reads like an instruction or is too long');
-        await ctx.q.query(`UPDATE memory_fact SET status = 'active', undo_until = now(), approved_by = $3, approved_at = now(), value = coalesce($4::jsonb, value)
-          WHERE id = $1 AND workspace_id = $2`, [i.factId, ctx.workspaceId, ctx.actor.id ?? null, i.value === undefined ? null : JSON.stringify(i.value)]);
-        return { factId: i.factId, status: 'active', supersededBy: f.superseded_by };
+        return approveFact(ctx, i.factId, i.value);
+      },
+    }));
+
+    // The workspace-wide review queue: every fact waiting for a person, oldest first, with the exact words and the call.
+    r.register(tool(obj({ limit: opt(num({ int: true, min: 1, max: 200 })), after: opt(str({ pattern: /^\d{4}-\d{2}-\d{2}T/, max: 40, desc: 'proposedAt of the last item seen, for the next page' })) }), {
+      name: 'fact.review.list', risk: 'read', summary: 'facts waiting for a person to approve, across all contacts, oldest first, with their exact words and the call',
+      run: async (ctx, i) => {
+        const items = await many<{ id: string; contact_id: string; contact_name: string | null; kind: string; key: string; value: unknown; quote: string; conversation_id: string | null;
+          said_at: Date; created_at: Date }>(ctx.q, `SELECT f.id, f.contact_id, ct.name AS contact_name, f.kind, f.key, f.value, f.quote, f.conversation_id, f.said_at, f.created_at
+          FROM memory_fact f JOIN contact ct ON ct.id = f.contact_id AND ct.workspace_id = f.workspace_id
+          WHERE f.workspace_id = $1 AND f.status = 'proposed' AND ct.erased_at IS NULL AND ($2::timestamptz IS NULL OR date_trunc('milliseconds', f.created_at) > $2::timestamptz)
+          ORDER BY f.created_at, f.id LIMIT $3`, [ctx.workspaceId, i.after ?? null, i.limit ?? 50]);
+        const total = (await one<{ n: number }>(ctx.q, `SELECT count(*)::int AS n FROM memory_fact f JOIN contact ct ON ct.id = f.contact_id AND ct.workspace_id = f.workspace_id
+          WHERE f.workspace_id = $1 AND f.status = 'proposed' AND ct.erased_at IS NULL`, [ctx.workspaceId]))!.n;
+        return { total, unreviewedDays: UNREVIEWED_DAYS, items: items.map(f => ({ id: f.id, contactId: f.contact_id, contactName: f.contact_name, kind: f.kind, key: f.key, value: f.value,
+          quote: f.quote, conversationId: f.conversation_id, saidAt: f.said_at.toISOString(), proposedAt: f.created_at.toISOString(),
+          dropsAt: new Date(f.created_at.getTime() + UNREVIEWED_DAYS * 86_400_000).toISOString() })) };
+      },
+    }));
+
+    // Decide many at once. Approve (optionally with a corrected value) or reject: a rejected proposal was never used and is deleted.
+    r.register(tool(obj({ decisions: arr(obj({ factId: uuid(), approve: bool(), value: opt(str({ min: 1, max: 60 })) }), { min: 1, max: 50 }) }), {
+      name: 'fact.review.decide', risk: 'draft', roles: PEOPLE, summary: 'approve or reject facts waiting for review, up to 50 at once',
+      run: async (ctx, i) => {
+        if (ctx.actor.type !== 'member') throw new Error('only a person can review remembered facts');
+        let approved = 0, rejected = 0;
+        const skipped: { factId: string; reason: string }[] = [];
+        for (const d of i.decisions) {
+          const f = await one<{ status: string }>(ctx.q, 'SELECT status FROM memory_fact WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [d.factId, ctx.workspaceId]);
+          if (!f) { skipped.push({ factId: d.factId, reason: 'no such fact in this workspace (it may have been forgotten or dropped)' }); continue; }
+          if (f.status !== 'proposed') { skipped.push({ factId: d.factId, reason: `already ${f.status === 'active' ? 'approved' : f.status}` }); continue; }
+          if (d.approve) {
+            try { await approveFact(ctx, d.factId, d.value); approved++; } catch (e) { skipped.push({ factId: d.factId, reason: e instanceof Error ? e.message : String(e) }); }
+          } else {
+            await ctx.q.query("DELETE FROM memory_fact WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [d.factId, ctx.workspaceId]);
+            rejected++;
+          }
+        }
+        return { approved, rejected, skipped };
       },
     }));
 

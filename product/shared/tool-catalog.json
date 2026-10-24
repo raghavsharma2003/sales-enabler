@@ -3460,6 +3460,85 @@
    }
   },
   {
+   "name": "fact.review.decide",
+   "risk": "draft",
+   "summary": "approve or reject facts waiting for review, up to 50 at once",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "decisions": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "factId": {
+         "type": "string",
+         "format": "uuid"
+        },
+        "approve": {
+         "type": "boolean"
+        },
+        "value": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 60
+        }
+       },
+       "required": [
+        "factId",
+        "approve"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 50
+     }
+    },
+    "required": [
+     "decisions"
+    ]
+   }
+  },
+  {
+   "name": "fact.review.list",
+   "risk": "read",
+   "summary": "facts waiting for a person to approve, across all contacts, oldest first, with their exact words and the call",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     },
+     "after": {
+      "type": "string",
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T",
+      "description": "proposedAt of the last item seen, for the next page"
+     }
+    },
+    "required": []
+   }
+  },
+  {
    "name": "handoff.claim",
    "risk": "draft",
    "summary": "Take a hand-off: it is yours to call back or follow up, and nobody else is shown it as free",

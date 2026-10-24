@@ -1,0 +1,44 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.memory-review-queue",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Facts that need a person (review tier: commitments) wait in one workspace-wide queue, Contacts > Memory review (/contacts/review).\n- fact.review.list (read): oldest first, with the contact, the caller's exact words, the call, and the date it will be dropped (14 days).\n- fact.review.decide (draft, members only): approve, correct then approve (the value is linted like any fact), or reject, up to 50 at once.\n- Rejected proposals are deleted, not hidden. They were never used.\n- fact.approve shares the same approve code.\n- The page is its own lazy chunk (first load unchanged).",
+   "rationale": "Before this, approval existed only one contact at a time, so most proposals would simply age out unreviewed. The integrator asked for the queue after the retention sweep.",
+   "reverse_if": "Reviewers ask to keep rejected proposals as evidence of what was heard, in which case store a rejected status with the quote removed. Or the queue grows past what people review, in which case add earned auto-approval per key (blueprint §3)."
+  },
+  {
+   "id": "measure.2026-10-24.memory-review-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-review.test.ts 3/3:\n(1) The queue lists 3 proposals across 2 contacts, oldest first; active facts and an erased person's proposals are left out. dropsAt is proposedAt plus 14 days, and the cursor pages on.\n(2) One decide call approves 2 (one corrected), rejects 1 (deleted), and skips an already-approved fact and an unknown id, each with its reason. A system actor is refused, and an instruction-shaped correction is refused.\n(3) Another workspace sees 0 and cannot reject.\nBrowser flow 'Memory review: …': the page lists what the server lists; a corrected approve is stored as active with the new value; a reject deletes. axe at 1440 and 390 finds no serious or critical violation. Shots: web/shots/memory-review-{d,m}.png. Browser flows 80/80.",
+   "n": 3,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test) plus the Playwright browser flows against the real server",
+   "path": "product/tests/memory-review.test.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.memory-review-tests",
+   "to": "decision.2026-10-24.memory-review-queue",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.memory-review-queue",
+   "to": "decision.2026-10-24.memory-retention-sweep",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "memory-review-queue",
+   "details": "The workspace-wide review queue for proposed facts: tools fact.review.list and fact.review.decide, and the web page /contacts/review in its own chunk. Verified: tests/memory-review.test.ts 3/3; browser flows 80/80, axe clean at both sizes. Not verified: queues longer than 50 shown at once (the page shows the first 50; the tool pages)."
+  }
+ ]
+}

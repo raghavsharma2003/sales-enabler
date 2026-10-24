@@ -5,19 +5,22 @@
   "erasure.pending",
   "fact.approve",
   "fact.forget",
+  "fact.review.decide",
+  "fact.review.list",
   "memory.brief",
   "memory.extract",
   "memory.policy.get",
   "memory.policy.set"
  ],
  "tests": {
-  "passed": 33,
-  "total": 33,
+  "passed": 36,
+  "total": 36,
   "files": {
    "memory.test.ts": 17,
    "memory-retention.test.ts": 4,
    "calls-outcome-import.test.ts": 6,
-   "memory-sweep.test.ts": 6
+   "memory-sweep.test.ts": 6,
+   "memory-review.test.ts": 3
   }
  },
  "works": [
@@ -37,7 +40,8 @@
   "memory.transcript_purge job (transcript-purge.ts): at transcripts_days, and on erasure (erase_me, or a contact erased in place), it redacts caller text in turn, transcript, analysis, call_moment, outcome evidence, hand_off brief and call_insight quotes, keeps metrics, and records when and why; call.get shows transcriptRemoved and the call page shows it",
   "erasure.pending: recording deletes the runtime has not confirmed (tries, last error), and erased people's calls still holding audio or words",
   "erasure also redacts an erased person's verified outcomes (reference and amount) and their pending outcome-import preview rows (redactErasedOutcomes, run by memory.transcript_purge)",
-  "memory.retention nightly job (retention.ts): expired facts, review-tier proposals unreviewed for 14 days and extraction receipts past the transcripts window are deleted for good, with no resurrection; one counts-only audit row per workspace; memory.policy.get.retention {rules, dueNow, lastSweep}"
+  "memory.retention nightly job (retention.ts): expired facts, review-tier proposals unreviewed for 14 days and extraction receipts past the transcripts window are deleted for good, with no resurrection; one counts-only audit row per workspace; memory.policy.get.retention {rules, dueNow, lastSweep}",
+  "workspace-wide memory review queue: fact.review.list (proposed facts across contacts, oldest first, exact quote, call link, the date it is dropped) and fact.review.decide (a person approves, corrects then approves, or rejects up to 50 at once; rejected proposals are deleted); web /contacts/review in its own lazy chunk"
  ],
  "untested": [
   "real LLM extraction quality",

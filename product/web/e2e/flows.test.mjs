@@ -2066,3 +2066,41 @@ test('Client event log: a component that throws shows a calm card, and the beaco
   const text = JSON.stringify(sent);
   assert.ok(!text.includes('9000000077') && !text.includes('priya.test@'), 'no phone or email in clear');
 });
+
+test('Memory review: proposed facts across contacts wait in one queue; a correction is approved and a reject deletes, as the server says', async () => {
+  // Proposed facts (fixture in SQL: only a real call's analysis proposes them), oldest first, for two people.
+  const people = (await pool.query('SELECT id, name FROM contact WHERE workspace_id = $1 AND erased_at IS NULL ORDER BY created_at LIMIT 2', [ws])).rows;
+  const mk = async (contact, key, value, quote, days) => (await pool.query(`INSERT INTO memory_fact (workspace_id, contact_id, kind, key, value, quote, purpose, basis, status, tier, created_at, said_at, expires_at)
+    VALUES ($1,$2,'commitment',$3,$4,$5,'service','contract','proposed','review', now() - make_interval(days => $6), now() - make_interval(days => $6), now() + interval '20 days') RETURNING id`,
+    [ws, contact, key, JSON.stringify(value), quote, days])).rows[0].id;
+  const keep = await mk(people[0].id, 'callback', 'after 6 pm', 'shaam 6 baje ke baad call karna', 3);
+  const drop = await mk(people[1].id, 'send_info', 'brochure', 'brochure bhej dena', 1);
+  await page.goto(`${BASE}/contacts/review`);
+  const list = page.locator('[data-testid="memory-review"]');
+  await list.waitFor();
+  const server = (await tool('fact.review.list')).result;
+  assert.equal(await list.locator('> li').count(), server.items.length, 'the page lists what the server lists');
+  const row = id => list.locator('> li').filter({ hasText: server.items.find(i => i.id === id).quote });
+  await row(keep).getByText('“shaam 6 baje ke baad call karna”').waitFor();
+  await row(keep).getByLabel('What to remember').fill('after 6:30 pm');
+  await row(keep).getByRole('button', { name: 'Approve' }).click();
+  await row(keep).waitFor({ state: 'detached', timeout: 10000 });
+  const kept = (await pool.query('SELECT status, value FROM memory_fact WHERE id = $1', [keep])).rows[0];
+  assert.deepEqual(kept, { status: 'active', value: 'after 6:30 pm' }, 'approved with the correction');
+  await row(drop).getByRole('button', { name: 'Reject' }).click();
+  await row(drop).waitFor({ state: 'detached', timeout: 10000 });
+  assert.equal((await pool.query('SELECT 1 FROM memory_fact WHERE id = $1', [drop])).rowCount, 0, 'a rejected proposal is deleted');
+
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  fs.mkdirSync(shotDir, { recursive: true });
+  await mk(people[0].id, 'pay_by', 'by Friday', 'Friday tak kar dunga', 2);
+  const [phoneCtx, phone] = await phonePage();
+  try {
+    for (const [tag, p] of [['d', page], ['m', phone]]) {
+      await p.goto(`${BASE}/contacts/review`);
+      await p.locator('[data-testid="memory-review"]').waitFor();
+      await p.screenshot({ path: path.join(shotDir, `memory-review-${tag}.png`), fullPage: true });
+      assert.deepEqual((await axe(p)).filter(v => v.impact === 'serious' || v.impact === 'critical'), [], `axe on memory review at ${tag === 'd' ? 1440 : 390}`);
+    }
+  } finally { await phoneCtx.close(); }
+});

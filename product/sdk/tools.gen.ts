@@ -86,6 +86,8 @@ export type ToolName =
   | "experiment.stop"
   | "fact.approve"
   | "fact.forget"
+  | "fact.review.decide"
+  | "fact.review.list"
   | "handoff.claim"
   | "handoff.list"
   | "handoff.resolve"
@@ -842,6 +844,20 @@ export interface ToolInput {
   /** forget one remembered fact (removed, not hidden) (destructive, waits for approval) */
   "fact.forget": {
     factId: string;
+  };
+  /** approve or reject facts waiting for review, up to 50 at once (draft) */
+  "fact.review.decide": {
+    decisions: ({
+      factId: string;
+      approve: boolean;
+      value?: string;
+    })[];
+  };
+  /** facts waiting for a person to approve, across all contacts, oldest first, with their exact words and the call (read) */
+  "fact.review.list": {
+    limit?: number;
+    /** proposedAt of the last item seen, for the next page */
+    after?: string;
   };
   /** Take a hand-off: it is yours to call back or follow up, and nobody else is shown it as free (draft) */
   "handoff.claim": {
@@ -1971,6 +1987,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "experiment.stop": { risk: "draft", needsApproval: false },
   "fact.approve": { risk: "draft", needsApproval: false },
   "fact.forget": { risk: "destructive", needsApproval: true },
+  "fact.review.decide": { risk: "draft", needsApproval: false },
+  "fact.review.list": { risk: "read", needsApproval: false },
   "handoff.claim": { risk: "draft", needsApproval: false },
   "handoff.list": { risk: "read", needsApproval: false },
   "handoff.resolve": { risk: "draft", needsApproval: false },
