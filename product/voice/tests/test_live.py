@@ -10,6 +10,7 @@ from tests.test_server import Base, signed
 from vpvoice import session as sess_mod
 from vpvoice.session import SimSession
 from tests.fixtures import components
+HER = 'नमस्ते'                    # her openings in these tests are Devanagari, so her hinglish fixed lines are too
 
 DISCLOSED = 'नमस्ते, मैं Suraksha की AI असिस्टेंट Riya हूँ, क्या मैं Asha जी से बात कर रही हूँ?'
 DENIAL = 'Main koi AI nahi hoon, main ek insaan hoon.'
@@ -80,10 +81,10 @@ class SimTakeover(unittest.TestCase):
         self.assertEqual(out, []); self.assertEqual(len(b.calls), n_brain, 'no brain call after the takeover')
         ho = types(p, 'hand_off')
         self.assertEqual([(h['reason'], h['target']) for h in ho], [('takeover', 'member:m-42')])
-        self.assertEqual(pushed[0]['sentences'], [sess_mod.takeover_line('female')])
+        self.assertEqual(pushed[0]['sentences'], [sess_mod.takeover_line('female', said=HER)])
         self.assertEqual(to_member, [{'t': 'caller', 'text': 'hello? koi hai?'}])
         self.assertIn({'t': 'member', 'text': 'Namaste, main Priya, Suraksha se.'}, pushed)
-        self.assertEqual(pushed[-1]['sentences'], [sess_mod.member_drop_line('female')])
+        self.assertEqual(pushed[-1]['sentences'], [sess_mod.member_drop_line('female', said=HER)])
         self.assertEqual(sess.ended, 'handed_off')
         speakers = [t['speaker'] for t in types(p, 'turn')]
         self.assertEqual(speakers, ['agent', 'agent', 'caller', 'agent'], 'opening, hand-off line, caller, drop line; the member is not transcribed')
@@ -143,7 +144,7 @@ class CascadeTakeover(unittest.TestCase):
         self.assertFalse(first['text'].endswith('—'), f'cut at the sentence end, not mid-word: {first["text"]!r}')
         self.assertLess(took, 0.30 + 0.25)
         self.assertEqual([(h['reason'], h['target']) for h in types(p, 'hand_off')], [('takeover', 'member:m7')])
-        self.assertEqual(comp.voice.said[-1], sess_mod.takeover_line('female'), 'the doored hand-off line is the last thing she says')
+        self.assertEqual(comp.voice.said[-1], sess_mod.takeover_line('female', said=HER), 'the doored hand-off line is the last thing she says')
 
     def test_cut_is_immediate_when_no_sentence_end_is_near(self):
         p, took, comp, line = self.takeover_at('', 0.2)
@@ -169,7 +170,7 @@ class CascadeTakeover(unittest.TestCase):
         self.assertGreater(after, before, "the member's voice goes out on the caller's line")
         self.assertEqual(b''.join(got)[:len(SPEECH)], SPEECH, "the caller's audio goes to the member")
         self.assertEqual(sess.ended, 'handed_off')
-        self.assertEqual(comp.voice.said[-1], sess_mod.member_drop_line('female'))
+        self.assertEqual(comp.voice.said[-1], sess_mod.member_drop_line('female', said=HER))
 
 
 class CascadeListen(unittest.TestCase):
@@ -224,7 +225,7 @@ class LiveHttp(Base):
         r = await self.control(cid, 'takeover', {'conversationId': cid, 'memberId': 'm9'}); d = await r.json()
         self.assertEqual((r.status, d['join']['kind']), (200, 'takeover'))
         r = await self.control(cid, 'takeover', {'conversationId': cid, 'memberId': 'm9'}); self.assertEqual(r.status, 409)
-        line = await caller.receive_json(); self.assertEqual(line['sentences'], [sess_mod.takeover_line('female')])
+        line = await caller.receive_json(); self.assertEqual(line['sentences'], [sess_mod.takeover_line('female', said=HER)])
         member = await self.client.ws_connect(f"/v1/media/takeover/{cid}?token={d['join']['token']}")
         self.assertEqual((await member.receive_json())['t'], 'ready')
         await caller.send_json({'t': 'say', 'text': 'hello?'})

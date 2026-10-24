@@ -672,7 +672,7 @@ class CascadeSession(Session):
         quiet_since = max(self.eos_t or self.t0, self.rec.play_until)
         if self.silence_s and a is None and self.pending is None and not v.speaking and not self.agent_playing() \
                 and self.now() - quiet_since >= self.silence_s and not self.conv.state['crisis']:
-            await self.speak_canned('लगता है आवाज़ नहीं आ रही, मैं बाद में बात करती हूँ। शुक्रिया।'.replace('करती', safety.g(self.conv.gender, 'करती', 'करता')))
+            await self.speak_canned(self.fixed('silence'))
             await self.finish('silence_timeout')
 
     async def _settle(self, gate):

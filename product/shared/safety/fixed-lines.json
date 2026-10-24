@@ -1,0 +1,185 @@
+{
+ "about": "Her fixed lines outside the reply door's own texts: the hand-off bridge and call-back, the limit close, the takeover hand-off, the line when a member who took over drops, and the silence close. One table per language (the keys of agent-config LANGUAGES), each line a string or {female, male} for languages whose first person is gendered. The runtime renders them for the call's language (the contact's language when the agent allows it, else languages.primary); hinglish follows her script (Devanagari -> hi-IN), as disclosure.json does. Read by product/voice/vpvoice/safety.py fixed_line() and product/tests/safety-fixed-lines.test.ts. Every line passes the reply door (they are doored at runtime too).",
+ "version": "2026-10-24.1",
+ "fallback": "hinglish",
+ "keys": [
+  "bridge_now",
+  "bridge_callback",
+  "limit",
+  "takeover",
+  "member_drop",
+  "silence"
+ ],
+ "scripts": {
+  "hinglish": "Latn",
+  "en-IN": "Latn",
+  "hi-IN": "Deva",
+  "mr-IN": "Deva",
+  "ta-IN": "Taml",
+  "bn-IN": "Beng",
+  "kn-IN": "Knda",
+  "te-IN": "Telu",
+  "ml-IN": "Mlym",
+  "gu-IN": "Gujr",
+  "pa-IN": "Guru",
+  "or-IN": "Orya"
+ },
+ "lines": {
+  "hinglish": {
+   "bridge_now": {
+    "female": "Ji, main abhi aapki baat hamare ek saathi se karwa rahi hoon, ek pal rukiye.",
+    "male": "Ji, main abhi aapki baat hamare ek saathi se karwa raha hoon, ek pal rukiye."
+   },
+   "bridge_callback": "Ji, hamare ek saathi aapko jaldi hi call karenge.",
+   "limit": "Maaf kijiye, ab mujhe yeh call rakhni hogi. Aapka samay dene ke liye shukriya.",
+   "takeover": {
+    "female": "Main aapko apne colleague se connect kar rahi hoon, ek pal rukiye.",
+    "male": "Main aapko apne colleague se connect kar raha hoon, ek pal rukiye."
+   },
+   "member_drop": {
+    "female": "Maaf kijiye, hamare colleague se connection toot gaya. Abhi ke liye call rakh rahi hoon, shukriya.",
+    "male": "Maaf kijiye, hamare colleague se connection toot gaya. Abhi ke liye call rakh raha hoon, shukriya."
+   },
+   "silence": {
+    "female": "Lagta hai awaaz nahi aa rahi, main baad mein baat karti hoon. Shukriya.",
+    "male": "Lagta hai awaaz nahi aa rahi, main baad mein baat karta hoon. Shukriya."
+   }
+  },
+  "hi-IN": {
+   "bridge_now": {
+    "female": "जी, मैं अभी आपकी बात हमारे एक साथी से करवाती हूँ, एक पल रुकिए।",
+    "male": "जी, मैं अभी आपकी बात हमारे एक साथी से करवाता हूँ, एक पल रुकिए।"
+   },
+   "bridge_callback": "जी, हमारे एक साथी आपको जल्दी ही कॉल करेंगे।",
+   "limit": "माफ़ कीजिए, अब मुझे यह कॉल रखनी होगी। आपका समय देने के लिए शुक्रिया।",
+   "takeover": {
+    "female": "मैं आपको अपने एक साथी से जोड़ रही हूँ, एक पल रुकिए।",
+    "male": "मैं आपको अपने एक साथी से जोड़ रहा हूँ, एक पल रुकिए।"
+   },
+   "member_drop": {
+    "female": "माफ़ कीजिए, हमारे साथी से कनेक्शन टूट गया। अभी के लिए कॉल रख रही हूँ, शुक्रिया।",
+    "male": "माफ़ कीजिए, हमारे साथी से कनेक्शन टूट गया। अभी के लिए कॉल रख रहा हूँ, शुक्रिया।"
+   },
+   "silence": {
+    "female": "लगता है आवाज़ नहीं आ रही, मैं बाद में बात करती हूँ। शुक्रिया।",
+    "male": "लगता है आवाज़ नहीं आ रही, मैं बाद में बात करता हूँ। शुक्रिया।"
+   }
+  },
+  "en-IN": {
+   "bridge_now": "I'm connecting you to one of our colleagues now, one moment please.",
+   "bridge_callback": "One of our colleagues will call you back shortly.",
+   "limit": "I'm sorry, I have to end this call now. Thank you for your time.",
+   "takeover": "I'm connecting you to my colleague, one moment please.",
+   "member_drop": "Sorry, the connection to our colleague dropped. I'll end the call for now. Thank you.",
+   "silence": "I can't seem to hear you, so I'll call back later. Thank you."
+  },
+  "ta-IN": {
+   "bridge_now": "இப்போது உங்களை எங்கள் சக ஊழியர் ஒருவருடன் இணைக்கிறேன், ஒரு நிமிடம் காத்திருங்கள்.",
+   "bridge_callback": "எங்கள் சக ஊழியர் ஒருவர் விரைவில் உங்களை அழைப்பார்.",
+   "limit": "மன்னிக்கவும், இப்போது இந்த அழைப்பை முடிக்க வேண்டும். உங்கள் நேரத்திற்கு நன்றி.",
+   "takeover": "உங்களை என் சக ஊழியருடன் இணைக்கிறேன், ஒரு நிமிடம் காத்திருங்கள்.",
+   "member_drop": "மன்னிக்கவும், எங்கள் சக ஊழியருடனான இணைப்பு துண்டிக்கப்பட்டது. இப்போதைக்கு அழைப்பை முடிக்கிறேன், நன்றி.",
+   "silence": "உங்கள் குரல் கேட்கவில்லை போலிருக்கிறது, பிறகு அழைக்கிறேன். நன்றி."
+  },
+  "bn-IN": {
+   "bridge_now": "এখনই আপনাকে আমাদের একজন সহকর্মীর সঙ্গে যুক্ত করছি, এক মুহূর্ত অপেক্ষা করুন।",
+   "bridge_callback": "আমাদের একজন সহকর্মী শিগগিরই আপনাকে ফোন করবেন।",
+   "limit": "দুঃখিত, এখন আমাকে কলটি শেষ করতে হবে। আপনার সময়ের জন্য ধন্যবাদ।",
+   "takeover": "আপনাকে আমার সহকর্মীর সঙ্গে যুক্ত করছি, এক মুহূর্ত অপেক্ষা করুন।",
+   "member_drop": "দুঃখিত, আমাদের সহকর্মীর সঙ্গে সংযোগ বিচ্ছিন্ন হয়ে গেছে। আপাতত কলটি শেষ করছি, ধন্যবাদ।",
+   "silence": "মনে হচ্ছে আপনার কথা শোনা যাচ্ছে না, পরে আবার ফোন করব। ধন্যবাদ।"
+  },
+  "kn-IN": {
+   "bridge_now": "ಈಗ ನಿಮ್ಮನ್ನು ನಮ್ಮ ಸಹೋದ್ಯೋಗಿಯೊಬ್ಬರೊಂದಿಗೆ ಸಂಪರ್ಕಿಸುತ್ತಿದ್ದೇನೆ, ಒಂದು ಕ್ಷಣ ಕಾಯಿರಿ.",
+   "bridge_callback": "ನಮ್ಮ ಸಹೋದ್ಯೋಗಿಯೊಬ್ಬರು ಶೀಘ್ರದಲ್ಲೇ ನಿಮಗೆ ಕರೆ ಮಾಡುತ್ತಾರೆ.",
+   "limit": "ಕ್ಷಮಿಸಿ, ಈಗ ನಾನು ಈ ಕರೆಯನ್ನು ಮುಗಿಸಬೇಕು. ನಿಮ್ಮ ಸಮಯಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+   "takeover": "ನಿಮ್ಮನ್ನು ನನ್ನ ಸಹೋದ್ಯೋಗಿಯೊಂದಿಗೆ ಸಂಪರ್ಕಿಸುತ್ತಿದ್ದೇನೆ, ಒಂದು ಕ್ಷಣ ಕಾಯಿರಿ.",
+   "member_drop": "ಕ್ಷಮಿಸಿ, ನಮ್ಮ ಸಹೋದ್ಯೋಗಿಯೊಂದಿಗಿನ ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡಿದೆ. ಸದ್ಯಕ್ಕೆ ಕರೆಯನ್ನು ಮುಗಿಸುತ್ತಿದ್ದೇನೆ, ಧನ್ಯವಾದಗಳು.",
+   "silence": "ನಿಮ್ಮ ಧ್ವನಿ ಕೇಳಿಸುತ್ತಿಲ್ಲ ಎನಿಸುತ್ತದೆ, ನಂತರ ಕರೆ ಮಾಡುತ್ತೇನೆ. ಧನ್ಯವಾದಗಳು."
+  },
+  "te-IN": {
+   "bridge_now": "ఇప్పుడే మిమ్మల్ని మా సహోద్యోగి ఒకరితో కలుపుతున్నాను, ఒక్క క్షణం ఆగండి.",
+   "bridge_callback": "మా సహోద్యోగి ఒకరు త్వరలోనే మీకు కాల్ చేస్తారు.",
+   "limit": "క్షమించండి, ఇప్పుడు నేను ఈ కాల్ ముగించాలి. మీ సమయానికి ధన్యవాదాలు.",
+   "takeover": "మిమ్మల్ని నా సహోద్యోగితో కలుపుతున్నాను, ఒక్క క్షణం ఆగండి.",
+   "member_drop": "క్షమించండి, మా సహోద్యోగితో కనెక్షన్ తెగిపోయింది. ప్రస్తుతానికి కాల్ ముగిస్తున్నాను, ధన్యవాదాలు.",
+   "silence": "మీ మాట వినిపించడం లేదు అనిపిస్తోంది, తర్వాత కాల్ చేస్తాను. ధన్యవాదాలు."
+  },
+  "ml-IN": {
+   "bridge_now": "ഇപ്പോൾ നിങ്ങളെ ഞങ്ങളുടെ സഹപ്രവർത്തകരിൽ ഒരാളുമായി ബന്ധിപ്പിക്കുന്നു, ഒരു നിമിഷം കാത്തിരിക്കൂ.",
+   "bridge_callback": "ഞങ്ങളുടെ സഹപ്രവർത്തകരിൽ ഒരാൾ ഉടൻ നിങ്ങളെ വിളിക്കും.",
+   "limit": "ക്ഷമിക്കണം, ഇപ്പോൾ എനിക്ക് ഈ കോൾ അവസാനിപ്പിക്കണം. നിങ്ങളുടെ സമയത്തിന് നന്ദി.",
+   "takeover": "നിങ്ങളെ എന്റെ സഹപ്രവർത്തകരിൽ ഒരാളുമായി ബന്ധിപ്പിക്കുന്നു, ഒരു നിമിഷം കാത്തിരിക്കൂ.",
+   "member_drop": "ക്ഷമിക്കണം, ഞങ്ങളുടെ സഹപ്രവർത്തകരുമായുള്ള കണക്ഷൻ മുറിഞ്ഞുപോയി. ഇപ്പോൾ കോൾ അവസാനിപ്പിക്കുന്നു, നന്ദി.",
+   "silence": "നിങ്ങളുടെ ശബ്ദം കേൾക്കുന്നില്ലെന്ന് തോന്നുന്നു, പിന്നീട് വിളിക്കാം. നന്ദി."
+  },
+  "mr-IN": {
+   "bridge_now": {
+    "female": "आता मी तुमचं बोलणं आमच्या एका सहकाऱ्याशी करून देते, एक क्षण थांबा.",
+    "male": "आता मी तुमचं बोलणं आमच्या एका सहकाऱ्याशी करून देतो, एक क्षण थांबा."
+   },
+   "bridge_callback": "आमचे एक सहकारी लवकरच तुम्हाला कॉल करतील.",
+   "limit": "माफ करा, आता मला हा कॉल संपवावा लागेल. तुमच्या वेळेबद्दल धन्यवाद.",
+   "takeover": {
+    "female": "मी तुम्हाला माझ्या सहकाऱ्याशी जोडते आहे, एक क्षण थांबा.",
+    "male": "मी तुम्हाला माझ्या सहकाऱ्याशी जोडतो आहे, एक क्षण थांबा."
+   },
+   "member_drop": {
+    "female": "माफ करा, आमच्या सहकाऱ्याशी संपर्क तुटला. सध्या मी कॉल ठेवते, धन्यवाद.",
+    "male": "माफ करा, आमच्या सहकाऱ्याशी संपर्क तुटला. सध्या मी कॉल ठेवतो, धन्यवाद."
+   },
+   "silence": {
+    "female": "तुमचा आवाज येत नाहीये असं वाटतं, मी नंतर कॉल करते. धन्यवाद.",
+    "male": "तुमचा आवाज येत नाहीये असं वाटतं, मी नंतर कॉल करतो. धन्यवाद."
+   }
+  },
+  "gu-IN": {
+   "bridge_now": "હું હમણાં જ તમારી વાત અમારા એક સાથીદાર સાથે કરાવું છું, એક ક્ષણ રાહ જુઓ.",
+   "bridge_callback": "અમારા એક સાથીદાર તમને ટૂંક સમયમાં કૉલ કરશે.",
+   "limit": "માફ કરશો, હવે મારે આ કૉલ પૂરો કરવો પડશે. તમારા સમય બદલ આભાર.",
+   "takeover": "હું તમને મારા સાથીદાર સાથે જોડું છું, એક ક્ષણ રાહ જુઓ.",
+   "member_drop": "માફ કરશો, અમારા સાથીદાર સાથેનું જોડાણ તૂટી ગયું. હાલ પૂરતો કૉલ પૂરો કરું છું, આભાર.",
+   "silence": "લાગે છે કે તમારો અવાજ નથી આવતો, હું પછી કૉલ કરીશ. આભાર."
+  },
+  "pa-IN": {
+   "bridge_now": {
+    "female": "ਮੈਂ ਹੁਣੇ ਤੁਹਾਡੀ ਗੱਲ ਸਾਡੇ ਇੱਕ ਸਾਥੀ ਨਾਲ ਕਰਵਾ ਰਹੀ ਹਾਂ, ਇੱਕ ਪਲ ਰੁਕੋ।",
+    "male": "ਮੈਂ ਹੁਣੇ ਤੁਹਾਡੀ ਗੱਲ ਸਾਡੇ ਇੱਕ ਸਾਥੀ ਨਾਲ ਕਰਵਾ ਰਿਹਾ ਹਾਂ, ਇੱਕ ਪਲ ਰੁਕੋ।"
+   },
+   "bridge_callback": "ਸਾਡੇ ਇੱਕ ਸਾਥੀ ਜਲਦੀ ਹੀ ਤੁਹਾਨੂੰ ਕਾਲ ਕਰਨਗੇ।",
+   "limit": "ਮਾਫ਼ ਕਰਨਾ, ਹੁਣ ਮੈਨੂੰ ਇਹ ਕਾਲ ਖ਼ਤਮ ਕਰਨੀ ਪਵੇਗੀ। ਤੁਹਾਡੇ ਸਮੇਂ ਲਈ ਧੰਨਵਾਦ।",
+   "takeover": {
+    "female": "ਮੈਂ ਤੁਹਾਨੂੰ ਆਪਣੇ ਸਾਥੀ ਨਾਲ ਜੋੜ ਰਹੀ ਹਾਂ, ਇੱਕ ਪਲ ਰੁਕੋ।",
+    "male": "ਮੈਂ ਤੁਹਾਨੂੰ ਆਪਣੇ ਸਾਥੀ ਨਾਲ ਜੋੜ ਰਿਹਾ ਹਾਂ, ਇੱਕ ਪਲ ਰੁਕੋ।"
+   },
+   "member_drop": {
+    "female": "ਮਾਫ਼ ਕਰਨਾ, ਸਾਡੇ ਸਾਥੀ ਨਾਲ ਕੁਨੈਕਸ਼ਨ ਟੁੱਟ ਗਿਆ। ਫ਼ਿਲਹਾਲ ਕਾਲ ਖ਼ਤਮ ਕਰ ਰਹੀ ਹਾਂ, ਧੰਨਵਾਦ।",
+    "male": "ਮਾਫ਼ ਕਰਨਾ, ਸਾਡੇ ਸਾਥੀ ਨਾਲ ਕੁਨੈਕਸ਼ਨ ਟੁੱਟ ਗਿਆ। ਫ਼ਿਲਹਾਲ ਕਾਲ ਖ਼ਤਮ ਕਰ ਰਿਹਾ ਹਾਂ, ਧੰਨਵਾਦ।"
+   },
+   "silence": {
+    "female": "ਲੱਗਦਾ ਹੈ ਤੁਹਾਡੀ ਆਵਾਜ਼ ਨਹੀਂ ਆ ਰਹੀ, ਮੈਂ ਬਾਅਦ ਵਿੱਚ ਕਾਲ ਕਰਾਂਗੀ। ਧੰਨਵਾਦ।",
+    "male": "ਲੱਗਦਾ ਹੈ ਤੁਹਾਡੀ ਆਵਾਜ਼ ਨਹੀਂ ਆ ਰਹੀ, ਮੈਂ ਬਾਅਦ ਵਿੱਚ ਕਾਲ ਕਰਾਂਗਾ। ਧੰਨਵਾਦ।"
+   }
+  },
+  "or-IN": {
+   "bridge_now": "ମୁଁ ବର୍ତ୍ତମାନ ଆପଣଙ୍କୁ ଆମର ଜଣେ ସହକର୍ମୀଙ୍କ ସହ ଯୋଡୁଛି, ଟିକେ ଅପେକ୍ଷା କରନ୍ତୁ।",
+   "bridge_callback": "ଆମର ଜଣେ ସହକର୍ମୀ ଶୀଘ୍ର ଆପଣଙ୍କୁ କଲ୍ କରିବେ।",
+   "limit": "କ୍ଷମା କରିବେ, ବର୍ତ୍ତମାନ ମୋତେ ଏହି କଲ୍ ଶେଷ କରିବାକୁ ପଡ଼ିବ। ଆପଣଙ୍କ ସମୟ ପାଇଁ ଧନ୍ୟବାଦ।",
+   "takeover": "ମୁଁ ଆପଣଙ୍କୁ ମୋର ସହକର୍ମୀଙ୍କ ସହ ଯୋଡୁଛି, ଟିକେ ଅପେକ୍ଷା କରନ୍ତୁ।",
+   "member_drop": "କ୍ଷମା କରିବେ, ଆମ ସହକର୍ମୀଙ୍କ ସହ ସଂଯୋଗ ବିଚ୍ଛିନ୍ନ ହୋଇଗଲା। ଏବେ ପାଇଁ କଲ୍ ଶେଷ କରୁଛି, ଧନ୍ୟବାଦ।",
+   "silence": "ଲାଗୁଛି ଆପଣଙ୍କ ସ୍ୱର ଶୁଣାଯାଉନାହିଁ, ମୁଁ ପରେ କଲ୍ କରିବି। ଧନ୍ୟବାଦ।"
+  }
+ },
+ "review": {
+  "ta-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "bn-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "kn-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "te-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "ml-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "mr-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "gu-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "pa-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+  "or-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)"
+ },
+ "review_about": "hinglish, hi-IN and en-IN carry the lines she spoke before this table (or their direct renderings); the rest are machine-written and wait for a native reviewer."
+}

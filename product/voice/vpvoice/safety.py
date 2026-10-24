@@ -13,15 +13,15 @@ from dataclasses import dataclass, field
 from . import rules
 
 
-def _disclosure():
-    for p in (os.environ.get('VP_SAFETY_DISCLOSURE'), os.path.join(rules.HERE, 'disclosure.json'),
-              os.path.join(rules.HERE, '..', '..', 'shared', 'safety', 'disclosure.json')):
+def _shared(name, env):
+    for p in (os.environ.get(env), os.path.join(rules.HERE, name), os.path.join(rules.HERE, '..', '..', 'shared', 'safety', name)):
         if p and os.path.exists(p):
             with open(p, encoding='utf-8') as f: return json.load(f)
-    raise FileNotFoundError('product/shared/safety/disclosure.json not found (set VP_SAFETY_DISCLOSURE)')
+    raise FileNotFoundError(f'product/shared/safety/{name} not found (set {env})')
 
 
-DISCLOSURE = _disclosure()
+DISCLOSURE = _shared('disclosure.json', 'VP_SAFETY_DISCLOSURE')
+FIXED = _shared('fixed-lines.json', 'VP_SAFETY_FIXED_LINES')
 
 
 def script_language(text, language):
@@ -29,6 +29,22 @@ def script_language(text, language):
     if language not in (None, '', 'hinglish'): return language
     deva = sum(1 for ch in text or '' if '\u0900' <= ch <= '\u097f'); latin = sum(1 for ch in text or '' if ch.isascii() and ch.isalpha())
     return 'hi-IN' if deva > latin else (language or 'hinglish')
+
+
+def call_language(agent, contact=None):
+    """The language her fixed lines are rendered in: the contact's, when the agent allows it, else the agent's primary."""
+    langs = (agent or {}).get('languages') or {}
+    c = (contact or {}).get('language')
+    return c if c and c in (langs.get('allowed') or []) else (langs.get('primary') or FIXED['fallback'])
+
+
+def fixed_line(key, language=None, gender='female', said=''):
+    """One of her fixed lines (shared/safety/fixed-lines.json) in the call's language; hinglish follows the script of
+    what she has been saying (said), like the disclosure line."""
+    lang = script_language(said, language)
+    table = FIXED['lines'].get(lang) or FIXED['lines'][FIXED['fallback']]
+    line = table[key]
+    return line if isinstance(line, str) else line.get(gender) or line['female']
 
 
 def disclosure_line(brand='', language=None):

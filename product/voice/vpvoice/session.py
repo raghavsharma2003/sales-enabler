@@ -12,22 +12,16 @@ END_REASONS = {'completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy'
 CRISIS_CEILING = 2.0           # in a crisis, limits stretch to this multiple before the call is handed off (she never ends it)
 
 
-def bridge_line(target_kind, gender):
-    if target_kind == 'callback':
-        return f"जी, हमारे एक साथी आपको जल्दी ही कॉल करेंगे।"
-    return f"जी, मैं अभी आपकी बात हमारे एक साथी से {safety.g(gender, 'करवाती', 'करवाता', 'करवाती')} हूँ, एक पल रुकिए।"
+# Her fixed lines live in shared/safety/fixed-lines.json, one table per language (safety.fixed_line). These keep the
+# call sites short; lang is the call's language (safety.call_language), said what she has been saying (its script).
+def bridge_line(target_kind, gender, lang='hi-IN', said=''):
+    return safety.fixed_line('bridge_callback' if target_kind == 'callback' else 'bridge_now', lang, gender, said)
 
 
-def limit_line(gender):
-    return f"माफ़ कीजिए, अब मुझे यह कॉल रखनी होगी। आपका समय देने के लिए शुक्रिया।"
-
-
-def takeover_line(gender):
-    return f"Main aapko apne colleague se connect kar {safety.g(gender, 'rahi', 'raha', 'rahi')} hoon, ek pal rukiye."
-
-
-def member_drop_line(gender):
-    return f"Maaf kijiye, hamare colleague se connection toot gaya. Abhi ke liye call rakh {safety.g(gender, 'rahi', 'raha', 'rahi')} hoon, shukriya."
+def limit_line(gender, lang='hi-IN', said=''): return safety.fixed_line('limit', lang, gender, said)
+def takeover_line(gender, lang='hinglish', said=''): return safety.fixed_line('takeover', lang, gender, said)
+def member_drop_line(gender, lang='hinglish', said=''): return safety.fixed_line('member_drop', lang, gender, said)
+def silence_line(gender, lang='hi-IN', said=''): return safety.fixed_line('silence', lang, gender, said)
 
 
 WHISPER_MAX = 300
@@ -103,7 +97,7 @@ class Session:
         if self.conv.state['crisis']:
             await self.hand_off('crisis', end_reason='crisis_handoff')       # she never ends a crisis call herself
             return True
-        await self.speak_canned(limit_line(self.conv.gender))
+        await self.speak_canned(self.fixed('limit'))
         await self.finish(why)
         return True
 
@@ -194,10 +188,10 @@ class Session:
             return
         if self.conv.state['crisis'] and end_reason != 'crisis_handoff':
             if kind == 'phone' and value and reason == 'asks_for_human':
-                await self.speak_canned(bridge_line(kind, self.conv.gender))
+                await self.speak_canned(self.fixed('bridge_callback' if kind == 'callback' else 'bridge_now'))
                 if await self.transfer(kind, value): return
             return                                          # alert raised; she stays with them
-        await self.speak_canned(bridge_line(kind, self.conv.gender))
+        await self.speak_canned(self.fixed('bridge_callback' if kind == 'callback' else 'bridge_now'))
         if await self.transfer(kind, value): return
         await self.finish(end_reason)
 
@@ -241,7 +235,7 @@ class Session:
             await self.finish('agent_ended', cancellable=True); return
         max_turns = (self.t['agent'].get('limits') or {}).get('maxTurns')
         if max_turns and self.conv.agent_turns >= max_turns and not self.conv.state['crisis']:
-            await self.speak_canned(limit_line(self.conv.gender)); await self.finish('agent_ended')
+            await self.speak_canned(self.fixed('limit')); await self.finish('agent_ended')
 
     def stop_recording(self): pass
 
@@ -270,6 +264,11 @@ class Session:
         self.listeners.discard(send)
         self.sink.emit('moment', kind='live_listen_ended', atMs=self.conv.ms(), note='a supervisor stopped listening')
 
+    def fixed(self, key):
+        """Her fixed line `key` in the call's language and in the script she has been speaking."""
+        said = ' '.join(t['text'] for t in self.conv.transcript if t['speaker'] == 'agent')[-400:]
+        return safety.fixed_line(key, safety.call_language(self.t['agent'], self.t.get('contact')), self.conv.gender, said)
+
     def doored(self, line):
         """A fixed line from code, put through the reply door like anything she says (None if the door blocks it)."""
         text, _ = self.conv.check(line, Draft(None))
@@ -286,7 +285,7 @@ class Session:
         self.handed_off = True
         self.sink.emit('moment', kind='takeover', atMs=self.conv.ms(), note='a person took over the call')
         self.sink.emit('hand_off', reason='takeover', target=f'member:{self.taken_over}', summary=self.summary_line())
-        line = self.doored(takeover_line(self.conv.gender))
+        line = self.doored(self.fixed('takeover'))
         if line: await self.speak_canned(line)
         self.member_task = asyncio.ensure_future(self._member_deadline()); self.tasks.append(self.member_task)
 
@@ -302,7 +301,7 @@ class Session:
         """v1: a member who drops is not replaced by her: the call closes with one short doored line."""
         if self.ended: return
         self.member = None
-        line = self.doored(member_drop_line(self.conv.gender))
+        line = self.doored(self.fixed('member_drop'))
         if line: await self.speak_canned(line)
         await self.finish('handed_off')
 

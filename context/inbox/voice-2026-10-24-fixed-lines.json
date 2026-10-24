@@ -1,0 +1,19 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-fixed-lines-per-language",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Her fixed lines outside the reply door's own texts (hand-off bridge and call-back, limit close, takeover hand-off, member-drop close, silence close) live in shared/safety/fixed-lines.json, one table per agent language (all 12 of agent-config LANGUAGES), shaped like disclosure.json (fallback, lines, review), each line a string or {female, male}. The runtime renders them for the call's language (the contact's when the agent allows it, else languages.primary; hinglish follows her script) through safety.fixed_line and doors them as before",
+   "rationale": "Must-be audit brief 10: the bridge, limit and silence lines were hard-coded Devanagari and the takeover lines Roman Hinglish, so a Tamil-English agent handed off in Hindi.",
+   "reverse_if": "native review (open.2026-10-24.indic-native-review) rewrites lines, which is a data change only; or the safety owners want these keys inside rules.json texts (then move the table, keep the shape)"
+  },
+  {
+   "id": "open.2026-10-24.voice-safety-texts-language",
+   "type": "open-question", "status": "open", "date": "2026-10-24", "source": "model",
+   "title": "The reply door's own replacement texts (rules.json texts: honest_ai, crisis_support, stop_digits, opt_out_confirm) and the safe fallback line are still Roman Hinglish only, so a Tamil or Bengali agent's honest answer, crisis line and OTP stop are in Hinglish. They are safety's; fixed-lines.json shows the per-language shape that could carry them",
+   "closes_when": "safety renders its texts per language (with crisis numbers kept verbatim) and both doors read them"
+  }
+ ],
+ "edges": [],
+ "events": []
+}
