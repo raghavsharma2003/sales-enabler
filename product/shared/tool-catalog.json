@@ -1185,6 +1185,109 @@
    }
   },
   {
+   "name": "call.export",
+   "risk": "policy",
+   "summary": "Export the calls list for a filter as CSV (personal data leaves Vyakti; approved by Compliance or Owner, audited)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "agentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "outcome": {
+      "type": "string",
+      "maxLength": 80,
+      "description": "one of this workspace's outcome values, e.g. 'agreed'"
+     },
+     "reasonCode": {
+      "type": "string",
+      "enum": [
+       "PRE_NUMBER_INVALID",
+       "PRE_DND",
+       "PRE_SUPPRESSED",
+       "PRE_WINDOW",
+       "PRE_NO_CONSENT",
+       "PRE_WALLET_LOW",
+       "PRE_CAP_REACHED",
+       "PRE_ATTEMPTS_EXHAUSTED",
+       "DIAL_NO_ANSWER",
+       "DIAL_BUSY",
+       "DIAL_SWITCHED_OFF",
+       "DIAL_CARRIER_REJECTED",
+       "DIAL_OPERATOR_ANNOUNCEMENT",
+       "DIAL_FAILED",
+       "CONN_VOICEMAIL",
+       "CONN_SILENCE",
+       "CONN_ENGINE_ERROR",
+       "CONN_MAX_DURATION",
+       "CONN_MAX_COST",
+       "END_EARLY_HANGUP",
+       "END_HUNG_UP_MID",
+       "END_TOOL_ERROR",
+       "END_HANDED_OFF",
+       "END_CRISIS",
+       "END_OPTED_OUT",
+       "CONV_GOAL_DONE",
+       "CONV_CALLBACK",
+       "CONV_NOT_INTERESTED",
+       "CONV_WRONG_PERSON",
+       "CONV_LANGUAGE_MISMATCH",
+       "CONV_CONFUSED",
+       "CONV_OBJECTION_UNRESOLVED",
+       "CONV_COMPLAINT",
+       "CONV_NEEDS_HUMAN",
+       "CONV_INCOMPLETE"
+      ]
+     },
+     "from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     },
+     "to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T[\\d:.]+(Z|[+-]\\d{2}:\\d{2})?)?$"
+     },
+     "flagged": {
+      "type": "boolean"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "call.export.list",
+   "risk": "read",
+   "summary": "List recent calls exports and whether each can still be downloaded",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+     }
+    },
+    "required": []
+   }
+  },
+  {
    "name": "call.get",
    "risk": "read",
    "summary": "Everything about one call: transcript, turns, moments, safety, tools, hand-offs, cost lines, outcomes and analysis",
@@ -1270,6 +1373,32 @@
      "contactId",
      "agentVersionId",
      "category"
+    ]
+   }
+  },
+  {
+   "name": "call.record",
+   "risk": "read",
+   "summary": "The versioned full record of one call, exactly as the call.ended webhook sends it (phone numbers masked for viewers)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
     ]
    }
   },
@@ -8217,6 +8346,18 @@
      "description": {
       "type": "string",
       "maxLength": 200
+     },
+     "contactNumber": {
+      "type": "string",
+      "enum": [
+       "masked",
+       "full"
+      ],
+      "description": "'masked' (the default) sends +91•••••1234 and initials; 'full' sends the whole number and name"
+     },
+     "authIntegrationId": {
+      "type": "string",
+      "format": "uuid"
      }
     },
     "required": [
@@ -8302,11 +8443,43 @@
      },
      "data": {
       "description": "event data"
+     },
+     "key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     },
+     "build": {
+      "type": "string",
+      "enum": [
+       "call.v1",
+       "contact_opt_out.v1",
+       "hand_off.v1"
+      ]
      }
     },
     "required": [
      "event"
     ]
+   }
+  },
+  {
+   "name": "webhook.events",
+   "risk": "read",
+   "summary": "List the events a webhook can listen for and the record each one sends",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
    }
   },
   {
@@ -8349,6 +8522,39 @@
     },
     "required": [
      "deliveryId"
+    ]
+   }
+  },
+  {
+   "name": "webhook.test",
+   "risk": "test",
+   "summary": "Send a made-up event to a webhook now and see how the receiver answers",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "event": {
+      "type": "string",
+      "enum": [
+       "call.ended",
+       "campaign.state_changed",
+       "contact.opted_out",
+       "hand_off.created"
+      ]
+     }
+    },
+    "required": [
+     "id"
     ]
    }
   },

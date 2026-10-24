@@ -34,8 +34,11 @@ export type ToolName =
   | "brief.edit"
   | "brief.today"
   | "call.explain"
+  | "call.export"
+  | "call.export.list"
   | "call.get"
   | "call.place_single"
+  | "call.record"
   | "call.search"
   | "campaign.audience.add"
   | "campaign.draft"
@@ -209,8 +212,10 @@ export type ToolName =
   | "webhook.delete"
   | "webhook.deliveries"
   | "webhook.emit"
+  | "webhook.events"
   | "webhook.list"
   | "webhook.replay"
+  | "webhook.test"
   | "workspace.get";
 
 /** The input of each tool, from its validator's JSON Schema. Unknown fields are refused by the server. */
@@ -412,6 +417,21 @@ export interface ToolInput {
   "call.explain": {
     conversationId: string;
   };
+  /** Export the calls list for a filter as CSV (personal data leaves Vyakti; approved by Compliance or Owner, audited) (policy, waits for approval) */
+  "call.export": {
+    campaignId?: string;
+    agentVersionId?: string;
+    /** one of this workspace's outcome values, e.g. 'agreed' */
+    outcome?: string;
+    reasonCode?: "PRE_NUMBER_INVALID" | "PRE_DND" | "PRE_SUPPRESSED" | "PRE_WINDOW" | "PRE_NO_CONSENT" | "PRE_WALLET_LOW" | "PRE_CAP_REACHED" | "PRE_ATTEMPTS_EXHAUSTED" | "DIAL_NO_ANSWER" | "DIAL_BUSY" | "DIAL_SWITCHED_OFF" | "DIAL_CARRIER_REJECTED" | "DIAL_OPERATOR_ANNOUNCEMENT" | "DIAL_FAILED" | "CONN_VOICEMAIL" | "CONN_SILENCE" | "CONN_ENGINE_ERROR" | "CONN_MAX_DURATION" | "CONN_MAX_COST" | "END_EARLY_HANGUP" | "END_HUNG_UP_MID" | "END_TOOL_ERROR" | "END_HANDED_OFF" | "END_CRISIS" | "END_OPTED_OUT" | "CONV_GOAL_DONE" | "CONV_CALLBACK" | "CONV_NOT_INTERESTED" | "CONV_WRONG_PERSON" | "CONV_LANGUAGE_MISMATCH" | "CONV_CONFUSED" | "CONV_OBJECTION_UNRESOLVED" | "CONV_COMPLAINT" | "CONV_NEEDS_HUMAN" | "CONV_INCOMPLETE";
+    from?: string;
+    to?: string;
+    flagged?: boolean;
+  };
+  /** List recent calls exports and whether each can still be downloaded (read) */
+  "call.export.list": {
+    limit?: number;
+  };
   /** Everything about one call: transcript, turns, moments, safety, tools, hand-offs, cost lines, outcomes and analysis (read) */
   "call.get": {
     conversationId: string;
@@ -427,6 +447,10 @@ export interface ToolInput {
     at?: string;
     idempotencyKey?: string;
     via?: "single" | "api";
+  };
+  /** The versioned full record of one call, exactly as the call.ended webhook sends it (phone numbers masked for viewers) (read) */
+  "call.record": {
+    conversationId: string;
   };
   /** Find calls by campaign, outcome value, reason code, date or flag, with the total that match; test calls only when asked (read) */
   "call.search": {
@@ -1606,6 +1630,9 @@ export interface ToolInput {
     url: string;
     events?: string[];
     description?: string;
+    /** 'masked' (the default) sends +91•••••1234 and initials; 'full' sends the whole number and name */
+    contactNumber?: "masked" | "full";
+    authIntegrationId?: string;
   };
   /** Stop sending events to a webhook and forget its secret (destructive, waits for approval) */
   "webhook.delete": {
@@ -1622,12 +1649,21 @@ export interface ToolInput {
     event: string;
     /** event data */
     data?: unknown;
+    key?: string;
+    build?: "call.v1" | "contact_opt_out.v1" | "hand_off.v1";
   };
+  /** List the events a webhook can listen for and the record each one sends (read) */
+  "webhook.events": Record<string, never>;
   /** List webhooks (never the signing secret) (read) */
   "webhook.list": Record<string, never>;
   /** Send an earlier webhook event to its receiver again (external, waits for approval) */
   "webhook.replay": {
     deliveryId: string;
+  };
+  /** Send a made-up event to a webhook now and see how the receiver answers (test) */
+  "webhook.test": {
+    id: string;
+    event?: "call.ended" | "campaign.state_changed" | "contact.opted_out" | "hand_off.created";
   };
   /** Read this workspace: its name, plan, brand and who is in it (read) */
   "workspace.get": Record<string, never>;
@@ -1668,8 +1704,11 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "brief.edit": { risk: "draft", needsApproval: false },
   "brief.today": { risk: "read", needsApproval: false },
   "call.explain": { risk: "read", needsApproval: false },
+  "call.export": { risk: "policy", needsApproval: true },
+  "call.export.list": { risk: "read", needsApproval: false },
   "call.get": { risk: "read", needsApproval: false },
   "call.place_single": { risk: "external", needsApproval: true },
+  "call.record": { risk: "read", needsApproval: false },
   "call.search": { risk: "read", needsApproval: false },
   "campaign.audience.add": { risk: "external", needsApproval: true },
   "campaign.draft": { risk: "draft", needsApproval: false },
@@ -1843,7 +1882,9 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "webhook.delete": { risk: "destructive", needsApproval: true },
   "webhook.deliveries": { risk: "read", needsApproval: false },
   "webhook.emit": { risk: "draft", needsApproval: false },
+  "webhook.events": { risk: "read", needsApproval: false },
   "webhook.list": { risk: "read", needsApproval: false },
   "webhook.replay": { risk: "external", needsApproval: true },
+  "webhook.test": { risk: "test", needsApproval: false },
   "workspace.get": { risk: "read", needsApproval: false },
 };
