@@ -1,22 +1,51 @@
 {
  "nodes": [
-  {"id": "decision.2026-10-24.call-allowed-by", "type": "decision", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+  {
+   "id": "decision.2026-10-24.call-allowed-by",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
    "title": "Every call shows why it was allowed (must-be decision 5): call.get returns allowedBy (the dial gate's record for the attempt that placed the call: each of the 12 checks as a plain sentence, warnings in plain words, when it ran), call.explain opens with 'Why this call was allowed', and the call page has a card for it. A browser test call says it rang no one and passed no gate. Read only: the stored attempt.precheck, never re-run; another workspace's attempt is never read",
    "rationale": "The audit found the gate trace only on attempt.precheck and the contact's attempt list. Rule ids, number ids and 'A2P' stay in the stored trace for developers.",
-   "reverse_if": "The gate's checks change meaning (then the sentences in calls/gate-trace.ts follow them)."},
-  {"id": "decision.2026-10-24.outcomes-and-checks", "type": "decision", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+   "reverse_if": "The gate's checks change meaning (then the sentences in calls/gate-trace.ts follow them)."
+  },
+  {
+   "id": "decision.2026-10-24.outcomes-and-checks",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
    "title": "Judges a buyer can see (must-be brief 7): Settings > Outcomes and checks shows each outcome's values (goal marked), typed fields, how it is judged (judge name, version, model and instructions, or the workspace's analysis setting in plain words) and calibration ('Uncalibrated' until it passes: 50+ labelled calls, 90% agreement, Wilson lower bound 80%), editable through outcome.define and judge.edit (drafts, audited) and checked with judge.calibrate. New read tool outcome.list. Outcome definitions take typed fields [{key, label?, type: text|number|date|enum|sentiment, values?}] validated in code; the analysis fills each only with an exact caller quote and the right type, and drops and counts the rest (analysis.fieldsDropped; the call is flagged quotes_dropped). Sentiment is a five-point coded scale with its quote. The call page shows the fields with the caller's words",
    "rationale": "A definition without fields sends the measured contract byte for byte: the r6 gate (scripts/analysis-variant-probe.ts) still passes; fields add lines only inside the OUTCOME block of a definition that has them. Contract with fields is not benched: a definition with fields should get a bench round before its numbers are trusted.",
-   "reverse_if": "A bench round with fields shows they cost outcome or moment accuracy (then move fields to a second pass)."},
-  {"id": "decision.2026-10-24.handoffs-queue", "type": "decision", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+   "reverse_if": "A bench round with fields shows they cost outcome or moment accuracy (then move fields to a second pass)."
+  },
+  {
+   "id": "decision.2026-10-24.handoffs-queue",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
    "title": "Hand-offs land (must-be brief 6, the calls half): each runtime hand_off becomes a queue item with her warm brief (reason in words and her one-line summary); handoff.list (crisis first, then callbacks by due time), handoff.claim (one person; others are told who), handoff.resolve (reached, no answer, not needed; only the holder). A callback target is a task due at the time the caller stated, read by code from their own words in IST (stated-time.ts: 'shaam 6 baje', 'kal subah 10 baje', '2 ghante baad', 'after 6:30 pm'), else 'as soon as you can'. A crisis hand-off writes in-app alerts to every active owner, operator and compliance member in the same transaction as the event; the web shell polls alert.list every 5 s and shows a banner on every page until someone takes it. A take-over by a member is not a queue item. Practice calls alert nobody. Web: Hand-offs page and nav item, a Today card",
    "rationale": "On duty has no roster yet, so it means the roles that can act on a call. Email and Slack wait on workspace webhooks (brief 1, the workspace builder's); the warm whisper to the bridged leg is the voice runtime's.",
-   "reverse_if": "A duty roster or shift schedule exists (then alert only those on shift), or webhooks land (then also notify by email or Slack)."},
-  {"id": "open.2026-10-24.handoff-notify-email-slack", "type": "open", "status": "open", "date": "2026-10-24", "source": "verified",
-   "title": "A crisis hand-off alerts in-app only. Email or Slack notification waits on workspace webhooks (must-be brief 1); a duty roster would narrow 'on duty' from roles to people on shift."}
+   "reverse_if": "A duty roster or shift schedule exists (then alert only those on shift), or webhooks land (then also notify by email or Slack)."
+  },
+  {
+   "id": "open.2026-10-24.handoff-notify-email-slack",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "A crisis hand-off alerts in-app only. Email or Slack notification waits on workspace webhooks (must-be brief 1); a duty roster would narrow 'on duty' from roles to people on shift.",
+   "closes_when": "Crisis and hand-off alerts reach a Slack or email destination (the workspace notifications brief), with a test that a crisis alert arrives within 5 s and carries no caller words."
+  }
  ],
  "edges": [
-  {"from": "decision.2026-10-24.handoffs-queue", "to": "open.2026-10-24.handoff-notify-email-slack", "relation": "leaves-open"}
+  {
+   "from": "decision.2026-10-24.handoffs-queue",
+   "to": "open.2026-10-24.handoff-notify-email-slack",
+   "relation": "leaves-open"
+  }
  ],
  "events": []
 }

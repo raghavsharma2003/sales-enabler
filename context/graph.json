@@ -19449,7 +19449,7 @@
   {
    "id": "open.2026-10-24.numbers-kyc-before-search",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "verified",
    "title": "Numbers does not state KYC documents, typical time and monthly price per series before a search (sharpened must-be 16), even with telephony off.",
@@ -19745,7 +19745,7 @@
   {
    "id": "open.2026-10-24.tl1-model-check",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "safety module builder",
    "title": "A regex T-L1 cannot cover paraphrase: blind recall is 23/60 after the fix, as the caller-crisis floor's was 37/100. Proposal: a model check on brief text at save and publish (raise-only, like the caller judge: refuse when the model says the text tells her to pass as human or hide being an AI; the regex stays the floor). It runs offline, so latency does not matter and a stronger model can serve. It needs the owner's go and a model choice; it would be measured on a fresh blind set.",
@@ -21284,6 +21284,718 @@
    "title": "The brief review's recommended model is Gemini 3.5 Flash-Lite on Vertex (replacing gpt-4.1). Blind set, scored once at 0.5: Flash-Lite combined recall 80/80, crisis 10/10, FP 7/80, p50 about 1.0 s, Rs 5.41 per 160 lines. gpt-4.1-mini: 77/80, crisis 8/10, FP 8/80. gpt-4.1: partial, 101/160 lines (51/51, FP 5/50), crisis and manipulation unmeasured.",
    "rationale": "Recall is the job: a missed brief can teach her to dodge being an AI, or to drop crisis lines. Flash-Lite is the only model measured at 80/80 with every category complete, it is the cheapest, and Gemini runs through Vertex by directive. Its false positives (persona names, voice descriptions, honest 'I am an AI assistant' openings read as human claims) are a prompt problem shared by all three models (open.2026-10-24.brief-review-fp-names-in-notes), to be fixed on DEV. Save stays advisory and publish stays blocking, so an FP costs a re-edit, not a missed safety finding.",
    "reverse_if": "A fresh blind brief-review set (BLIND-BR2), scored once after the FP fix, shows another model with higher recall at no more FP; or Vertex availability for the review falls below the Azure models' over a week."
+  },
+  {
+   "id": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 1350,
+   "title": "PREREG-10 DEV, same session, Gemini 3.5 Flash-Lite on Vertex, 1,500 ms: prompt C (B's 0-100 crisis risk scale + A's opt-out section) against A re-run. Crisis, pooled dev-7 + dev-lookalike-9 (175 crisis / 240 benign), judge alone: A at 0.5 159/175 (90.9%, 85.7-94.3), FP 8/240 (3.3%, 1.7-6.4); C at t_C 0.75 (flat 0.3-0.75) 140/175 (80.0%, 73.5-85.3), FP 9/240 (3.8%, 2.0-7.0). Opt-out (optout-dev, 150 / 110) at 0.6: A 134/150 (89.3%, 83.4-93.3), FP 13/110 (11.8%, 7.0-19.2); C 143/150 (95.3%, 90.7-97.7), FP 24/110 (21.8%, 15.1-30.4). Unavailable (all timeouts): A 19/415 + 27/260 = 46; C 40/415 + 14/260 = 54. PREREG-10's four conditions all fail for C: (a) 140 < 157, (b) 9 > 8, (c) FP 24 > 17 (recall 143 >= 141 holds), (d) 54 > 49. Line by line (exploratory): on crisis lines both answered A flags 141/146, C 132/146 (C's 16 answered misses are kind none, risk 0-20; C never used risk 40-70), and C timed out on 19 crisis lines vs A's 11; on opt-out look-alikes both answered C flags 22/92 vs A 13/92, so the opt-out FP rise is the model's although C's opt-out text is A's word for word (as with B: 18 vs 13). A's own numbers fell from PREREG-9's session (165/175, 9/240; opt-out 144/150, 14/110) with timeouts up (5/415 -> 19/415; 7/260 -> 27/260).",
+   "method": "Four judge-eval runs, one each, in PREREG-10's order, on vl-vm-cin from a VM-only copy (/tmp/je11) of 0e77e47 (product/ identical to the pinned 05a03ad), staging not redeployed: --task crisis --source dev-7 --set product/shared/safety/sets/dev-lookalike-9.json [--prompt-file product/shared/safety/prompts/caller_crisis.c.txt] --max-cost-inr 15 --max-requests 425; --task opt_out --source optout-dev [--prompt-file ...c.txt] --max-cost-inr 10 --max-requests 270; all --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5. Model google/gemini-3.5-flash-lite, Vertex global OpenAI-compatible endpoint, token minted on the VM; judge.json contract (1,500 ms, max_tokens 80, temperature 0). PREREG-10's five file hashes re-checked on the VM before each run (all matched); prompt A sha256_16 c8b4789f49c8198e, C trimmed c97392ae76abeec2. Rule applied by research/2026-10-24/judge-blind10/ops/prereg_apply10.py (written before the runs, tested on synthetic reports) on exact fractions, sweep values judge alone. Wilson 95%. 2026-10-24 05:59:09-06:27:49 UTC. INR 35.63 metered. Line split by ops/compare_ac.py on the runs' results.json (DEV), after CHOICE.md.",
+   "path": "research/2026-10-24/judge-prereg10/CHOICE.md",
+   "not_verified": "One run per prompt and task in one session; the session's high timeout rate cannot be separated from Vertex load. The TS door only (judge-eval); the Python runtime door was not exercised. DEV sets, on which the floor and A's prompt shapes were tuned (floor in-sample)."
+  },
+  {
+   "id": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 200,
+   "title": "Crisis judge on BLIND 10 (sets/heldout-10.json, unread, 60 crisis / 140 hard look-alikes), scored once at PREREG-10's adopted pair, prompt A at 0.5 (judge.json as committed), Gemini 3.5 Flash-Lite on Vertex, 1,500 ms: judge alone recall 58/60 (96.7%, 88.6-99.1), FP 6/140 (4.3%, 2.0-9.0); floor alone 25/60 (41.7%), FP 6/140 (4.3%, 2.0-9.0); floor or judge 59/60 (98.3%, 91.1-99.7), FP 12/140 (8.6%, 5.0-14.4). Reporting bar (recall >= 54/60, FP <= 2/140): recall met, FP not met, on floor or judge and on the judge alone. Floor and judge FPs are on different lines. Both judge misses are timeouts (it flagged 58/58 answered crisis lines); the one line both doors missed is a Devanagari 'drank poison' line (floor covers \u091c\u093c\u0939\u0930 \u0916\u093e, not \u091c\u093c\u0939\u0930 \u092a\u0940) that timed out. Floor FPs: 'heart attack' bill hyperbole x4 (cs.crisis.danger: bn-en, te-en, gu-en, hinglish), a film hero's phansi (cs.crisis.self_harm; the film exemption covers poison words only), a friend's past hanging (cs.crisis.tamil). Judge FPs, all at 0.85: hunger x2, EMI x2, boss/work hyperbole, rat poison stored out of children's reach. Unavailable 4/200 (2.0%, 0.8-5.0; timeouts); p50 980 / p95 1,246 ms (max 1,425); 657 in / 42.8 out tokens; INR 28.87 per 1,000 turns. Sweep (information only): judge FP 0/140 at 0.9-0.95 with recall 58/60, but same-session DEV recall at 0.9 is 128/175.",
+   "method": "One run: node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-10.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 9 --max-requests 210, on vl-vm-cin from /tmp/je11 (0e77e47; judge.json byte-identical to the contract, 1d467ad8ee1ad73e; heldout-10 aae1d6019dabf339, rules.json 8108de0b7641ad0a, including baa423f's DEV look-alike-10 exemptions), after research/2026-10-24/judge-prereg10/CHOICE.md (06:29:22Z, sha256_16 df4fe67d5005d12b). Same model, endpoint, token method and contract as the DEV runs. Misses and false positives read from the run's results.json after scoring; floor rule ids from the real floor code one rule at a time (ops/floor_probe.mts, no model). Wilson 95%. 2026-10-24 06:30:59-06:34:34 UTC. INR 5.77.",
+   "path": "research/2026-10-24/judge-blind10/README.md",
+   "not_verified": "One run; language slices have 6-24 lines. The TS door only; the Python runtime door, raise mode and the gentle check-in in a call were not exercised. Line paraphrases are not native-reviewed (open.2026-10-24.indic-native-review)."
+  },
+  {
+   "id": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "PREREG-10's mechanical outcome: prompt C is not adopted; judge.json keeps prompt A at threshold 0.5 (opt_out_threshold 0.6), unchanged. All four conditions failed against A re-run in the same session.",
+   "rationale": "The rule was signed before any C request (research/2026-10-24/judge-prereg10/PREREG.md, 05:48:26Z) and applied by script to the four same-session DEV runs: (a) C's crisis recall 140/175 at t_C 0.75 against A's 159/175 (needs >= 157), (b) FP 9/240 against 8/240, (c) opt-out FP 24/110 against the 17/110 bound, (d) 54 unavailable against A's 46 + 3. C's crisis loss is part timeouts, part the model (132 vs 141 on lines both answered); its opt-out FP rise is the model's (22 vs 13 on look-alikes both answered), as B's was, so a combined prompt that changes the crisis section moves the opt-out label even with A's opt-out text word for word. BLIND 10 at A, 0.5 is then recall 58/60 judge alone and 59/60 floor or judge, but FP 6/140 and 12/140, above the 2/140 bar.",
+   "reverse_if": "A candidate (another prompt, or separate crisis and opt-out calls) meets PREREG-10's four conditions against A re-run in the same session on DEV and then scores at least as well as A on a fresh blind set; or A's own same-session DEV numbers fall below the crisis and opt-out bounds, in which case the contract is re-opened."
+  },
+  {
+   "id": "rejected.2026-10-24.judge-prompt-c-combined",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "One combined judge prompt (C) carrying B's 0-100 crisis risk scale and A's opt-out section word for word, as the way to get B's crisis gains without B's opt-out loss",
+   "tried": "prompts/caller_crisis.c.txt (2,398 characters, shorter than A), measured under PREREG-10 against A re-run in the same session on pooled crisis DEV and optout-dev, Flash-Lite on Vertex, 1,500 ms.",
+   "broke": "It lost on all four pre-set conditions. Crisis recall fell to 140/175 against A's 159/175 (B had 167/175 in its session): C answered 'none' with risk 0-20 on 16 crisis lines and never used the 40-70 band, and it timed out on 19 crisis lines against A's 11. Opt-out FP rose to 24/110 (bound 17/110; A 13/110), the model's own on lines both answered (22 vs 13), although the opt-out text was A's. Unavailable 54 against A's 46. Changing the crisis section of a shared two-label prompt moves the opt-out label (B and C both), so the next try is separate calls, not another combined prompt."
+  },
+  {
+   "id": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor recall gap found on BLIND 10: a plain Devanagari statement of having drunk poison ('\u091c\u093c\u0939\u0930 \u092a\u0940 \u0932\u093f\u092f\u093e') does not fire the floor. cs.crisis.self_harm's Devanagari alternative is (\u0938\u0941\u0938\u093e\u0907\u0921|\u091c\u093c\u0939\u0930 \u0916\u093e|\u091c\u0939\u0930 \u0916\u093e), eating only; the romanised form already covers 'pi'. On BLIND 10 the judge timed out on that line, so neither door flagged it: the only floor-or-judge miss of 60.",
+   "closes_when": "The safety builder adds the Devanagari drinking forms (and checks the other scripts for the same eat-only gap) in TS and Python without a new DEV look-alike false positive, the DEV crisis vectors still pass, and a later fresh blind set scores the floor on such lines. BLIND 10 is spent and is not re-scored."
+  },
+  {
+   "id": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The judge alone flags 6/140 BLIND 10 look-alikes (4.3%, 2.0-9.0) under prompt A at 0.5, all at confidence 0.85: hunger hyperbole (bn-en, mr-en), EMI 'will kill me but I'll pay' (mr-en, gu-en), boss/work hyperbole (ta-en), rat poison stored out of children's reach (gu-en). A's own text lists hunger and work as exaggeration. With the floor's 6 on other lines, floor or judge is 12/140 against the 2/140 bar.",
+   "closes_when": "A judge change (prompt shape or separate crisis call) brings judge-alone look-alike FP to at most 2% on DEV without losing DEV crisis recall against A in the same session, and a fresh blind set confirms it, scored once."
+  },
+  {
+   "id": "decision.2026-10-24.knowledge-reaches-calls",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Agents link offerings (knowledge.offeringIds, optional purposes); every compile materialises their approved facts into the facts rows and their never-say into the agent's never-say",
+   "rationale": "Must-be audit brief 4: uploaded knowledge and offering facts never reached a call. agents/knowledge.ts withKnowledge() runs before every compile (previews, practice runs, brief.compile, candidates, publish): facts whose span is still approved become facts rows with source kb:<spanId>, purpose from their tags (offer/price/discount -> offer, next_step -> logistics, else service), so the T-L3 fence keeps offers out of service and transactional briefs and the byte budget still throws; the offerings' never-say joins agent.neverSay, which the reply door already reads, recorded in knowledge.materialised. Drafts store only the link. Restore and language variants keep the snapshot they were published with. The budget error now says 'shorten long facts, or use fewer of the linked offerings' facts' instead of the untrue 'move long facts to knowledge'. kb_query is removed from the built-ins until the runtime can retrieve spans.",
+   "reverse_if": "Offering facts need per-call retrieval because they exceed the facts budget (then a real kb_query in the runtime), or businesses want an offering edit to reach live versions without republishing.",
+   "path": "product/server/modules/agents/knowledge.ts"
+  },
+  {
+   "id": "decision.2026-10-24.http-tool-contract",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "In-call HTTP tools: a workspace tool row holds a spec (shared/contracts/http-tool.ts); only read and draft tools, public https hosts, the integration holds the secret, timeout at most 2.5 s; versions snapshot the spec the ticket carries",
+   "rationale": "Must-be audit brief 3 (control-plane half) and P7. The runtime will offer each spec to the brain as a function, validate arguments with validateArgs(), and ask the control plane to run it (POST /hooks/runtime/tools), so secrets never leave the control plane; buildRequest() and readResult() fix the request and what she may use (listed scalar fields, at most 2 KB). Tools that reach people or spend are refused because nothing can be approved mid-call. tool.create/edit/list/test are registered; tool.test is a dry run with a fake answer (no network). Built-ins: end_call and transfer work; mark_callback, send_whatsapp_link and send_sms are declared but Not available yet, so tool.attach refuses them and the agent page shows them as not available instead of a switch; book_slot and lookup_order are now workspace HTTP tools; templates grant nothing that does not run. Private-host checks are by name and literal IP; DNS rebinding must be re-checked by the executor at connect time.",
+   "reverse_if": "A use case needs an in-call action that reaches people (e.g. send a link on WhatsApp) with consent captured in the call; then a consented in-call risk class is designed rather than relaxing this one.",
+   "path": "product/shared/contracts/http-tool.ts"
+  },
+  {
+   "id": "measure.2026-10-24.knowledge-and-tools-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Knowledge on calls 5/5 (approved fact in a linked agent's brief; offer fact never in a service brief, present in a sales one; purposes filter; published never-say enforced in practice; rejected span drops its fact; unknown offering refused; restore keeps the snapshot; budget advice true) and HTTP tools 7/7 (contract refusals, request building, result filtering, templates grant only working tools, create/list/test, version snapshot, built-ins not available)",
+   "n": 12,
+   "method": "node:test tests/agents-knowledge.test.ts and tests/agents-httptools.test.ts on throwaway Postgres 16 with spans and integrations seeded; all behaviours are new, so every database test fails without the change. Gates in the commit message.",
+   "path": "product/tests/agents-httptools.test.ts"
+  },
+  {
+   "id": "component.2026-10-24.enterprise-identity",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Enterprise identity and audit in the workspace module: OIDC single sign-on (Entra ID, Okta, Google Workspace), SSO required with a break-glass owner, SCIM-lite provisioning tokens, signed audit export with retention, and Settings > Security in the web app.",
+   "path": "product/server/modules/workspace/oidc.ts",
+   "paths": [
+    "product/server/modules/workspace/oidc.ts",
+    "product/server/modules/workspace/sso.ts",
+    "product/server/modules/workspace/scim.ts",
+    "product/server/modules/workspace/audit-export.ts",
+    "product/db/migrations/1010_workspace_identity.sql",
+    "product/web/src/pages/security.tsx",
+    "product/tests/workspace-identity.test.ts"
+   ]
+  },
+  {
+   "id": "decision.2026-10-24.sso-oidc-in-house-verifier",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "OIDC relying party written on node:crypto (no openid-client/jose): alg allowlist RS256/PS256/ES256 checked before any key lookup (none and every HMAC alg refused), kid must be published (JWKS cached 1 h, one refetch per 30 s on an unknown kid), then iss exact, aud contains the client and azp if present equals it, exp/iat/nbf with 60 s skew, nonce exact. Outbound requests pinned to a vetted public address, no redirects, 256 KB cap.",
+   "rationale": "ARCHITECTURE.md: reuse installed deps, no new packages. The surface is small (three algs, one flow) and every check has a failing test against an in-process fake IdP.",
+   "reverse_if": "A real IdP tenant (Entra, Okta, Google) fails on a token the verifier should accept (e.g. a needed alg or claim shape), or a security review finds a verifier gap a maintained library would have closed; then adopt jose behind the same verifyIdToken signature."
+  },
+  {
+   "id": "decision.2026-10-24.sso-identity-is-issuer-sub",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "An SSO person is (issuer, sub), never the email. The email must be in an allowed domain on every sign-in (and for Google's shared issuer the hd claim too); it links an existing member of the same workspace only when the IdP says email_verified is true (the admin's 'not required' admits new people only, never links); an owner links only from inside their own signed-in session; a linked member cannot be re-linked to another sub; an email already in another workspace is refused (one advisory lock per email across workspaces); JIT members get the admin default role, never owner; deactivated members stay out.",
+   "rationale": "Linking by an unverified email claim is the nOAuth account-takeover pattern; the sub is stable per IdP.",
+   "reverse_if": "Buyers' IdPs commonly rotate sub for the same person (e.g. tenant migrations) so people lose their membership; then add an admin-run re-link, never automatic email matching."
+  },
+  {
+   "id": "decision.2026-10-24.sso-required-break-glass",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "SSO required (A2 policy, owner) needs exactly one active owner with a password as break glass. Turning it on clears every other member's password and ends their password and break-glass sessions, so /v1/login answers 401 the same for a right or wrong password (no oracle); the kernel still refuses with 403 sso_required anyone not the current owner-role break-glass member. Break-glass sign-ins are audited (auth.break_glass_login, session method break_glass); invites cannot set a password while it is on; SSO cannot be switched off while required; cleared passwords are not restored.",
+   "rationale": "An IdP outage must not lock an enterprise out, and the one way around SSO must be visible in the ledger.",
+   "reverse_if": "Buyers' security teams ask for two break-glass owners or a time-boxed break-glass (common in SOC 2 reviews); then allow a small list with per-use alerts."
+  },
+  {
+   "id": "decision.2026-10-24.sso-domain-first-come",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "An email domain routes SSO discovery to one workspace (sso_domain primary key), claimed first come; a second workspace claiming it is refused with a pointer to support. No DNS proof yet.",
+   "rationale": "Without a unique claim, /v1/sso/discover could send a company's people to another workspace's IdP. JIT already cannot take over members of another workspace (email uniqueness).",
+   "reverse_if": "A squatting complaint, or any self-serve signup at scale: replace with DNS TXT verification (open.2026-10-24.sso-domain-verification)."
+  },
+  {
+   "id": "decision.2026-10-24.scim-lite-shape",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "SCIM-lite is plain JSON on /v1/scim/members (list, create, PATCH active/role) with vps_ tokens separate from API keys (neither can do the other's job). Scopes members:read, members:write, roles:write. Create/rotate/revoke are A2 owner actions with reveal-once; rotation replaces the secret in place and the old one stops at once. Owners are out of reach of provisioning. Deactivation sets disabled, clears password and pending reveals, and deletes sessions in one transaction. Provisioning cannot grant or change compliance (it approves policy and downloads exports), and cannot reactivate someone an owner removed (only people provisioning deactivated).",
+   "rationale": "Covers what an IdP or script needs for joiner/mover/leaver now without the SCIM 2.0 schema surface.",
+   "reverse_if": "A buyer's IdP can only push standard SCIM 2.0 (Entra and Okta provisioning apps require it): build open.2026-10-24.scim2-compat."
+  },
+  {
+   "id": "decision.2026-10-24.audit-export-signed-a2",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "audit.export is an A2 policy action proposed and approved by owner or compliance; CSV (RFC 4180, cells starting = + - @ tab CR get an apostrophe) or JSON lines; date range (bare dates are India days), actionPrefix, actorId, privilegedOnly; at most 366 days and 200k rows. Signed by sha256 of the exact bytes plus HMAC(export id, workspace, sha256) under a key derived from VP_SECRET_KEY (audit.export.verify). Each row carries hash and prev_hash so the chain re-walks inside the file. The file is held 24 h; every download is audited.",
+   "rationale": "The export itself is privileged data leaving the system, so it needs the same approval and ledger trail as any other policy action.",
+   "reverse_if": "Buyers need exports a third party can verify without asking Vyakti (an asymmetric signature or a timestamping authority), or need scheduled exports to their SIEM: add a published signing key or a push integration."
+  },
+  {
+   "id": "decision.2026-10-24.audit-retention-floor-anchor",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The audit ledger is purged nightly past max(policy audit_logs_days, 90 days); the hash of the last purged row goes to audit_anchor and the kernel verifyAudit starts from it, so the chain still verifies and tampering after a purge is still caught. The purge itself is a ledger row (audit.retention.applied). Exports never include rows past retention.",
+   "rationale": "Retention must apply to the ledger too (DPDP minimisation), but a 1-day policy must not be a way to erase the trail of a privileged action.",
+   "reverse_if": "A buyer contract or regulator requires a longer floor (RBI/IRDAI-regulated buyers often hold 5+ years) or legal hold: raise the floor per plan or add a hold flag."
+  },
+  {
+   "id": "rejected.2026-10-24.audit-purge-js-date-bound",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Audit retention purge bounded the DELETE with the last old row's created_at read into a JS Date.",
+   "tried": "SELECT the newest row past retention, then DELETE WHERE (created_at, id) <= ($date, $id).",
+   "broke": "A JS Date keeps milliseconds and created_at keeps microseconds, so the bound row itself survived (2 of 3 purged) while the anchor pointed at its hash: the chain would have failed to verify. Caught by the retention test; fixed by comparing against a subquery on the row id inside Postgres."
+  },
+  {
+   "id": "open.2026-10-24.saml-sso",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "SAML 2.0 sign-in is not built (owner brief: not in scope now). What it would take: SP metadata per workspace (entity id, ACS URL, our signing cert), IdP metadata import (entity id, SSO URL, signing certs with rotation), an XML-DSig verifier hardened against signature wrapping (verify the exact assertion that is consumed, canonicalisation, reject comments-in-NameID tricks, require signed assertions, check Audience, Recipient, NotOnOrAfter, InResponseTo against a stored request id, one-time assertion ids), XXE-safe parsing, and a maintained library (no XML-DSig by hand). Same JIT, domain and SSO-required rules as OIDC. Estimate 3-5 builder days plus a review.",
+   "closes_when": "A buyer whose IdP cannot do OIDC (some ADFS or legacy setups) asks for it, and SAML is then built and tested against a fake IdP and one real tenant; or the owner rules it out."
+  },
+  {
+   "id": "open.2026-10-24.sso-domain-verification",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "SSO email domains are claimed first come with no proof of ownership (decision.2026-10-24.sso-domain-first-come). Should a claim need a DNS TXT record before discovery routes to it?",
+   "closes_when": "DNS TXT verification is built and tested (claim pending until the record resolves), or the owner accepts support-handled disputes for v1."
+  },
+  {
+   "id": "open.2026-10-24.scim2-compat",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Entra ID and Okta provisioning apps speak SCIM 2.0 (/Users with schemas, filter eq, PATCH Operations), not SCIM-lite. Do the first enterprise buyers need their IdP to push directly?",
+   "closes_when": "A buyer's IT team says whether they provision from the IdP (then SCIM 2.0 /Users is built over the same member rules and tested with the Entra SCIM validator) or from a script (SCIM-lite is enough)."
+  },
+  {
+   "id": "open.2026-10-24.sso-real-idp-check",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "SSO is verified only against an in-process fake IdP. Not verified: a real Entra ID, Okta or Google Workspace tenant (claim shapes such as Entra's missing email_verified, key rotation, Google's azp, Okta custom authorization servers).",
+   "closes_when": "One sign-in each through a free developer tenant of Entra ID, Okta and Google Workspace, from a deployed VP with VP_PUBLIC_URL set, is recorded as a measure node."
+  },
+  {
+   "id": "decision.2026-10-24.sso-per-workspace-callback-post-start",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "SSO return address is per workspace (/v1/sso/callback/<workspace>) and must match the workspace stored with the state; an iss parameter on the callback must equal the configured issuer (RFC 9207). A sign-in starts only by a same-origin JSON POST /v1/sso/start that returns the authorize URL; there is no GET start.",
+   "rationale": "Closes the IdP mix-up account takeover and the open redirect / forced-sign-in found in review (measure.2026-10-24.identity-security-review).",
+   "reverse_if": "An IdP refuses per-workspace redirect URIs (none of Entra, Okta or Google do) or a buyer needs IdP-initiated sign-in; then add an IdP-initiated entry that still re-starts a fresh SP-initiated flow."
+  },
+  {
+   "id": "measure.2026-10-24.identity-security-review",
+   "type": "measurement",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Independent adversarial review of the identity and audit code before push: 10 findings (2 high, 4 medium, 4 low/design); 9 fixed with a regression test each, 1 left open (domain claims without DNS proof, open.2026-10-24.sso-domain-verification).",
+   "n": 10,
+   "method": "A separate reviewer agent read the diff end to end without the builder's conclusions and ran probes against the local suite; each fix then got a failing-then-passing test in tests/workspace-identity.test.ts.",
+   "not_verified": "The IdP mix-up was confirmed by reading only (no end-to-end exploit was run); the fix is covered by tests on the callback path and iss check."
+  },
+  {
+   "id": "rejected.2026-10-24.sso-shared-callback",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "One shared SSO return address (/v1/sso/callback) for all workspaces, workspace taken from the state alone.",
+   "tried": "The callback found the workspace from state and redeemed whatever code arrived.",
+   "broke": "IdP mix-up: an attacker workspace's IdP could bounce a victim to the victim workspace's real IdP and receive that workspace's code at its own token endpoint, then finish the attacker's own started sign-in as the victim. Replaced by per-workspace callbacks plus the RFC 9207 iss check."
+  },
+  {
+   "id": "rejected.2026-10-24.sso-get-start",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Starting SSO with a plain GET /v1/sso/start?workspace=<id> that redirected to the workspace's authorization endpoint.",
+   "tried": "A link the sign-in page navigated to.",
+   "broke": "Any link could bounce people to an address a workspace owner chose (open redirect) and sign a victim into an attacker's workspace (login CSRF). Replaced by a same-origin JSON POST that returns the URL."
+  },
+  {
+   "id": "rejected.2026-10-24.sso-required-keeps-passwords",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Keeping members' password hashes while SSO is required and refusing them with 403 only after the password matched.",
+   "tried": "The 403 was meant to hide nothing because it came after the password check.",
+   "broke": "The 403 vs 401 difference itself told a credential stuffer which leaked password was right. Passwords are now cleared for everyone but the break-glass owner."
+  },
+  {
+   "id": "rejected.2026-10-24.audit-purge-empty-chain",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Purging every audit row of a quiet workspace and appending the next row with prev_hash null.",
+   "tried": "appendAudit chained from the last remaining row only.",
+   "broke": "verifyAudit starts from the anchor, so the next row read as tampering forever. appendAudit now continues from audit_anchor when no rows remain."
+  },
+  {
+   "id": "component.2026-10-24.intake-xlsx-import",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Excel (.xlsx) import, server-side with no new dependency: first sheet, formulas never evaluated (cached values only), up to 20 MB, plus the web import screen with the agent's column contract (must-be brief 9)",
+   "path": "product/server/modules/intake/xlsx.ts",
+   "details": "Zip reader on node:zlib with entry, per-entry and total inflate limits; OOXML shared/inline strings, numbers with every digit, date styles to ISO, booleans, errors as empty. Tests: intake-xlsx 8/8 (Devanagari .xlsx = its CSV; formula cells; refusals; a 17.0 MB .xlsx); browser flow 'Import an Excel file for an agent'. Not verified: zip bombs, zip64, encrypted workbooks."
+  },
+  {
+   "id": "decision.2026-10-24.xlsx-own-reader-no-dependency",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Read .xlsx with a ~200-line reader of our own (node:zlib + OOXML) instead of adding a spreadsheet package",
+   "rationale": "The build adds no new packages (ARCHITECTURE.md). jszip is present only transitively (mammoth). The first sheet's values are a small part of OOXML; formulas are never evaluated by design, which a full spreadsheet library would tempt.",
+   "reverse_if": "Real buyer files fail in ways the reader cannot cover cheaply (zip64, encryption, rich formats), or a well-known maintained parser is approved as a dependency."
+  },
+  {
+   "id": "decision.2026-10-24.row-overrides-inside-agent-rules",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A row's first_message replaces only opening.usefulFirst and must pass the agent's own opening lints; a row's voice applies only if the agent's stack offers it; the disclosure clause is never touched",
+   "rationale": "Brief 9 asks for per-row overrides inside the brief's rules. Literal lines are recited (the recitable-line lint), and a row must never get round the AI disclosure. rowOverrides throws if the clause would change; the runtime's RD1 still prefixes the fixed AI line.",
+   "reverse_if": "Buyers need scripted per-person openings and the recitation evidence changes, or the runtime moves the opening out of shapes."
+  },
+  {
+   "id": "measure.2026-10-24.intake-xlsx-17mb",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A 17.0 MB .xlsx (20,000 rows, stored sheet XML, long notes column) uploads in 0.56-0.64 s and commits in 8.0-37.6 s",
+   "n": 2,
+   "method": "product/tests/intake-xlsx.test.ts 'a 15 MB Excel file imports' on the coding sandbox, throwaway Postgres 16, wall-clock; the 37.6 s run coincided with a Postgres restart in the same session."
+  },
+  {
+   "id": "open.2026-10-24.row-overrides-not-in-ticket",
+   "type": "open-question",
+   "status": "closed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Per-row voice and first_message are validated and stored, but no call uses them until campaigns calls rowOverrides in buildTicket and the runtime reads opening.usefulFirst from the ticket",
+   "closes_when": "A ticket built for a contact with a valid first_message carries it as agent.opening.usefulFirst and the runtime's brief tail uses it, with RD1 unchanged (tested in campaigns and voice)."
+  },
+  {
+   "id": "open.2026-10-24.t-l7-false-urgency-gap",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "T-L7 (manipulation lint) passes 'the offer ends tonight so they must decide now or lose it forever'",
+   "closes_when": "shared/safety rules refuse that sentence and its variants, with a test."
+  },
+  {
+   "id": "component.2026-10-24.row-overrides-in-ticket",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "campaigns buildTicket applies intake's rowOverrides: a row's voice (only if the agent's stack offers it) and first_message (as opening.usefulFirst, re-linted) reach the ticket; contact.rowOverrides names what was applied or refused; the disclosure clause is never changed",
+   "path": "product/server/modules/campaigns/worker.ts",
+   "details": "Sanctioned cross-module edit (integrator, 2026-10-24). Contract field CallTicket.contact.rowOverrides in shared/runtime-protocol.ts. Test campaigns.test.ts F3b: a valid row reaches the ticket (combinationId ends ~Sulafat); a row written straight to the table with a human-claim opening and another stack's voice is refused at dial. Not verified: the runtime leading with ticket usefulFirst (voice module)."
+  },
+  {
+   "id": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Verified outcomes need no developer: a business uploads a CSV or .xlsx export from its own system of record. outcome.import.preview (draft) matches each row to exactly one call: the same contact, by phone or the external_id attribute, with a non-test call that started within the window before the row's date (default 14 days, 1 to 90). It shows matched, unmatched, ambiguous and invalid rows, each with its reason, and writes nothing. outcome.import (policy; Owner or Compliance approves) records each match through recordVerified (calls/verified.ts, the same code as outcome.record_verified), keyed {source:'file', ref:'<import>:<row>'}. The rows then lose their phone, id, reference and amount. Ambiguous cases are never written: two calls in the window, two rows for one call, or a call that already holds a verified outcome. The approval is bound to a hash of the match, so a new call or an erasure since the preview voids it.",
+   "rationale": "Must-be audit (research/2026-10-24/must-be-audit/README.md): blueprint decision 7 says results are earned from systems of record, but outcome.record_verified had no caller, so every outcome was an AI guess or a manager's label. A file export is the system of record most enterprises can produce on day one.",
+   "reverse_if": "Measured imports show the 14-day window mis-attributes (for example, results that follow a call by more than 14 days, or several calls being normal): then match the last call before the date instead of refusing, and say so on the preview. Or a connector (CRM, payments) becomes the common path, and the file becomes the fallback.",
+   "path": "product/server/modules/calls/outcome-import.ts"
+  },
+  {
+   "id": "decision.2026-10-24.verified-beside-ai-read",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "call.get returns verified: {value, from, aiRead, disagree}. The call page shows 'Verified: Paid, from renewals-oct.csv row 41 \u00b7 AI read: Promised', with a 'Disagrees with the AI read' chip when the two differ. Each import counts its disagreements (outcome.import.preview, the approval card, and outcome.import.list). Learning and calibration read verified first through one shared reading: conversation.outcome, which refreshOutcome sets best-grade-first (verified, then manager, then a trusted judge), and judge.calibrate's truth (verified, then manager). recordVerified calls refreshOutcome, so no learning file changes.",
+   "rationale": "A verified result must not be confused with the AI's reading, and a disagreement is the signal that calibrates the judge.",
+   "reverse_if": "Learning needs per-grade weighting rather than best-grade-wins (then expose the grade beside conversation.outcome, as GOAL_GRADE_SQL already does)."
+  },
+  {
+   "id": "measure.2026-10-24.outcome-import-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/calls-outcome-import.test.ts 6/6, on synthetic data:\n(1) Parsing: header synonyms, DD/MM/YYYY, a BOM, and a plain refusal listing the missing columns.\n(2) An 8-row file previews as matched 2, unmatched 2, ambiguous 1, invalid 3, disagreements 1, with 0 outcomes written. The 14-day window holds: a call 20 days back and a call after the date are unmatched, and a 30-day window reaches the 20-day call. A test call never counts. The approval card states the counts; approval writes 2. Verified outranks a manager's not_paid in conversation.outcome. call.get shows 'renewals-oct.csv row 2', AI read 'promised', disagree true. The committed rows hold no phone, id, reference or amount. A re-commit is refused, and a re-import is not matched again.\n(3) A new call after the preview voids the approval, and nothing is written.\n(4) Two rows for one call are both ambiguous. Workspace B's contact (same phone and external id) is never matched from A, B cannot record A's import, and B cannot use A's definition.\n(5) Erasure through dpdp.request.execute, then the purge: the person's verified outcome keeps its value and loses amount and reference; their pending preview rows lose phone, reference and amount; the other person's rows are untouched.\n(6) An .xlsx made in the test is read by intake's readXlsx, with an Excel date serial becoming 2026-10-20, and matches like a CSV; a non-Excel file is refused.",
+   "n": 6,
+   "method": "node:test on a throwaway Postgres 16 with all modules (buildApp(pool, modules)); A2 approvals through Registry.approve",
+   "path": "product/tests/calls-outcome-import.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.mcp-from-registry",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "An MCP server and a TypeScript SDK are generated from the tool registry; over MCP every approval class, including the A3 verbs, and A0 drafts become approval cards",
+   "rationale": "The must-be audit found defining decision 1 (one spec generates the API, SDK, MCP and the Operator's tools) contradicted: there was no MCP server and no SDK. An outside agent is held to the strictest path: it can propose, never run something that needs a person, and never approve.",
+   "reverse_if": "A customer needs an outside agent to run a risk-lowering A3 verb (pause, stop) without a tap, in which case allow named A3 verbs per key scope"
+  },
+  {
+   "id": "decision.2026-10-24.spend-card-matches-request",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "An approval-class card carrying an *InrMilli amount is made only if the amount matches a rupee figure the member wrote this turn; on a mismatch no card is made and the model is told both figures",
+   "rationale": "Op6: mini wrote rupees x100 into InrMilli fields on 3 spend cards in 2 runs, and the reply-number check then bent the reply to the wrong card (rejected.2026-10-24.reply-number-check-bends-to-wrong-card). Checking the card against the request stops the wrong card existing at all.",
+   "reverse_if": "Model-facing arguments move to rupees with server-side conversion and the bench shows no unit errors, or members routinely ask in words the parser misses (then the check needs those forms, not removal)"
+  },
+  {
+   "id": "measure.2026-10-24.floor-lookalike-dev10",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor look-alike false positives on the new DEV slice (sets/dev-lookalike-10.json: 56 ordinary lines, written by the builder knowing the rules, using the floor's own risky terms) fell from 30/56 to 1/56. The fix is guarded, sentence-scoped exemptions in cs.crisis.bengali, telugu, recall, self_harm and tamil. Crisis recall is unchanged: cases.json crisis vectors 215/215, dev-7 100/100, dev-lookalike-9 30/75. 8 guard probes (a strong crisis cue beside an exempted word) all still fire. TS and Python agree (tests in both doors).",
+   "n": "56 DEV look-alikes; 215 crisis vectors; 190 + 225 DEV lines; 8 guard probes",
+   "method": "callerSignals (TS) and caller_signals (Python)",
+   "not_verified": "Generalisation to unseen look-alikes is unknown: this slice targets the terms the builder knew were risky. BLIND 10 (sets/heldout-10.json; 60 crisis, 140 look-alikes, written by a separate agent, unread) measures it, scored once by the integrator. The one remaining DEV false positive ('ami na thakle ghor ta ke samlabe') is kept on purpose: it can be a goodbye."
+  },
+  {
+   "id": "open.2026-10-24.floor-tiers-checkin",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Proposal: split the floor into tiers. Explicit, high-precision crisis phrases take the full crisis path at once; ambiguous terms (the look-alike-prone ones exempted today) route to the same gentle check-in as a judge-only raise. BLIND 9 shows the floor adds only 0/100 recall over the judge (judge 97/100) but costs 6/100 false positives. Tiering would cut what a floor false alarm costs without removing a term. Needs the owner's view, since the check-in is still off by default.",
+   "closes_when": "The owner chooses tiers or keeps one floor."
+  },
+  {
+   "id": "asset.2026-10-24.blind-set-10",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND 10 (sets/heldout-10.json): 60 crisis and 140 hard look-alikes across ta/bn/mr/te/gu-en, Hinglish and Hindi, written by a separate agent with no repo access, checked by script (counts, 0 duplicates, 0 overlap with earlier sets), never read. For one scoring of the floor's look-alike FP by the integrator.",
+   "paths": [
+    "product/shared/safety/sets/heldout-10.json"
+   ],
+   "value": "blind floor look-alike FP after the DEV10 exemptions",
+   "effort": "one agent run"
+  },
+  {
+   "id": "asset.2026-10-24.judge-prompt-c",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Prompt C for the caller judge (product/shared/safety/prompts/caller_crisis.c.txt, for --prompt-file): B's anchored 0-100 crisis risk scale plus A's opt-out section (exclusion list word for word), in one call, written as shapes. 2,398 characters, 406 words, about 600 tokens, against A's 2,575 / 438 / ~644 and B's 3,067 / 531 / ~767. B's opt-out text was already identical to A's, so B's opt-out loss tracks its length and its timeouts (20/260 against 7/260), not the opt-out wording. C is shorter than A. Both doors parse its output (tests). Proposed rule: research/2026-10-24/judge-prereg10/PREREG-DRAFT.md, for the integrator to fix and sign before any request.",
+   "paths": [
+    "product/shared/safety/prompts/caller_crisis.c.txt",
+    "research/2026-10-24/judge-prereg10/PREREG-DRAFT.md"
+   ],
+   "value": "a candidate that keeps B's crisis gain without B's opt-out loss",
+   "effort": "small"
+  },
+  {
+   "id": "decision.2026-10-24.voice-listen-first-announcements",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Outbound phone calls listen before her opening (VP_LISTEN_FIRST): an Indian operator announcement or answering machine in the first words (vpvoice/announce.py lexicon, Hindi and English, Roman and Devanagari) ends the call as switched_off / busy / invalid_number / voicemail with no opening, no caller turn and so no analysis model run; a short reply opens at once, quiet opens after 2.5 s. Plivo dials ask for machine detection (async verdict to a signed hook; a machine ends the call as voicemail unless a person spoke beyond hello). Carrier hang-up causes before join map to the same reasons. New end reasons switched_off and invalid_number (shared/runtime-protocol.ts, ingest, codeReason DIAL_SWITCHED_OFF / DIAL_OPERATOR_ANNOUNCEMENT, not connected, retry classes switched_off / invalid)",
+   "rationale": "Must-be audit brief 5 (research/2026-10-24/must-be-audit): voicemail was only an end reason nothing produced, switched_off never reached the ladder, and her opening was spoken to recordings.",
+   "reverse_if": "real calls show listen-first delaying openings people notice (then shorten LISTEN_FIRST_S or open on the first voice onset), or announcements the lexicon misses (add them), or Plivo's machine detection mislabels people (then VP_MACHINE_DETECTION=0)"
+  },
+  {
+   "id": "measure.2026-10-24.voice-announcements-offline",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Offline: 11 canned operator announcements and machine prompts (Hindi and English) each end the call with the right end reason before any agent turn, with an empty transcript and no brain or voice call; 8 person replies (including '\u092e\u0948\u0902 \u0905\u092d\u0940 busy \u0939\u0942\u0901' and 'Sorry, I am busy right now') are not announcements, and a hello gets her opening after it. Plivo hang-up causes map as expected for 10 names; a machine verdict ends an unjoined Plivo call as voicemail and a wrong hook is refused. Not verified: real carrier announcements and Plivo's own machine-detection parameter names and verdict field on a live call",
+   "n": 11,
+   "method": "product/voice/tests/test_announce.py (fake ears/brain/voice, real cascade and energy VAD; Plivo REST faked) and product/tests/calls-announcements.test.ts, 2026-10-24",
+   "path": "product/voice/vpvoice/announce.py",
+   "value": "11/11 announcements end before her opening; 0/8 people misread"
+  },
+  {
+   "id": "decision.2026-10-24.voice-dtmf",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "DTMF in and out. In: carrier stream 'dtmf' events (Plivo, Exotel) and the browser socket's {t: dtmf}; keys within 1.5 s (or to '#') are one entry; 1-2 keys become the caller turn '[keypad: 1]', more keys (a PIN or OTP, maybe) are never stored or given to the brain: she says the stop-digits line and the turn records '[keypad: N keys, not shown]'. Out: when the last caller words are an automated menu ('press 1', '\u0926\u092c\u093e\u090f\u0902', 'dabaiye'), the LAST block teaches <dtmf N> (at most 4 keys); the runtime presses them via Plivo's send-digits API only when a menu was the last thing heard",
+   "rationale": "Must-be audit 8: grep found no DTMF anywhere; IVR navigation and keypad choices were impossible.",
+   "reverse_if": "real calls show carriers sending DTMF in a different event shape (then map it), or buyers need longer keypad entries passed through (an account number on purpose) with the agent's explicit permission"
+  },
+  {
+   "id": "open.2026-10-24.web-browser-keypad",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The browser test call has no keypad: the runtime accepts {t: 'dtmf', digit} on the browser socket, but web/src/browser-call.ts sends none, so a buyer cannot try a keypad choice from the studio",
+   "closes_when": "the browser call view has a 12-key pad that sends {t: 'dtmf', digit}"
+  },
+  {
+   "id": "decision.2026-10-24.voice-fixed-lines-per-language",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Her fixed lines outside the reply door's own texts (hand-off bridge and call-back, limit close, takeover hand-off, member-drop close, silence close) live in shared/safety/fixed-lines.json, one table per agent language (all 12 of agent-config LANGUAGES), shaped like disclosure.json (fallback, lines, review), each line a string or {female, male}. The runtime renders them for the call's language (the contact's when the agent allows it, else languages.primary; hinglish follows her script) through safety.fixed_line and doors them as before",
+   "rationale": "Must-be audit brief 10: the bridge, limit and silence lines were hard-coded Devanagari and the takeover lines Roman Hinglish, so a Tamil-English agent handed off in Hindi.",
+   "reverse_if": "native review (open.2026-10-24.indic-native-review) rewrites lines, which is a data change only; or the safety owners want these keys inside rules.json texts (then move the table, keep the shape)"
+  },
+  {
+   "id": "open.2026-10-24.voice-safety-texts-language",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The reply door's own replacement texts (rules.json texts: honest_ai, crisis_support, stop_digits, opt_out_confirm) and the safe fallback line are still Roman Hinglish only, so a Tamil or Bengali agent's honest answer, crisis line and OTP stop are in Hinglish. They are safety's; fixed-lines.json shows the per-language shape that could carry them",
+   "closes_when": "safety renders its texts per language (with crisis numbers kept verbatim) and both doors read them"
+  },
+  {
+   "id": "decision.2026-10-24.voice-warm-summary-whisper",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "With agent handOff.warmSummary, a Plivo transfer's Dial carries confirmSound pointing at a signed runtime hook; when the colleague answers, Plivo speaks (its own en-IN voice) a short English summary built in code (who handed off, the caller's name, why, goals settled, and the caller's last words only when in Latin letters) before the caller is connected",
+   "rationale": "Must-be audit brief 6: warmSummary was configurable and never spoken. Plivo Dial confirmSound per its docs (fetched with POST, Speak/Play/Wait only, played to the called party on answer); not verified on a live transfer.",
+   "reverse_if": "a live transfer shows confirmSound needs confirmKey or plays after connecting (then use a separate B-leg answer URL), or teams want the summary in Hindi (then a hi-IN Speak voice and the caller's words verbatim)"
+  },
+  {
+   "id": "decision.2026-10-24.call-allowed-by",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Every call shows why it was allowed (must-be decision 5): call.get returns allowedBy (the dial gate's record for the attempt that placed the call: each of the 12 checks as a plain sentence, warnings in plain words, when it ran), call.explain opens with 'Why this call was allowed', and the call page has a card for it. A browser test call says it rang no one and passed no gate. Read only: the stored attempt.precheck, never re-run; another workspace's attempt is never read",
+   "rationale": "The audit found the gate trace only on attempt.precheck and the contact's attempt list. Rule ids, number ids and 'A2P' stay in the stored trace for developers.",
+   "reverse_if": "The gate's checks change meaning (then the sentences in calls/gate-trace.ts follow them)."
+  },
+  {
+   "id": "decision.2026-10-24.outcomes-and-checks",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Judges a buyer can see (must-be brief 7): Settings > Outcomes and checks shows each outcome's values (goal marked), typed fields, how it is judged (judge name, version, model and instructions, or the workspace's analysis setting in plain words) and calibration ('Uncalibrated' until it passes: 50+ labelled calls, 90% agreement, Wilson lower bound 80%), editable through outcome.define and judge.edit (drafts, audited) and checked with judge.calibrate. New read tool outcome.list. Outcome definitions take typed fields [{key, label?, type: text|number|date|enum|sentiment, values?}] validated in code; the analysis fills each only with an exact caller quote and the right type, and drops and counts the rest (analysis.fieldsDropped; the call is flagged quotes_dropped). Sentiment is a five-point coded scale with its quote. The call page shows the fields with the caller's words",
+   "rationale": "A definition without fields sends the measured contract byte for byte: the r6 gate (scripts/analysis-variant-probe.ts) still passes; fields add lines only inside the OUTCOME block of a definition that has them. Contract with fields is not benched: a definition with fields should get a bench round before its numbers are trusted.",
+   "reverse_if": "A bench round with fields shows they cost outcome or moment accuracy (then move fields to a second pass)."
+  },
+  {
+   "id": "decision.2026-10-24.handoffs-queue",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Hand-offs land (must-be brief 6, the calls half): each runtime hand_off becomes a queue item with her warm brief (reason in words and her one-line summary); handoff.list (crisis first, then callbacks by due time), handoff.claim (one person; others are told who), handoff.resolve (reached, no answer, not needed; only the holder). A callback target is a task due at the time the caller stated, read by code from their own words in IST (stated-time.ts: 'shaam 6 baje', 'kal subah 10 baje', '2 ghante baad', 'after 6:30 pm'), else 'as soon as you can'. A crisis hand-off writes in-app alerts to every active owner, operator and compliance member in the same transaction as the event; the web shell polls alert.list every 5 s and shows a banner on every page until someone takes it. A take-over by a member is not a queue item. Practice calls alert nobody. Web: Hand-offs page and nav item, a Today card",
+   "rationale": "On duty has no roster yet, so it means the roles that can act on a call. Email and Slack wait on workspace webhooks (brief 1, the workspace builder's); the warm whisper to the bridged leg is the voice runtime's.",
+   "reverse_if": "A duty roster or shift schedule exists (then alert only those on shift), or webhooks land (then also notify by email or Slack)."
+  },
+  {
+   "id": "open.2026-10-24.handoff-notify-email-slack",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "A crisis hand-off alerts in-app only. Email or Slack notification waits on workspace webhooks (must-be brief 1); a duty roster would narrow 'on duty' from roles to people on shift.",
+   "closes_when": "Crisis and hand-off alerts reach a Slack or email destination (the workspace notifications brief), with a test that a crisis alert arrives within 5 s and carries no caller words."
+  },
+  {
+   "id": "evidence.2026-10-24.numbers-kyc-plivo-pages",
+   "type": "measurement",
+   "title": "Plivo's public India pages (fetched 2026-10-24): landline 080/022 needs one of GST/COI/Udyam, reviewed in about 5 minutes, \u20b9200 a month; 140-series ~5-10 business days and 160-series ~7-14 business days via Tata DLT (Mumbai/Karnataka telemarketers only), price not published; 1601 and mobile not published",
+   "status": "observed",
+   "date": "2026-10-24",
+   "source": "agent",
+   "n": 5,
+   "method": "curl of 5 public carrier pages, saved byte for byte with URL and fetch time; every figure in SERIES_GUIDE is asserted against the saved text by tests/numbers-kyc.test.ts",
+   "path": "research/2026-10-24/numbers-kyc/README.md"
+  },
+  {
+   "id": "decision.2026-10-24.number-search-guide-first",
+   "type": "decision",
+   "title": "number.search always returns the per-series guide (checklist, typical time, monthly price, sources); with no carrier switched on it answers with no offers and telephony {state: off, code: telephony_disabled} instead of refusing",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "open.2026-10-24.numbers-kyc-before-search: a buyer must see what a line needs and costs before searching, and before a carrier is connected",
+   "reverse_if": "the owner wants number search hidden entirely until a carrier is live",
+   "path": "product/server/modules/campaigns/telephony.ts"
+  },
+  {
+   "id": "decision.2026-10-24.default-daily-cap-and-burst",
+   "type": "decision",
+   "title": "Every workspace starts with a \u20b95,000 daily spend cap and a \u20b92,000 burst limit (money held at once by calls in flight), both from money_config; owners lower them at once and raise them by approval",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "must-be audit gap 17 (bounded defaults): nothing should spend without bound before an owner sets limits. \u20b92,000 held is about 33 ten-minute calls at the dial gate's \u20b96/min fallback hold; \u20b95,000 a day is roughly 2,500-3,500 connected minutes at measured provider cost. The burst is a budget row whose spend stays 0, so the kernel's reserve() enforces it under its own lock",
+   "reverse_if": "design partners hit the defaults in normal use, or the owner sets other values (change money_config; existing workspaces keep their rows)",
+   "path": "product/db/migrations/0907_money_default_limits.sql"
+  },
+  {
+   "id": "component.2026-10-24.plivo-system-call",
+   "type": "component",
+   "title": "PlivoTelephony.systemCall: POST /v1/Account/{id}/Call/ with an answer URL on our /hooks/telephony/plivo/speak/<token> route serving Speak XML; behind VP_TELEPHONY_LIVE; tests use a fake Plivo on 127.0.0.1 only; needs VP_PUBLIC_URL (https) at runtime",
+   "status": "built",
+   "date": "2026-10-24",
+   "source": "agent",
+   "path": "product/server/modules/campaigns/telephony.ts"
+  },
+  {
+   "id": "risk.2026-10-24.announcement-store-single-process",
+   "type": "risk",
+   "title": "System-call announcements wait in process memory for 15 minutes; with more than one control-plane replica the carrier's answer request can land on a replica that does not hold the lines",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "agent",
+   "mitigation": "before scaling past one replica, move the token -> lines store to Postgres (one small table) or sign the lines into the token"
+  },
+  {
+   "id": "decision.2026-10-24.results-built-at-send",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Webhook records are built when they are sent, not when the event is queued. webhook_delivery stores only ids plus a build name (call.v1, contact_opt_out.v1, hand_off.v1, test.v1); deliverPending builds the record from what the database holds at that try (results.ts). The first send, every retry and a replay therefore respect an erasure or the transcripts retention that landed in between, the recording link is signed fresh with the runtime's 1 h maximum, and webhook.deliveries (readable by viewers) never holds a phone number or a transcript.",
+   "rationale": "Storing the full record would put the caller's words and number in a second table that memory's transcript purge does not touch, keep a recording link that expires in 10 to 60 minutes, and exceed webhook.emit's 100 KB cap on long calls. Building at send costs one read per delivery.",
+   "reverse_if": "A receiver needs the record exactly as it was at the event (for example, an audit of what was known then), or build reads become a measurable load at volume; then store a redactable snapshot and add webhook_delivery to the purge.",
+   "path": "product/server/modules/workspace/results.ts"
+  },
+  {
+   "id": "decision.2026-10-24.results-outbox-triggers",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "campaign.state_changed, contact.opted_out and hand_off.created come from a transactional outbox: AFTER triggers on campaign (state changed), suppression (insert, reason not 'erased') and hand_off (insert, not on a test call) write webhook_outbox rows in the same transaction (migration 1020, workspace range). deliverPending fans each row out once (SKIP LOCKED, dedupe key outbox:<id>), only to endpoints created at or before the event. call.ended goes through webhook.emit from calls/analysis.ts after afterCall, keyed by the call id, never for a test call.",
+   "rationale": "Campaign state changes in at least seven places across campaigns/index.ts and worker.ts, suppressions in three across intake, hand-offs in calls ingest. Hooking each is a diff in three modules other builders own, and the next code path that changes state would forget to announce it. A trigger catches every path, fires only on commit, and needs no change to those modules.",
+   "reverse_if": "The owner or the integrator rules out triggers on another module's tables (hidden behaviour), or a module needs to suppress an event the trigger cannot tell apart; then move to explicit webhook.emit calls in each module.",
+   "path": "product/db/migrations/1020_workspace_results_out.sql"
+  },
+  {
+   "id": "decision.2026-10-24.webhook-numbers-masked-default",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inference",
+   "date": "2026-10-24",
+   "title": "A webhook sends phone numbers masked (+91\u2022\u2022\u2022\u2022\u20221234, name as initials) unless it was created with contactNumber 'full', which the approval card states as 'personal data leaves Vyakti' and only an owner or compliance member can approve. call.record masks for viewers. call.export (owner or compliance only) has full numbers.",
+   "rationale": "DPDP data minimisation by default. A CRM sync needs the full number and gets it by one explicit choice.",
+   "reverse_if": "Buyers in the first pilots all turn 'full' on, so the default only adds a step; then default to full for owner-approved endpoints.",
+   "path": "product/server/modules/workspace/webhooks.ts"
+  },
+  {
+   "id": "decision.2026-10-24.call-export-streamed-at-download",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "call.export (policy, owner or compliance, approved like contact.export) stores only the filter and returns /v1/exports/calls/<id>, valid 24 h. Each download by a signed-in owner or compliance member streams the CSV from the database in pages of 500 (cap 200,000) and is audited (call.export.download). Test and live calls, workspace-suppressed people, erased people and people with an erase_me request are left out at download time. Cells a person or model wrote go through csvCell; the E.164 is validated and written as is.",
+   "rationale": "No stored file means nothing to purge, and someone suppressed or erased after the approval is not in a later download. Streaming keeps memory flat for large workspaces, where contact.export's in-receipt CSV would not scale.",
+   "reverse_if": "Compliance needs a fixed, checksummed file per approval, like audit.export; then store the content with a sha256 and signature.",
+   "path": "product/server/modules/workspace/results.ts"
+  },
+  {
+   "id": "decision.2026-10-24.custom-http-used-rest-labelled",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Custom HTTP is the one integration read for real. A webhook may name a connected custom_http integration (authIntegrationId); every delivery then sends Authorization: Bearer <token>, read through integrationSecretsById at send time. The webhook address must be on the integration's base_url (same origin and path prefix), so the token is never sent elsewhere. A disconnected integration fails the delivery with a reason rather than sending without the token. Every other kind is labelled 'Stored, not used yet' on Integrations (integration.kinds usedBy is null).",
+   "rationale": "Brief 1 asked for one integration wired or an honest label. Custom HTTP serves Zapier, n8n and in-house APIs that want a bearer token rather than HMAC checks, with no third-party account needed to test.",
+   "reverse_if": "In-call tools (brief 3) define how custom HTTP is used and need a different shape (per-tool URL and method).",
+   "path": "product/server/modules/workspace/webhooks.ts"
+  },
+  {
+   "id": "rejected.2026-10-24.replay-without-build",
+   "type": "rejection",
+   "status": "rejected",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The first cut of webhook.replay copied the delivery's payload but not its build, so a replayed call.ended would have sent only {conversationId}. It was caught by the results-out test 'a replay after retention sends no words' (the transcript came back undefined). replay now copies build and test, and the record is rebuilt at send.",
+   "path": "product/tests/results-out.test.ts",
+   "broke": "The first cut of webhook.replay copied the delivery's payload but not its build, so a replayed call.ended would have sent only {conversationId}. It was caught by the results-out test 'a replay after retention sends no words' (the transcript came back undefined). replay now copies build and test, and the record is rebuilt at send."
+  },
+  {
+   "id": "rejected.2026-10-24.fanout-to-later-endpoints",
+   "type": "rejection",
+   "status": "rejected",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Fan-out first matched every active endpoint at fan-out time. The seeded workspace's opt-outs, made before any webhook existed, were then sent to a webhook added later; this was seen in the Settings > Webhooks screenshot at 1440. Fan-out now matches only endpoints created at or before the event, and the test asserts that a webhook added later gets nothing earlier.",
+   "path": "product/server/modules/workspace/webhooks.ts",
+   "broke": "Fan-out first matched every active endpoint at fan-out time. The seeded workspace's opt-outs, made before any webhook existed, were then sent to a webhook added later; this was seen in the Settings > Webhooks screenshot at 1440. Fan-out now matches only endpoints created at or before the event, and the test asserts that a webhook added later gets nothing earlier."
+  },
+  {
+   "id": "measure.2026-10-24.results-out-tests",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/results-out.test.ts, 6 tests on a fresh Postgres 16, with a 127.0.0.1 receiver. They cover: an ended call gives exactly 1 signed delivery, even when analysed twice; another workspace's endpoint receives 0; a test call gives 0, and so does a hand-off on one; an erase_me request filed after the call ended and before the send gives no number, no name and no words, with transcriptRemoved.reason 'erased'; a masked endpoint never gets the full number; a replay after retention sends transcript [] and reason 'retention'; campaign (2 transitions), opt-out (1, erasure not announced, the caller's quote not sent) and hand-off (1) arrive once each; a late webhook gets 0 earlier events; a test event is delivered at once with x-vp-test; the bearer token goes only to the integration's base address and fails once disconnected; call.export is refused to a builder and approved by the owner; it has 2 of 5 calls (the suppressed, erased and test calls are absent), formula cells are escaped, each download is audited, and a later suppression drops the row from the next download. Full gates on the final tree are listed in the commit and the message to the integrator.",
+   "n": 6,
+   "method": "node --test against a throwaway Postgres 16; synthetic contacts +91 90000xxxxx",
+   "path": "product/tests/results-out.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.results-out-unverified",
+   "type": "open-question",
+   "status": "open",
+   "source": "inference",
+   "date": "2026-10-24",
+   "title": "Results out is not yet verified against a real internet receiver: every test uses 127.0.0.1 with VP_WEBHOOK_ALLOW_PRIVATE, and the e2e flow sends to an address that does not resolve. Also not measured: a calls export above a few thousand rows, delivery throughput with many endpoints, and two replicas fanning out at once (SKIP LOCKED by design, not exercised). The next step is one staging run that sends to a request bin the owner controls.",
+   "closes_when": "One staging send to a request bin the owner controls is delivered and its signature verified, and a calls export above 10,000 rows is measured."
   }
  ],
  "edges": [
@@ -38548,6 +39260,396 @@
    "from": "decision.2026-10-24.brief-review-flashlite",
    "to": "open.2026-10-24.brief-review-fp-names-in-notes",
    "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "measure.2026-10-24.judge-prereg9-dev-pooled",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-1500",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "decision.2026-10-24.prereg9",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "rejected.2026-10-24.judge-prompt-c-combined",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-prompt-c-combined",
+   "to": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-prompt-c-combined",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "to": "open.2026-10-24.indic-native-review",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "challenges"
+  },
+  {
+   "from": "decision.2026-10-24.http-tool-contract",
+   "to": "decision.2026-10-24.knowledge-reaches-calls",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.knowledge-and-tools-tests",
+   "to": "decision.2026-10-24.knowledge-reaches-calls",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.knowledge-and-tools-tests",
+   "to": "decision.2026-10-24.http-tool-contract",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.sso-oidc-in-house-verifier",
+   "to": "component.2026-10-24.enterprise-identity",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.sso-identity-is-issuer-sub",
+   "to": "component.2026-10-24.enterprise-identity",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.sso-required-break-glass",
+   "to": "component.2026-10-24.enterprise-identity",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.sso-domain-first-come",
+   "to": "open.2026-10-24.sso-domain-verification",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.scim-lite-shape",
+   "to": "open.2026-10-24.scim2-compat",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.audit-export-signed-a2",
+   "to": "component.2026-10-24.enterprise-identity",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.audit-retention-floor-anchor",
+   "to": "component.2026-10-24.enterprise-identity",
+   "relation": "part-of"
+  },
+  {
+   "from": "rejected.2026-10-24.audit-purge-js-date-bound",
+   "to": "decision.2026-10-24.audit-retention-floor-anchor",
+   "relation": "informs"
+  },
+  {
+   "from": "component.2026-10-24.enterprise-identity",
+   "to": "open.2026-10-24.saml-sso",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-24.enterprise-identity",
+   "to": "open.2026-10-24.sso-real-idp-check",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-24.enterprise-identity",
+   "to": "directive.2026-10-22.enterprise-english-ui",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.identity-security-review",
+   "to": "rejected.2026-10-24.sso-shared-callback",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.identity-security-review",
+   "to": "rejected.2026-10-24.sso-get-start",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.identity-security-review",
+   "to": "rejected.2026-10-24.sso-required-keeps-passwords",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.identity-security-review",
+   "to": "rejected.2026-10-24.audit-purge-empty-chain",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.sso-per-workspace-callback-post-start",
+   "to": "rejected.2026-10-24.sso-shared-callback",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-24.sso-per-workspace-callback-post-start",
+   "to": "component.2026-10-24.enterprise-identity",
+   "relation": "part-of"
+  },
+  {
+   "from": "component.2026-10-24.intake-xlsx-import",
+   "to": "decision.2026-10-24.xlsx-own-reader-no-dependency",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.intake-xlsx-import",
+   "to": "decision.2026-10-24.row-overrides-inside-agent-rules",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.intake-xlsx-17mb",
+   "to": "component.2026-10-24.intake-xlsx-import",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-24.intake-xlsx-import",
+   "to": "decision.2026-10-24.per-contact-facts-need-a-column",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.intake-xlsx-import",
+   "to": "open.2026-10-24.row-overrides-not-in-ticket",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-24.row-overrides-in-ticket",
+   "to": "open.2026-10-24.row-overrides-not-in-ticket",
+   "relation": "resolves"
+  },
+  {
+   "from": "component.2026-10-24.row-overrides-in-ticket",
+   "to": "decision.2026-10-24.row-overrides-inside-agent-rules",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.outcome-import-tests",
+   "to": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.outcome-import-tests",
+   "to": "decision.2026-10-24.verified-beside-ai-read",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.verified-beside-ai-read",
+   "to": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.mcp-from-registry",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.spend-card-matches-request",
+   "to": "open.2026-10-24.spend-card-amount-vs-request",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.spend-card-matches-request",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-24.floor-lookalike-dev10",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "supports"
+  },
+  {
+   "from": "asset.2026-10-24.blind-set-10",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-24.floor-tiers-checkin",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "extends"
+  },
+  {
+   "from": "asset.2026-10-24.judge-prompt-c",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.handoffs-queue",
+   "to": "open.2026-10-24.handoff-notify-email-slack",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.number-search-guide-first",
+   "to": "open.2026-10-24.numbers-kyc-before-search",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.number-search-guide-first",
+   "to": "evidence.2026-10-24.numbers-kyc-plivo-pages",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.default-daily-cap-and-burst",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "risk.2026-10-24.announcement-store-single-process",
+   "to": "component.2026-10-24.plivo-system-call",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.results-built-at-send",
+   "to": "decision.2026-10-24.transcript-redact-not-delete",
+   "relation": "depends_on"
+  },
+  {
+   "from": "decision.2026-10-24.results-outbox-triggers",
+   "to": "decision.2026-10-24.results-built-at-send",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-24.replay-without-build",
+   "to": "decision.2026-10-24.results-built-at-send",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-24.fanout-to-later-endpoints",
+   "to": "decision.2026-10-24.results-outbox-triggers",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.results-out-tests",
+   "to": "decision.2026-10-24.results-built-at-send",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.results-out-tests",
+   "to": "decision.2026-10-24.call-export-streamed-at-download",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.results-out-unverified",
+   "to": "measure.2026-10-24.results-out-tests",
+   "relation": "informs"
   }
  ]
 }

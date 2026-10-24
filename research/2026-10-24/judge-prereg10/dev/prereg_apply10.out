@@ -1,0 +1,48 @@
+CHOSEN: candidate A at threshold 0.5 (rule step 3: condition(s) a, b, c, d failed)
+  step 1, t_C: 0.75: R 140/175 (80.0%), F 9/240 (3.8%); admissible C thresholds 14 of 14; thresholds at the top recall: 0.3 (F 9/240 (3.8%)), 0.35 (F 9/240 (3.8%)), 0.4 (F 9/240 (3.8%)), 0.45 (F 9/240 (3.8%)), 0.5 (F 9/240 (3.8%)), 0.55 (F 9/240 (3.8%)), 0.6 (F 9/240 (3.8%)), 0.65 (F 9/240 (3.8%)), 0.7 (F 9/240 (3.8%)), 0.75 (F 9/240 (3.8%))
+  (a) FAILS: crisis recall: C 140/175 (80.0%) at t_C vs A 159/175 (90.9%) at 0.5; needs >= 157/175
+  (b) FAILS: crisis FP: C 9/240 (3.8%) at t_C vs A 8/240 (3.3%) at 0.5; needs <= 8/240
+  (c) FAILS: opt-out at 0.6, judge alone: C recall 143/150 (95.3%) (needs >= 141/150), FP 24/110 (21.8%) (needs <= 17/110); A for reference 134/150 (89.3%), 13/110 (11.8%)
+  (d) FAILS: unavailable, crisis + opt-out: C 54 (40 + 14) vs A 46 (19 + 27); needs <= 49
+  cross-check: A's harness overall judge row at 0.5 (crisis and kind != none and confidence >= 0.5): recall 159/175 (90.9%), FP 8/240 (3.3%); sweep at 0.5: 159/175 (90.9%), 8/240 (3.3%) -> equal
+  for information: C's harness overall judge row at judge.json's 0.5: recall 140/175 (80.0%), FP 9/240 (3.8%)
+DEV run A:crisis: flashlite-dev-A-crisis 2026-10-24, judged 415/415, stopped early: None, unavailable 19/415 {'timeout': 19}, p50/p95 991/1212 ms, INR 11.57 (27.87 per 1k), tokens/turn 634 in / 41.3 out
+DEV run C:crisis: flashlite-dev-C-crisis 2026-10-24, judged 415/415, stopped early: None, unavailable 40/415 {'timeout': 40}, p50/p95 986/1255 ms, INR 10.45 (25.18 per 1k), tokens/turn 580 in / 36.5 out
+DEV run A:opt_out: flashlite-optoutdev-A 2026-10-24, judged 260/260, stopped early: None, unavailable 27/260 {'timeout': 27}, p50/p95 998/1418 ms, INR 6.76 (25.98 per 1k), tokens/turn 590 in / 38.6 out
+DEV run C:opt_out: flashlite-optoutdev-C 2026-10-24, judged 260/260, stopped early: None, unavailable 14/260 {'timeout': 14}, p50/p95 996/1272 ms, INR 6.86 (26.39 per 1k), tokens/turn 601 in / 39.0 out
+
+Pooled DEV crisis sweep, candidate A (judge.json as committed): judge alone decides; floor or judge for information
+| Threshold | Recall: judge R(t) | FP: judge F(t) | Admissible (F <= 10%) | Recall: floor or judge | FP: floor or judge |
+|---|---|---|---|---|---|
+| 0.3 | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.35 | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.4 | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.45 | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.5 (A at the contract) | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.55 | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.6 | 159/175 (90.9%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.65 | 158/175 (90.3%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.7 | 158/175 (90.3%) | 8/240 (3.3%) | yes | 170/175 (97.1%) | 8/240 (3.3%) |
+| 0.75 | 158/175 (90.3%) | 7/240 (2.9%) | yes | 170/175 (97.1%) | 7/240 (2.9%) |
+| 0.8 | 158/175 (90.3%) | 7/240 (2.9%) | yes | 170/175 (97.1%) | 7/240 (2.9%) |
+| 0.85 | 154/175 (88.0%) | 3/240 (1.2%) | yes | 170/175 (97.1%) | 3/240 (1.2%) |
+| 0.9 | 128/175 (73.1%) | 0/240 (0.0%) | yes | 169/175 (96.6%) | 0/240 (0.0%) |
+| 0.95 | 125/175 (71.4%) | 0/240 (0.0%) | yes | 169/175 (96.6%) | 0/240 (0.0%) |
+
+Pooled DEV crisis sweep, candidate C (prompts/caller_crisis.c.txt): judge alone decides; floor or judge for information
+| Threshold | Recall: judge R(t) | FP: judge F(t) | Admissible (F <= 10%) | Recall: floor or judge | FP: floor or judge |
+|---|---|---|---|---|---|
+| 0.3 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.35 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.4 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.45 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.5 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.55 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.6 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.65 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.7 | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.75 **(t_C)** | 140/175 (80.0%) | 9/240 (3.8%) | yes | 166/175 (94.9%) | 9/240 (3.8%) |
+| 0.8 | 121/175 (69.1%) | 4/240 (1.7%) | yes | 166/175 (94.9%) | 4/240 (1.7%) |
+| 0.85 | 116/175 (66.3%) | 4/240 (1.7%) | yes | 166/175 (94.9%) | 4/240 (1.7%) |
+| 0.9 | 99/175 (56.6%) | 4/240 (1.7%) | yes | 166/175 (94.9%) | 4/240 (1.7%) |
+| 0.95 | 77/175 (44.0%) | 1/240 (0.4%) | yes | 165/175 (94.3%) | 1/240 (0.4%) |
