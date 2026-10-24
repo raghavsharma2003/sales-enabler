@@ -1,0 +1,202 @@
+[
+ {
+  "id": "TS-01",
+  "dimension": "method",
+  "claim": "Bolna blind calibration (pre-registered set, n=20): lenient 16 correct, 4 partly, 0 wrong (hit 0.90, Brier 0.089); strict 10 correct, 10 partly (0.75, Brier 0.066). Second independent rater 0.85 (kappa 0.74 vs lenient). Mean stated confidence 0.69: the blind pass was under-confident leniently and about calibrated strictly in the 0.70-0.85 bins.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/bolna/calibration.json; research/2026-10-20/teardown/bolna-check/claims.json (BC-01, BC-03, BC-20)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-02",
+  "dimension": "method",
+  "claim": "Calibration by evidence type: inferences resting on docs hit 0.96 lenient / 0.79 strict (n=14); on JS bundles 0.70 / 0.60 (n=5); mechanisms read from bundle config flags 1 correct and 3 partly (ambient noise, fillers, caching were flags whose code path is dead or narrower). Structure (5/5) and absence (4/4) claims held.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/bolna/calibration.json (stats.by_primary_evidence_type, by_claim_kind); BC-02",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-03",
+  "dimension": "method",
+  "claim": "Recall is the weak side: the code shows 16 material Bolna features the blind pass never inferred (5 were in docs it had downloaded; 10 are code-only, including dropped short finals during agent speech and the language-switch judge). Timing constants and turn policies cannot be inferred from outside.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/bolna/calibration.json (coverage_gaps); BC-04, BC-05",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-04",
+  "dimension": "method",
+  "claim": "Adversarial verification across the 7 closed-vendor lanes re-checked 309 claims: 176 (57%) stood verbatim, 275 (89%) kept grade and substance after text fixes, 34 (11%) were downgraded or refuted in part.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/sarvam/verify.md; research/2026-10-20/teardown/vapi/claims.json; research/2026-10-20/teardown/retell/claims.json; research/2026-10-20/teardown/elevenlabs/verify.md; research/2026-10-20/teardown/synthflow/verify.md; research/2026-10-20/teardown/squadstack/verification.json; research/2026-10-20/teardown/exotel/verify.md",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-05",
+  "dimension": "method",
+  "claim": "The verifier downgrades cluster in four inference classes, matching the Bolna calibration: server-side framework identity from client artefacts (SAR-26, RET-22/24, EXO-22, SYN-25/26, EL-18, SQS-23); margins from analogue COGS (EL-33, VAP-36, SAR-39b, RET-36b, SQS-41); media anchoring from signalling DNS (EL-21); and defaults read from bundle constants (SQS-21 hide-list read as a default). Inferences from DNS + cloud IP ranges, captured transport, and bounded doc negatives held.",
+  "grade": "inferred",
+  "evidence": "TS-02; TS-04; lane verify files",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-06",
+  "dimension": "decision-1",
+  "claim": "All 8 deep-set vendors leave Indian calling compliance to the buyer: none ships category-aware windows, a consent/inquiry ledger, an A2P declaration, or an in-call promotion fence; only Sarvam (org DND list) and SquadStack (DNC blacklist + in-call dnd_request) suppress on every path; Bolna and Exotel docs state 9-21 for all calls against the primary 10:00 promotional start and no band for service calls.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/regulation-segment/claims.json (RS-16..RS-26); SAR-44; SQS-47/72; VAP-45..47; RET-42..44; EL-38..44; SYN-60..63; EXO-45; measure.2026-10-20.acct-synthesis-india-operator-layer",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-07",
+  "dimension": "decision-1",
+  "claim": "Regulatory asymmetry (primary text): a TRAI service call needs no explicit consent, is not DND-blocked once FULLY BLOCK migrates (about 2026-11-03), has no TRAI time band, and DPDP s.7(a) covers it; promotional calls need 140xx, 10:00-21:00, 7-day inquiry evidence and CRF-registered consent for DND numbers (CRF upload open to 11 pilot banks).",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/regulation-segment/claims.json (RS-03, RS-04, RS-07, RS-10, RS-12, RS-13, RS-15, RS-32)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-08",
+  "dimension": "decision-1",
+  "claim": "Counterweights to post-sale-first: 140-series promotional volume was about 11x 1600 volume in Q1 FY27 (13.16 bn vs 1.15 bn); compliance is 1.3% (6/459) of coded Indian buyer complaints; funded BFSI post-sale specialists (Desible lists a Policy Renewal Agent; Navana; Gnani) and Sarvam (collections disposition model, Tata Capital) already sell post-sale.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/regulation-segment/claims.json (RS-45, RS-46); research/2026-10-20/teardown/radar/claims.json (RAD-42, RAD-43, RAD-49); SAR-60, SAR-62",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-09",
+  "dimension": "decision-1",
+  "claim": "Recommendation: post-sale first on a shared core, led by due-date reminders (renewal, pre-due payment/EMI, service appointments) and onboarding/application follow-up; pre-sale only as consented inbound-lead follow-up inside the 7-day window in a second wave; no cold outbound, surveys or collections-in-default in v1. Insurance renewal (beachhead-v2) becomes the first preset and design-partner set, not the product boundary.",
+  "grade": "inferred",
+  "evidence": "TS-06; TS-07; TS-08; research/2026-10-20/teardown/regulation-segment/report.md section 4",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-10",
+  "dimension": "decision-2",
+  "claim": "Across the 8 vendors, 11 capabilities are present at every vendor (fully at 6-8 of 8): builder test call, list campaigns, inbound routing, transfer, voicemail detection, knowledge base, HTTP tools, typed post-call extraction, post-call webhook, agent versions and analytics; an MCP server or full API ships at 7 of 8 (not SquadStack). These are the floor, not a wedge.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/synthesis/kano.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-11",
+  "dimension": "decision-2",
+  "claim": "The India-specific must-be items are where coverage is thin: suppression on every path 2/8, recurring calling window 2/8 full, Indian CLI path 4/8 full, INR+GST billing 3/8, India residency 2/8 full, cross-format CSV hygiene 0/8 full.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/synthesis/kano.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-12",
+  "dimension": "decision-2",
+  "claim": "LLM-native/chat setup is parity: Bolna (Auto Build, Ask Bolna, MCP), Sarvam (Genie, which also runs campaigns and diagnoses failed calls), Vapi (Composer alpha), Retell (Conductor), ElevenLabs (Architect) ship it; Synthflow (Aurora, Enterprise) and Exotel (MCP server) partly.",
+  "grade": "observed",
+  "evidence": "BOL-02; SAR-03; VAP-05; RET-03; EL-03; SYN-16; EXO-01",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-13",
+  "dimension": "decision-3",
+  "claim": "Incumbent CSV normalisers can dial the wrong country: Vapi's dashboard prepends \"+\" to any number (a 10-digit Indian mobile becomes +98..., VAP-49) and Retell's contact import defaults 10-digit numbers to +1 (RAP-54). A synthetic test list of 10-digit Indian numbers is therefore unsafe unless every normalisation lands on a number we own or an unassignable range.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/vapi/claims.json (VAP-49); research/2026-10-20/account-phase/retell/claims.json (RAP-54); research/2026-10-20/teardown/synthesis/code/messy_csv.py",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-14",
+  "dimension": "decision-3",
+  "claim": "Delhi (11-series) virtual numbers make the full 50-row test list safe: 11XXXXXXXX under naive \"+\" or US \"+1\" lands in NANP area code 1XX, which cannot be assigned. With a Bengaluru (80-series) number, 3 rows must be withheld (verified by the render check on fictional test numbers).",
+  "grade": "inferred",
+  "evidence": "research/2026-10-20/teardown/synthesis/code/messy_csv.py (render check run 2026-10-20 on scratch fictional numbers)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-15",
+  "dimension": "decision-3",
+  "claim": "Where-we-win is 10 falsifiable hypotheses (compliance by default, CSV hygiene and campaign robustness, Indian-PSTN reply gap, Hinglish short-reply turn-taking, language hold vs non-Indian platforms, failure explainability, time to first Indian-handset call, fair billing, IST support, stored config = what runs with full API parity). Each has a task, a pass bar and a kill bar; none is proven yet.",
+  "grade": "inferred",
+  "evidence": "research/2026-10-20/teardown/synthesis/where-we-win.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-16",
+  "dimension": "decision-3",
+  "claim": "Complaint base rates that the hypotheses trace to: Indian VoC 459 coded (support 114, billing 107, account/UI 99, reliability 71, telephony 36); Retell 700 items (telephony 232, tools 103, account/UI 99, billing 69); Synthflow 21 low Trustpilot reviews (support 19, billing 11, reliability 9); Bolna Trustpilot 4/4 one-star on support, refunds and pilots; Bolna status 9 of 18 incidents upstream Indian telephony.",
+  "grade": "observed",
+  "evidence": "ledger.RAW-17; RET-50; SYN-70; BOL failure modes; BOL-40",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-17",
+  "dimension": "architecture",
+  "claim": "Only 4 of 8 run their call path in India by default (Bolna ap-south-1, Sarvam Azure Central India, SquadStack ap-south-1, Exotel ap-south-1). Retell is US-West only, Vapi us-west-2 (EU/AUS on top tiers), Synthflow GCP us-east1/europe-west3, ElevenLabs default SIP us-central1 with India residency on Enterprise only.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/synthesis/architecture.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-18",
+  "dimension": "architecture",
+  "claim": "Browser media stacks differ widely: FreeSWITCH via SIP.js (Bolna), plain JSON WebSocket (Sarvam), Daily/mediasoup (Vapi), own WHIP gateway replacing LiveKit Cloud (Retell), self-hosted LiveKit (ElevenLabs), Janus (Synthflow), Pipecat + Daily client (SquadStack), SIP.js console client (Exotel). No common framework dominates the deep set.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/synthesis/architecture.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-19",
+  "dimension": "economics",
+  "claim": "All-in INR per connected Indian minute (computed from rate cards at FX 95, ex GST, not invoices): Sarvam 3.4-3.9 whole-minute and 4.4-7.4 on 30-90 s calls; SquadStack 2-5 (vendor statement); Bolna 4.2-8.0; ElevenLabs 8.2-8.9 (Exotel/Plivo); Retell 8.3-13.6 (BYO trunk) to 22-37 (US numbers); Vapi 12.5-17.0; Synthflow 15.2-25.6 plus a USD 30k/yr floor; Exotel unknown (quote-gated).",
+  "grade": "inferred",
+  "evidence": "research/2026-10-20/teardown/synthesis/economics.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-20",
+  "dimension": "economics",
+  "claim": "Every incumbent with a reconstructable cost has room to follow a price cut: Sarvam lists at 2.3-3.0x its own API cost, Bolna 46-72% at PAYG, Exotel VoiceBot 44-72%, Retell infra 72-86%. VP at about INR 2 cannot win on price alone, which is consistent with rejected.2026-10-17.parity-undercut.",
+  "grade": "inferred",
+  "evidence": "research/2026-10-20/teardown/synthesis/economics.csv; SAR-40; BOL-38; EXO-36; RET-36",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-21",
+  "dimension": "method",
+  "claim": "125 account-phase predictions are pre-registered across 10 lanes; 1 already hit (EL-P12: memory gated, 403), 6 partly supported by API reads, 9 have premises weakened or contradicted by verifiers or the API phase, 2 are not scoreable as written; 105 are open.",
+  "grade": "observed",
+  "evidence": "research/2026-10-20/teardown/synthesis/predictions-consolidated.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-22",
+  "dimension": "account-phase",
+  "claim": "Account readiness (Instinct report, 2026-10-20): ElevenLabs, Vapi, Retell and Bolna accounts exist; Exotel exists but is unverified (KYC pending); Sarvam team@ credits are exhausted; Synthflow and SquadStack are sales-only. SquadStack sign-in is allowlisted to its own domains in code (SQS-70), a hard stop under the kept no-auth-bypass line.",
+  "grade": "observed",
+  "evidence": "evidence.2026-10-20.trial-accounts-report; research/2026-10-20/teardown/squadstack/claims.json (SQS-70)",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-23",
+  "dimension": "account-phase",
+  "claim": "The l4b caller battery can run against vendors' outbound calls by answering on our Plivo number with the existing PlivoLine bridge (mu-law 8 kHz bidirectional stream) and a turn driver that plays each persona turn after the agent stops, recording both channels. This measures the reply gap at the PSTN edge, which differs from the handset by the callee's last-mile delay, equal for every vendor.",
+  "grade": "inferred",
+  "evidence": "component.voicelab.phone; asset.voicelab.plivo-line; research/2026-10-17/lanes/l4b-measured/battery/battery.md",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-24",
+  "dimension": "account-phase",
+  "claim": "The standard agent prompt (agent-spec.md) instructs AI disclosure, so the battery robot turns measure prompt-following, not platform defaults. Default disclosure needs a separate test on each vendor's own template with a neutral prompt (REG-P6, RET-P12, EL-P09, SAR-P14, EXO-P12).",
+  "grade": "inferred",
+  "evidence": "research/2026-10-17/lanes/l4b-measured/runbook/agent-spec.md; research/2026-10-20/teardown/synthesis/predictions-consolidated.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "TS-25",
+  "dimension": "unknown",
+  "claim": "Not established by either phase: any vendor's PSTN reply gap, cut-in rate or language hold on an Indian line; real invoice lines; server-side orchestration frameworks of 6 closed vendors; whether AgentStream (or any CPaaS) streams media on 1600 numbers (REG-25); buyer Kano classes; whether AI disclosure raises hang-ups.",
+  "grade": "unknown",
+  "evidence": "research/2026-10-20/account-phase/SYNTHESIS.md section 8; ledger.REG-25; TS-05",
+  "date": "2026-10-20"
+ }
+]

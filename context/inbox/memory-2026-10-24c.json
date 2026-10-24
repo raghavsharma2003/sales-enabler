@@ -1,0 +1,70 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.retry-pattern-is-what-runs",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The campaign form's Retry pattern is what runs (P7). campaign.draft {retry:{pattern|maxAttempts|gapsMin|retryOn}} stores policy.retry (campaigns/retry.ts); attempt.retry_per_ladder uses it whenever the campaign has one.\n- Patterns: standard (3 calls, 2 h then 1 day), gentle (2 calls, 1 day), persistent (4 calls, 1 h, 4 h, 1 day, plus voicemail) and none.\n- Bounds: 1 to 6 calls in all, gaps of 15 min to 3 days.\n- Only busy, no_answer, switched_off, voicemail and short_call can retry. invalid, opt_out, wrong_party, completed, unknown and operator_block never do. Provider faults keep the service ladder.\n- An erased or suppressed person is refused before the ladder runs, whatever the outcome.\n- Each retry is a new attempt, so the dial gate (DND, window, consent, budgets) decides it again. Its time is clamped with the gate's own eligibility().\n- Older campaigns without policy.retry keep the service ladder.\n- The form's select used to set a budget preset that the form's own budgets then overrode, so it changed nothing.",
+   "rationale": "Must-be audit item 4 (research/2026-10-24/must-be-audit/README.md): the Retry pattern select changed nothing.",
+   "reverse_if": "Measured connect rates show a pattern hurting answer rates or complaint signals: then change its gaps, never the never-retry list.",
+   "path": "product/server/modules/campaigns/retry.ts"
+  },
+  {
+   "id": "decision.2026-10-24.stated-callback-beats-ladder",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A callback time the caller states beats the retry ladder for that contact.\n- After a CONV_CALLBACK call, calls.followups reads the time with statedCallback (calls/stated-time.ts): a mark_callback tool event's words first, then the caller's own lines, newest first. Hindi, English and Hinglish, Latin or Devanagari; clock, relative, weekday, and part of day with a day cue; 'after 6' reads as 18:00.\n- It is clamped into the campaign's window and TRAI's hours with the gate's eligibility(), and stored on the new callback attempt as attempt.callback {statedAt, at, clamped, quote, conversationId, text}.\n- The text reads 'Calling back Tue 6:10 pm, as they asked', or '..., the first time the calling hours allow after the time they asked'. It shows on the contact page (attempt.list callback_text, words never returned) and on the campaign page (campaign.get callbacks).\n- A vague time ('baad mein', 'call me later', 'kal call karo', 'subah se busy') gives a note on the ended attempt and no schedule: never a guess.\n- At most 2 stated callbacks per chain; after that a person follows up.\n- Hand-off callbacks (target 'callback') stay a person's task in the hand-off queue, not an automatic dial, so the person is not called twice.",
+   "rationale": "Must-be audit item 4: a stated callback time was never passed (followups.ts:58), so the call came back after +2 h.",
+   "reverse_if": "Live calls show stated-time parsing errors above 5% on reviewed callbacks: then hold parsed times for review instead of auto-scheduling."
+  },
+  {
+   "id": "decision.2026-10-24.callback-leads-the-brief",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "On a callback dial, the memory brief starts with 'callback: they_asked_for=Wed 11:00 am (said today)': a shape, never their words.\n- memory.brief takes an optional attemptId. The worker sends it only for kind 'callback' attempts.\n- The note is added only when all of these hold: the attempt is in this workspace and for this contact; its stored quote is still an exact substring of a caller turn of that call; the transcript is not purged; and memory is on for the workspace and the agent.\n- The transcript purge (retention or erasure) strips attempt.callback.quote, so the note disappears with the words.",
+   "rationale": "Must-be audit item 4.3: the callback she makes should know it is the one they asked for, under memory's existing quote-and-permission rules.",
+   "reverse_if": "The callback note is recited as a line on live calls: then move it out of the brief into a turn-policy flag."
+  },
+  {
+   "id": "measure.2026-10-24.retry-callback-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/campaigns-retry.test.ts 5/5:\n(1) The parser: 11 timed phrases across Hindi, English, Hinglish and Devanagari; 5 vague phrases give a note; 3 opt-out or unrelated lines give nothing; a Devanagari quote is the whole line.\n(2) The persistent pattern runs 1 h, 4 h, then 1 day, and the 4th call is refused. gentle does not retry after voicemail; invalid never retries; none never retries. A gap landing after 19:00 moves to the next morning's 10:00. campaign.draft stores the pattern, and campaign.get says it in words; maxAttempts 9 is refused.\n(3) A stated 18:10 beats the 'none' pattern ('Calling back Tue 6:10 pm, as they asked'). 21:30 clamps to Wed 10:00, and the text says so. A Sunday request moves to Monday 10:00 (the campaign skips Sundays). A vague time schedules nothing and the note shows on attempt.list. The attempt list never returns the caller's words, and campaign.get lists the callback.\n(4) An opt-out, a suppressed contact and an erased contact are never retried, not even with a stated time.\n(5) End to end through calls.afterCall: 'kal subah 11 baje call karna' on Tue gives a callback attempt at Wed 11:00 IST; memory.brief for that attempt reads 'callback: they_asked_for=Wed 11:00 am (said …)'. An ordinary attempt and another workspace's contact get no note. After erasure and the purge, the quote is gone and the note is gone.\nAlso: calls.test.ts' stub of attempt.retry_per_ladder widened to the new optional fields; fresh-DB suite and browser flows (see the event).",
+   "n": 5,
+   "method": "node:test on throwaway Postgres 16, all modules (buildApp(pool, modules)), FakeRuntime and FakeTelephony; the dial gate is exercised by the existing campaigns tests",
+   "path": "product/tests/campaigns-retry.test.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.retry-callback-tests",
+   "to": "decision.2026-10-24.retry-pattern-is-what-runs",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.retry-callback-tests",
+   "to": "decision.2026-10-24.stated-callback-beats-ladder",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.retry-callback-tests",
+   "to": "decision.2026-10-24.callback-leads-the-brief",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "retries-and-stated-callbacks",
+   "details": "Must-be audit item 4 (gap 14), built by the memory builder with sanctioned campaigns edits.\n- The Retry pattern select runs a real per-campaign ladder (campaigns/retry.ts).\n- Stated callback times beat it, clamped into the calling hours, shown on the contact and campaign pages; vague times leave a note.\n- The callback dial's memory brief says it is the callback they asked for.\n- Opt-outs and erased people never retry.\n- Migration 0704 (attempt.callback).\nVerified: tests/campaigns-retry.test.ts 5/5 plus the full fresh-DB suite.\nNot verified:\n- Parsing on real callers' speech; numbers and words outside the tested set (e.g. 'saade chhe', 'paune saat') are not read, so they give a note or nothing.\n- The browser flow of the new select; the screen copy is checked by type only.\n- A per-campaign override of the never-retry list (none, by design)."
+  }
+ ]
+}

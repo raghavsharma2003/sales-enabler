@@ -1,0 +1,36 @@
+{
+ "nodes": [
+  {
+   "id": "directive.2026-10-24.test-build-first",
+   "type": "requirement",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "user",
+   "title": "Owner (2026-10-24 08:45 UTC): first complete a version of the product the owner can test thoroughly end to end; pricing, quality and the whole function are decided after that testing. Explain clearly what is blocked on the owner and what Instinct (the owner's browser agent) can do on the owner's behalf, with prompts."
+  },
+  {
+   "id": "decision.2026-10-24.test-build-on-private-staging",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "integrator",
+   "title": "The owner's test build is the private staging on the India VM (https://vp-voicelab-1019.centralindia.cloudapp.azure.com:8443, behind the staging password), redeployed to the latest green head, with each new workspace given a one-time staging test credit by Vyakti staff (wallet.credit, reason 'staging test credit'; no customer price or trial credit is set by it). Phone calls on staging go only to an allowlisted owner number. The owner's message counts as the go for the campaigns dial path and the enterprise second batch.",
+   "rationale": "directive.2026-10-24.test-build-first. Staging already runs every curated stack on the real models from India; a public deploy stays the owner's call. A test credit lets the owner launch a campaign without a payment gateway, which is not on staging.",
+   "reverse_if": "The owner asks for a public deploy, or wants to test the top-up flow itself (then a gateway in test mode replaces the staff credit)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.test-build-on-private-staging",
+   "to": "directive.2026-10-24.test-build-first",
+   "relation": "implements"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "owner-test-build-directive",
+   "details": "Owner asked for a fully testable product first, then pricing, quality and function decisions; and a clear list of owner blockers with Instinct prompts. Integrator relayed the go to campaigns (dial path, staging allowlist, KYC adapter) and enterprise (second batch)."
+  }
+ ]
+}

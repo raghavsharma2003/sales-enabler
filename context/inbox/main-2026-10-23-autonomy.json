@@ -1,0 +1,36 @@
+{
+ "nodes": [
+  {
+   "id": "directive.2026-10-23.full-autonomy",
+   "type": "requirement",
+   "title": "Owner (2026-10-23, after the weekly limit reset): start up everything, all chats, agents and workflows; behave fully autonomously; build an amazing product.",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "user"
+  },
+  {
+   "id": "decision.2026-10-23.autonomy-scope",
+   "type": "decision",
+   "title": "What full autonomy covers. In: resume every builder; run measurements and evals on the existing keys and resources within the existing caps (Vertex INR 20,000 budget; the appeal rules: VM only, at most 1 request/s after 2026-10-23 20:00 UTC); a private staging of the product on the existing India lab VM, with no new paid resources. Still waits for the owner: new paid resources or upgrades, a Plivo recharge, calls to real people, a public deploy, secret rotation (the owner's accounts), setting a customer price, and the trial credit amount.",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop",
+   "rationale": "The owner asked for full autonomy to build the product. The standing rules on spend (no paid upgrade without the owner's go), on Google use (the appeal commitments) and on secrets were set for reasons that still hold. Autonomy speeds the build; it does not silently widen spend or legal exposure.",
+   "reverse_if": "The owner explicitly authorises a listed item (e.g. 'deploy publicly', 'recharge Plivo') or narrows autonomy."
+  },
+  {
+   "id": "risk.2026-10-23.weekly-limit",
+   "type": "risk",
+   "title": "Six builder sessions plus the main loop used up the account's weekly usage limit in about 16 h (2026-10-21 12:50 to 2026-10-22 04:41 UTC). All work stopped for about 38 h, until 2026-10-23 19:00 UTC.",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "main loop",
+   "mitigation": "Scoped tasks with clear stop points; builders report in commits (no chatter); the main loop checks in about every 75-90 min instead of reviewing each event at length; real-model evals run from the main loop's own subagents, sequentially."
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-23.autonomy-scope", "to": "directive.2026-10-23.full-autonomy", "relation": "implements" },
+  { "from": "decision.2026-10-23.autonomy-scope", "to": "decision.2026-10-21.appeal-commitments-binding", "relation": "constrained-by" }
+ ],
+ "events": []
+}

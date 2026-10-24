@@ -1,0 +1,537 @@
+{
+ "id": "intelligence",
+ "screens": [
+  {
+   "name": "Call page",
+   "purpose": "Understand one call in 10 seconds and go as deep as needed: hear it, read it in the caller's script, see why it ended, what it cost, why it was allowed, what she adapted and what she will remember.",
+   "layout": "1280 px: header bar (64 px) with contact, outcome chip, reason line, total cost and actions; left column 60% with the two-lane stereo player on top and the synced transcript below; right column 40% with a tabbed inspector: Summary & outcome | Turns & speed | Why allowed | Cost | Run manifest | Memory. 390 px: stacked header chips, sticky mini-player, transcript, inspector tabs as accordions under it.",
+   "elements": [
+    "Header: 'Sunita Devi · [phone, masked] · Hindi · Service: renewal reminder · Asha v7 · Tue 20 Oct 11:42 IST · 3:02'",
+    "Outcome chip: 'Promised to pay by 28 Oct · AI guess (judge calibrating 31/50) · waiting for payment webhook'",
+    "Reason line: 'Completed · agenda 3 of 3 must items · she closed after goodbye'",
+    "Cost: 'Billed ₹7.28 (182 s at ₹2.40/min all-in) · illustrative' expanding to lines: Telephony (per second) ₹1.82 · Ears ₹0.55 · Brain ₹0.48 (62% cached) · Voice ₹1.10 · Analysis ₹0.17 · Platform ₹3.16",
+    "Actions: Play · Share 30-s clip · Add to test suite · Report a problem · Export · Ask about this call",
+    "Stereo player: lanes 'Asha (AI)' and 'Caller'; red overlap marks 'cut-in 01:12 (0.6 s)'; hang-up marker; clause ticks labelled by agenda moment ('value first', 'AI line', 'due date', 'ask'); speed 1x/1.25x/1.5x/2x; Skip silences",
+    "Transcript toggle Native | Romanised | English (on demand, est. ₹0.43); turn example native 'हाँ जी, पर इस महीने थोड़ा tight है' / romanised 'haan ji, par is mahine thoda tight hai' / English 'Yes, but this month is a bit tight'",
+    "Per turn: mm:ss, latency badge '1.3 s', mood chip 'worried', ledger chips 'told: due date ✓', play-from-here; unheard tail struck through with 'not heard: caller spoke over'",
+    "Adaptation marker: 'She slowed to 0.92x and offered the 28th: caller sounded worried (turn 6)'",
+    "Summary tab: 60-word summary; Agenda: Must confirm identity ✓, tell due date and premium ✓, send renewal link ✓; Never: discount talk ✓; Commitment '28 tak kar dungi' at 02:31; Objection 'is mahine thoda tight hai' at 01:55; Next action 'WhatsApp link sent 11:45 · confirmed'; Judges with pins: 'Outcome · v3 · pinned model · temp 0 · Calibrating 31/50 · Edit'",
+    "Turns & speed tab: stacked bar per turn (ears lag 310 · hold 400 · brain 520 · first clause 120 · voice 430 · phone leg about 350, inferred); 'This call: reply gap p50 1.4 s, p90 2.1 s (server) · handset: not measured'; cut-ins 1 of 9; language hold 9 of 9; words per turn 17",
+    "Why allowed tab: 'Category Service (renewal) · Window 10:00-19:00 contact local time, dialled 11:42 ✓ · Suppression checked 11:41:58 ✓ · Basis: existing policy (contract) ✓ · Attempt 2 of 3 · Caller ID 1600-series, declared ✓ · Recording notice 00:03 ✓ · AI line 00:04 ✓ · Reply-door interventions 0'",
+    "Run manifest tab: combination id; ears, brain, voice with dated ids and regions; brief hash; ledger version; turn preset 'Patient: hold 700 ms'; telephony leg and CLI; fallbacks: none",
+    "Memory tab: proposal 'Best time: after 6 pm' with quote 'शाम को छह बजे के बाद' at 01:42 [Approve] [Edit] [Reject]; 'Used this call: language Hindi ✓, slower pace ✓'"
+   ],
+   "states": [
+    "Loading: 'Recording ready · analysing, summary in about 30 s'",
+    "Partly analysed: code analyses shown, AI fields with spinner",
+    "Not recorded: 'Caller declined recording at 00:06 · only outcome and reason kept'",
+    "Redacted: Viewer role sees masked number and redacted Aadhaar/PAN spans",
+    "Analysis failed: 'Analysis timed out · Retry' (code fields still shown)",
+    "Live: 'This call is in progress · open in Mission control'",
+    "Translation pending",
+    "Sample: diagonal SAMPLE watermark"
+   ],
+   "beats": "Retell has cost and latency columns but only 39 engineering reasons and no compliance trace; Vapi shows a truncated 638-value code; Synthflow shows raw Python exceptions; Sarvam leaves the carrier null. No competitor shows heard-vs-planned text, a per-call run manifest, why the call was allowed, mood adaptation markers or quoted memory proposals."
+  },
+  {
+   "name": "Failed-call finder (Calls)",
+   "purpose": "Find any failed or odd call and its business reason, carrier code and next action in under 60 seconds (task T5, W6).",
+   "layout": "1280 px: left filter rail (campaign, date, version, outcome, reason group, caller ID, language, mood); top segmented tabs All · Outcomes · Not called · Not connected · Ended early · Flagged; a row of reason-group cards; below, a 12-column table; row click opens the call page as a side sheet. 390 px: tabs as a scroller, reason cards, then call cards.",
+   "elements": [
+    "Search: 'Search name, number or words said, e.g. premium zyada' across the full retention period",
+    "Reason cards: 'Switched off · 74 · retry after 3 h (auto)'; 'Number unreadable · 1 · Fix row 12'; 'Tool failed · 23 · policy_lookup 404 · Fix tool'; 'Outside window · 26 · next slot tomorrow 10:00'; 'Busy · 120 · retry at 11:40'; 'Hung up under 10 s · 61 · during the opening (see ribbon)'",
+    "Columns: Time IST · Contact (masked) · Outcome (business) · Reason (business) · Carrier code (e.g. SIP 486) · Duration · Cost ₹ · Reply gap p50 · Cut-ins · Mood at end · Version · Actions",
+    "Page-aware chip: 'Filter failed calls since 10 am'",
+    "Saved views: 'Today's failures', 'Opt-outs this week'"
+   ],
+   "states": [
+    "Empty: 'No calls yet. Place a test call and this fills in.' [Place test call]",
+    "Real zero: 'No failures in this period: 0 of 412 attempts (14-20 Oct)'",
+    "Loading skeleton with row count",
+    "Failed: 'Couldn't load calls: search service timed out · Retry'",
+    "Unknown reason: raw code shown with 'We could not classify this yet; VP has been notified'"
+   ],
+   "beats": "Vapi lists truncated engineering codes; Sarvam's Call Logs default to Connected and hide failures; SquadStack search ends at 10 days with outcome labels only; Bolna's debugging is an execution-ID search box. VP groups every failure by a business reason with one action per group, searchable for the whole retention period."
+  },
+  {
+   "name": "Campaign overview",
+   "purpose": "The whole view of a campaign (req-21): where every person and every rupee went, from rows to earned outcomes, with drivers labelled honestly.",
+   "layout": "1280 px: header (name, state, goal, outcome target, spend vs budget bar, freshness stamp); row 1 a horizontal 8-stage funnel with drop annotations; row 2 six KPI tiles each with n and freshness; row 3 a drivers panel with tabs Hour x day · Caller ID · Segment · Version · Voice; right rail with issues, approvals and an Ask box. 390 px: vertical funnel, tiles 2-up, drivers as cards.",
+   "elements": [
+    "Funnel: '1,240 rows → 1,219 valid (21 unreadable or duplicate) → 1,210 eligible (9 opted out, kept suppressed) → 1,184 dialled (26 outside window, tomorrow) → 532 reached a person (45%; 318 switched off or not reachable, 214 no answer, 120 busy) → 471 conversations (61 hung up under 10 s) → 402 agenda done → 188 renewals paid (verified, payment webhook) + 41 promised (AI guess)'",
+    "KPI tiles: 'Paid renewals 188 (verified)'; 'Cost per paid renewal ₹18 · your desk ₹140 (you entered)'; 'Spend ₹3,410 of ₹5,000'; 'Reached 45%'; 'Hung up under 10 s 11%'; 'Opt-outs 0.8%'",
+    "Driver: 'Pune 31% reached vs 48% elsewhere (212 vs 972 dials) · observed, not causal'",
+    "Driver: 'Caller ID ending 421: early hang-ups 2.1x pool · paused by Line keeper 14:05 · Undo'",
+    "Heatmap: reach rate by local hour inside the 10:00-19:00 window, 17:00-19:00 brightest · observed, not causal",
+    "Driver: 'v7 vs v6 early hang-up 11% vs 13% · under-powered: about 4,100 connected calls per version needed, you have 410 and 380'",
+    "Health strip: 'Watching 20 things · last check 12 s ago · 1 open issue'"
+   ],
+   "states": [
+    "Draft campaign: funnel greyed with 'Launch to see results'",
+    "Running: live counters with freshness",
+    "Real zero: '0 reached of 120 dialled: 74 switched off, 46 no answer'",
+    "No outcome source: outcome stage shows 'AI guess only · wire a source'",
+    "Under-powered labels on drivers",
+    "Sample data watermark"
+   ],
+   "beats": "0 of 5 vendor APIs group cost by campaign or contact; Vapi analytics cannot group by campaign; Bolna's funnel has no cost or reasons; ElevenLabs' 12 tabs have no business outcome. VP shows a reason at every drop, cost per earned outcome against the client's own baseline, and labels every driver observed or under-powered."
+  },
+  {
+   "name": "Where people drop and what they say",
+   "purpose": "Show the owner's 'call 100' problem directly: the moment people hang up, what they object to, and the best and worst calls to listen to.",
+   "layout": "Top: drop-off ribbon, a horizontal track of agenda moments in call order with a bar per moment (hang-up hazard with interval whiskers), count reached, and flags; hover shows the 3 nearest hang-up clips. Middle: objection cluster cards in a 3-column grid. Bottom: best 5 and worst 5 calls side by side. 390 px: ribbon scrolls horizontally, cards stack.",
+   "elements": [
+    "Moments: Name check → Value first → AI line (locked) → Due date & premium → Renewal link offer → Objection reply → Close",
+    "Flag: 'Due date & premium: 19% hung up here (interval 15-24%), expected 6% · 440 reached · flagged (P > 0.99) · Coach proposal ready'",
+    "Locked moment: 'AI line: 4% (interval 2-7%) · locked: wording and position can change, presence cannot'",
+    "Fast lane alert: 'Value first: 12 of 30 hung up here in the first 30 calls · High issue opened'",
+    "Objection card: 'Premium zyada hai · 23% of conversations · quotes: \"itna premium kyun badh gaya\" 01:48 ▶ · continued past it 61% · paid 22% (observed)'",
+    "Objection card: 'Baad mein call karo · 18% · callbacks booked 92%'",
+    "Objection card: 'Pehle hi kar diya · 7% · possible stale list: 31 contacts to check in your CRM'",
+    "Best call: 'Paid same day · 2:41 · 0 cut-ins · personalised opener ▶'",
+    "Worst call: 'Opt-out right after the premium line · 0:38 ▶'"
+   ],
+   "states": [
+    "Under-powered: 'Need about 500 calls on this version to flag a 2x moment reliably; you have 212'",
+    "No clause timing (e.g. imported call): 'Drop-off by turn only'",
+    "Sample data watermark"
+   ],
+   "beats": "No vendor documents per-line hang-up hazards (L6 s.8); Retell's QA 'Top Questions' showed unlabelled sample data; Sarvam has self-QA flags but none tied to a moment. VP aligns hang-ups to what she was saying, with intervals and a locked-disclosure label."
+  },
+  {
+   "name": "Mission control",
+   "purpose": "Watch live calls, step in safely and never miss a crisis, a loop or an opt-out.",
+   "layout": "Top strip: campaign state, live calls 18 of 20 lines (2 reserved for inbound), dials per minute, spend today vs budget, queue and window close time, health strip. Main: grid of live tiles (3 x 6 at 1280). Right: alert feed. Bottom drawer when a tile opens: rolling transcript and controls. 390 px: alert feed first, tiles as a list.",
+   "elements": [
+    "Tile: 'Ramesh K. · 01:42 · Hindi · agenda 2/3 · mood: hurried · she is speaking'",
+    "Alert: 'CRITICAL 11:52 crisis words · tile 7 · Tele-MANAS 14416 and 112 given · Listen now'",
+    "Alert: 'Loop: same question twice · tile 3'",
+    "Alert: 'Opt-out requested · suppressed everywhere 11:49'",
+    "Alert: 'Asked aap AI ho? · answered honestly ✓'",
+    "Drawer buttons: Listen (audited, 'Priya is listening' written to the record) · Whisper (text: 'batao late fee 5 Nov se lagegi', injected as context, never read out verbatim) · Take over (confirm: 'Asha leaves this call for good; you are connected now') · End politely (through the hang-up guard)",
+    "Concurrency meter with last-updated time",
+    "Spend meter with cap"
+   ],
+   "states": [
+    "Idle: 'No live calls · next window opens 10:00'",
+    "Paused: 'Paused at spend cap ₹5,000 · Raise cap (Owner)'",
+    "Monitoring off: 'Monitoring is off. We can't tell you it is healthy.'",
+    "Reconnecting: 'Live feed paused, reconnecting (last update 6 s ago)'"
+   ],
+   "beats": "Retell has listen, take-over and context injection in its API but only hints at them in the dashboard; Exotel's sentiment and loop alerts live in a separate contact-centre product; Vapi's Mission Control is flag-gated alpha. VP puts them on one screen, ties crisis words to a predicate and helplines, and audits every listen, whisper and take-over."
+  },
+  {
+   "name": "Issues and monitors",
+   "purpose": "Know what is wrong, how bad, how many calls it hurt, how long it has been open and how to fix it; and know exactly what is being watched.",
+   "layout": "Tabs Issues | Monitors | Alert routing. Issues table: severity, title, category, calls impacted 1h/24h/7d, first seen, time open or MTTR, status, owner, fix. Monitors list: toggle, signal, threshold, last evaluated, last read back.",
+   "elements": [
+    "'High · policy_lookup returns 404 · Integration · 23 / 23 / 23 · first 10:58 · open 38 min · Fix tool →'",
+    "'High · Caller ID ending 421 early hang-up 2.1x pool · Telephony · paused 14:05 (A3) · Undo'",
+    "'Medium · cut-ins 18% on v7 · Conversation · Coach proposal →'",
+    "Monitor row: 'M08 Early hang-up per caller ID · 1.5x pool median on 50+ connected per 24 h · last checked 12 s ago · read back ✓'",
+    "Routing: on-duty person, WhatsApp if consented, email, webhook issue.opened"
+   ],
+   "states": [
+    "Monitoring off: 'Monitoring is off. We can't tell you it is healthy.' [Turn on defaults]",
+    "No data yet: 'Watching 20 things. Nothing to judge yet (0 calls).'",
+    "Monitor not live: 'M13 not live yet: no tool call read back'",
+    "Healthy: 'Watching 20 things, last check 12 s ago, 0 open issues'"
+   ],
+   "beats": "Vapi says 'Great news! no active issues' with zero monitors and keeps Monitoring in alpha; Retell's Alerting rows have mismatched titles. VP turns 20 monitors on by default with India categories, a reg 21A caller-ID guard and a read-back check."
+  },
+  {
+   "name": "Outcomes and judges",
+   "purpose": "Let the client define success in business language, see every judge VP runs, and know how far to trust each label.",
+   "layout": "Left: outcome definition card. Middle: judge list with versions. Right: calibration panel with agreement gauge, interval and confusion grid. Bottom: quick-rate flow.",
+   "elements": [
+    "Outcome 'Renewal': values renewal_paid, promised_with_date, needs_human, not_interested, wrong_person",
+    "Source: 'Payment webhook · connected ✓ · last event 2 min ago'; leading indicator 'link opened'; delay window 7 days",
+    "Judge: 'Outcome (extraction) · v3 · pinned model · temp 0 · Calibrating 31/50 · agreement 29 of 31 (interval 79-98%) · not yet Trusted'",
+    "Judge: 'Agenda done · code · always trusted'",
+    "Judge: 'Mood path · beta · not calibrated'",
+    "Penalty note: 'At 90% accuracy, tests on this label need about 2x more calls'",
+    "Quick-rate: '▶ 02:31 haan 28 tak kar dungi → Promised with date? [1] yes [2] no [3] unsure'"
+   ],
+   "states": [
+    "No source wired: 'Outcomes stay AI guess until a source is wired' [Wire payment webhook] [Map CRM field]",
+    "Drift: 'Extracted rate moved away from verified; back to Calibrating'",
+    "Model deprecation: 'Pinned model retires on [date]; a new judge version needs calibration'"
+   ],
+   "beats": "Bolna creates two judges per agent and hides them; Retell shows defaults but never measures them; Vapi's scorecards have no agreement measure. VP makes judges visible, versioned, pinned and calibrated against the client's own truth."
+  },
+  {
+   "name": "Ask VP answer card",
+   "purpose": "Answer any question about calls and campaigns in Hinglish or English, with the same numbers as the pages, quotes that play, and honest labels.",
+   "layout": "Docked right panel (420 px) on every page, or full thread on the home route. Answer card: headline number, n, interval, label chip, 1-3 quote rows with play buttons, 'How this was computed' expander, action row.",
+   "elements": [
+    "Question: 'Pune mein pickup kam kyun hai?'",
+    "Answer: 'Pune: 31% of dials reached a person vs 48% elsewhere (212 vs 972 dials, 14-20 Oct). Observed, not causal. 58% of Pune misses were switched-off messages, most between 13:00 and 15:00.'",
+    "Offer: 'Test 17:00-19:00 for Pune? About 217 dials per arm would show a 31% to 44% change.'",
+    "Quote rows for 'why do people hang up after the premium line?': '\"itna kyun badh gaya\" 01:48 ▶', '\"abhi time nahi hai\" 00:52 ▶'",
+    "Actions: Open as chart · Make this a monitor · Start a test (A2 card)",
+    "Expander: metric names, filters, query time, freshness"
+   ],
+   "states": [
+    "Cannot answer from data: 'I can't answer that: no outcome source is wired'",
+    "Under-powered: 'Too few calls to say; about N more needed'",
+    "Clarifying: 'Which campaign: Renewal Oct or Pre-due Nov?'"
+   ],
+   "beats": "Retell Conductor chips, Bolna's Ask Bolna and Sarvam's AI-drafted SQL boards answer questions, but none ties answers to verified quotes with play-from-here or guarantees the chat number equals the page number."
+  },
+  {
+   "name": "Today: daily brief",
+   "purpose": "Give the owner, on a phone, yesterday's results and today's plan in one glance, with one call worth hearing.",
+   "layout": "390 px first: greeting and a 3-line brief; 4 cards (Outcomes, Money, Issues, Approvals); a 30-second clip player; today's schedule. 1280 px: same in two columns.",
+   "elements": [
+    "'Kal ka hisaab · Tue 20 Oct'",
+    "Outcomes: '188 renewals paid (verified) + 41 promised (AI guess)'",
+    "Money: '₹3,410 spent of ₹5,000 · ₹18 per paid renewal · your desk ₹140 (you entered)'",
+    "Issues: '1 fixed (tool 404, 38 min) · 1 open (caller ID paused)'",
+    "Listen: 'The late-fee question · 0:30 ▶'",
+    "Approvals: '2 cards waiting'",
+    "Today: '640 queued · 10:00-19:00'"
+   ],
+   "states": [
+    "First day: 'No calls yet. Your first campaign starts at 10:00.'",
+    "Quiet day: 'No calls yesterday (Sunday)'",
+    "Brief delivery failed: 'Email bounced · update address'"
+   ],
+   "beats": "No competitor sends a daily brief; Sarvam's cron boards email SQL widgets; Exotel's reports lag up to 30 minutes. VP's brief is phone-first, verified-vs-guess, with a clip."
+  },
+  {
+   "name": "Export, webhooks and CRM write-back",
+   "purpose": "Get every result out in one file, push it to the client's systems reliably and prove what was delivered.",
+   "layout": "Tabs Export | Webhooks | CRM write-back. Export: field checklist with the T6 six pre-ticked, format and estimate. Webhooks: endpoints, events, signing badge, delivery log, replay. CRM: field mapping table and status counts.",
+   "elements": [
+    "Export: 'Renewal Oct · 1,240 contacts · CSV · number (masked for Viewer) · outcome + source · extracted fields (due_date, promised_date, reason_not_paying) · transcript native + romanised (English +₹0.43/call est.) · recording link (expires in 7 days) · cost ₹ · reason · carrier code · version · Export (audited)'",
+    "Webhook row: 'https://[client-domain]/vp-hooks · call.analyzed, outcome.verified · HMAC ✓ · 99.96% delivered (7 d) · 3 failed → Replay'",
+    "CRM: 'Disposition ← outcome · Notes ← summary · Next action ← next_action · confirmed 1,171 · not executed 2 · unknown 0'"
+   ],
+   "states": [
+    "Export building: 'Building 1,240 rows · about 40 s'",
+    "Export ready: download plus audit row",
+    "Webhook disabled after 50 failures: Issue linked",
+    "CRM unknown status: 'Not retried automatically; check and confirm'"
+   ],
+   "beats": "Sarvam's webhooks are unsigned and English-only; Vapi's default delivery has no retry; Retell's export is dashboard-only; Exotel has no single export joining outcome, transcript and recording. VP passes T6 6/6 in one file with signed, replayable hooks and confirmed write-back."
+  },
+  {
+   "name": "How she changed for you",
+   "purpose": "Show the client, honestly, how results moved because of approved changes, memory and personalisation (req-27).",
+   "layout": "Vertical timeline of versions, newest first, each with what changed, who approved and the measured delta with interval; right: trend chart of key metrics with version markers; campaign filter.",
+   "elements": [
+    "'v7 · 18 Oct · approved by Anjali · due-date moment reshaped · hang-ups at that moment 19% → 9% (interval -14 to -6 pts) · proved on 1,212 calls, fixed horizon'",
+    "'v6 · 9 Oct · Patient turn preset · cut-ins 24% → 15% · proved'",
+    "'v5 · 2 Oct · uses language preference from memory · repeat-call opt-outs 3.1% → 2.4% · under-powered: about 8,600 calls per arm needed'",
+    "'Openers using the last interaction · observed, not causal'"
+   ],
+   "states": [
+    "No adopted versions yet: 'Changes you approve will show here with their results'",
+    "Under-powered entries greyed with the calls needed"
+   ],
+   "beats": "No vendor shows improvement over time; Retell's Conductor proposes diffs and ElevenLabs promotes branches by hand, with no measured deltas or intervals."
+  },
+  {
+   "name": "State gallery",
+   "purpose": "Guarantee every data widget distinguishes empty, zero, loading, failed, not measured, under-powered, sample, stale and redacted (state integrity, must-be D).",
+   "layout": "A design-system page: the same KPI tile and table in each state, 3 x 4 grid at 1280; single column at 390.",
+   "elements": [
+    "Empty: 'No calls yet. Place a test call and this fills in.' [Place test call]",
+    "Zero: '0 connected of 120 dialled · 74 switched off · 46 no answer'",
+    "Loading: 'Analysing 12 calls · about 20 s'",
+    "Failed: 'Couldn't load: analysis service timed out · Retry · Status'",
+    "Not measured: 'Handset reply gap: not measured (no handset recording)'",
+    "Under-powered: 'v7 vs v6: under-powered · about 4,100 more calls per version'",
+    "Sample: diagonal SAMPLE watermark with 'Hide sample data'",
+    "Stale: 'Updated 6 min ago · live feed paused, reconnecting'",
+    "Redacted: '[phone, masked] · visible to Owner and Operator'",
+    "Monitoring off: 'Monitoring is off. We can't tell you it is healthy.'",
+    "Not recorded: 'Caller declined recording at 00:06'",
+    "AI guess: 'AI guess · judge calibrating 31/50'"
+   ],
+   "states": [
+    "All twelve states above are the spec"
+   ],
+   "beats": "Retell shows sample QA data unlabelled and 0 ms tiles on empty data; Sarvam draws a line on no data; Exotel renders a blank frame; Vapi says 'Great news' with no monitors; ElevenLabs' honest '---' is the best today and VP extends it to every widget."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Call detail page",
+   "best_competitor": "Retell (Synthflow for telephony depth)",
+   "their_best": "13-column Call History with cost, end reason, sentiment, outcome, e2e latency; per-second cost lines and per-component latency; PCAP; Synthflow per-leg RTT/jitter/MOS",
+   "vp_better_how": "Business outcome with source beside engineering reason, carrier code and action; heard-vs-planned transcript on a stereo waveform; native, romanised and on-demand English; run manifest; per-call compliance trace; INR cost lines; mood adaptation markers; quoted memory proposals",
+   "evidence": "[O] research/2026-10-21/walkthroughs/retell/report.md s.10 (wt-retell-40); research/2026-10-20/account-phase/retell/claims.json RAP-36/51; research/2026-10-20/teardown/synthflow/claims.json SYN-08, SYN-71"
+  },
+  {
+   "dimension": "Failure explanation",
+   "best_competitor": "Sarvam (structure); Vapi (breadth)",
+   "their_best": "Sarvam separates attempt from interaction with failure_reason and ended_by; Vapi has 638 typed end reasons",
+   "vp_better_how": "34-code catalogue in business language (English and Hinglish) with carrier code, Indian causes (DND block, CLI/DLT rejection, operator announcements, window), one action and who fixes; T5 target under 60 s, 5/5, 4+ actionable",
+   "evidence": "[O] SAR-16/17 (Sarvam carrier field always null); VAP-13 and wt-vapi-38/39 (truncated code); XS-20 no business outcome at any vendor; TS l.328 W6; data/blueprint/intelligence-module.json reason_catalogue"
+  },
+  {
+   "dimension": "Outcomes and judges",
+   "best_competitor": "Retell (visible defaults); Vapi (structured outputs and scorecards); Sarvam (disposition model)",
+   "their_best": "Retell seeds Summary, Success, Sentiment visibly; Vapi's 51 of 143 operations are QA; Sarvam's collections dispositions with self-QA flags",
+   "vp_better_how": "Client-owned outcome definitions with a verified source; judges visible, versioned, pinned, blind to arm; calibration against the client's CRM truth with interval; 'AI guess' until Trusted (0.90, lower bound 0.80, n 50+)",
+   "evidence": "[O] retell walkthrough 76; AP-16, XS-37; SAR-60; evidence.2026-10-20.acct-bolna-auto-judges (Bolna hides its judges); [C] L6 L09 label inflation 1.8-2.4x"
+  },
+  {
+   "dimension": "Campaign view",
+   "best_competitor": "ElevenLabs (breadth, honest empties); Bolna (funnel)",
+   "their_best": "12 analytics tabs with group-by and '---' on empty; Bolna funnel and termination-reason reports",
+   "vp_better_how": "8-stage funnel with a reason at every drop and machines separated from people; cost per earned outcome, per contact and per campaign against the client's own desk; drivers by hour, caller ID, segment, version with observed-not-causal and under-powered labels",
+   "evidence": "[O] elevenlabs 7-analytics.png; bolna account-phase report s.11; XS-27/28 (0 of 5 group cost by campaign or contact); AP-37"
+  },
+  {
+   "dimension": "Line-level drop-off",
+   "best_competitor": "None",
+   "their_best": "Retell AI QA 'Top questions' (on unlabelled sample data); Sarvam self-QA flags",
+   "vp_better_how": "Drop-off ribbon: hang-up time aligned to TTS clause and agenda moment, hazard with intervals, flag at P > 0.99, fast lane for catastrophic moments, locked-disclosure label",
+   "evidence": "[C] research/2026-10-17/lanes/l6-self-learning/report.md s.4.8 and s.8 (no vendor documents per-line hazards); [O] wt-retell-41 sample data"
+  },
+  {
+   "dimension": "Monitoring and issues",
+   "best_competitor": "Vapi",
+   "their_best": "Issues with severity, MTTR, calls impacted, Compliance category; free default monitors offered",
+   "vp_better_how": "20 monitors on by default with India categories and a reg 21A caller-ID guard; never 'all good' unless monitors are live and read back; A3 risk-lowering auto-actions with undo",
+   "evidence": "[O] wt-vapi-37, 71-mon-issues.png, 72-mon-monitors.png ('Great news' with zero monitors); [I] wt-retell-42"
+  },
+  {
+   "dimension": "Live control",
+   "best_competitor": "Retell (API) and Exotel Harmony (supervisor)",
+   "their_best": "Retell listen-live, take-over, context injection; Exotel sentiment-crash and repetition-loop alerts with barge-in",
+   "vp_better_how": "One mission-control screen with listen, text whisper, take-over and end-politely, all audited; Supervisor alerts for crisis (predicate plus Tele-MANAS 14416 and 112), loops, opt-outs, AI-identity questions and anger; take-over is human only",
+   "evidence": "[O] RAP-40, research/2026-10-20/account-phase/retell/report.md l.109; research/2026-10-20/teardown/exotel/report.md l.9; VAP-06 (Vapi Mission Control flag-gated)"
+  },
+  {
+   "dimension": "Q&A over calls",
+   "best_competitor": "Retell Conductor; Sarvam Boards",
+   "their_best": "Page-aware chips that summarise call patterns; AI-drafted read-only SQL boards with cron delivery",
+   "vp_better_how": "Answers from the same metric layer as pages, with n, interval, label, verified quotes and play-from-here; refuses causal claims without an experiment and offers the test with its sample size",
+   "evidence": "[O] retell walkthrough 41; research/2026-10-20/account-phase/sarvam/report.md (boards)"
+  },
+  {
+   "dimension": "Export, webhooks, CRM write-back",
+   "best_competitor": "ElevenLabs (signed hooks); Vapi (Export All)",
+   "their_best": "HMAC-signed webhooks with auto-disable; one-click log export",
+   "vp_better_how": "One file per campaign with the T6 six plus reason, carrier code and version; HMAC always on, 8 retries, 30-day replay; CRM write-back with confirmed / not_executed / unknown and no auto-retry of unknown",
+   "evidence": "[O] ElevenLabs account-phase report s.4; wt-vapi-38; evidence.2026-10-20.acct-sarvam-webhook-model (unsigned); AP-29/31 (Vapi no retry); EXO-58 (Exotel mislabelled outcomes)"
+  },
+  {
+   "dimension": "Search and retention",
+   "best_competitor": "Retell / Vapi",
+   "their_best": "Rich filters by agent, number, type, time",
+   "vp_better_how": "Search any field and words said across the full retention period, under 1 s p95",
+   "evidence": "[O] SQS-18 (SquadStack 10 days); Vapi free history 14 days (wt-vapi-38)"
+  },
+  {
+   "dimension": "Cost visibility and analysis price",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Per-conversation charging block with platform, LLM, TTS, ASR, analysis and burst",
+   "vp_better_how": "INR cost lines grouped by call, contact, campaign and earned outcome; default analysis inside the all-in price (about INR 0.17 per 3-min call [C]) instead of a separate QA meter",
+   "evidence": "[O] ElevenLabs account-phase report s.5; RET-58 (Retell AI QA USD 0.10/min = INR 28.5 per 3-min call at FX 95); [C] research/2026-10-18/lanes/g3-cascade-measured/results/cost_inputs.csv"
+  },
+  {
+   "dimension": "Freshness and version attribution",
+   "best_competitor": "Exotel",
+   "their_best": "Version column in the call log; live concurrency meter with last-updated time; reports state their lag",
+   "vp_better_how": "Call page complete p95 within 60 s; live tiles under 2 s; freshness stamp on every number; full run manifest per call, not just a version",
+   "evidence": "[O] exotel-22, exotel-24 ('up to 30 mins'), exotel-25"
+  },
+  {
+   "dimension": "Empty and sample states",
+   "best_competitor": "ElevenLabs",
+   "their_best": "Honest '---' and 'No data has been collected'",
+   "vp_better_how": "Twelve distinct states on every widget, sample data watermarked and never mixed, 'not measured' instead of zero",
+   "evidence": "[O] elevenlabs 7-analytics.png; retell 46 and 43 (unlabelled sample, 0 ms); sarvam 29 (line on no data); exotel-23 (blank frame)"
+  },
+  {
+   "dimension": "Improvement over time",
+   "best_competitor": "None (Retell Conductor proposes diffs)",
+   "their_best": "Human-accepted per-setting diffs; manual branch promotion at ElevenLabs",
+   "vp_better_how": "'How she changed for you' timeline with measured deltas, intervals and under-powered labels",
+   "evidence": "[O] RET-03, RET-58; ledger.LRN-09 (learning is human-gated everywhere, no statistics); owner catalogue s.6 gap (req-27)"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "T5 failed-call finding",
+   "target": "Under 60 s per failure, 5/5 correct, 4+ actionable (W6 pass bar)",
+   "how": "Five induced failures (invalid row, busy reject, answer then hang up at 3 s, broken tool URL, out-of-window schedule); screen-recorded, 3 users, stopwatch from page load; actionability scored 0-2 per TS s.7.3"
+  },
+  {
+   "metric": "T6 export completeness",
+   "target": "6/6 fields (number, outcome, extracted fields, transcript, recording link, cost) in one file, under 2 min",
+   "how": "Scripted export of a synthetic campaign; field audit; time from click to file"
+  },
+  {
+   "metric": "Judge agreement before trust",
+   "target": "0.90 or more with Wilson 95% lower bound 0.80 or more on 50+ paired calls; 0.95 or more on synthetic hidden-key callers",
+   "how": "Paired extracted labels vs payment/CRM truth or manager quick-rates; synthetic personas with hidden keys from the Test pilot; recomputed monthly on a 5% audit and after any model change"
+  },
+  {
+   "metric": "Call page completeness latency",
+   "target": "p95 60 s or less from hang-up to summary, outcome, cost and reason",
+   "how": "Product events: hangup_at vs analysis_done_at per call"
+  },
+  {
+   "metric": "Live tile and alert latency",
+   "target": "Tiles 2 s or less p95; crisis alert 5 s or less p95; loop and anger alerts 15 s or less",
+   "how": "Event timestamps from the media server to the client render; synthetic crisis-word calls in the call lab"
+  },
+  {
+   "metric": "Crisis handling",
+   "target": "100% of crisis-lexicon calls alerted and carrying Tele-MANAS 14416 and 112; 0 crisis calls ended first by the agent",
+   "how": "Predicate audit over all calls with R5 events; synthetic battery"
+  },
+  {
+   "metric": "Quote fidelity",
+   "target": "100% of displayed quotes are exact transcript spans at the cited offset; dropped-quote rate reported",
+   "how": "Code check before render; daily count of dropped spans"
+  },
+  {
+   "metric": "Number consistency (chat vs page)",
+   "target": "0 mismatches in a 200-question automated audit",
+   "how": "Generate questions from the metric catalogue, compare Ask VP numbers with the page query for the same filters"
+  },
+  {
+   "metric": "Honest health",
+   "target": "0 screens show a healthy message with 0 live monitors or unread monitors",
+   "how": "UI test across all health strips; monitor read-back flags"
+  },
+  {
+   "metric": "Unknown reason share",
+   "target": "2% or less of failed attempts after 30 days per carrier",
+   "how": "Count of UNKNOWN codes / failed attempts; unmapped carrier codes triaged weekly"
+  },
+  {
+   "metric": "Search speed and depth",
+   "target": "Any call in the retention period found in 1 s or less p95",
+   "how": "Query timing on a synthetic 1M-call tenant"
+  },
+  {
+   "metric": "Default analysis cost",
+   "target": "INR 0.20 or less per connected call; translation on demand only",
+   "how": "Analysis cost line from the meter; computed baseline INR 0.17 per 3-min call [C]"
+  },
+  {
+   "metric": "Outcome wiring (results, req-45)",
+   "target": "60% or more of live campaigns have an outcome from a system of record by day 30",
+   "how": "OutcomeDefinition with a verified source and 1+ verified event"
+  },
+  {
+   "metric": "Cost per earned outcome vs client baseline",
+   "target": "Below the client's own desk cost on every design-partner campaign",
+   "how": "Campaign cost lines / verified outcomes vs the baseline the client enters; labelled observed until a holdout is powered"
+  },
+  {
+   "metric": "Webhook delivery",
+   "target": "99.9% or more delivered within 5 min, 100% signed, replay available 30 days",
+   "how": "Delivery log per endpoint"
+  },
+  {
+   "metric": "CRM write-back",
+   "target": "99% or more confirmed; unknown never auto-retried",
+   "how": "Outbox status counts per CRM"
+  },
+  {
+   "metric": "State integrity",
+   "target": "0 widgets that conflate empty, zero, loading, failed or not measured; 100% sample data labelled",
+   "how": "State-gallery UI audit at 1280 and 390 px before each release"
+  },
+  {
+   "metric": "Owner engagement with the brief",
+   "target": "Daily brief opened 4+ days a week by the owner or manager on design partners",
+   "how": "Product events (open, clip played, card acted on)"
+  }
+ ],
+ "phases": [
+  {
+   "phase": "v1: understand every call and campaign (design-partner launch)",
+   "scope": [
+    "Call page: stereo player, native and romanised transcript (on-demand English), turn timeline with latency segments and heard text, run manifest, compliance trace, INR cost lines, reason and action, visible judges",
+    "Reason catalogue v1 (34 codes) with carrier mapping for the primary carrier, refined after T4",
+    "Outcome definitions with webhook or CRM verification; calibration panel with quick-rate; 'AI guess' labels",
+    "Failed-call finder with reason groups and full-retention search",
+    "Campaign overview: 8-stage funnel with reasons, cost per outcome and per contact, drivers with observed and under-powered labels, best and worst calls, objection clusters with verified quotes",
+    "Drop-off by agenda moment with intervals and the catastrophic fast lane",
+    "Mission control: live tiles, concurrency, listen, text whisper, take over, end politely; crisis, loop, opt-out and AI-question alerts; anger alerts marked beta",
+    "Issues and 20 default monitors with honest health strip",
+    "Ask VP over the metric layer with play-from-here",
+    "Daily brief in-app and email; T6 export; signed webhooks with replay; CRM write-back for the first partners' CRMs",
+    "Evidence: 3 of the 21 must-be items (call log, export, post-call judge; WT l.428); W6 hypothesis and kill bar (TS l.328); req-21/22/25/26 are must; lab assets for the Plivo line, agenda ledger, cost meter and combination identity exist",
+    "Exit: T5 and T6 pass; 3 partners with outcomes wired; at least one judge Trusted per partner"
+   ]
+  },
+  {
+   "phase": "v2: she remembers and gets better, visibly",
+   "scope": [
+    "Per-tenant expected hazard curves and automatic drop-off flags feeding Coach proposals",
+    "Memory proposals live on the call page; contact timeline across voice, WhatsApp, SMS and email",
+    "'How she changed for you' timeline with intervals",
+    "Custom boards and read-only SQL for developers on the same metric layer; scheduled weekly and monthly reports; compliance digest",
+    "WhatsApp daily brief and alerts with consent; Hinglish voice whisper; spoken brief (idea, I)",
+    "Judge drift monitors; mood and anger alerts out of beta after precision is measured on synthetic callers",
+    "More CRMs",
+    "Evidence: 2x lines found 67% at 500 calls and 94% at 1,000 [C L6 L07]; memory and learning are v2 in the spine; owner order req-32 before req-34"
+   ]
+  },
+  {
+   "phase": "v3: intelligence at scale",
+   "scope": [
+    "Consented segment benchmarks (10+ opted-in tenants, about 3,000+ calls a day, aggregates only, contract clause)",
+    "Outcome forecasting with intervals per campaign",
+    "Self-hosted analysis model for BFSI residency",
+    "Command-centre layers (req-18)",
+    "Evidence: raw pooling gave the wrong winner to 48-55% of dissimilar tenants [C] (rejected.2026-10-17.cross-tenant-pooling); self-hosting pays only at volume (ECO s.4)"
+   ]
+  }
+ ],
+ "beyond": [
+  "Business-language Indian failure reasons with carrier code and one action per attempt, including DND block, caller-ID or DLT rejection, operator announcements and windows (34-code catalogue)",
+  "Drop-off ribbon aligned to the TTS clause and agenda moment at hang-up, with credible intervals, a P > 0.99 flag and a catastrophic fast lane; the AI line shown as locked (wording can change, presence cannot)",
+  "Judge calibration against the client's own CRM or payment truth, with interval and the calls-needed penalty of an untrusted label; 'AI guess' until Trusted",
+  "Heard-vs-planned transcript showing exactly what the caller heard after a barge-in, with overlaps on the stereo waveform",
+  "Per-call 'why this call was allowed' compliance trace (category, local-time window, suppression check time, consent basis, attempt n of N, caller-ID series, disclosure time, reply-door interventions)",
+  "Per-call run manifest: exact combination, regions, brief hash, ledger version, turn preset in ms, fallbacks",
+  "Ask VP answers from the same metric layer as the pages, with verified quotes and play-from-here, and an offer to test with the sample size it needs",
+  "Honest health: never 'all good' unless monitors are on and read back",
+  "Cost per earned outcome against the client's own desk cost, and cost per contact across attempts",
+  "TRAI reg 21A guard: early-hang-up ratio per 10-digit caller ID with auto-pause and undo",
+  "Mood path and adaptation markers that show her emotional intelligence at work ('slowed down because the caller sounded worried')",
+  "'How she changed for you' timeline with measured deltas and intervals",
+  "Crisis protocol as predicate plus human alert, with Tele-MANAS 14416 and 112, and take-over that is human only",
+  "Phone-first daily brief with verified vs guessed outcomes and a 30-second clip worth hearing",
+  "Romanised transcript by deterministic transliteration (free, instant) and English only on demand, keeping analysis inside the all-in price"
+ ],
+ "risks": [
+  "LLM labels wrong on Hinglish (e.g. 'dekhta hoon' read as yes) erode trust; mitigated by verified sources, calibration with intervals and 'AI guess' labels, but buyers may still read guesses as facts",
+  "Clause alignment error: the phone-leg delay (250-450 ms, inferred) can attribute a hang-up to the wrong clause near boundaries; mitigated by a window and turn-level fallback until a handset battery measures it",
+  "Indian carriers' codes for DND blocks, CLI/DLT rejection and announcements are unknown until task T4 and live calls; early weeks may show a high UNKNOWN share",
+  "Alert fatigue from Hinglish mood or anger detection with low precision; v1 keeps anger in beta and alerts by predicate (crisis, opt-out, AI question) and code (loops)",
+  "PII exposure through live listening, exports and recording links; mitigated by role masking, Aadhaar/PAN redaction, signed expiring links and audit rows; lawful-basis questions remain for counsel",
+  "Whisper as a prompt-injection path into a live call; it enters as a delimited data block and passes the reply door, but adversarial testing is needed",
+  "Clients reading drivers as causes and acting on noise; labels help but do not remove the risk",
+  "Analysis cost creeping with many custom judges or default translation; translation is on demand and judges show their cost",
+  "Transcriber fabrication on silence corrupting the transcript of record and every downstream label (HV law 27); needs the non-speech probe per ASR choice",
+  "Judge model deprecation or silent provider reroute changing labels; pinned versions and drift monitors return labels to Calibrating",
+  "Competitors close part of the gap: Vapi's flag-gated Mission Control and Call Health (VAP-06), ElevenLabs' hidden campaigns product, Retell's hidden Campaigns enum",
+  "Overload for an SMB owner; mitigated by Today and progressive depth, still to be tested in 5-user sessions"
+ ],
+ "open_questions": [
+  "Which SIP, Q.850 or provider cause codes do Plivo, Exotel and Vobiz return for DND blocks, caller-ID or A2P-declaration rejections (from about 2026-11-17/18) and operator announcements? Closes with task T4 plus live calls",
+  "What is the real phone-leg delay for clause alignment on Indian PSTN (needs the handset stereo battery, open.2026-10-20.handset-reply-gap)?",
+  "Does live listening or whispering need a notice to the person beyond the recording notice, and for which sectors? (counsel)",
+  "Which CRMs do the first three design partners use for write-back?",
+  "Is 0.90 agreement with a 0.80 lower bound the right 'Trusted' bar for buyers, or do they want stricter for money outcomes? (buyer interviews)",
+  "Retention defaults for recordings and transcripts per sector (IRDAI 10 years vs DPDP storage limitation) and how search behaves at the edge (counsel; trust-telephony module)",
+  "Who takes over a live call at an SMB with no telecaller desk, and should take-over route to a hand-off queue instead?",
+  "Which mood signals reach 0.8 precision for 'irritated' and 'worried' on synthetic Hinglish callers before alerts leave beta?",
+  "Does the owner want the daily brief spoken or on WhatsApp in v1 (consent, Meta template category)?",
+  "Are custom judges beyond the defaults included in the all-in price or metered separately?",
+  "Hinglish-to-English translation quality: which model and how to show uncertainty?",
+  "Can the hazard expected curve be seeded from a client's anonymised dialler export (L6 owner action 2) before VP has 500 calls?"
+ ]
+}

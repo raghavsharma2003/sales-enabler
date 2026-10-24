@@ -1,0 +1,8 @@
+{
+ "nodes": [],
+ "edges": [],
+ "events": [
+  { "date": "2026-10-21", "event": "Adversarial review launched on the integrated product (3059bde: 274/275 pass, 0 fail)", "details": "Three independent reviewer sessions: money/approvals/auth, who gets called (gate, consent, DPDP, minors), what she says (safety door TS and Python parity, voice runtime, operator injection). Each confirmed finding lands as a failing test marked todo in product/tests/review/, and owners fix their own modules." },
+  { "date": "2026-10-21", "event": "Web gaps routed to owners", "details": "campaigns: number.list and member.phone.verify_start/confirm (voice OTP, rate-limited per member, number and workspace). agents: a server-owned, industry-neutral practice-caller library (simcaller.list/save). calls: test.browser_call useDraft compiles through brief.compile, because agents stores the draft as a bare AgentConfig. web: Playwright flows for the unverified A2 paths." }
+ ]
+}

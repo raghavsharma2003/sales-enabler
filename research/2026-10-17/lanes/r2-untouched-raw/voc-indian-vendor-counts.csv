@@ -1,0 +1,23 @@
+vendor,n_items_fetched,n_complaints_coded,sources,TELEPHONY,SUPPORT,BILLING,SALES_DELIVERY,ACCOUNT_UI,RELIABILITY,TOOLS_INTEGRATION,AGENT_BEHAVIOUR,ASR,VOICE_TTS,TURN_TAKING,LANGUAGE,LATENCY,VOICEMAIL_IVR_DTMF,COMPLIANCE_DATA,OTHER_QUESTION
+Turtlemint (PoSP app),240,167,Google Play,7,71,72,20,47,22,2,9,3,0,0,0,1,0,2,14
+MyOperator,130,72,Google Play,6,13,12,3,12,4,1,0,0,0,0,0,0,1,0,37
+Exotel (Ameyo),103,51,Google Play,4,0,0,0,9,12,0,0,0,0,0,0,0,0,0,27
+Callyzer,94,39,Google Play,0,2,2,0,3,11,0,1,0,0,1,0,1,0,2,23
+Tata Tele Business (Smartflo),61,31,Google Play+Trustpilot,2,5,2,4,2,5,1,0,0,0,0,0,0,0,0,17
+Servetel,53,28,Google Play,2,7,8,0,4,6,1,0,0,0,0,0,0,3,0,10
+TeleCRM,47,23,Google Play+Trustpilot,1,4,1,0,10,6,2,0,0,0,0,0,0,0,0,5
+Exotel,12,12,Capterra.in+Reddit r/AI_Agents+Reddit r/VoiceAutomationAI+Reddit r/developersIndia+Trustpilot,6,4,2,2,4,1,0,0,0,1,0,0,0,2,0,0
+Plivo,87,9,Reddit r/VoiceAutomationAI+Reddit r/developersIndia+Reddit r/indianstartups+Trustpilot,4,2,1,0,4,2,0,0,0,0,0,0,0,0,1,1
+Ozonetel,19,6,Google Play,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,4
+Bolna,5,5,Reddit r/AIVoice_Agents+Trustpilot,1,3,4,2,0,0,1,0,0,0,0,0,0,0,0,0
+Sarvam,5,5,Reddit r/AI_India+Reddit r/SarvamAI+Reddit r/StartUpIndia+Reddit r/indianstartups,0,0,1,0,0,1,0,1,2,3,1,1,2,0,0,0
+Yellow.ai,2,2,Trustpilot,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,1
+Vobiz,2,2,Reddit r/VoiceAutomationAI,1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0
+Haptik,1,1,Trustpilot,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+Knowlarity,1,1,Trustpilot,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Smallest.ai,1,1,Trustpilot,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0
+SquadStack,1,1,Trustpilot,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+Jio/Airtel (telcos),1,1,Reddit r/indianstartups,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Airtel (partner programme),1,1,Reddit r/StartUpIndia,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0
+ICICI Bank helpline voice bot (deployer),1,1,Reddit r/CreditCardsIndia,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0
+ALL,877,459,,36,114,107,31,99,71,9,13,5,5,2,1,5,6,6,140

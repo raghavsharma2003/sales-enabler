@@ -1,0 +1,182 @@
+################ Run Command vps9-deploy-v2 (runlogs/vps9-deploy-v2.out)
+== pre Sat Oct 24 10:27:29 UTC 2026
+active
+active
+active
+active
+active
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-10-24 06:25:49 UTC
+lab ping before: {"ok": true}
+lab public ping before 200
+deployed before: 9b34ff7
+VERTEX_OFF=0
+judge env lines before: 0
+no runtime drop-ins
+0.20 0.13 0.10 1/219 93226
+               total        used        free      shared  buff/cache   available
+Mem:            7932         893        2924          25        4455        7039
+/dev/root        29G  5.4G   23G  20% /
+deploy start 10:27:29
+== packages
+v22.23.4
+== bundle
+9b34ff7
+web built: main-HCMNWGW2.js + main-XJNCFNIC.css; first load 73.8 KB gzip (115.8 KB with the shared chunks it imports), largest chunk chunk-5XXW35FS.js 24.3 KB, all chunks 218.1 KB gzip (668.0 KB raw)
+== python
+py deps ok 3.10.10
+== database
+localhost
+== env
+NODE_ENV DATABASE_URL VP_SECRET_KEY VP_RUNTIME_SECRET VP_RUNTIME_URL VP_CONTROL_URL VP_PUBLIC_URL VP_BIND VP_VAD_MODEL VP_REGION VERTEX_SA_FILE VERTEX_OFF VERTEX_LOCATION VERTEX_LIVE_LOCATION VERTEX_LIVE_AUDIO VERTEX_MODEL_MAP LAB_AI_ENDPOINT LAB_AI_KEY LAB_SPEECH_KEY LAB_SPEECH_REGION VP_AI_ENDPOINT VP_AI_KEY OPENROUTER_API_KEY VP_STAGE_PACE_S VP_STAGE_VERTEX_MAX VP_STAGE_PACE_LOG VP_STAGE_USER VP_STAGE_PASS VP_LLM_DEFAULT_URL VP_LLM_DEFAULT_KEY VP_LLM_DEFAULT_KEY_HEADER VP_LLM_DEFAULT_MODEL VP_LLM_OPERATOR_MODEL VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_IN VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_OUT VP_ANALYSIS_MODELS VP_ANALYSIS_DEFAULT_MODEL VP_SAFETY_JUDGE_MODE VP_RECORDINGS_DIR VP_RUNTIME_PUBLIC_URL VP_TEST_BUDGET_DEFAULT_INR 
+== migrate
+up to date
+== units
+active
+active
+== proxy
+{"level":"info","ts":1792837664.9270427,"msg":"adapted config to JSON","adapter":"caddyfile"}
+{"level":"warn","ts":1792837664.9270566,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":2}
+caddy reloaded
+== seed (synthetic)
+already seeded; nothing to do
+== smoke
+{"ok":true}
+runtime ok True vp-voice/0.1.0 signing True control True
+  v2-live True [] 
+  v2-flashlite True [] 
+  v2-54mini True [] 
+  v2-38flash True [] 
+  v2-mai True [] 
+  v2-luna True [] 
+  sarvam-india False ['SARVAM'] 
+proxy no-auth 401
+proxy auth / 200
+<title>Vyakti · व्यक्ति
+proxy auth /v1/health 200
+proxy auth /rt/v1/health 200
+127.0.0.1:8090
+127.0.0.1:8091
+127.0.0.1:5432
+*:8443
+== lab
+active
+active
+{"ok": true}
+lab public 200
+               total        used        free      shared  buff/cache   available
+Mem:            7932         876        2940          25        4456        7056
+/dev/root        29G  5.4G   23G  20% /
+Oct 24 10:27:35 vlvmcin systemd[1]: vp-stage-runtime.service: Deactivated successfully.
+Oct 24 10:27:35 vlvmcin systemd[1]: Stopped vp-stage-runtime.service - VP staging voice runtime (127.0.0.1:8090).
+Oct 24 10:27:35 vlvmcin systemd[1]: vp-stage-runtime.service: Consumed 7.011s CPU time, 69.2M memory peak, 0B memory swap peak.
+Oct 24 10:27:35 vlvmcin systemd[1]: Stopping vp-stage-control.service - VP staging control plane (127.0.0.1:8091)...
+Oct 24 10:27:35 vlvmcin systemd[1]: vp-stage-control.service: Deactivated successfully.
+Oct 24 10:27:35 vlvmcin systemd[1]: Stopped vp-stage-control.service - VP staging control plane (127.0.0.1:8091).
+Oct 24 10:27:35 vlvmcin systemd[1]: vp-stage-control.service: Consumed 8.583s CPU time, 108.0M memory peak, 0B memory swap peak.
+Oct 24 10:27:35 vlvmcin systemd[1]: Started vp-stage-control.service - VP staging control plane (127.0.0.1:8091).
+Oct 24 10:27:35 vlvmcin systemd[1]: Started vp-stage-runtime.service - VP staging voice runtime (127.0.0.1:8090).
+Oct 24 10:27:37 vlvmcin node[93518]: [vp] control plane on :8091 with 10 modules, 14 jobs
+Oct 24 10:27:48 vlvmcin python[93519]: 2026-10-24 10:27:48,310 INFO aiohttp.access 127.0.0.1 [24/Oct/2026:10:27:48 +0000] "GET /v1/health HTTP/1.1" 200 3632 "-" "curl/8.5.0"
+Oct 24 10:27:49 vlvmcin python[93519]: 2026-10-24 10:27:49,505 INFO aiohttp.access 127.0.0.1 [24/Oct/2026:10:27:49 +0000] "GET /v1/health HTTP/1.1" 200 3632 "-" "curl/8.5.0"
+== post Sat Oct 24 10:27:49 UTC 2026
+deployed now: 9b34ff7
+VERTEX_OFF=0
+migrations in tree: 58
+latency flag overrides in env (none means code defaults): 0
+code defaults: SPECULATE_PARTIAL False PREWARM True FIRST_CLAUSE False BARGE_NOD True BARGE_LONG_MS 700
+judge: timeout_ms 1500 threshold 0.5 mode_default shadow
+judge env lines now: 0 (0 = no judge model configured, no judge calls)
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-10-24 10:27:35 UTC
+ActiveEnterTimestamp=Sat 2026-10-24 10:27:35 UTC
+lab ping after: {"ok": true}
+lab public ping after 200
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-10-24 06:25:49 UTC
+== post7 Sat Oct 24 10:27:51 UTC 2026
+barge: BARGE_AUDIO True BARGE_AUDIO_MS 200 RESUME_MS 400 BARGE_PAUSED_MS 900 BARGE_NOD_LONG_MS 1500 BARGE_LONG_MS 700
+latency: SPECULATE_PARTIAL False SPECULATE_STABLE_MS 400 PREWARM True FIRST_CLAUSE False LISTEN_FIRST True (outbound SIP only)
+paced providers (default): ['vertex']
+  v2-flashlite brain vertex voice vertex -> speculate False prewarm brain False voice False
+  v2-mai brain vertex voice azure -> speculate False prewarm brain False voice True
+  v2-54mini brain azure voice vertex -> speculate False prewarm brain True voice False
+turn-taking / latency overrides in .env: 0 (0 = code defaults)
+... in the runtime process env: 0
+migrations recorded in the DB: 59
+runtime tracebacks in the last 3 min: 0
+control error lines in the last 3 min: 0
+active active active active active 
+needrestart effective restart mode: l
+== post7 done Sat Oct 24 10:27:52 UTC 2026
+== post9 Sat Oct 24 10:27:52 UTC 2026
+  VP_LLM_DEFAULT_URL  .env=1 control=1 runtime=1
+  VP_LLM_DEFAULT_KEY  .env=1 control=1 runtime=1
+  VP_LLM_DEFAULT_KEY_HEADER  .env=1 control=1 runtime=1
+  VP_LLM_DEFAULT_MODEL  .env=1 control=1 runtime=1
+  VP_LLM_OPERATOR_MODEL  .env=1 control=1 runtime=1
+  VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_IN  .env=1 control=1 runtime=1
+  VP_LLM_OPERATOR_INR_MILLI_PER_MTOK_OUT  .env=1 control=1 runtime=1
+  VP_ANALYSIS_MODELS  .env=1 control=1 runtime=1
+  VP_ANALYSIS_DEFAULT_MODEL  .env=1 control=1 runtime=1
+  VP_SAFETY_JUDGE_MODE  .env=1 control=1 runtime=1
+  VP_RECORDINGS_DIR  .env=1 control=1 runtime=1
+  VP_RUNTIME_PUBLIC_URL  .env=1 control=1 runtime=1
+  VP_TEST_BUDGET_DEFAULT_INR  .env=1 control=1 runtime=1
+VP_LLM_SAFETY_JUDGE_* names: .env 0, control 0, runtime 0 (0 = unset)
+forbidden names (VP_DEV_AUTH VP_LLM_FAKE VP_WEBHOOK_ALLOW_* VP_DEVSIM* VP_PAYMENTS VP_TELEPHONY_LIVE): .env 0, control 0, runtime 0
+.env.extra: absent
+recordings folder: vpstage:vpstage 700
+VP_RUNTIME_PUBLIC_URL equals the runtime VP_PUBLIC_URL: True
+VP_RECORDINGS_DIR is /opt/vp-stage/data/recordings: True
+VP_LLM_DEFAULT_URL shape https://<resource>.<azure host>/openai/v1/chat/completions: True
+VP_LLM_DEFAULT_KEY non-empty and equal to the LAB_AI_KEY line: True
+VP_LLM_DEFAULT_URL built from the LAB_AI_ENDPOINT line: True
+-- what the runtime's own judge code makes of its process env
+runtime judge: mode off | configured (model falls back to VP_LLM_DEFAULT_*) True | runs False
+-- what the control plane's own code makes of its process env
+control plane: model configured per purpose {"operator":true,"simulate":true,"analysis":true,"compile":true,"memory":true,"learning":true,"judge":true,"brief_review":true,"safety_judge":true}
+control plane: judge mode off | judgeConfigured true | curated analysis models ["lab-gpt41mini-in","lab-gpt41"] | default analysis model lab-gpt41mini-in
+control journal since the restart: setup warnings 0, errors 0
+== post9 done Sat Oct 24 10:27:54 UTC 2026
+
+################ Run Command vps9-verify (runlogs/vps9-verify.out)
+== verify9 Sat Oct 24 10:29:51 UTC 2026 (job start 2026-10-24 10:26:13 UTC)
+deployed: 9b34ff7
+active staging calls: 0
+config names present in both processes; judge mode off in both; VP_LLM_SAFETY_JUDGE_* names: 0
+workspaces before: 3; 'Config Check' already: 0
+owner's workspace before: agents 0, contacts 0, campaigns 0, calls 0, audit rows 1, wallet 5000000
+kit ok: kit.tgz verify9.py 
+{"spendBefore": {"calls": 0.0, "operatorPriced": 0.0, "tokenLines": 0.0, "testRuns": 0.0, "chat": 0.0, "total": 0.0}}
+{"step": "signup \"Config Check\"", "pass": true, "status": 201, "note": "workspace c0c91999-513d-4d6c-accc-7648f8930b3e", "at": "10:29:52"}
+{"step": "wallet (trial credit)", "pass": true, "status": 200, "note": "5000000 milli, state ok", "at": "10:29:52"}
+{"guard": "agent.create", "spendSoFar": {"calls": 0.0, "operatorPriced": 0.0, "tokenLines": 0.0, "testRuns": 0.0, "chat": 0.0, "total": 0.0}, "worstCase": 2.0, "go": true}
+{"step": "agent.create (template; the brief review now has a model)", "pass": true, "status": 200, "note": "draft 985cb187-99f4-477d-b150-c3e4ae7d93e7; compiles True; review mode model: AI-honesty review: rules and model; findings 1", "at": "10:29:53"}
+{"guard": "test.chat", "spendSoFar": {"calls": 0.0, "operatorPriced": 0.0, "tokenLines": 0.0, "testRuns": 0.0, "chat": 0.0, "total": 0.0}, "worstCase": 2.0, "go": true}
+{"step": "test.chat (one exchange)", "pass": true, "status": "200/200", "note": "opening 'Main Config Check ki AI assistant hoon. नमस्ते Asha, मैं Riya हूँ, Config Check की AI assistant, और ये कॉल रिक' | caller 'Haan ji, boliye. Aap kaun bol rahi hain?' | her reply 'मैं Riya हूँ, Config Check की AI assistant, आपकी policy renewal के बारे में बताने के लिए कॉल कर रही हूँ। आपका plan Family Health Plus है, re'", "at": "10:29:55"}
+{"guard": "test.simulate", "spendSoFar": {"calls": 0.0, "operatorPriced": 0.0, "tokenLines": 0.0, "testRuns": 0.0, "chat": 0.212, "total": 0.212}, "worstCase": 4.0, "go": true}
+{"step": "test.simulate (practice caller, default stack)", "pass": true, "status": 200, "note": "caller default:busy_20s: 4 turns, ended by caller, passed False (4/6 checks)", "at": "10:29:58"}
+{"guard": "Operator chat", "spendSoFar": {"calls": 0.0, "operatorPriced": 0.0, "tokenLines": 0.0, "testRuns": 0.226, "chat": 0.212, "total": 0.438}, "worstCase": 19.0, "go": true}
+{"step": "Operator chat", "pass": true, "status": 200, "note": "tools ['workspace.get'] (all read); llmCalls 2, tokens {'input': 4992, 'output': 54}; answer: 'This workspace is named \"Config Check\" and is on the base plan. It has 1 member, no invited users, no API keys, no knowledge entries, and no integrations or webhooks set up yet.'", "at": "10:30:00"}
+{"guard": "browser test call", "spendSoFar": {"calls": 0.0, "operatorPriced": 0.99, "tokenLines": 0.0, "testRuns": 0.226, "chat": 0.212, "total": 1.428}, "worstCase": 10.0, "go": true}
+{"step": "browser test call", "pass": true, "status": 200, "note": "4fce67d3-080c-4f71-add5-bd7031755fac: v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina, 111 s, end caller_hung_up, agent/caller turns 7/7, reply gaps [None, 2403, 2267, 396, 2273, 2274, 2968], INR 2.24", "at": "10:32:06"}
+{"step": "call: analysis completes with an outcome", "pass": false, "status": 200, "note": "analysis done on gpt-4.1-mini-2025-04-14; outcome None; unclear null; model reason code None; outcome column None; summary 'इस बार प्रीमियम 27,500 है, क्योंकि परिवार में सबसे बड़े सदस्य अगले एज-बैंड में आ गए हैं। रिन्यूअल इस महीने की 28 तारीख क'", "at": "10:32:06"}
+{"step": "call: recording link answers through :8443", "pass": true, "status": 200, "note": "content type audio/wav, 7129644 bytes, WAV True, about 111.4 s", "at": "10:32:06"}
+{"step": "call: the same link without basic auth", "pass": true, "status": 401, "note": "Caddy still demands the staging passcode", "at": "10:32:06"}
+SPEND {"calls": 2.236, "operatorPriced": 0.99, "tokenLines": 0.124, "testRuns": 0.226, "chat": 0.212, "total": 3.788}
+SUMMARY {"steps": 10, "pass": 9, "fail": 1}
+verify9 exit 0 10:32:06
+owner's workspace after: agents 0, contacts 0, campaigns 0, calls 0, audit rows 1, wallet 5000000
+the call in the DB: done, caller_hung_up, 111 s, 2236 milli, recording true, analysis done
+  judge events 0 (0 = judge off); safety events none; analysis cost lines 1 (1413 tokens)
+  recordings folder: 2 file(s), 6.9M; vpstage:vpstage 700
+== journal since 2026-10-24 10:29:52 UTC (emails redacted)
+control: error lines 0, setup warnings 0
+runtime: tracebacks 0, 5xx 0, refused batches 0, judge lines 0
+upload verify9.json 201
+active active active active active 
+lab ping: {"ok": true}
+lab public ping 200
+== verify9 done Sat Oct 24 10:32:07 UTC 2026
+

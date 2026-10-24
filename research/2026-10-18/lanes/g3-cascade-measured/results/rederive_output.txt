@@ -1,0 +1,329 @@
+## Latency (Central India VM; caller end of speech -> first agent audio byte; no telephone leg)
+| config | answered | p50_ms | p50_ci95_call_cluster | p90_ms | p90_ci95_call_cluster | share_le_1200 | clean_p50_ms | cutin_main | cutin_main_wilson95 | pause_cutin | unanswered_reasons |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 58 | 1026 | 1017-1035 | 1143 | 1099-1277 | 0.948 | 1034 | 16/60 | 0.171-0.39 | 12/12 | no STT final (caller audio never transcribed): 2 |
+| C2_az_az41_azhd | 58 | 1133 | 1118-1140 | 1231 | 1177-1233 | 0.828 | 1119 | 9/60 | 0.081-0.261 | 12/12 | no STT final (caller audio never transcribed): 2 |
+| C3_az_or_azhd | 57 | 1044 | 1029-1077 | 1230 | 1098-1382 | 0.86 | 1088 | 16/60 | 0.171-0.39 | 12/12 | no STT final (caller audio never transcribed): 3 |
+| C6_gtl_or_azneural | 60 | 1031 | 1010-1052 | 1404 | 1121-1540 | 0.817 | 1067 | 19/60 | 0.213-0.442 | 12/12 |  |
+| C7_az_gm_azneural | 56 | 1568 | 1514-1602 | 1790 | 1679-1920 | 0.0 | 1500 | 2/60 | 0.009-0.114 | 12/12 | no STT final (caller audio never transcribed): 3; 429 free-tier quota: 1 |
+| C8_gtl_gm_azneural | 59 | 1688 | 1654-1718 | 1789 | 1770-1796 | 0.0 | 1657 | 2/60 | 0.009-0.114 | 12/12 | 429 free-tier quota: 1 |
+| C1_az_az41_azneural+gatedSTT | 28 | 989 | 967-994 | 1072 | 1048-1103 | 1.0 | 968 | 9/30 | 0.167-0.479 | 6/6 | no STT final (caller audio never transcribed): 2 |
+| C6_gtl_or_azneural+gatedSTT | 30 | 1038 | 990-1163 | 1453 | 1298-1557 | 0.6 | 1241 | 7/30 | 0.118-0.409 | 6/6 |  |
+
+| config | stt_last_final_rel_end_p50_ms | llm_ttft_p50_ms | llm_ttft_p90_ms | first_clause_rel_end_p50_ms | llm_done_rel_end_p50_ms | llm_done_rel_end_p90_ms | tts_ttfb_p50_ms | tts_ttfb_p90_ms | first_audio_p50_ms | llm_requests_per_turn_mean |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 662 | 308 | 382 | 982 | 1229 | 1334 | 32 | 91 | 1026 | 1.87 |
+| C2_az_az41_azhd | 646 | 301 | 367 | 962 | 1214 | 1373 | 164 | 191 | 1133 | 1.87 |
+| C3_az_or_azhd | 648 | 208 | 357 | 878 | 945 | 1251 | 160 | 184 | 1044 | 1.85 |
+| C6_gtl_or_azneural | 771 | 208 | 521 | 991 | 1073 | 1491 | 34 | 63 | 1031 | 1.9 |
+| C7_az_gm_azneural | 640 | 824 | 1055 | 1514 | 1532 | 1754 | 48 | 86 | 1568 | 1.85 |
+| C8_gtl_gm_azneural | 766 | 794 | 864 | 1646 | 1676 | 1753 | 46 | 84 | 1688 | 1.83 |
+| C1_az_az41_azneural+gatedSTT | 648 | 308 | 333 | 968 | 1194 | 1293 | 29 | 44 | 989 | 1.87 |
+| C6_gtl_or_azneural+gatedSTT | 753 | 222 | 518 | 1007 | 1114 | 1540 | 32 | 54 | 1038 | 1.83 |
+
+| config | persona | turns | answered | p50_ms | p90_ms | cutin_turns | cutin_rate | cutin_wilson95 |
+|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | P1 urban Hinglish | 20 | 20 | 1016 | 1105 | 5/20 | 0.25 | 0.112-0.469 |
+| C1_az_az41_azneural | P2 Bhojpuri-Hindi, market babble | 20 | 20 | 1035 | 1268 | 8/20 | 0.4 | 0.219-0.613 |
+| C1_az_az41_azneural | P4 elderly slow Hindi | 20 | 18 | 1017 | 1123 | 3/20 | 0.15 | 0.052-0.36 |
+| C2_az_az41_azhd | P1 urban Hinglish | 20 | 20 | 1121 | 1179 | 2/20 | 0.1 | 0.028-0.301 |
+| C2_az_az41_azhd | P2 Bhojpuri-Hindi, market babble | 20 | 20 | 1147 | 1243 | 5/20 | 0.25 | 0.112-0.469 |
+| C2_az_az41_azhd | P4 elderly slow Hindi | 20 | 18 | 1123 | 1233 | 2/20 | 0.1 | 0.028-0.301 |
+| C3_az_or_azhd | P1 urban Hinglish | 20 | 20 | 1013 | 1177 | 5/20 | 0.25 | 0.112-0.469 |
+| C3_az_or_azhd | P2 Bhojpuri-Hindi, market babble | 20 | 19 | 1095 | 1408 | 8/20 | 0.4 | 0.219-0.613 |
+| C3_az_or_azhd | P4 elderly slow Hindi | 20 | 18 | 1030 | 1079 | 3/20 | 0.15 | 0.052-0.36 |
+| C6_gtl_or_azneural | P1 urban Hinglish | 20 | 20 | 1038 | 1349 | 3/20 | 0.15 | 0.052-0.36 |
+| C6_gtl_or_azneural | P2 Bhojpuri-Hindi, market babble | 20 | 20 | 1054 | 1225 | 8/20 | 0.4 | 0.219-0.613 |
+| C6_gtl_or_azneural | P4 elderly slow Hindi | 20 | 20 | 1010 | 1540 | 8/20 | 0.4 | 0.219-0.613 |
+| C7_az_gm_azneural | P1 urban Hinglish | 20 | 20 | 1500 | 1666 | 0/20 | 0.0 | 0-0.161 |
+| C7_az_gm_azneural | P2 Bhojpuri-Hindi, market babble | 20 | 19 | 1592 | 1874 | 0/20 | 0.0 | 0-0.161 |
+| C7_az_gm_azneural | P4 elderly slow Hindi | 20 | 17 | 1576 | 1782 | 2/20 | 0.1 | 0.028-0.301 |
+| C8_gtl_gm_azneural | P1 urban Hinglish | 20 | 20 | 1695 | 1772 | 0/20 | 0.0 | 0-0.161 |
+| C8_gtl_gm_azneural | P2 Bhojpuri-Hindi, market babble | 20 | 20 | 1665 | 1794 | 0/20 | 0.0 | 0-0.161 |
+| C8_gtl_gm_azneural | P4 elderly slow Hindi | 20 | 19 | 1718 | 1795 | 2/20 | 0.1 | 0.028-0.301 |
+| C1_az_az41_azneural+gatedSTT | P1 urban Hinglish | 10 | 10 | 967 | 1103 | 3/10 | 0.3 | 0.108-0.603 |
+| C1_az_az41_azneural+gatedSTT | P2 Bhojpuri-Hindi, market babble | 10 | 9 | 994 | 1048 | 4/10 | 0.4 | 0.168-0.687 |
+| C1_az_az41_azneural+gatedSTT | P4 elderly slow Hindi | 10 | 9 | 985 | 1041 | 2/10 | 0.2 | 0.057-0.51 |
+| C6_gtl_or_azneural+gatedSTT | P1 urban Hinglish | 10 | 10 | 1092 | 1298 | 1/10 | 0.1 | 0.018-0.404 |
+| C6_gtl_or_azneural+gatedSTT | P2 Bhojpuri-Hindi, market babble | 10 | 10 | 1163 | 1557 | 4/10 | 0.4 | 0.168-0.687 |
+| C6_gtl_or_azneural+gatedSTT | P4 elderly slow Hindi | 10 | 10 | 990 | 1312 | 2/10 | 0.2 | 0.057-0.51 |
+
+| config | pause_turns | cutin_turns | wilson95 | pause_start_ms_in_clip | pause_len_ms | agent_audio_ms_into_pause_p50 | agent_audio_ms_into_pause_min_max | headroom_before_caller_resumes_ms_p50 | answered_after_true_end | latency_after_true_end_p50_ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 12 | 12 | 0.757-1 | 1340 | 2420 | 965 | 876-1003 | 1455 | 12/12 | 1025 |
+| C2_az_az41_azhd | 12 | 12 | 0.757-1 | 1340 | 2420 | 1091 | 1069-1133 | 1329 | 12/12 | 1145 |
+| C3_az_or_azhd | 12 | 12 | 0.757-1 | 1340 | 2420 | 1047 | 977-1440 | 1373 | 12/12 | 1061 |
+| C6_gtl_or_azneural | 12 | 12 | 0.757-1 | 1340 | 2420 | 982 | 940-998 | 1438 | 12/12 | 992 |
+| C7_az_gm_azneural | 12 | 12 | 0.757-1 | 1340 | 2420 | 1523 | 1235-1668 | 897 | 11/12 | 1564 |
+| C8_gtl_gm_azneural | 12 | 12 | 0.757-1 | 1340 | 2420 | 1582 | 1355-1801 | 838 | 11/12 | 1631 |
+| C1_az_az41_azneural+gatedSTT | 6 | 6 | 0.61-1.0 | 1340 | 2420 | 939 | 859-1003 | 1481 | 6/6 | 1009 |
+| C6_gtl_or_azneural+gatedSTT | 6 | 6 | 0.61-1.0 | 1340 | 2420 | 943 | 924-1266 | 1477 | 6/6 | 990 |
+
+## check vs pre-restart analysis: mismatches
+| config | metric | rederived | pre_restart_analysis |
+|---|---|---|---|
+| none | all match |  |  |
+
+## composite Gemini-TTS cascades (computed)
+| design | tts_request_mode | p50_ms | p50_ci95 | p90_ms | share_le_1200 | n_turns | n_tts_samples |
+|---|---|---|---|---|---|---|---|
+| G-A all-Gemini lite: transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts | whole reply after LLM done (harness C4/C5 design) | 2532 | 2498-2566 | 2722 | 0.0 | 59 | 40 |
+| G-A all-Gemini lite: transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts | first clause sent alone (lower bound; splits prosody across requests) | 2505 | 2472-2543 | 2696 | 0.0 | 59 | 40 |
+| G-B all-Gemini: transcribe-live + 3.5-flash-lite + 3.8-flash-tts | whole reply after LLM done (harness C4/C5 design) | 2755 | 2699-2791 | 2972 | 0.0 | 59 | 40 |
+| G-B all-Gemini: transcribe-live + 3.5-flash-lite + 3.8-flash-tts | first clause sent alone (lower bound; splits prosody across requests) | 2729 | 2672-2766 | 2949 | 0.0 | 59 | 40 |
+| G-C mixed: Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts | whole reply after LLM done (harness C4/C5 design) | 2413 | 2362-2468 | 2708 | 0.0 | 56 | 40 |
+| G-C mixed: Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts | first clause sent alone (lower bound; splits prosody across requests) | 2388 | 2334-2445 | 2675 | 0.0 | 56 | 40 |
+| G-D mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts | whole reply after LLM done (harness C4/C5 design) | 1842 | 1782-1901 | 2180 | 0.0 | 57 | 40 |
+| G-D mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts | first clause sent alone (lower bound; splits prosody across requests) | 1752 | 1704-1819 | 2021 | 0.0 | 57 | 40 |
+| G-E mixed cheap LLM: transcribe-live + gpt-oss-120b@Groq + 3.8-flash-lite-tts | whole reply after LLM done (harness C4/C5 design) | 1978 | 1922-2024 | 2405 | 0.0 | 60 | 40 |
+| G-E mixed cheap LLM: transcribe-live + gpt-oss-120b@Groq + 3.8-flash-lite-tts | first clause sent alone (lower bound; splits prosody across requests) | 1897 | 1846-1949 | 2275 | 0.0 | 60 | 40 |
+| G-F mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-tts | whole reply after LLM done (harness C4/C5 design) | 2052 | 1994-2118 | 2388 | 0.0 | 57 | 40 |
+| G-F mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-tts | first clause sent alone (lower bound; splits prosody across requests) | 1972 | 1905-2029 | 2263 | 0.0 | 57 | 40 |
+
+| design | source_config | median_shift_ms | measured_pause_cutins | counterfactual_pause_cutins | method |
+|---|---|---|---|---|---|
+| G-A all-Gemini lite: transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts | C8_gtl_gm_azneural | 841 | 12/12 | 5/12 | computed, low confidence: a response whose first audio would land before the caller resumes still cuts in; the rest would be cancelled by the harness on resume |
+| G-B all-Gemini: transcribe-live + 3.5-flash-lite + 3.8-flash-tts | C8_gtl_gm_azneural | 1078 | 12/12 | 0/12 | computed, low confidence: a response whose first audio would land before the caller resumes still cuts in; the rest would be cancelled by the harness on resume |
+| G-C mixed: Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts | C7_az_gm_azneural | 827 | 12/12 | 11/12 | computed, low confidence: a response whose first audio would land before the caller resumes still cuts in; the rest would be cancelled by the harness on resume |
+| G-D mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts | C3_az_or_azhd | 764 | 12/12 | 12/12 | computed, low confidence: a response whose first audio would land before the caller resumes still cuts in; the rest would be cancelled by the harness on resume |
+| G-E mixed cheap LLM: transcribe-live + gpt-oss-120b@Groq + 3.8-flash-lite-tts | C6_gtl_or_azneural | 905 | 12/12 | 12/12 | computed, low confidence: a response whose first audio would land before the caller resumes still cuts in; the rest would be cancelled by the harness on resume |
+| G-F mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-tts | C3_az_or_azhd | 1001 | 12/12 | 11/12 | computed, low confidence: a response whose first audio would land before the caller resumes still cuts in; the rest would be cancelled by the harness on resume |
+
+## usage
+| config | exchanges | used_prompt_at_exchange1 | prompt_growth_per_exchange | llm_requests_waste_factor | cached_share | prompt_tokens_per_exchange_billed | completion_tokens_per_exchange_billed | tts_chars_per_exchange_billed | agent_audio_s_per_exchange | caller_audio_s_per_exchange | reply_latency_s_mean | exchange_s | exchanges_per_min_battery | agent_talk_share_battery | chars_per_agent_s | stt_gated_sent_s_per_exchange | openrouter_reported_usd_per_exchange | cancelled_streams_prompt_imputed |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 60 | 1727 | 51.3 | 1.842 | 0.94 | 3602 | 28.6 | 109.7 | 10.94 | 4.09 | 0.995 | 16.02 | 3.74 | 0.683 | 10.03 |  |  | 50 |
+| C2_az_az41_azhd | 60 | 1725 | 52.7 | 1.841 | 0.948 | 3607 | 30.4 | 118.7 | 6.91 | 4.09 | 1.098 | 12.09 | 4.96 | 0.571 | 17.18 |  |  | 49 |
+| C3_az_or_azhd | 60 | 1771 | 70.0 | 1.823 | 0.82 | 3804 | 85.2 | 163.3 | 9.33 | 4.09 | 1.033 | 14.45 | 4.15 | 0.646 | 17.51 |  | 0.0002921 | 33 |
+| C6_gtl_or_azneural | 60 | 1773 | 64.8 | 1.864 | 0.831 | 3847 | 76.5 | 141.9 | 13.85 | 4.09 | 1.113 | 19.05 | 3.15 | 0.727 | 10.24 |  | 0.0002881 | 34 |
+| C7_az_gm_azneural | 60 | 1794 | 36.2 | 1.796 | 0.0 | 3518 | 20.4 | 78.7 | 8.33 | 4.09 | 1.485 | 13.9 | 4.32 | 0.599 | 9.45 |  |  | 50 |
+| C8_gtl_gm_azneural | 60 | 1788 | 37.3 | 1.78 | 0.0 | 3483 | 22.6 | 80.8 | 8.73 | 4.09 | 1.654 | 14.47 | 4.15 | 0.603 | 9.25 |  |  | 46 |
+| C1_az_az41_azneural+gatedSTT | 30 | 1721 | 51.0 | 1.837 | 0.944 | 3588 | 31.8 | 112.9 | 10.99 | 4.09 | 0.915 | 15.99 | 3.75 | 0.687 | 10.27 | 4.85 |  | 23 |
+| C6_gtl_or_azneural+gatedSTT | 30 | 1920 | 40.3 | 1.793 | 0.851 | 3768 | 66.7 | 124.4 | 12.88 | 4.09 | 1.157 | 18.12 | 3.31 | 0.711 | 9.66 | 4.85 | 0.0002573 | 19 |
+
+## cost per connected minute (INR), reference shape
+| stack | call_min | exchanges | stt_inr_per_min | llm_inr_per_min | tts_inr_per_min | ai_inr_per_min | ai_inr_per_call |
+|---|---|---|---|---|---|---|---|
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 1 | 5 | 1.583 | 0.232 | 0.343 | 2.158 | 2.16 |
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 3 | 15 | 1.583 | 0.261 | 0.343 | 2.187 | 6.56 |
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 5 | 25 | 1.583 | 0.29 | 0.343 | 2.216 | 11.08 |
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 10 | 50 | 1.583 | 0.363 | 0.343 | 2.289 | 22.89 |
+| C1+gated: same, VAD-gated STT | 1 | 5 | 0.751 | 0.231 | 0.351 | 1.333 | 1.33 |
+| C1+gated: same, VAD-gated STT | 3 | 15 | 0.751 | 0.259 | 0.351 | 1.362 | 4.09 |
+| C1+gated: same, VAD-gated STT | 5 | 25 | 0.751 | 0.288 | 0.351 | 1.39 | 6.95 |
+| C1+gated: same, VAD-gated STT | 10 | 50 | 0.751 | 0.359 | 0.351 | 1.462 | 14.62 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 1 | 5 | 1.583 | 0.229 | 0.862 | 2.674 | 2.67 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 3 | 15 | 1.583 | 0.258 | 0.862 | 2.703 | 8.11 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 5 | 25 | 1.583 | 0.288 | 0.862 | 2.733 | 13.66 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 10 | 50 | 1.583 | 0.361 | 0.862 | 2.806 | 28.06 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 1 | 5 | 1.583 | 0.171 | 0.878 | 2.632 | 2.63 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 3 | 15 | 1.583 | 0.198 | 0.878 | 2.659 | 7.98 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 5 | 25 | 1.583 | 0.224 | 0.878 | 2.686 | 13.43 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 10 | 50 | 1.583 | 0.292 | 0.878 | 2.753 | 27.53 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 1 | 5 | 0.644 | 0.169 | 0.35 | 1.164 | 1.16 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 3 | 15 | 0.644 | 0.195 | 0.35 | 1.189 | 3.57 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 5 | 25 | 0.644 | 0.22 | 0.35 | 1.214 | 6.07 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 10 | 50 | 0.644 | 0.283 | 0.35 | 1.277 | 12.77 |
+| C6+gated: same, VAD-gated STT | 1 | 5 | 0.382 | 0.166 | 0.33 | 0.878 | 0.88 |
+| C6+gated: same, VAD-gated STT | 3 | 15 | 0.382 | 0.181 | 0.33 | 0.893 | 2.68 |
+| C6+gated: same, VAD-gated STT | 5 | 25 | 0.382 | 0.195 | 0.33 | 0.908 | 4.54 |
+| C6+gated: same, VAD-gated STT | 10 | 50 | 0.382 | 0.232 | 0.33 | 0.945 | 9.45 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 1 | 5 | 1.583 | 0.502 | 0.323 | 2.408 | 2.41 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 3 | 15 | 1.583 | 0.548 | 0.323 | 2.455 | 7.36 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 5 | 25 | 1.583 | 0.595 | 0.323 | 2.501 | 12.51 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 10 | 50 | 1.583 | 0.71 | 0.323 | 2.617 | 26.17 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 1 | 5 | 0.644 | 0.499 | 0.316 | 1.46 | 1.46 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 3 | 15 | 0.644 | 0.546 | 0.316 | 1.507 | 4.52 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 5 | 25 | 0.644 | 0.594 | 0.316 | 1.554 | 7.77 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 10 | 50 | 0.644 | 0.712 | 0.316 | 1.673 | 16.73 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 1 | 5 | 0.644 | 0.499 | 0.366 | 1.51 | 1.51 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 3 | 15 | 0.644 | 0.546 | 0.366 | 1.557 | 4.67 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 5 | 25 | 0.644 | 0.594 | 0.366 | 1.604 | 8.02 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 10 | 50 | 0.644 | 0.712 | 0.366 | 1.723 | 17.23 |
+| G-A all-Gemini lite, 2027 TTS price | 1 | 5 | 0.644 | 0.499 | 0.733 | 1.876 | 1.88 |
+| G-A all-Gemini lite, 2027 TTS price | 3 | 15 | 0.644 | 0.546 | 0.733 | 1.924 | 5.77 |
+| G-A all-Gemini lite, 2027 TTS price | 5 | 25 | 0.644 | 0.594 | 0.733 | 1.971 | 9.85 |
+| G-A all-Gemini lite, 2027 TTS price | 10 | 50 | 0.644 | 0.712 | 0.733 | 2.089 | 20.89 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 1 | 5 | 0.644 | 0.499 | 0.546 | 1.69 | 1.69 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 3 | 15 | 0.644 | 0.546 | 0.546 | 1.737 | 5.21 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 5 | 25 | 0.644 | 0.594 | 0.546 | 1.784 | 8.92 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 10 | 50 | 0.644 | 0.712 | 0.546 | 1.902 | 19.02 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 1 | 5 | 0.644 | 0.499 | 1.092 | 2.236 | 2.24 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 3 | 15 | 0.644 | 0.546 | 1.092 | 2.283 | 6.85 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 5 | 25 | 0.644 | 0.594 | 1.092 | 2.331 | 11.65 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 10 | 50 | 0.644 | 0.712 | 1.092 | 2.449 | 24.49 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 1 | 5 | 1.583 | 0.502 | 0.366 | 2.452 | 2.45 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 3 | 15 | 1.583 | 0.548 | 0.366 | 2.498 | 7.49 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 5 | 25 | 1.583 | 0.595 | 0.366 | 2.544 | 12.72 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 10 | 50 | 1.583 | 0.71 | 0.366 | 2.66 | 26.6 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 1 | 5 | 1.583 | 0.171 | 0.366 | 2.12 | 2.12 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 3 | 15 | 1.583 | 0.198 | 0.366 | 2.147 | 6.44 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 5 | 25 | 1.583 | 0.224 | 0.366 | 2.174 | 10.87 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 10 | 50 | 1.583 | 0.292 | 0.366 | 2.241 | 22.41 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 1 | 5 | 0.382 | 0.169 | 0.366 | 0.918 | 0.92 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 3 | 15 | 0.382 | 0.195 | 0.366 | 0.943 | 2.83 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 5 | 25 | 0.382 | 0.22 | 0.366 | 0.968 | 4.84 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 10 | 50 | 0.382 | 0.283 | 0.366 | 1.031 | 10.31 |
+| G-E same, 2027 TTS price | 1 | 5 | 0.382 | 0.169 | 0.733 | 1.284 | 1.28 |
+| G-E same, 2027 TTS price | 3 | 15 | 0.382 | 0.195 | 0.733 | 1.309 | 3.93 |
+| G-E same, 2027 TTS price | 5 | 25 | 0.382 | 0.22 | 0.733 | 1.335 | 6.67 |
+| G-E same, 2027 TTS price | 10 | 50 | 0.382 | 0.283 | 0.733 | 1.397 | 13.97 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 1 | 5 | 0.382 | 0.169 | 0.175 | 0.727 | 0.73 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 3 | 15 | 0.382 | 0.195 | 0.175 | 0.752 | 2.26 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 5 | 25 | 0.382 | 0.22 | 0.175 | 0.777 | 3.89 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 10 | 50 | 0.382 | 0.283 | 0.175 | 0.84 | 8.4 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 1 | 5 | 0.3 | 0.169 | 0.175 | 0.645 | 0.64 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 3 | 15 | 0.3 | 0.195 | 0.175 | 0.67 | 2.01 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 5 | 25 | 0.3 | 0.22 | 0.175 | 0.695 | 3.48 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 10 | 50 | 0.3 | 0.283 | 0.175 | 0.758 | 7.58 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 1 | 5 | 0.879 | 0.169 | 0.35 | 1.398 | 1.4 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 3 | 15 | 0.879 | 0.195 | 0.35 | 1.424 | 4.27 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 5 | 25 | 0.879 | 0.22 | 0.35 | 1.449 | 7.24 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 10 | 50 | 0.879 | 0.283 | 0.35 | 1.512 | 15.12 |
+
+## cost per connected minute (INR), battery-measured shape
+| stack | call_min | exchanges | stt_inr_per_min | llm_inr_per_min | tts_inr_per_min | ai_inr_per_min |
+|---|---|---|---|---|---|---|
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 1 | 4 | 1.583 | 0.183 | 0.585 | 2.351 |
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 3 | 11 | 1.583 | 0.183 | 0.585 | 2.351 |
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 5 | 19 | 1.583 | 0.207 | 0.585 | 2.375 |
+| C1 Azure STT + gpt-4.1-mini + Azure neural | 10 | 37 | 1.583 | 0.24 | 0.585 | 2.408 |
+| C1+gated: same, VAD-gated STT | 1 | 4 | 0.48 | 0.182 | 0.603 | 1.266 |
+| C1+gated: same, VAD-gated STT | 3 | 11 | 0.48 | 0.182 | 0.603 | 1.265 |
+| C1+gated: same, VAD-gated STT | 5 | 19 | 0.48 | 0.206 | 0.603 | 1.289 |
+| C1+gated: same, VAD-gated STT | 10 | 38 | 0.48 | 0.247 | 0.603 | 1.33 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 1 | 5 | 1.583 | 0.229 | 1.23 | 3.043 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 3 | 15 | 1.583 | 0.258 | 1.23 | 3.072 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 5 | 25 | 1.583 | 0.288 | 1.23 | 3.101 |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | 10 | 50 | 1.583 | 0.361 | 1.23 | 3.175 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 1 | 4 | 1.583 | 0.134 | 1.416 | 3.134 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 3 | 12 | 1.583 | 0.152 | 1.416 | 3.151 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 5 | 21 | 1.583 | 0.179 | 1.416 | 3.179 |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | 10 | 42 | 1.583 | 0.227 | 1.416 | 3.227 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 1 | 3 | 0.586 | 0.099 | 0.637 | 1.322 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 3 | 9 | 0.586 | 0.108 | 0.637 | 1.331 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 5 | 16 | 0.592 | 0.126 | 0.637 | 1.355 |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | 10 | 32 | 0.592 | 0.152 | 0.637 | 1.381 |
+| C6+gated: same, VAD-gated STT | 1 | 3 | 0.221 | 0.098 | 0.587 | 0.905 |
+| C6+gated: same, VAD-gated STT | 3 | 10 | 0.231 | 0.116 | 0.587 | 0.933 |
+| C6+gated: same, VAD-gated STT | 5 | 17 | 0.232 | 0.125 | 0.587 | 0.944 |
+| C6+gated: same, VAD-gated STT | 10 | 33 | 0.23 | 0.137 | 0.587 | 0.953 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 1 | 4 | 1.583 | 0.398 | 0.484 | 2.466 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 3 | 13 | 1.583 | 0.467 | 0.484 | 2.535 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 5 | 22 | 1.583 | 0.511 | 0.484 | 2.579 |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | 10 | 43 | 1.583 | 0.583 | 0.484 | 2.651 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 1 | 4 | 0.615 | 0.396 | 0.478 | 1.489 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 3 | 12 | 0.615 | 0.426 | 0.478 | 1.519 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 5 | 21 | 0.621 | 0.483 | 0.478 | 1.582 |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | 10 | 42 | 0.621 | 0.566 | 0.478 | 1.665 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 1 | 4 | 0.615 | 0.396 | 0.536 | 1.547 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 3 | 12 | 0.615 | 0.426 | 0.536 | 1.577 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 5 | 21 | 0.621 | 0.483 | 0.537 | 1.64 |
+| G-A all-Gemini lite (transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts), 2026 TTS price | 10 | 42 | 0.621 | 0.566 | 0.537 | 1.724 |
+| G-A all-Gemini lite, 2027 TTS price | 1 | 4 | 0.615 | 0.396 | 1.073 | 2.083 |
+| G-A all-Gemini lite, 2027 TTS price | 3 | 12 | 0.615 | 0.426 | 1.073 | 2.114 |
+| G-A all-Gemini lite, 2027 TTS price | 5 | 21 | 0.621 | 0.483 | 1.073 | 2.177 |
+| G-A all-Gemini lite, 2027 TTS price | 10 | 42 | 0.621 | 0.566 | 1.073 | 2.26 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 1 | 4 | 0.615 | 0.396 | 0.802 | 1.813 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 3 | 12 | 0.615 | 0.426 | 0.802 | 1.843 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 5 | 21 | 0.621 | 0.483 | 0.802 | 1.906 |
+| G-B all-Gemini (3.8-flash-tts), 2026 TTS price | 10 | 42 | 0.621 | 0.566 | 0.802 | 1.989 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 1 | 4 | 0.615 | 0.396 | 1.604 | 2.614 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 3 | 12 | 0.615 | 0.426 | 1.604 | 2.645 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 5 | 21 | 0.621 | 0.483 | 1.604 | 2.708 |
+| G-B all-Gemini (3.8-flash-tts), 2027 TTS price | 10 | 42 | 0.621 | 0.566 | 1.604 | 2.791 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 1 | 4 | 1.583 | 0.398 | 0.533 | 2.514 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 3 | 13 | 1.583 | 0.467 | 0.534 | 2.584 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 5 | 22 | 1.583 | 0.511 | 0.534 | 2.628 |
+| G-C Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts, 2026 | 10 | 43 | 1.583 | 0.583 | 0.534 | 2.7 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 1 | 4 | 1.583 | 0.134 | 0.572 | 2.29 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 3 | 12 | 1.583 | 0.152 | 0.572 | 2.307 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 5 | 21 | 1.583 | 0.179 | 0.572 | 2.335 |
+| G-D Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 10 | 42 | 1.583 | 0.227 | 0.572 | 2.382 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 1 | 3 | 0.214 | 0.099 | 0.637 | 0.95 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 3 | 9 | 0.214 | 0.108 | 0.637 | 0.959 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 5 | 16 | 0.22 | 0.126 | 0.637 | 0.983 |
+| G-E transcribe-live gated + gpt-oss-120b@Groq + 3.8-flash-lite-tts, 2026 | 10 | 32 | 0.22 | 0.152 | 0.637 | 1.009 |
+| G-E same, 2027 TTS price | 1 | 3 | 0.214 | 0.099 | 1.274 | 1.587 |
+| G-E same, 2027 TTS price | 3 | 9 | 0.214 | 0.108 | 1.274 | 1.596 |
+| G-E same, 2027 TTS price | 5 | 16 | 0.22 | 0.126 | 1.274 | 1.621 |
+| G-E same, 2027 TTS price | 10 | 32 | 0.22 | 0.152 | 1.274 | 1.646 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 1 | 3 | 0.214 | 0.099 | 0.318 | 0.632 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 3 | 9 | 0.214 | 0.108 | 0.318 | 0.641 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 5 | 16 | 0.22 | 0.126 | 0.318 | 0.665 |
+| L-1 C6 + gated STT + Azure neural 2000M-char commitment | 10 | 32 | 0.22 | 0.152 | 0.318 | 0.691 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 1 | 3 | 0.161 | 0.099 | 0.318 | 0.578 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 3 | 9 | 0.161 | 0.108 | 0.318 | 0.587 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 5 | 16 | 0.161 | 0.126 | 0.318 | 0.606 |
+| L-2 Azure STT 100K-h commitment gated + gpt-oss-120b@Groq + neural 2000M commitment | 10 | 32 | 0.161 | 0.152 | 0.318 | 0.632 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 1 | 3 | 0.879 | 0.099 | 0.637 | 1.614 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 3 | 9 | 0.879 | 0.108 | 0.637 | 1.623 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 5 | 16 | 0.879 | 0.126 | 0.637 | 1.642 |
+| U-1 C6 with transcription text at Google published $0.004/min (upper) | 10 | 32 | 0.879 | 0.152 | 0.637 | 1.668 |
+
+| config | responses_with_usage | computed_usd_from_tokens_x_list_price | openrouter_reported_usd | ratio_reported_over_computed |
+|---|---|---|---|---|
+| C3_az_or_azhd | 102 | 0.021721 | 0.021721 | 1.0 |
+| C6_gtl_or_azneural | 105 | 0.021639 | 0.021639 | 1.0 |
+| C6_gtl_or_azneural+gatedSTT | 48 | 0.009791 | 0.009791 | 1.0 |
+
+GATE_RATIO (gated STT seconds sent / caller clip seconds) = 1.186 | G5 TTS text-in tokens per request = 27.4 | TTFB p50 lite/flash = 857 1094
+## side by side
+| stack | type | vantage | tier | first_audio_p50_ms | p50_ci95_call_cluster | p90_ms | n_turns | talk_over_or_cutin_main | elderly_pause_cutin | ai_inr_per_min_1 | ai_inr_per_min_3 | ai_inr_per_min_5 | ai_inr_per_min_10 | text_gate_before_audio |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C1 Azure STT + gpt-4.1-mini + Azure neural | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1026 | 1017-1035 | 1143 | 58 | 16/60 | 12/12 | 2.158 | 2.187 | 2.216 | 2.289 | yes (every clause passes the code gate before TTS) |
+| C2 Azure STT + gpt-4.1-mini + Azure DragonHD | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1133 | 1118-1140 | 1231 | 58 | 9/60 | 12/12 | 2.674 | 2.703 | 2.733 | 2.806 | yes (every clause passes the code gate before TTS) |
+| C3 Azure STT + gpt-oss-120b@Groq + Azure DragonHD | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1044 | 1029-1077 | 1230 | 57 | 16/60 | 12/12 | 2.632 | 2.659 | 2.686 | 2.753 | yes (every clause passes the code gate before TTS) |
+| C6 transcribe-live + gpt-oss-120b@Groq + Azure neural | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1031 | 1010-1052 | 1404 | 60 | 19/60 | 12/12 | 1.164 | 1.189 | 1.214 | 1.277 | yes (every clause passes the code gate before TTS) |
+| C6+gated: same, VAD-gated STT | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1038 | 990-1163 | 1453 | 30 | 7/30 | 6/6 | 0.878 | 0.893 | 0.908 | 0.945 | yes (every clause passes the code gate before TTS) |
+| C7 Azure STT + gemini-3.5-flash-lite + Azure neural | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1568 | 1514-1602 | 1790 | 56 | 2/60 | 12/12 | 2.408 | 2.455 | 2.501 | 2.617 | yes (every clause passes the code gate before TTS) |
+| C8 transcribe-live + gemini-3.5-flash-lite + Azure neural | cascade (gated text, measured) | Central India VM | paid list price; LLM/STT free tier where Gemini | 1688 | 1654-1718 | 1789 | 59 | 2/60 | 12/12 | 1.46 | 1.507 | 1.554 | 1.673 | yes (every clause passes the code gate before TTS) |
+| G-A all-Gemini lite: transcribe-live + 3.5-flash-lite + 3.8-flash-lite-tts | cascade with Gemini TTS (computed composite) | Central India VM (components) | TTS paid (g5); STT/LLM as measured | 2532 | 2498-2566 | 2722 | 59 | not measured | see composite_gemini_tts_pause_counterfactual.csv | 1.51 | 1.557 | 1.604 | 1.723 | yes |
+| G-B all-Gemini: transcribe-live + 3.5-flash-lite + 3.8-flash-tts | cascade with Gemini TTS (computed composite) | Central India VM (components) | TTS paid (g5); STT/LLM as measured | 2755 | 2699-2791 | 2972 | 59 | not measured | see composite_gemini_tts_pause_counterfactual.csv | 1.69 | 1.737 | 1.784 | 1.902 | yes |
+| G-C mixed: Azure STT + 3.5-flash-lite + 3.8-flash-lite-tts | cascade with Gemini TTS (computed composite) | Central India VM (components) | TTS paid (g5); STT/LLM as measured | 2413 | 2362-2468 | 2708 | 56 | not measured | see composite_gemini_tts_pause_counterfactual.csv | 2.452 | 2.498 | 2.544 | 2.66 | yes |
+| G-D mixed cheap LLM: Azure STT + gpt-oss-120b@Groq + 3.8-flash-lite-tts | cascade with Gemini TTS (computed composite) | Central India VM (components) | TTS paid (g5); STT/LLM as measured | 1842 | 1782-1901 | 2180 | 57 | not measured | see composite_gemini_tts_pause_counterfactual.csv | 2.12 | 2.147 | 2.174 | 2.241 | yes |
+| Gemini Live 3.1-flash-live, compression off | speech-to-speech (g5, measured) | Central India VM | paid | 1950 | 1705-2125 | 5299 | 33 | 4/37 (talk-over, all turns incl. pause; excluded from p50) | 6/6 | 2.47 | 4.71 | 6.85 | 10.74 | transcript arrives with first audio (g5); gate possible only by buffering |
+| Gemini Live 3.1-flash-live, compression on (trigger 6000, target 3000) | speech-to-speech (g5, measured) | Central India VM | paid | 1950 | 1705-2125 | 5299 | 33 | 4/37 (talk-over, all turns incl. pause; excluded from p50) | 6/6 | 2.55 | 4.19 | 5.34 | 6.38 | transcript arrives with first audio (g5); gate possible only by buffering |
+| Gemini Live 3.8-live, compression off | speech-to-speech (g5, measured) | Central India VM | paid | 1006 | 950-1253 | 1524 | 30 | 22/53 (talk-over, all turns incl. pause; excluded from p50) | 8/8 | 3.31 | 5.72 | 8.05 | 12.7 | transcript arrives with first audio (g5); gate possible only by buffering |
+| Gemini Live 3.8-live, compression on (trigger 6000, target 3000) | speech-to-speech (g5, measured) | Central India VM | paid | 1006 | 950-1253 | 1524 | 30 | 22/53 (talk-over, all turns incl. pause; excluded from p50) | 8/8 | 3.34 | 5.72 | 7.94 | 9.05 | transcript arrives with first audio (g5); gate possible only by buffering |
+
+## TTS at equal content
+| agent_chars_per_min | tts | speaking_rate_chars_per_s | agent_audio_s_per_min | inr_per_connected_min |
+|---|---|---|---|---|
+| 240 | Azure neural PAYG ($15/1M chars) |  |  | 0.342 |
+| 240 | Azure neural 2000M-char commitment ($7.50/1M) |  |  | 0.171 |
+| 240 | Azure DragonHD / Neural HD PAYG ($22/1M) |  |  | 0.502 |
+| 240 | gemini-3.8-flash-lite-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5) | 11.37 | 22.4 | 0.325 |
+| 240 | gemini-3.8-flash-lite-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5) | 11.37 | 22.4 | 0.65 |
+| 240 | gemini-3.8-flash-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5) | 13.99 | 18.4 | 0.4 |
+| 240 | gemini-3.8-flash-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5) | 13.99 | 18.4 | 0.8 |
+| 400 | Azure neural PAYG ($15/1M chars) |  |  | 0.57 |
+| 400 | Azure neural 2000M-char commitment ($7.50/1M) |  |  | 0.285 |
+| 400 | Azure DragonHD / Neural HD PAYG ($22/1M) |  |  | 0.836 |
+| 400 | gemini-3.8-flash-lite-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5) | 11.37 | 36.4 | 0.526 |
+| 400 | gemini-3.8-flash-lite-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5) | 11.37 | 36.4 | 1.051 |
+| 400 | gemini-3.8-flash-tts (2026 price; 25 tok/s; +0.25 s lead per request x 5) | 13.99 | 29.8 | 0.644 |
+| 400 | gemini-3.8-flash-tts (2027 price; 25 tok/s; +0.25 s lead per request x 5) | 13.99 | 29.8 | 1.289 |
+
+## AI budget
+| gst_treatment | net_revenue_inr_per_min | gross_margin | telephony_inr_per_min | allowed_ai_inr_per_min |
+|---|---|---|---|---|
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.4 | 0.38 | 0.82 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.4 | 0.43 | 0.77 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.4 | 0.48 | 0.72 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.5 | 0.38 | 0.62 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.5 | 0.43 | 0.57 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.5 | 0.48 | 0.52 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.6 | 0.38 | 0.42 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.6 | 0.43 | 0.37 |
+| price ex-GST (B2B, GST added on top) | 2.0 | 0.6 | 0.48 | 0.32 |
+| price GST-inclusive (18% inside) | 1.695 | 0.4 | 0.38 | 0.637 |
+| price GST-inclusive (18% inside) | 1.695 | 0.4 | 0.43 | 0.587 |
+| price GST-inclusive (18% inside) | 1.695 | 0.4 | 0.48 | 0.537 |
+| price GST-inclusive (18% inside) | 1.695 | 0.5 | 0.38 | 0.467 |
+| price GST-inclusive (18% inside) | 1.695 | 0.5 | 0.43 | 0.417 |
+| price GST-inclusive (18% inside) | 1.695 | 0.5 | 0.48 | 0.367 |
+| price GST-inclusive (18% inside) | 1.695 | 0.6 | 0.38 | 0.298 |
+| price GST-inclusive (18% inside) | 1.695 | 0.6 | 0.43 | 0.248 |
+| price GST-inclusive (18% inside) | 1.695 | 0.6 | 0.48 | 0.198 |
+

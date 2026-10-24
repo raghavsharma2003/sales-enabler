@@ -1,0 +1,22 @@
+{
+ "ok": true,
+ "checks": {
+  "shipped prompt is byte-identical to the measured one": true,
+  "r5-outcome-first names the shipped prompt": true,
+  "the client rule sits directly after the OUTCOME block": true,
+  "the OUTCOME block comes before KIND": true,
+  "a client rule changes nothing else": true
+ },
+ "shippedSha256": "ba7656b71f84c22073e2ec04683957640710b8011262af55bc163fbcfc642fbb",
+ "measuredSha256": "ba7656b71f84c22073e2ec04683957640710b8011262af55bc163fbcfc642fbb",
+ "chars": {
+  "current": 2817,
+  "r5-kinds-first": 2817,
+  "r4-table": 2611,
+  "r3-stance": 2362,
+  "no-outcome-rules": 1976,
+  "r5-short-objection": 2639,
+  "r5-outcome-first": 2817,
+  "r5-moment-not-outcome": 2941
+ }
+}

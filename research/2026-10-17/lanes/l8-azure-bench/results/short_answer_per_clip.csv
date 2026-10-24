@@ -1,0 +1,225 @@
+engine,uid,ref,hyp,correct
+fast,short_01_swara,हाँ जी,हाँ जी।,True
+fast,short_00_swara,हाँ,हाँ।,True
+fast,short_00_madhur,हाँ,हाँ।,True
+fast,short_02_ananya,जी,जी।,True
+fast,short_01_aarav,हाँ जी,हाँ जी।,True
+fast,short_02_aarav,जी,जी।,True
+fast,short_03_ananya,ओके,ओके.,True
+fast,short_03_madhur,ओके,ओके,True
+fast,short_04_madhur,हम्म,हम।,True
+fast,short_04_swara,हम्म,हम।,True
+fast,short_05_swara,नहीं,नहीं।,True
+fast,short_05_aarav,नहीं,नहीं।,True
+fast,short_06_aarav,ठीक है,ठीक है।,True
+fast,short_06_ananya,ठीक है,ठीक है।,True
+fast,short_07_ananya,बिल्कुल,बिलकुल।,True
+fast,short_08_madhur,अच्छा,अच्छा।,True
+fast,short_07_madhur,बिल्कुल,बिलकुल।,True
+fast,short_08_swara,अच्छा,अच्छा।,True
+fast,short_09_swara,हाँ बोलिए,हाँ बोलिए।,True
+fast,short_09_aarav,हाँ बोलिए,"हाँ, बोलिए।",True
+fast,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+fast,short_11_madhur,कल,कल,True
+fast,short_10_ananya,नहीं चाहिए,नहीं चाहिए।,True
+fast,short_11_ananya,कल,कल,True
+fast,short_12_madhur,दो बजे,2:00 बजे।,False
+fast,short_13_swara,हैलो,हैलो।,True
+fast,short_12_swara,दो बजे,2:00 बजे।,False
+fast,short_13_aarav,हैलो,हैलो।,True
+fast,short_14_aarav,कौन,कौन?,True
+fast,short_14_ananya,कौन,कौन?,True
+fast,short_15_ananya,चलेगा,चलेगा।,True
+fast,short_15_madhur,चलेगा,चलेगा।,True
+fast_llm,short_00_swara,हाँ,हाँ।,True
+fast_llm,short_00_madhur,हाँ,Ha.,True
+fast_llm,short_01_swara,हाँ जी,हाँ जी।,True
+fast_llm,short_01_aarav,हाँ जी,Haji.,True
+fast_llm,short_02_aarav,जी,G.,False
+fast_llm,short_02_ananya,जी,जी।,True
+fast_llm,short_03_ananya,ओके,Okay.,True
+fast_llm,short_03_madhur,ओके,Okay.,True
+fast_llm,short_04_madhur,हम्म,هم؟,False
+fast_llm,short_04_swara,हम्म,هم؟,False
+fast_llm,short_05_aarav,नहीं,नहीं।,True
+fast_llm,short_05_swara,नहीं,नहीं।,True
+fast_llm,short_06_aarav,ठीक है,Tea cup.,False
+fast_llm,short_07_ananya,बिल्कुल,بالكل.,False
+fast_llm,short_06_ananya,ठीक है,TK,False
+fast_llm,short_07_madhur,बिल्कुल,बिल्कुल।,True
+fast_llm,short_08_swara,अच्छा,अच्छा।,True
+fast_llm,short_08_madhur,अच्छा,अच्छा।,True
+fast_llm,short_09_swara,हाँ बोलिए,हाँ बोलिए।,True
+fast_llm,short_09_aarav,हाँ बोलिए,"हाँ, बोलिए।",True
+fast_llm,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+fast_llm,short_10_ananya,नहीं चाहिए,नहीं चाहिए।,True
+fast_llm,short_11_ananya,कल,Call.,False
+fast_llm,short_11_madhur,कल,Go?,False
+fast_llm,short_12_swara,दो बजे,2:00 बजे।,False
+fast_llm,short_12_madhur,दो बजे,2:00 बजे।,False
+fast_llm,short_13_swara,हैलो,हलो।,True
+fast_llm,short_13_aarav,हैलो,Hello.,True
+fast_llm,short_14_aarav,कौन,कौन?,True
+fast_llm,short_14_ananya,कौन,Gone.,False
+fast_llm,short_15_ananya,चलेगा,Chaliga.,False
+fast_llm,short_15_madhur,चलेगा,चलेगा।,True
+gpt4o,short_00_madhur,हाँ,Huh?,False
+gpt4o,short_00_swara,हाँ,हाँ,True
+gpt4o,short_01_swara,हाँ जी,हाँ जी।,True
+gpt4o,short_02_aarav,जी,G,False
+gpt4o,short_01_aarav,हाँ जी,हाजी।,False
+gpt4o,short_02_ananya,जी,G,False
+gpt4o,short_03_ananya,ओके,Ok.,True
+gpt4o,short_03_madhur,ओके,Ok.,True
+gpt4o,short_04_madhur,हम्म,Hamma.,False
+gpt4o,short_05_swara,नहीं,नहीं।,True
+gpt4o,short_04_swara,हम्म,حما.,False
+gpt4o,short_05_aarav,नहीं,नहीं,True
+gpt4o,short_06_ananya,ठीक है,TK,False
+gpt4o,short_06_aarav,ठीक है,Tike.,False
+gpt4o,short_07_ananya,बिल्कुल,بالکل۔,False
+gpt4o,short_07_madhur,बिल्कुल,بلکل,False
+gpt4o,short_08_madhur,अच्छा,A ca.,False
+gpt4o,short_08_swara,अच्छा,अच्छा।,True
+gpt4o,short_09_aarav,हाँ बोलिए,हा बोलीये.,False
+gpt4o,short_09_swara,हाँ बोलिए,हाँ बोलिए।,True
+gpt4o,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+gpt4o,short_11_ananya,कल,कल,True
+gpt4o,short_10_ananya,नहीं चाहिए,नहीं चाहिए.,True
+gpt4o,short_11_madhur,कल,kal,True
+gpt4o,short_12_madhur,दो बजे,दो बजे,True
+gpt4o,short_12_swara,दो बजे,दो बजे,True
+gpt4o,short_13_swara,हैलो,Hallo,False
+gpt4o,short_13_aarav,हैलो,Hallo.,False
+gpt4o,short_14_aarav,कौन,Kon,True
+gpt4o,short_14_ananya,कौन,Gone.,False
+gpt4o,short_15_ananya,चलेगा,這裡搞。,False
+gpt4o,short_15_madhur,चलेगा,चलेगा,True
+gpt4omini,short_00_madhur,हाँ,하?,False
+gpt4omini,short_00_swara,हाँ,हाँ।,True
+gpt4omini,short_01_swara,हाँ जी,ہاں جی,False
+gpt4omini,short_01_aarav,हाँ जी,Hajji,False
+gpt4omini,short_02_aarav,जी,G,False
+gpt4omini,short_02_ananya,जी,G,False
+gpt4omini,short_03_ananya,ओके,OK.,True
+gpt4omini,short_03_madhur,ओके,OK.,True
+gpt4omini,short_04_madhur,हम्म,Hamma?,False
+gpt4omini,short_04_swara,हम्म,Hamba.,False
+gpt4omini,short_05_swara,नहीं,नहीं।,True
+gpt4omini,short_05_aarav,नहीं,नहीं।,True
+gpt4omini,short_06_aarav,ठीक है,Tike.,False
+gpt4omini,short_06_ananya,ठीक है,Tíkhe.,False
+gpt4omini,short_07_ananya,बिल्कुल,بالکل,False
+gpt4omini,short_08_madhur,अच्छा,अच्छा,True
+gpt4omini,short_07_madhur,बिल्कुल,بالکل,False
+gpt4omini,short_08_swara,अच्छा,اچھا,False
+gpt4omini,short_09_swara,हाँ बोलिए,हाँ बोलिए।,True
+gpt4omini,short_09_aarav,हाँ बोलिए,हाँ बोलिए,True
+gpt4omini,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+gpt4omini,short_11_madhur,कल,کل,False
+gpt4omini,short_11_ananya,कल,कल,True
+gpt4omini,short_10_ananya,नहीं चाहिए,नहीं चाहिए।,True
+gpt4omini,short_12_madhur,दो बजे,दो बजे,True
+gpt4omini,short_13_swara,हैलो,हॅलो.,False
+gpt4omini,short_12_swara,दो बजे,दो बजे,True
+gpt4omini,short_13_aarav,हैलो,Hallo.,False
+gpt4omini,short_14_aarav,कौन,Con?,False
+gpt4omini,short_14_ananya,कौन,Gone.,False
+gpt4omini,short_15_madhur,चलेगा,चलेगा।,True
+gpt4omini,short_15_ananya,चलेगा,这不搞。,False
+mai2,short_00_swara,हाँ,हाँ।,True
+mai2,short_00_madhur,हाँ,Huh?,False
+mai2,short_01_swara,हाँ जी,हाँ जी।,True
+mai2,short_02_aarav,जी,जी।,True
+mai2,short_01_aarav,हाँ जी,हाँ जी।,True
+mai2,short_02_ananya,जी,जी।,True
+mai2,short_04_madhur,हम्म,ハンマ。,False
+mai2,short_03_ananya,ओके,Okay.,True
+mai2,short_03_madhur,ओके,Okay.,True
+mai2,short_05_swara,नहीं,नहीं!,True
+mai2,short_04_swara,हम्म,हम,True
+mai2,short_05_aarav,नहीं,नहीं।,True
+mai2,short_06_ananya,ठीक है,ठीक है।,True
+mai2,short_07_ananya,बिल्कुल,बिल्कुल।,True
+mai2,short_06_aarav,ठीक है,ठीक है।,True
+mai2,short_07_madhur,बिल्कुल,बिल्कुल।,True
+mai2,short_08_madhur,अच्छा,अच्छा।,True
+mai2,short_08_swara,अच्छा,अच्छा।,True
+mai2,short_09_swara,हाँ बोलिए,"हाँ, बोलिए।",True
+mai2,short_09_aarav,हाँ बोलिए,हाँ बोलिए।,True
+mai2,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+mai2,short_11_ananya,कल,कल।,True
+mai2,short_10_ananya,नहीं चाहिए,नहीं चाहिए।,True
+mai2,short_11_madhur,कल,कल?,True
+mai2,short_12_swara,दो बजे,2 बजे।,True
+mai2,short_12_madhur,दो बजे,2 बजे।,True
+mai2,short_13_swara,हैलो,Hallo.,False
+mai2,short_13_aarav,हैलो,Hello.,True
+mai2,short_14_aarav,कौन,Con,False
+mai2,short_14_ananya,कौन,कौन?,True
+mai2,short_15_ananya,चलेगा,चलेगा।,True
+mai2,short_15_madhur,चलेगा,चलेगा।,True
+mai2_loc,short_00_swara,हाँ,हाँ।,True
+mai2_loc,short_01_aarav,हाँ जी,हाँ जी।,True
+mai2_loc,short_01_swara,हाँ जी,हाँ जी।,True
+mai2_loc,short_00_madhur,हाँ,हाँ?,True
+mai2_loc,short_02_ananya,जी,जी।,True
+mai2_loc,short_03_ananya,ओके,ओके।,True
+mai2_loc,short_02_aarav,जी,जी।,True
+mai2_loc,short_03_madhur,ओके,ओके।,True
+mai2_loc,short_04_madhur,हम्म,हम्म।,True
+mai2_loc,short_05_swara,नहीं,नहीं!,True
+mai2_loc,short_05_aarav,नहीं,नहीं।,True
+mai2_loc,short_04_swara,हम्म,हम,True
+mai2_loc,short_06_aarav,ठीक है,ठीक है।,True
+mai2_loc,short_07_madhur,बिल्कुल,बिल्कुल।,True
+mai2_loc,short_07_ananya,बिल्कुल,बिल्कुल।,True
+mai2_loc,short_06_ananya,ठीक है,ठीक है।,True
+mai2_loc,short_08_madhur,अच्छा,अच्छा।,True
+mai2_loc,short_08_swara,अच्छा,अच्छा।,True
+mai2_loc,short_09_aarav,हाँ बोलिए,हाँ बोलिए।,True
+mai2_loc,short_09_swara,हाँ बोलिए,हाँ बोलिए।,True
+mai2_loc,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+mai2_loc,short_10_ananya,नहीं चाहिए,नहीं चाहिए।,True
+mai2_loc,short_11_madhur,कल,कल?,True
+mai2_loc,short_11_ananya,कल,कल।,True
+mai2_loc,short_12_madhur,दो बजे,2 बजे।,True
+mai2_loc,short_12_swara,दो बजे,2 बजे।,True
+mai2_loc,short_13_swara,हैलो,हैलो।,True
+mai2_loc,short_13_aarav,हैलो,हेलो।,True
+mai2_loc,short_14_aarav,कौन,कौन?,True
+mai2_loc,short_14_ananya,कौन,कौन?,True
+mai2_loc,short_15_ananya,चलेगा,चलेगा।,True
+mai2_loc,short_15_madhur,चलेगा,चलेगा।,True
+rt,short_00_swara,हाँ,हाँ।,True
+rt,short_00_madhur,हाँ,हाँ।,True
+rt,short_01_swara,हाँ जी,हाँ जी।,True
+rt,short_02_aarav,जी,जी।,True
+rt,short_01_aarav,हाँ जी,हाँ जी।,True
+rt,short_02_ananya,जी,जी।,True
+rt,short_03_madhur,ओके,ओके?,True
+rt,short_03_ananya,ओके,ओके?,True
+rt,short_04_madhur,हम्म,हम।,True
+rt,short_04_swara,हम्म,हम।,True
+rt,short_05_swara,नहीं,नहीं।,True
+rt,short_05_aarav,नहीं,नहीं।,True
+rt,short_06_aarav,ठीक है,ठीक है।,True
+rt,short_06_ananya,ठीक है,ठीक है।,True
+rt,short_07_ananya,बिल्कुल,बिलकुल।,True
+rt,short_07_madhur,बिल्कुल,बिलकुल।,True
+rt,short_08_madhur,अच्छा,अच्छा।,True
+rt,short_08_swara,अच्छा,अच्छा।,True
+rt,short_09_swara,हाँ बोलिए,हाँ बोलिए।,True
+rt,short_09_aarav,हाँ बोलिए,हाँ बोलिए।,True
+rt,short_10_aarav,नहीं चाहिए,नहीं चाहिए।,True
+rt,short_10_ananya,नहीं चाहिए,नहीं चाहिए।,True
+rt,short_11_ananya,कल,कल।,True
+rt,short_11_madhur,कल,कल।,True
+rt,short_12_madhur,दो बजे,2:00 बजे।,False
+rt,short_12_swara,दो बजे,2:00 बजे।,False
+rt,short_13_swara,हैलो,हैलो।,True
+rt,short_13_aarav,हैलो,हैलो।,True
+rt,short_14_aarav,कौन,कौन?,True
+rt,short_14_ananya,कौन,कौन?,True
+rt,short_15_ananya,चलेगा,चलेगा।,True
+rt,short_15_madhur,चलेगा,चलेगा।,True

@@ -1,0 +1,1830 @@
+{
+ "generatedAt": "2026-10-24T04:19:29.631Z",
+ "mode": "real",
+ "model": "gpt-4.1-mini (gpt-4.1-mini-2025-04-14)",
+ "split": "dev",
+ "promptVariant": "r5-short-objection",
+ "judge": false,
+ "truncated": false,
+ "analysisSetting": {
+  "mode": "single",
+  "model": "gpt-4.1-mini",
+  "escalateModel": null,
+  "threshold": 0.6
+ },
+ "tier": null,
+ "cases": {
+  "run": 42,
+  "planned": 42,
+  "templates": 12,
+  "languages": [
+   "hinglish",
+   "tamil-english",
+   "bengali-english",
+   "marathi-english"
+  ]
+ },
+ "fields": {
+  "outcome": {
+   "k": 40,
+   "n": 42,
+   "rate": 0.9523809523809523,
+   "ci95": [
+    0.8421014748159645,
+    0.9868424752096869
+   ]
+  },
+  "reasonCode": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "reasonCodeModelRefined": {
+   "k": 29,
+   "n": 29,
+   "rate": 1,
+   "ci95": [
+    0.8830301998708162,
+    1
+   ]
+  },
+  "reasonCodeCodeDecided": {
+   "k": 13,
+   "n": 13,
+   "rate": 1,
+   "ci95": [
+    0.7719046248681997,
+    1
+   ]
+  },
+  "momentRecall": {
+   "k": 34,
+   "n": 36,
+   "rate": 0.9444444444444444,
+   "ci95": [
+    0.8185534265532164,
+    0.9846300134744462
+   ]
+  },
+  "objectionRecall": {
+   "k": 9,
+   "n": 11,
+   "rate": 0.8181818181818182,
+   "ci95": [
+    0.5230194356457672,
+    0.9486323107214163
+   ]
+  },
+  "outcomeComplaint": {
+   "k": 1,
+   "n": 3,
+   "rate": 0.3333333333333333,
+   "ci95": [
+    0.061491944020930805,
+    0.7923404011921757
+   ]
+  },
+  "outcomeWrongPerson": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "allMomentsFound": {
+   "k": 40,
+   "n": 42,
+   "rate": 0.9523809523809523,
+   "ci95": [
+    0.8421014748159645,
+    0.9868424752096869
+   ]
+  },
+  "crisis": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "crisisRecall": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "optOutByAnalysis": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "optOutRecallByAnalysis": {
+   "k": 4,
+   "n": 4,
+   "rate": 1,
+   "ci95": [
+    0.5101091596030786,
+    0.9999999999999999
+   ]
+  },
+  "optOutRecallByFloor": {
+   "k": 4,
+   "n": 4,
+   "rate": 1,
+   "ci95": [
+    0.5101091596030786,
+    0.9999999999999999
+   ]
+  },
+  "followUps": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  }
+ },
+ "grounding": {
+  "k": 104,
+  "n": 104,
+  "rate": 1,
+  "ci95": [
+   0.9643786450856121,
+   0.9999999999999998
+  ]
+ },
+ "cost": {
+  "modelCalls": 39,
+  "inputTokens": 28128,
+  "outputTokens": 4391,
+  "tokensPerCall": 833.8205128205128,
+  "inrPerCall": 0.04897245128205128,
+  "priced": true
+ },
+ "cross": {
+  "calls": 20,
+  "callsSampled": 20,
+  "themesReturned": 3,
+  "themeRecall": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "recalled": [
+   "price",
+   "already_have",
+   "trust"
+  ],
+  "pureThemes": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "quotesVerbatim": {
+   "k": 9,
+   "n": 9,
+   "rate": 1,
+   "ci95": [
+    0.700854948272956,
+    1
+   ]
+  },
+  "themesDropped": 0,
+  "usage": {
+   "inputTokens": 2694,
+   "outputTokens": 328
+  },
+  "funnel": {
+   "agentVersionId": null,
+   "dialled": 20,
+   "connected": 20,
+   "talked": 20,
+   "goalReached": 5,
+   "goalByGrade": {
+    "verified": 0,
+    "manager": 0,
+    "ai_guess": 5
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "agreed.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "agreed",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "agreed",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "agreed",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "callback",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "callback",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "callback",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_OBJECTION_UNRESOLVED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_OBJECTION_UNRESOLVED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_OBJECTION_UNRESOLVED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "wrong_person",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "wrong_person",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "wrong_person",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "complaint",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_COMPLAINT",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "complaint",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "complaint",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "question_then_agreed",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "question_then_agreed",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "question_then_agreed",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "language_mismatch",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "language_mismatch",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "language_mismatch",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "crisis",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "crisis",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "crisis",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "objection"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "early_hangup",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "early_hangup",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "early_hangup",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.lending.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "objection_resolved",
+   "industry": "lending",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.healthcare.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "objection_resolved",
+   "industry": "healthcare",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.telecom.hinglish",
+   "split": "dev",
+   "tier": null,
+   "template": "objection_resolved",
+   "industry": "telecom",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.lending.tamil-english",
+   "split": "dev",
+   "tier": null,
+   "template": "agreed",
+   "industry": "lending",
+   "language": "tamil-english",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.lending.tamil-english",
+   "split": "dev",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "lending",
+   "language": "tamil-english",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.healthcare.bengali-english",
+   "split": "dev",
+   "tier": null,
+   "template": "callback",
+   "industry": "healthcare",
+   "language": "bengali-english",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.healthcare.bengali-english",
+   "split": "dev",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "healthcare",
+   "language": "bengali-english",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.telecom.marathi-english",
+   "split": "dev",
+   "tier": null,
+   "template": "agreed",
+   "industry": "telecom",
+   "language": "marathi-english",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.telecom.marathi-english",
+   "split": "dev",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "telecom",
+   "language": "marathi-english",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  }
+ ],
+ "endpoint": "Azure OpenAI, Standard (regional, South India)",
+ "harness": {
+  "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+  "requests": 40,
+  "inputTokens": 30822,
+  "outputTokens": 4719,
+  "inr": 2.077,
+  "byModel": {
+   "gpt-4.1-mini": {
+    "requests": 40,
+    "inputTokens": 30822,
+    "outputTokens": 4719,
+    "inr": 2.077
+   }
+  },
+  "retries429": 0,
+  "httpErrors": 0,
+  "httpErrorDetails": [],
+  "networkErrors": 0,
+  "refusedByCap": 0,
+  "servedModels": [
+   "gpt-4.1-mini-2025-04-14"
+  ]
+ }
+}

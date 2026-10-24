@@ -1,0 +1,1201 @@
+{
+ "generated": "2026-10-20",
+ "lane": "radar",
+ "cadence": "weekly (Monday 06:00 IST suggested); new-entrant sweep monthly per the brief, weekly is cheap enough",
+ "how_to_run": "Re-fetch every url with the same curl options as research/2026-10-20/teardown/radar/code/probe.py (inputs: code/watch-candidates*.tsv, code/sweep-sources.tsv) (UA Chrome 141, -L, 40 s timeout) into a new dated folder under data/teardown/radar/; compare to baseline.sha256 first, then run diff_method only on changed files. Never log in, never submit forms.",
+ "deep_set": [
+  "bolna",
+  "elevenlabs",
+  "exotel",
+  "retell",
+  "sarvam",
+  "squadstack",
+  "synthflow",
+  "vapi"
+ ],
+ "items": [
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://www.bolna.ai/pricing",
+   "final_url": "https://www.bolna.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 136910,
+    "sha256": "1ec51da8a1e18df46340baeabeb0c4a47499ed508d7569b1a61e915def869c37",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__pricing__www.bolna.ai_pricing",
+    "fetched_at": "2026-10-20T16:44:10Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "changelog",
+   "url": "https://www.bolna.ai/docs/changelog",
+   "final_url": "https://www.bolna.ai/docs/changelog/october-2026",
+   "diff_method": "html-to-text; alert on new dated headings since the last run; keep the entry titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 374522,
+    "sha256": "c3e9a2f8af86da4ec20bc2ba44c0ebf0d3145e11f1f1cd06099a0f89bd297b77",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__changelog__www.bolna.ai_docs_changelog",
+    "fetched_at": "2026-10-20T16:44:10Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://www.bolna.ai/docs/llms.txt",
+   "final_url": "https://www.bolna.ai/docs/llms.txt",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 40888,
+    "sha256": "b7ab9860dd53f9119145704d426d4b66f23534718ea4a52b6044ab99986b4c35",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__docs-index__www.bolna.ai_docs_llms.txt",
+    "fetched_at": "2026-10-20T16:44:12Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "docs-sitemap",
+   "url": "https://www.bolna.ai/docs/sitemap.xml",
+   "final_url": "https://www.bolna.ai/docs/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff; alert on new paths",
+   "baseline": {
+    "status": "200",
+    "bytes": 66763,
+    "sha256": "6d87b3c8bee899980d5ae10167089c7478dd22558cb35bdf1941e30020bc8829",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__docs-sitemap__www.bolna.ai_docs_sitemap.xml",
+    "fetched_at": "2026-10-20T16:44:12Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.bolna.ai/feed.rss",
+   "final_url": "https://status.bolna.ai/feed.rss",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 84795,
+    "sha256": "99f7d2326b176dfda7c065e861f71c0c92ea48f6b21c51226ea132161fb2ee5b",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__status__status.bolna.ai_feed.rss",
+    "fetched_at": "2026-10-20T16:44:13Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "releases",
+   "url": "https://github.com/bolna-ai/bolna/releases.atom",
+   "final_url": "https://github.com/bolna-ai/bolna/releases.atom",
+   "diff_method": "Atom feed of tags (blocked from this sandbox: 403); use releases-pypi instead",
+   "baseline": {
+    "status": "403",
+    "bytes": 249,
+    "sha256": "7616419b9bf270d69874e3b82e043e4cb72f84772d301076751aa65fa9132be6",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__releases__github.com_bolna_ai_bolna_releases.atom",
+    "fetched_at": "2026-10-20T16:44:14Z"
+   },
+   "note": "github.com Atom returned 403 from this sandbox; PyPI release feed used instead."
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://www.sarvam.ai/products/voice-agents/pricing",
+   "final_url": "https://www.sarvam.ai/products/voice-agents/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 217056,
+    "sha256": "b1f7e789d2cfc5638bd41af669a314c5397474000be23a5f20fa1063d757f1cb",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__pricing__www.sarvam.ai_products_voice_agents_pricing",
+    "fetched_at": "2026-10-20T16:44:14Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "pricing-api",
+   "url": "https://www.sarvam.ai/api-pricing",
+   "final_url": "https://www.sarvam.ai/api-pricing",
+   "diff_method": "same as pricing",
+   "baseline": {
+    "status": "200",
+    "bytes": 307391,
+    "sha256": "6421fba2dc04347006dae557c9fc944e6d4374d689ea057b18f0264400b69e7c",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__pricing-api__www.sarvam.ai_api_pricing",
+    "fetched_at": "2026-10-20T16:44:15Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://docs.sarvam.ai/llms.txt",
+   "final_url": "https://docs.sarvam.ai/llms.txt",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 13868,
+    "sha256": "6d017bda1622220b5fa50a3c1bd47c4f4d82027357db86617046744d63c3297d",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__docs-index__docs.sarvam.ai_llms.txt",
+    "fetched_at": "2026-10-20T16:44:16Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "changelog",
+   "url": "https://docs.sarvam.ai/changelog",
+   "final_url": "https://docs.sarvam.ai/changelog",
+   "diff_method": "html-to-text; alert on new dated headings since the last run; keep the entry titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 320342,
+    "sha256": "672e32b94d179cd64d487dcad9d11044abe7fb77976cea08aa94fba8f956deb7",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__changelog__docs.sarvam.ai_changelog",
+    "fetched_at": "2026-10-20T16:44:17Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.sarvam.ai/",
+   "final_url": "https://status.sarvam.ai/",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 770168,
+    "sha256": "eaed80386f1edfeb4d372f88de5e114a4ab7b8aa7fdda8197afc62994801949a",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__status__status.sarvam.ai",
+    "fetched_at": "2026-10-20T16:44:18Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "sitemap",
+   "url": "https://www.sarvam.ai/sitemap.xml",
+   "final_url": "https://www.sarvam.ai/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff (follow sitemap index); alert on new paths under /pricing, /product, /changelog, /blog",
+   "baseline": {
+    "status": "404",
+    "bytes": 75971,
+    "sha256": "c4e7ba8a1a24b7a994adcfd7dc97532a393d1f689e9b767868b88b4adb9cb49e",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__sitemap__www.sarvam.ai_sitemap.xml",
+    "fetched_at": "2026-10-20T16:44:19Z"
+   },
+   "note": "returned 404 today; keep to detect when a sitemap appears, or drop."
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://vapi.ai/pricing",
+   "final_url": "https://vapi.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 235382,
+    "sha256": "18b9b22a45cf01c04880a24f11cc35c17f1c8055e4269c7114f2f755631f4149",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__pricing__vapi.ai_pricing",
+    "fetched_at": "2026-10-20T16:44:19Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://docs.vapi.ai/llms.txt",
+   "final_url": "https://docs.vapi.ai/llms.txt",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 86503,
+    "sha256": "bc29145d8e3dfb8e3e5afe086d9358c98d2befa3a22ac744283d5551f068ae00",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__docs-index__docs.vapi.ai_llms.txt",
+    "fetched_at": "2026-10-20T16:44:20Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "changelog",
+   "url": "https://docs.vapi.ai/changelog",
+   "final_url": "https://docs.vapi.ai/whats-new",
+   "diff_method": "html-to-text; alert on new dated headings since the last run; keep the entry titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 1060149,
+    "sha256": "f8aa9d9ac1da47e535b4ed9c71f4b938dfecb056db3d23a8f8ca4733b194033b",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__changelog__docs.vapi.ai_changelog",
+    "fetched_at": "2026-10-20T16:44:20Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.vapi.ai/",
+   "final_url": "https://status.vapi.ai/",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 865556,
+    "sha256": "d1364f335817303176dfa0a7add12affc330f2c4a3f25e11261ca4178e054124",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__status__status.vapi.ai",
+    "fetched_at": "2026-10-20T16:44:22Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "sdk",
+   "url": "https://registry.npmjs.org/@vapi-ai/web",
+   "final_url": "https://registry.npmjs.org/@vapi-ai/web",
+   "diff_method": "npm registry JSON: new dist-tags/versions since last run",
+   "baseline": {
+    "status": "200",
+    "bytes": 610771,
+    "sha256": "23a2875da68ed877d307d418c916207ec5b824b40e5c6d0d69938eba08533b9a",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__sdk__registry.npmjs.org_vapi_ai_web",
+    "fetched_at": "2026-10-20T16:44:23Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://www.retellai.com/pricing",
+   "final_url": "https://www.retellai.com/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 461252,
+    "sha256": "a489e78f31cee4b4e13ba13c7a5a303d87265af610a8b20b9b486b44f51e68b5",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__pricing__www.retellai.com_pricing",
+    "fetched_at": "2026-10-20T16:44:23Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://docs.retellai.com/llms.txt",
+   "final_url": "https://docs.retellai.com/llms.txt",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 74746,
+    "sha256": "195f934cac292623931b829832e74002e1ae1dc2c66a5269a903aec95611f12d",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__docs-index__docs.retellai.com_llms.txt",
+    "fetched_at": "2026-10-20T16:44:23Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "changelog",
+   "url": "https://www.retellai.com/changelog",
+   "final_url": "https://www.retellai.com/changelog",
+   "diff_method": "html-to-text; alert on new dated headings since the last run; keep the entry titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 553649,
+    "sha256": "b81a550c04a9d40f0910596ebba488f983475a8d79b76b8751080bfabec28ddd",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__changelog__www.retellai.com_changelog",
+    "fetched_at": "2026-10-20T16:44:23Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.retellai.com/",
+   "final_url": "https://status.retellai.com/",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 116232,
+    "sha256": "8e50d1ae7d35e664c314306b5f7baf3828029af6b0d93f70d8492d61f7c70642",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__status__status.retellai.com",
+    "fetched_at": "2026-10-20T16:44:24Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "sdk",
+   "url": "https://registry.npmjs.org/retell-sdk",
+   "final_url": "https://registry.npmjs.org/retell-sdk",
+   "diff_method": "npm registry JSON: new dist-tags/versions since last run",
+   "baseline": {
+    "status": "200",
+    "bytes": 1859360,
+    "sha256": "50dca8148cb55dded54c4a62ba2d987cde13c99e5b42088ef6d5ff6ad8b83cc5",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__sdk__registry.npmjs.org_retell_sdk",
+    "fetched_at": "2026-10-20T16:44:24Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://elevenlabs.io/pricing/api",
+   "final_url": "https://elevenlabs.io/pricing/api",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 927448,
+    "sha256": "6bb6a76d215c651564b68e62583a8af157296e4fc6804cde75b8a1cbc51a36fe",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__pricing__elevenlabs.io_pricing_api",
+    "fetched_at": "2026-10-20T16:44:24Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://elevenlabs.io/docs/llms.txt",
+   "final_url": "https://elevenlabs.io/docs/llms.txt",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 222804,
+    "sha256": "9d14031a02cc07d98162e3c3112586da88b863b53a12422901f2106ff131f98a",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__docs-index__elevenlabs.io_docs_llms.txt",
+    "fetched_at": "2026-10-20T16:44:24Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "changelog",
+   "url": "https://elevenlabs.io/docs/changelog",
+   "final_url": "https://elevenlabs.io/docs/changelog",
+   "diff_method": "html-to-text; alert on new dated headings since the last run; keep the entry titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 2670672,
+    "sha256": "2f8cd14dfec95ecfcabc64abb040d55b8cdac387a6635fc9ddcc9dcdfd80a179",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__changelog__elevenlabs.io_docs_changelog",
+    "fetched_at": "2026-10-20T16:44:25Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.elevenlabs.io/",
+   "final_url": "https://status.elevenlabs.io/",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 625743,
+    "sha256": "aae62e20c21b10d972c0050f466f25c67f330eb87ee529fe04f2a66920cf8fd8",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__status__status.elevenlabs.io",
+    "fetched_at": "2026-10-20T16:44:26Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "sdk",
+   "url": "https://registry.npmjs.org/@elevenlabs/client",
+   "final_url": "https://registry.npmjs.org/@elevenlabs/client",
+   "diff_method": "npm registry JSON: new dist-tags/versions since last run",
+   "baseline": {
+    "status": "200",
+    "bytes": 288113,
+    "sha256": "71fd2f0c956f387c1096db4f56e883c99bcb6f28949315da18a4f6cf1c9b1a1d",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__sdk__registry.npmjs.org_elevenlabs_client",
+    "fetched_at": "2026-10-20T16:44:27Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "synthflow",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://synthflow.ai/pricing",
+   "final_url": "https://synthflow.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 115596,
+    "sha256": "bdd0edbf51c2fe87ca66972e554bebf9686be7f451ffe6164498ddaa88cd2f29",
+    "path": "data/teardown/radar/_watchlist-baseline/synthflow__pricing__synthflow.ai_pricing",
+    "fetched_at": "2026-10-20T16:44:27Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "synthflow",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://docs.synthflow.ai/llms.txt",
+   "final_url": "https://docs.synthflow.ai/llms.txt",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 36142,
+    "sha256": "2cba22702788c9ac7cb2871a28e6dbae6cf02ef3dab4f45ba91b67ba1f726dd0",
+    "path": "data/teardown/radar/_watchlist-baseline/synthflow__docs-index__docs.synthflow.ai_llms.txt",
+    "fetched_at": "2026-10-20T16:44:27Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "synthflow",
+   "set": "deep",
+   "kind": "changelog",
+   "url": "https://docs.synthflow.ai/changelog",
+   "final_url": "https://docs.synthflow.ai/changelog",
+   "diff_method": "html-to-text; alert on new dated headings since the last run; keep the entry titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 274201,
+    "sha256": "d0f490b0eefdf26de87809dd5796d3952595ae493aa42749ce3206ed6337b386",
+    "path": "data/teardown/radar/_watchlist-baseline/synthflow__changelog__docs.synthflow.ai_changelog",
+    "fetched_at": "2026-10-20T16:44:28Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "synthflow",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.synthflow.ai/",
+   "final_url": "https://status.synthflow.ai/",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 530066,
+    "sha256": "c4982887df5f9748957ad85fe5e38014e74fb21658b418abd89f56b5e049ef18",
+    "path": "data/teardown/radar/_watchlist-baseline/synthflow__status__status.synthflow.ai",
+    "fetched_at": "2026-10-20T16:44:29Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "squadstack",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://www.squadstack.ai/pricing",
+   "final_url": "https://www.squadstack.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 184198,
+    "sha256": "46120e3b824591a0bb5cb609bb51e5034b89e90c9356ee70d46cd2b3a69b7448",
+    "path": "data/teardown/radar/_watchlist-baseline/squadstack__pricing__www.squadstack.ai_pricing",
+    "fetched_at": "2026-10-20T16:44:31Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "squadstack",
+   "set": "deep",
+   "kind": "sitemap",
+   "url": "https://www.squadstack.ai/sitemap.xml",
+   "final_url": "https://www.squadstack.ai/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff (follow sitemap index); alert on new paths under /pricing, /product, /changelog, /blog",
+   "baseline": {
+    "status": "200",
+    "bytes": 482808,
+    "sha256": "f7c52ad980441117163cd1a8817bc910fafbbbc7aa6e83c602e6457294165ba3",
+    "path": "data/teardown/radar/_watchlist-baseline/squadstack__sitemap__www.squadstack.ai_sitemap.xml",
+    "fetched_at": "2026-10-20T16:44:32Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "squadstack",
+   "set": "deep",
+   "kind": "blog",
+   "url": "https://www.squadstack.ai/blog",
+   "final_url": "https://www.squadstack.ai/blog",
+   "diff_method": "html-to-text; alert on new post titles",
+   "baseline": {
+    "status": "200",
+    "bytes": 160910,
+    "sha256": "1f0897093350c16a6455b7d92e6b28977d829e11ed775e67a84ebb04b57cb2ca",
+    "path": "data/teardown/radar/_watchlist-baseline/squadstack__blog__www.squadstack.ai_blog",
+    "fetched_at": "2026-10-20T16:44:32Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "pricing",
+   "url": "https://exotel.com/pricing/",
+   "final_url": "https://exotel.com/pricing/",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 157810,
+    "sha256": "31573a1ea8e697cc818c989e7519dfb1e685b47ead1d1e7be5231d1423ed0069",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__pricing__exotel.com_pricing",
+    "fetched_at": "2026-10-20T16:44:33Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "docs-index",
+   "url": "https://developer.exotel.com/",
+   "final_url": "https://developer.exotel.com/",
+   "diff_method": "llms.txt line-set diff; alert on added/removed doc URLs (new features show up here first)",
+   "baseline": {
+    "status": "200",
+    "bytes": 182494,
+    "sha256": "55d25bc9b0623cf811f7831aa12dc6a36cab71e619fd466a05680250f19235e3",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__docs-index__developer.exotel.com",
+    "fetched_at": "2026-10-20T16:44:33Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "docs",
+   "url": "https://docs.exotel.com/",
+   "final_url": "https://docs.exotel.com/",
+   "diff_method": "html-to-text; alert on nav changes",
+   "baseline": {
+    "status": "200",
+    "bytes": 129006,
+    "sha256": "feef57776fca7f212dc44a23912d2757bfbde65d6551e0d5be834396a443886e",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__docs__docs.exotel.com",
+    "fetched_at": "2026-10-20T16:44:35Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "status",
+   "url": "https://status.exotel.com/",
+   "final_url": "https://status.exotel.com/",
+   "diff_method": "parse incidents; alert on new incidents, and count per month by component (telephony / model / platform)",
+   "baseline": {
+    "status": "200",
+    "bytes": 151422,
+    "sha256": "bb37fae22733d4c019cbf48bfc11bf8ed38e6190e850737e1bc1cc698c5f13b9",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__status__status.exotel.com",
+    "fetched_at": "2026-10-20T16:44:35Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "newsroom",
+   "url": "https://exotel.com/newsroom/",
+   "final_url": "https://exotel.com/newsroom/",
+   "diff_method": "html-to-text; alert on new press items",
+   "baseline": {
+    "status": "200",
+    "bytes": 409602,
+    "sha256": "76da6cad5c9f6c56910419c4678283eea2b3f05431e41bbec3173bb697a2e18a",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__newsroom__exotel.com_newsroom",
+    "fetched_at": "2026-10-20T16:44:36Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "sitemap",
+   "url": "https://exotel.com/sitemap.xml",
+   "final_url": "https://exotel.com/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff (follow sitemap index); alert on new paths under /pricing, /product, /changelog, /blog",
+   "baseline": {
+    "status": "200",
+    "bytes": 843,
+    "sha256": "9475b3446ae937bfcf2313a2afdf8da968a8d89cf8b42809ff55fd83c33b72e7",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__sitemap__exotel.com_sitemap.xml",
+    "fetched_at": "2026-10-20T16:44:36Z"
+   },
+   "note": "sitemap index by market; follow ?market=in."
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "releases-pypi",
+   "url": "https://pypi.org/pypi/bolna/json",
+   "final_url": "https://pypi.org/pypi/bolna/json",
+   "diff_method": "PyPI JSON: new versions since last run (velocity = releases per 30 days)",
+   "baseline": {
+    "status": "200",
+    "bytes": 526312,
+    "sha256": "7f2e975a3f657be49360a7916d338b6e1bb39954ed025289a17cbe2541ab787b",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__releases-pypi__pypi.org_pypi_bolna_json",
+    "fetched_at": "2026-10-20T16:45:03Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "bolna",
+   "set": "deep",
+   "kind": "status-json",
+   "url": "https://status.bolna.ai/index.json",
+   "final_url": "https://status.bolna.ai/index.json",
+   "diff_method": "JSON incidents list: new ids since last run, with impact and components",
+   "baseline": {
+    "status": "200",
+    "bytes": 111595,
+    "sha256": "81e6be49ec54f1dff57cc4fc8022d86baa8f52d02acecd1dcac2044ec7befed7",
+    "path": "data/teardown/radar/_watchlist-baseline/bolna__status-json__status.bolna.ai_index.json",
+    "fetched_at": "2026-10-20T16:45:03Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "status-feed",
+   "url": "https://status.sarvam.ai/feed.rss",
+   "final_url": "https://status.sarvam.ai/feed.rss",
+   "diff_method": "RSS/Atom: new <item> guids since last run; classify title into telephony / model-provider / latency / scheduling / other",
+   "baseline": {
+    "status": "200",
+    "bytes": 24341,
+    "sha256": "eeb9117e9b3825735123cf086ad983a54beaa8154f073e9fb59b4a61f850264e",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__status-feed__status.sarvam.ai_feed.rss",
+    "fetched_at": "2026-10-20T16:45:04Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "sdk-pypi",
+   "url": "https://pypi.org/pypi/sarvamai/json",
+   "final_url": "https://pypi.org/pypi/sarvamai/json",
+   "diff_method": "PyPI JSON: new versions since last run",
+   "baseline": {
+    "status": "200",
+    "bytes": 293489,
+    "sha256": "a575654ea1a65c0a6aaa536891d034c56fcc5b7f068ac89ff29a82b8e909148a",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__sdk-pypi__pypi.org_pypi_sarvamai_json",
+    "fetched_at": "2026-10-20T16:45:05Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "status-feed",
+   "url": "https://status.vapi.ai/feed.rss",
+   "final_url": "https://status.vapi.ai/feed.rss",
+   "diff_method": "RSS/Atom: new <item> guids since last run; classify title into telephony / model-provider / latency / scheduling / other",
+   "baseline": {
+    "status": "200",
+    "bytes": 171544,
+    "sha256": "514fae00baa0164d0a622bcee29b7cfe1c50c9bc72511769aa65e8f7121c466d",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__status-feed__status.vapi.ai_feed.rss",
+    "fetched_at": "2026-10-20T16:45:05Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "status-json",
+   "url": "https://status.vapi.ai/index.json",
+   "final_url": "https://status.vapi.ai/index.json",
+   "diff_method": "JSON incidents list: new ids since last run, with impact and components",
+   "baseline": {
+    "status": "200",
+    "bytes": 308493,
+    "sha256": "b87a9f403dfae48913edc88471a828c75d2ef7f83d8eef620d1150d510ff3176",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__status-json__status.vapi.ai_index.json",
+    "fetched_at": "2026-10-20T16:45:06Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "status-json",
+   "url": "https://status.retellai.com/api/v2/incidents.json",
+   "final_url": "https://status.retellai.com/api/v2/incidents.json",
+   "diff_method": "JSON incidents list: new ids since last run, with impact and components",
+   "baseline": {
+    "status": "200",
+    "bytes": 110508,
+    "sha256": "8bffa075246d8fd0a70584a3ed8f911f1b1f51fb77974e50c573d6e67a7d963f",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__status-json__status.retellai.com_api_v2_incidents.json",
+    "fetched_at": "2026-10-20T16:45:07Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "status-feed",
+   "url": "https://status.retellai.com/history.rss",
+   "final_url": "https://status.retellai.com/history.rss",
+   "diff_method": "RSS/Atom: new <item> guids since last run; classify title into telephony / model-provider / latency / scheduling / other",
+   "baseline": {
+    "status": "200",
+    "bytes": 27290,
+    "sha256": "823568bfd1aa88859331fae1cd0349050c9a262b116c060bd9d9d44437d4ce6f",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__status-feed__status.retellai.com_history.rss",
+    "fetched_at": "2026-10-20T16:45:08Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "status-feed",
+   "url": "https://status.elevenlabs.io/feed.rss",
+   "final_url": "https://status.elevenlabs.io/feed.rss",
+   "diff_method": "RSS/Atom: new <item> guids since last run; classify title into telephony / model-provider / latency / scheduling / other",
+   "baseline": {
+    "status": "200",
+    "bytes": 26738,
+    "sha256": "869e16c72bbed0fd3cf5baf96c373c626c5df9072b8255a744320fafe11e7f09",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__status-feed__status.elevenlabs.io_feed.rss",
+    "fetched_at": "2026-10-20T16:45:09Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "synthflow",
+   "set": "deep",
+   "kind": "status-feed",
+   "url": "https://status.synthflow.ai/feed.rss",
+   "final_url": "https://status.synthflow.ai/feed.rss",
+   "diff_method": "RSS/Atom: new <item> guids since last run; classify title into telephony / model-provider / latency / scheduling / other",
+   "baseline": {
+    "status": "200",
+    "bytes": 17448,
+    "sha256": "de7c99829165272ce07de40beb03b1d385552730fb638705c0c5418556284e1a",
+    "path": "data/teardown/radar/_watchlist-baseline/synthflow__status-feed__status.synthflow.ai_feed.rss",
+    "fetched_at": "2026-10-20T16:45:10Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "status-json",
+   "url": "https://status.exotel.com/api/v2/incidents.json",
+   "final_url": "https://status.exotel.com/api/v2/incidents.json",
+   "diff_method": "JSON incidents list: new ids since last run, with impact and components",
+   "baseline": {
+    "status": "200",
+    "bytes": 6603,
+    "sha256": "30e5e45b7de63156babb3d6fd3d2880016a1e2159ecc76d2bf1a93890a7fc758",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__status-json__status.exotel.com_api_v2_incidents.json",
+    "fetched_at": "2026-10-20T16:45:11Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "status-feed",
+   "url": "https://status.exotel.com/history.rss",
+   "final_url": "https://status.exotel.com/history.rss",
+   "diff_method": "RSS/Atom: new <item> guids since last run; classify title into telephony / model-provider / latency / scheduling / other",
+   "baseline": {
+    "status": "200",
+    "bytes": 33016,
+    "sha256": "82f3f44090b17fbb961093f29d85ad8b9457b90a381803063410fc7b91d4e2e9",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__status-feed__status.exotel.com_history.rss",
+    "fetched_at": "2026-10-20T16:45:11Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "exotel",
+   "set": "deep",
+   "kind": "sitemap-in",
+   "url": "https://exotel.com/sitemap.xml?market=in",
+   "final_url": "https://exotel.com/sitemap.xml?market=in",
+   "diff_method": "sitemap <loc> set diff",
+   "baseline": {
+    "status": "200",
+    "bytes": 212900,
+    "sha256": "6bad70568f710d8bc9056a22cb13e8d7c69b64fb27b3d7240aa0793ea6f77fd1",
+    "path": "data/teardown/radar/_watchlist-baseline/exotel__sitemap-in__exotel.com_sitemap.xml_market_in",
+    "fetched_at": "2026-10-20T16:45:13Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "squadstack",
+   "set": "deep",
+   "kind": "docs",
+   "url": "https://docs.squadstack.ai/",
+   "final_url": "https://docs.squadstack.ai/",
+   "diff_method": "html-to-text; alert on nav changes",
+   "baseline": {
+    "status": "000",
+    "bytes": 0,
+    "sha256": "",
+    "path": "data/teardown/radar/_watchlist-baseline/squadstack__docs__docs.squadstack.ai",
+    "fetched_at": "2026-10-20T16:45:15Z"
+   },
+   "note": "docs.squadstack.ai CONNECT 502 from the sandbox today; retry weekly."
+  },
+  {
+   "vendor": "synthflow",
+   "set": "deep",
+   "kind": "sitemap",
+   "url": "https://synthflow.ai/sitemap.xml",
+   "final_url": "https://synthflow.ai/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff (follow sitemap index); alert on new paths under /pricing, /product, /changelog, /blog",
+   "baseline": {
+    "status": "200",
+    "bytes": 72362,
+    "sha256": "eb376ca144a17c86bfa81ef36d1244f20d8eee09a6524722bf012598774317f9",
+    "path": "data/teardown/radar/_watchlist-baseline/synthflow__sitemap__synthflow.ai_sitemap.xml",
+    "fetched_at": "2026-10-20T16:45:16Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "vapi",
+   "set": "deep",
+   "kind": "sitemap",
+   "url": "https://vapi.ai/sitemap.xml",
+   "final_url": "https://vapi.ai/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff (follow sitemap index); alert on new paths under /pricing, /product, /changelog, /blog",
+   "baseline": {
+    "status": "200",
+    "bytes": 41177,
+    "sha256": "b2a6ad503e55a4fe596c998538d044ddf76e2ca9ae5040f6967d68d39d68a8f9",
+    "path": "data/teardown/radar/_watchlist-baseline/vapi__sitemap__vapi.ai_sitemap.xml",
+    "fetched_at": "2026-10-20T16:45:16Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "retell",
+   "set": "deep",
+   "kind": "sitemap",
+   "url": "https://www.retellai.com/sitemap.xml",
+   "final_url": "https://www.retellai.com/sitemap.xml",
+   "diff_method": "sitemap <loc> set diff (follow sitemap index); alert on new paths under /pricing, /product, /changelog, /blog",
+   "baseline": {
+    "status": "200",
+    "bytes": 203849,
+    "sha256": "d6475484d50537de6cebe4535b04a042593fff20c14c09e053121157d6d73906",
+    "path": "data/teardown/radar/_watchlist-baseline/retell__sitemap__www.retellai.com_sitemap.xml",
+    "fetched_at": "2026-10-20T16:45:19Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "elevenlabs",
+   "set": "deep",
+   "kind": "pricing-agents",
+   "url": "https://elevenlabs.io/pricing",
+   "final_url": "https://elevenlabs.io/pricing",
+   "diff_method": "same as pricing",
+   "baseline": {
+    "status": "200",
+    "bytes": 628620,
+    "sha256": "486ecb19706f24e8bf537f10fa669129ba36decdf2c8f5963fe21158c84b3b0c",
+    "path": "data/teardown/radar/_watchlist-baseline/elevenlabs__pricing-agents__elevenlabs.io_pricing",
+    "fetched_at": "2026-10-20T16:45:19Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "sarvam",
+   "set": "deep",
+   "kind": "pricing-samvaad-docs",
+   "url": "https://docs.sarvam.ai/voice-agents/pricing",
+   "final_url": "https://docs.sarvam.ai/voice-agents/pricing",
+   "diff_method": "same as pricing (docs page)",
+   "baseline": {
+    "status": "200",
+    "bytes": 186430,
+    "sha256": "92a4491d7898989f87559c07fc149b171862dd3ee6dfa59cd0694b35e37f8185",
+    "path": "data/teardown/radar/_watchlist-baseline/sarvam__pricing-samvaad-docs__docs.sarvam.ai_voice_agents_pricing",
+    "fetched_at": "2026-10-20T16:45:20Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "pipecat",
+   "set": "radar",
+   "kind": "releases-pypi",
+   "url": "https://pypi.org/pypi/pipecat-ai/json",
+   "final_url": "https://pypi.org/pypi/pipecat-ai/json",
+   "diff_method": "PyPI JSON: new versions since last run (velocity = releases per 30 days)",
+   "baseline": {
+    "status": "200",
+    "bytes": 232568,
+    "sha256": "75d24307dacc4665421c03135a24cf8c9bf191dbb217a6b82ed83affb199575f",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-pipecat__releases-pypi__pypi.org_pypi_pipecat_ai_json",
+    "fetched_at": "2026-10-20T16:45:21Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "livekit",
+   "set": "radar",
+   "kind": "releases-pypi",
+   "url": "https://pypi.org/pypi/livekit-agents/json",
+   "final_url": "https://pypi.org/pypi/livekit-agents/json",
+   "diff_method": "PyPI JSON: new versions since last run (velocity = releases per 30 days)",
+   "baseline": {
+    "status": "200",
+    "bytes": 370650,
+    "sha256": "65432329db76f147f2c502925e9167ccee441ad60322497281e9faf1b90079ae",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-livekit__releases-pypi__pypi.org_pypi_livekit_agents_json",
+    "fetched_at": "2026-10-20T16:45:21Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "ultravox",
+   "set": "radar",
+   "kind": "pricing",
+   "url": "https://www.ultravox.ai/pricing",
+   "final_url": "https://www.ultravox.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 268087,
+    "sha256": "d1ac34ab813cf5f25f8f33364f1dd14c4e73442c7ab1c986e2014b2844aa1fb3",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-ultravox__pricing__www.ultravox.ai_pricing",
+    "fetched_at": "2026-10-20T16:45:21Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "ringg",
+   "set": "radar",
+   "kind": "pricing",
+   "url": "https://www.ringg.ai/pricing",
+   "final_url": "https://www.ringg.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 227304,
+    "sha256": "739276e3f8c01d91fad186c9e219a553776f40140b0c6f223e0b6a7a447e30fa",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-ringg__pricing__www.ringg.ai_pricing",
+    "fetched_at": "2026-10-20T16:45:21Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "smallest",
+   "set": "radar",
+   "kind": "pricing",
+   "url": "https://smallest.ai/pricing",
+   "final_url": "https://smallest.ai/pricing/agents",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 839960,
+    "sha256": "2d40aefa7c9f2f7faeb380b701824bf9b2512e3bbaf11488de12c797c666689c",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-smallest__pricing__smallest.ai_pricing",
+    "fetched_at": "2026-10-20T16:45:22Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "gupshup",
+   "set": "radar",
+   "kind": "voice-ai",
+   "url": "https://www.gupshup.ai/voice-ai",
+   "final_url": "https://www.gupshup.ai/voice-ai-agents",
+   "diff_method": "html-to-text diff",
+   "baseline": {
+    "status": "200",
+    "bytes": 217433,
+    "sha256": "6d9fa304bc1edb3a5cd01e6b356efe5cd7d5b9fc0ef6299faa1295d0f411b63c",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-gupshup__voice-ai__www.gupshup.ai_voice_ai",
+    "fetched_at": "2026-10-20T16:45:22Z"
+   },
+   "note": ""
+  },
+  {
+   "vendor": "plivo",
+   "set": "radar",
+   "kind": "ai-agents",
+   "url": "https://www.plivo.com/ai-voice-agents/",
+   "final_url": "https://www.plivo.com/",
+   "diff_method": "html-to-text diff (currently redirects to homepage: watch for a real page)",
+   "baseline": {
+    "status": "200",
+    "bytes": 174905,
+    "sha256": "68424ea72b09b7812619ee1181571e00874738c102cfee2a8e24854c29c644ab",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-plivo__ai-agents__www.plivo.com_ai_voice_agents",
+    "fetched_at": "2026-10-20T16:45:23Z"
+   },
+   "note": "https://www.plivo.com/ai-voice-agents/ redirects to the homepage; Plivo agent pages seen in search are 404."
+  },
+  {
+   "vendor": "bland",
+   "set": "radar",
+   "kind": "pricing",
+   "url": "https://www.bland.ai/pricing",
+   "final_url": "https://www.bland.ai/pricing",
+   "diff_method": "html-to-text, strip nav/footer, diff normalised text; alert on any change to a number followed by /min, ₹, $, %, or a plan name",
+   "baseline": {
+    "status": "200",
+    "bytes": 698431,
+    "sha256": "6a469854d2984f9c48c36b04ad94adba13531ed515f8c6f53442dd9a2cbe0261",
+    "path": "data/teardown/radar/_watchlist-baseline/radar-bland__pricing__www.bland.ai_pricing",
+    "fetched_at": "2026-10-20T16:45:24Z"
+   },
+   "note": ""
+  }
+ ],
+ "new_entrant_sweep": {
+  "sources": [
+   {
+    "source": "hn-show",
+    "url": "https://hn.algolia.com/api/v1/search_by_date?query=voice%20agent&tags=show_hn&hitsPerPage=50",
+    "status_2026_10_20": "200",
+    "usable": true,
+    "method": "HN Algolia JSON: hits created since last run; keep title, url, points",
+    "path": "data/teardown/radar/_sweep/sweep__hn-show__hn.algolia.com_api_v1_search_by_date_query_voice_20agent_tags_show_hn_hitsPerPage_50"
+   },
+   {
+    "source": "hn-story",
+    "url": "https://hn.algolia.com/api/v1/search_by_date?query=voice%20AI%20India&tags=story&hitsPerPage=50",
+    "status_2026_10_20": "200",
+    "usable": true,
+    "method": "HN Algolia JSON: hits created since last run",
+    "path": "data/teardown/radar/_sweep/sweep__hn-story__hn.algolia.com_api_v1_search_by_date_query_voice_20AI_20India_tags_story_hitsPerPage_50"
+   },
+   {
+    "source": "inc42-feed",
+    "url": "https://inc42.com/feed/",
+    "status_2026_10_20": "200",
+    "usable": true,
+    "method": "RSS: items whose title matches /voice|calling|telecall|conversational/i",
+    "path": "data/teardown/radar/_sweep/sweep__inc42-feed__inc42.com_feed"
+   },
+   {
+    "source": "inc42-funding-feed",
+    "url": "https://inc42.com/buzz/funding/feed/",
+    "status_2026_10_20": "404",
+    "usable": false,
+    "method": "blocked from sandbox; check manually or via WebSearch",
+    "path": "data/teardown/radar/_sweep/sweep__inc42-funding-feed__inc42.com_buzz_funding_feed"
+   },
+   {
+    "source": "entrackr-feed",
+    "url": "https://entrackr.com/feed/",
+    "status_2026_10_20": "404",
+    "usable": false,
+    "method": "blocked from sandbox; check manually or via WebSearch",
+    "path": "data/teardown/radar/_sweep/sweep__entrackr-feed__entrackr.com_feed"
+   },
+   {
+    "source": "yourstory-feed",
+    "url": "https://yourstory.com/feed",
+    "status_2026_10_20": "200",
+    "usable": true,
+    "method": "RSS: items matching /voice|calling|conversational/i",
+    "path": "data/teardown/radar/_sweep/sweep__yourstory-feed__yourstory.com_feed"
+   },
+   {
+    "source": "producthunt-topic",
+    "url": "https://www.producthunt.com/topics/voice-ai",
+    "status_2026_10_20": "403",
+    "usable": false,
+    "method": "blocked from sandbox; check manually or via WebSearch",
+    "path": "data/teardown/radar/_sweep/sweep__producthunt-topic__www.producthunt.com_topics_voice_ai"
+   },
+   {
+    "source": "yc-directory",
+    "url": "https://www.ycombinator.com/companies?query=voice%20agent",
+    "status_2026_10_20": "200",
+    "usable": true,
+    "method": "HTML: company slugs on the page; diff the set (directory is client-rendered, so a slug-set diff is a weak signal)",
+    "path": "data/teardown/radar/_sweep/sweep__yc-directory__www.ycombinator.com_companies_query_voice_20agent"
+   },
+   {
+    "source": "techcrunch-voice",
+    "url": "https://techcrunch.com/tag/voice-ai/feed/",
+    "status_2026_10_20": "200",
+    "usable": true,
+    "method": "RSS: new items",
+    "path": "data/teardown/radar/_sweep/sweep__techcrunch-voice__techcrunch.com_tag_voice_ai_feed"
+   }
+  ],
+  "queries": [
+   "voice AI agent India seed OR \"Series A\"",
+   "AI telecalling startup funding",
+   "Hinglish voice agent launch",
+   "voice agents BFSI India raises",
+   "site:ycombinator.com/companies voice agents India",
+   "Show HN voice agent phone"
+  ],
+  "keep_if": "sells or plans to sell outbound/inbound phone or WhatsApp voice agents to Indian businesses, OR is a substrate (model, framework, telephony) Indian vendors adopt"
+ },
+ "triage_rubric": {
+  "subscores_0_to_3": {
+   "B_buyer_overlap (x3)": "0 none; 1 global with some India; 2 Indian SMB/mid-market; 3 Indian enterprise or BFSI/insurance with named customers",
+   "T_indian_telephony (x2)": "0 none; 1 BYO SIP only; 2 documented Indian carrier integration; 3 owns Indian numbers/licence or 3+ Indian carriers",
+   "L_indic_language_evidence (x2)": "0 English-only (measured) or nothing; 1 claim only; 2 published benchmark or measured-good demo; 3 measured good by us on our battery",
+   "P_published_price_pressure (x1)": "0 quote-only; 1 published above INR 6/min; 2 published INR 4-6; 3 published at or below INR 4/min (or 2 cents)",
+   "S_self_serve_surface (x1)": "0 demo-only; 1 managed/sandbox on request; 2 self-serve buy; 3 self-serve sign-up with free credits",
+   "M_momentum_last_6_months (x1)": "0 stalled/shrinking; 1 minor or none; 2 round USD 1-10M or notable launch; 3 round >= USD 10M or major platform launch"
+  },
+  "threat_score": "1 + round(4 * (3B + 2T + 2L + P + S + M) / 30); eval tools and exited vendors are capped at 1",
+  "promote_to_deep_set_if": [
+   "threat >= 4, AND",
+   "B >= 2 and T >= 2 (same Indian buyer, can actually place Indian calls), AND",
+   "account-testable: self-serve sign-up or a public demo call (otherwise mark DESK-DEEP ONLY), AND",
+   "it displaces the deep-set member that yields the least account-phase data for the three decisions"
+  ],
+  "beachhead_flag": "separately flag any vendor naming insurance renewal or post-sale insurance servicing (decision 1), whatever its score: the rubric under-weights enterprise-only specialists",
+  "re_triage_triggers": [
+   "funding >= USD 5M",
+   "published all-in price <= INR 4/min",
+   "Indian telephony integration launched",
+   "named Indian BFSI/insurer customer",
+   "self-serve launch",
+   "deep-set vendor goes enterprise-only"
+  ]
+ }
+}

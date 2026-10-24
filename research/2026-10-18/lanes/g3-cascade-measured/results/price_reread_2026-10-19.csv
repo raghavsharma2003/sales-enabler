@@ -1,0 +1,13 @@
+item,unit,usd,source,date_read,method,matches_cost_inputs_2026-10-18
+Azure S1 Speech To Text (real-time) centralindia,per audio hour,1.00,https://prices.azure.com/api/retail/prices (armRegionName centralindia; Foundry Tools / Azure Speech / S1 Speech To Text),2026-10-19,read-primary,yes
+Azure STT commitment 100K h/month overage centralindia,per audio hour,0.40,Retail Prices API (Commitment Tier Speech to Text Azure 100K; unit $40000/month),2026-10-19,read-primary,yes
+Azure S1 Neural Text To Speech centralindia,per 1M characters,15.00,Retail Prices API (S1 Neural Text To Speech Characters),2026-10-19,read-primary,yes
+Azure Neural HD Text to Speech centralindia,per 1M characters,22.00,Retail Prices API (Neural HD Text to Speech Characters; effective 2026-03-01),2026-10-19,read-primary,yes
+Azure neural TTS commitment 2000M chars/month overage,per 1M characters,7.50,Retail Prices API (unit $15000/month),2026-10-19,read-primary,yes
+Azure neural TTS commitment 4000M chars/month overage,per 1M characters,6.00,Retail Prices API (unit $24000/month),2026-10-19,read-primary,new (not in cost_inputs)
+Azure Fast Transcription Promo (batch-style; not real-time),per audio hour,0.10,Retail Prices API (effective 2026-09-01),2026-10-19,read-primary,new; not usable for a live call
+gpt-4.1-mini regional (South India) input / cached / output,per 1M tokens,0.44 / 0.11 / 1.76,Retail Prices API southindia (gpt 4.1 mini Inp/cached Inp/Outp regnl),2026-10-19,read-primary,yes
+openai/gpt-oss-120b on Groq via OpenRouter input / cache read / output,per 1M tokens,0.15 / 0.075 / 0.60,https://openrouter.ai/api/v1/models/openai/gpt-oss-120b/endpoints,2026-10-19,read-primary,yes (cache read now listed at endpoint level)
+openai/gpt-oss-120b on DeepInfra via OpenRouter input / output,per 1M tokens,0.037 / 0.17,same endpoint list,2026-10-19,read-primary,new; TTFT not measured from India (DeepInfra llama-3.3 was 2.6 s p50)
+google/gemini-3.1-flash-lite on Google AI Studio via OpenRouter input / cache read / output,per 1M tokens,0.25 / 0.025 / 1.50,https://openrouter.ai/api/v1/models/google/gemini-3.1-flash-lite/endpoints,2026-10-19,read-primary,yes
+Gemini prices (3.5-flash-lite 0.30/0.03/2.50; 3.5-transcribe-live audio 3.50 + text 21.00; 3.8-flash-lite-tts 0.50/6.00 to 2026-12-31 then 1.00/12.00; 3.8-flash-tts 0.50/9.00 then 1.00/18.00),per 1M tokens,see item,lanes/g1-gemini-desk/prices.json (ai.google.dev/gemini-api/docs/pricing read 2026-10-18),2026-10-18,read-primary (g1),not re-read by this lane

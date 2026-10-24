@@ -1,0 +1,10 @@
+ts,round,arm,chars,kind,status,ttfb_ms,hdr_ms,total_ms,audio_s,in_tokens,out_tokens,err
+2026-10-18T19:08:49Z,0,gg:gemini-3.8-flash-lite-tts:Despina,130,sentence,429,,363.7,363.9,0,,,"429 {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quot"
+2026-10-18T19:08:49Z,0,gg:gemini-3.8-flash-tts:Despina,130,sentence,200,1316.5,1316.4,3282.0,8.48,33,212,
+2026-10-18T19:08:52Z,1,gg:gemini-3.8-flash-tts:Despina,128,sentence,429,,287.3,287.4,0,,,"429 {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quot"

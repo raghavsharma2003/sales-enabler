@@ -1,0 +1,5 @@
+{"nodes":[],"edges":[
+ {"from":"decision.2026-10-24.voice-incall-tools-run","to":"decision.2026-10-24.http-tool-contract","relation":"implements"},
+ {"from":"measure.2026-10-24.voice-incall-tools-offline","to":"decision.2026-10-24.voice-incall-tools-run","relation":"tests"},
+ {"from":"decision.2026-10-24.voice-incall-tools-run","to":"component.product.calls-module","relation":"informs"}
+],"events":[{"date":"2026-10-24","event":"voice-incall-tools-merged","details":"Integrator merged voice's in-call HTTP tools (90e3fc2): the runtime marker, argument checks, holding line, signed run through the control plane, per-contact figures held until identity; offline tests 12 (voice 11, calls-toolhook 3). Not verified against a real buyer endpoint on a live call."}]}

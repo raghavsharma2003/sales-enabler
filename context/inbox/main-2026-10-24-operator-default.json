@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.operator-default-gpt41",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "The Operator (the workspace chat that runs the product) defaults to gpt-4.1; gpt-4.1-mini stays selectable. Per-call analysis keeps its own default (gpt-4.1-mini single), so the Operator choice does not set the analysis model",
+      "rationale": "Operator bench, 48 code-graded tasks per round: gpt-4.1 led gpt-4.1-mini in all three rounds (18 vs 12, 28 vs 26, 35 vs 30 strict). In round 3 gpt-4.1 improved significantly from round 2 (8 gained, 1 lost, p=0.039) while mini did not (p=0.42), and mini's failures include saving a 'say she is a human' brief line (ref-human). The mini-vs-4.1 gap is not significant at n=48 (p=0.125), but the Operator is the product's control surface and the owner's bar is quality first with price deferred. Cost ₹1.97 per task vs ₹0.47.",
+      "reverse_if": "A round with the round-3 failures fixed shows gpt-4.1-mini within 2/48 of gpt-4.1 strict on two runs, with no safety-relevant failure (a brief edit that breaks the AI-disclosure rule, a claimed write that did not happen), or the owner sets a price per Operator task that gpt-4.1 cannot meet."
+    }
+  ],
+  "edges": [
+    {"from": "decision.2026-10-24.operator-default-gpt41", "to": "measure.2026-10-23.operator-bench-r3-gpt-4.1", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.operator-default-gpt41", "to": "measure.2026-10-23.operator-bench-r3-gpt-4.1-mini", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.operator-default-gpt41", "to": "measure.2026-10-23.operator-bench-r2-gpt-4.1", "relation": "informed-by"},
+    {"from": "decision.2026-10-24.operator-default-gpt41", "to": "rejected.2026-10-23.brief-edit-saves-lint-refused-draft", "relation": "informed-by"},
+    {"from": "measure.2026-10-23.analysis-bench-r3-tiered", "to": "decision.2026-10-23.analysis-default-mini-single", "relation": "challenges"}
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-bench-r3-decisions",
+      "details": "Bench r3 on cd94b63 (Rs 160.41): analysis TEST two passes per design, outcome mini 38/36, gpt-4.1 42/42, tiered 41/41; Operator strict mini 30/48, gpt-4.1 35/48. Decided: Operator default gpt-4.1 (decision.2026-10-24.operator-default-gpt41). The analysis default stays mini single, because tiered leads by exactly 4.0 on average and the reverse condition needs more than 4; it is re-tested after the calls builder fixes the wrong-person/complaint false nulls and the no-decision escalations. Routed: operator -> retry-after-not-done, version-id hints, chat upload id, reply-vs-writes check, bench grading fixes; agents -> brief.edit refuses a lint-refused safety edit; calls -> outcome rule for wrong-person and complaint calls, no escalation where code discards the outcome."
+    }
+  ]
+}

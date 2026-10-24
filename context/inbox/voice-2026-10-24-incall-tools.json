@@ -1,0 +1,28 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-incall-tools-run",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "In-call HTTP tools run end to end. Runtime (voice/vpvoice/tools.py): the LAST block lists the granted HTTP tools with typed arguments; the marker <tool:NAME {json}> asks for one; arguments are checked against the spec (port of validateArgs) before anything is sent; a holding line is said if her reply said nothing; the control plane is asked to run it (signed); the answer goes back to the brain as data, not lines, and its values join the door's facts (a value with digits is per-contact and waits for identity); a failure gets her fixed graceful line in the call's language (fixed-lines.json tool_hold / tool_failed, 12 languages) and no follow-up guess; tool events requested/done/failed carry redacted args. Control plane (server/modules/calls/toolhook.ts, POST /hooks/runtime/tools): runs the spec from the call's own published version, never one the runtime sends; integration secret filled in there; DNS-resolved address must be public; no redirects; the spec's timeout; 12 runs per call; only the listed fields",
+   "rationale": "Must-be audit brief 3: the tool switches did nothing; agents landed the contract (052a45d) and left the run to voice.",
+   "reverse_if": "real tools need more than 2 calls per reply or arguments the marker cannot carry (then move to provider function calling), or the per-contact rule blocks figures a buyer marks public (then a per-field flag in the spec)"
+  },
+  {
+   "id": "measure.2026-10-24.voice-incall-tools-offline",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Offline: a sim call and an audio-cascade call each run a tool through a fake runner and answer from its data; a figure from the tool passes the door after identity and is held before it; a figure not in the data is blocked; bad arguments never call out; a failure or no runner gets the graceful line and no guessed follow-up; card-like args are redacted in events; the runner's POST is signed and verified. Control plane: internal addresses refused after DNS (10/127/169.254/192.168/172.16-31/100.64/::1/fd00/v4-mapped), redirects not followed, timeout honoured, the secret filled in only there, unknown tools, bad args, the run cap and ended calls refused. The real request also refuses an internal address at connect time (node:https lookup hook), so a name that re-resolves (DNS rebinding) is refused: shown with localhost. Not verified: a live third-party API",
+   "n": 12,
+   "method": "product/voice/tests/test_tools.py (11) and product/tests/calls-toolhook.test.ts (3, fake network and one real connect-time refusal via setToolNetwork), 2026-10-24",
+   "path": "product/voice/vpvoice/tools.py",
+   "value": "tools run end to end offline; figures only from data"
+  }
+ ],
+ "edges": [],
+ "events": []
+}

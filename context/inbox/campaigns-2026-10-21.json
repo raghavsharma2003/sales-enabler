@@ -1,0 +1,157 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-21.campaigns-module",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Campaigns module v0: 25 tools, the dial gate G1-G12 run inside the claim transaction for every attempt kind, a SKIP LOCKED worker that builds CallTickets, the retry ladder, the series router and a telephony seam (fake for tests; the real adapter is off by default).",
+      "path": "product/server/modules/campaigns/"
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+      "type": "decision",
+      "status": "superseded",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The campaigns tools take their risk classes from workspace.md §5, because data/workspace-tool-registry.json is not in the repo. Verbs on the kernel's A3 list (campaign.pause/stop, stop_at_cap, number.pause_flagged, attempt.retry_per_ladder) are 'external': VP runs them at once (A3), and a person's call goes through approval. Risk-lowering verbs not on that list (campaign.window.narrow, number.pause) are 'draft', so they run at once (A1). campaign.window.widen, policy.window.set and policy.category.override are 'policy'. number.rent is 'spend'. number.byo.connect is 'policy'. number.kyc.submit is 'external'. a2p.declaration.export is 'read'.",
+      "rationale": "This keeps A3 receipts for VP's own guard actions without editing the kernel. The cost is that a person's pause needs a second tap: the kernel lets only agent and system actors run A3 verbs directly.",
+      "reverse_if": "The registry file lands with different classes, or the kernel lets a member run an A3 verb at once."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-gate-semantics",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "How the dial gate behaves, as built:\n- Refusals are either 'blocked' (a terminal attempt status) or 'deferred' (the attempt stays created and is rescheduled to next_eligible_at). The deferred ones are out_of_window, budget_exhausted with a next time, deferred_concurrency, and check_unavailable (+5 min).\n- On a campaign, cap_reached and wallet_low pause the campaign; the attempt itself is not blocked.\n- G9 holds money before the predial I/O. If G10-G12 then refuse, the gate releases the hold.\n- Each check runs inside a savepoint, so a check that throws still leaves the claim able to record check_unavailable.\n- A per-number advisory lock is taken at G2, so two paths cannot both pass G7 for the same phone.\n- Promotional calls with an unknown DND status are held as no_basis.",
+      "rationale": "This follows trust-telephony §6 (fail closed, reason on every refusal) and campaigns.md §7 (a person never spends patience on a carrier fault; VP never cancels for lack of balance).",
+      "reverse_if": "The owner or counsel wants promotional rows with an unknown DND status to dial, or wants money refusals to block the attempt instead of pausing the campaign."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-a2p-warning-before-due",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "G8 treats an undeclared CLI as a warning before 2026-11-17 (IST) and refuses it with cli_undeclared from that date. Trial lines are exempt, and test calls only.",
+      "rationale": "trust-telephony §4.3: an amber warning before the due date, refusal after. The strict reading of the deadline is 11-18, so the earlier date is the safer one.",
+      "reverse_if": "The Gazette confirms a different date, or the carrier says declarations must exist before any A2P call."
+    },
+    {
+      "id": "measure.2026-10-21.campaigns-tests",
+      "type": "measurement",
+      "status": "measured",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Campaigns tests: 47 of 47 pass (35 against Postgres 16, 12 pure). The e2e acceptance steps 3b, 3c, 3d, 6b, 6c and 9b pass as normal steps. The full product suite on a fresh database: 271 of 272 pass, 1 todo (calls 8b).",
+      "n": 47,
+      "method": "node --import tsx --test tests/campaigns.test.ts tests/campaigns-units.test.ts against DATABASE_URL from product/scripts/pg-test.sh vp_mod_campaigns; FakeRuntime and FakeTelephony; synthetic 90000000xx numbers",
+      "path": "product/tests/campaigns.test.ts"
+    },
+    {
+      "id": "open.2026-10-21.campaigns-seams",
+      "type": "open-question",
+      "status": "open",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Campaigns seams still to close with siblings:\n- How the tombstone hash is salted. The gate checks both sha256(e164) and HMAC(workspace_id, e164).\n- The calls module creating the conversation row from ticket.conversationId, settling or releasing attempt.reservation_id, and calling attempt.retry_per_ladder on call end.\n- Wiring the module into server/modules/index.ts and starting the worker in main.ts.\n- A tool that marks a line A2P-declared and a member phone verified.\n- The JSON defaults files the blueprint cites.",
+      "closes_when": "Every item has a tool name or a merged sibling that implements it, and an end-to-end test drives a campaign from launch to settled cost."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-risk-classes-from-registry",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The campaigns tools now use the risk classes in research/2026-10-21/blueprint/data/workspace-tool-registry.json. Three changed: number.byo.connect policy -> draft, number.kyc.submit external -> policy, number.pause draft -> external. VP's own risk-lowering line pause stays number.pause_flagged (A3).",
+      "rationale": "The registry file landed. One source of risk classes keeps the API, MCP and Operator tool lists consistent.",
+      "reverse_if": "The registry changes these classes, or a measured incident shows a line pause must run at once for a person."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-carrier-side",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The carrier side of the number step lives in campaigns:\n- KYC decisions arrive through a signed, idempotent webhook (POST /hooks/telephony/kyc) or number.kyc.sync, which only a system or VP Success actor may run.\n- A2P declaration is number.a2p.declare (policy: owner or compliance approves), with the operator's reference and evidence.\n- No workspace member can mark their own line verified.",
+      "rationale": "The e2e acceptance test (F1, F2) showed that G8 refused every production dial: nothing moved KYC past 'submitted' or A2P to 'declared'. The phone_number table is campaigns', and the gate reads it.",
+      "reverse_if": "A carrier offers only polling (then add a number.kyc.poll job), or counsel wants A2P declaration filed by VP rather than recorded by the tenant."
+    },
+    {
+      "id": "decision.2026-10-21.campaigns-gate-wgc-fixes",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Dial gate after the 'who gets called' review (WGC-01..08), each fix fail-closed:\n- consent is decided by the newest record across the purposes covering the call, ordered by evidence.statedAt when it is ISO;\n- an unreadable expiry counts as expired;\n- promotional calls need an explicit fresh not_registered (7 days), or registered plus CRF;\n- a +91 number keeps the IST quiet hours and bands whatever zone was imported;\n- an erased contact is refused at G2;\n- an unknown dial with a live call holds a line.",
+      "rationale": "Each finding had a reproducing test against the real gate. The two blockers (WGC-01, WGC-03) made DND-registered or withdrawn people dialable.",
+      "reverse_if": "Counsel rules that NCPR does not bind a consented promotional call, or intake supplies a structured consent effective-time column that should replace evidence.statedAt."
+    },
+    {
+      "id": "decision.2026-10-21.verification-call-english",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The member-phone verification call (campaigns verify.ts announcement()) is spoken in English. It is a fixed system announcement to the business's own staff, so the enterprise-English directive applies. Hinglish stays for agents talking to customers.",
+      "rationale": "Integrator ruling on directive.2026-10-22.enterprise-english-ui after the web builder changed the script in 1187a05. The campaigns test checks the script through announcement(), not its wording (840ae68).",
+      "reverse_if": "The owner wants staff-facing system calls in the member's chosen language, or Hinglish for this call."
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-gate-semantics",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-a2p-warning-before-due",
+      "relation": "implements"
+    },
+    {
+      "from": "measure.2026-10-21.campaigns-tests",
+      "to": "component.2026-10-21.campaigns-module",
+      "relation": "tests"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "open.2026-10-21.campaigns-seams",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-21.campaigns-risk-classes-from-registry",
+      "to": "decision.2026-10-21.campaigns-risk-classes-without-registry",
+      "relation": "supersedes"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-carrier-side",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.campaigns-module",
+      "to": "decision.2026-10-21.campaigns-gate-wgc-fixes",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-21.verification-call-english",
+      "to": "directive.2026-10-22.enterprise-english-ui",
+      "relation": "implements"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-21",
+      "event": "campaigns-module-built",
+      "details": "Campaigns module built: dial gate G1-G12 in the claim, worker, 25 tools, migration 0301. 40/40 tests green on vp_mod_campaigns."
+    }
+  ]
+}

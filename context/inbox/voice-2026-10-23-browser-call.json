@@ -1,0 +1,31 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-23.browser-call-e2e",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Call me in the browser works end to end in the product against the real voice runtime on fake providers (devsim). Measured: Chromium with a fake microphone. Her opening and replies are heard and captioned. The caller's speech is heard, transcribed and answered. Hang-up ends the call. The call lands in Calls as a test call (channel test, end reason caller_hung_up), filed under the stack the saved draft names, with both sides' turns",
+   "n": 2,
+   "method": "product/web/e2e/flows.test.mjs, flow 'Browser call: she calls you in the browser...', 2026-10-23. Run twice (once in a working tree, once in the clean-clone full suite, 405/405). The real control plane and a fresh Postgres. The browser call ticket goes to python -m vpvoice.devsim through the dev server's VP_DEVSIM_URL. Chromium plays a synthetic voiced sound as the microphone (--use-file-for-fake-audio-capture). The page joins /v1/media/browser/{id} with the single-use token. Also covered by product/voice/tests/test_devsim.py test_browser_call_captions_from_both_sides. Screenshot: product/web/shots/browser-call-live.png (not committed). Not measured: real providers, a real microphone and speaker, echo, the reply gap a person hears, or Safari.",
+   "path": "product/web/src/browser-call.ts",
+   "value": "browser call green end to end on fakes; real-provider reply gap to be measured on the India staging"
+  },
+  {
+   "id": "decision.2026-10-23.browser-call-direct-to-runtime",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "The browser joins the voice runtime's own browser media socket directly (wss at VP_PUBLIC_URL, single-use token from test.browser_call); the control plane never relays call audio. Mic is captured with an AudioWorklet into 16 kHz PCM frames; her 24 kHz audio plays through a worklet queue that a runtime 'flush' empties at once (barge-in). The AI disclosure chip is always on screen during the call",
+   "rationale": "One hop fewer for every audio frame (a Python relay costs ~0.37% of a core per call, measure.2026-10-21.voice-audio-multiprocess-sandbox), and the runtime already authenticates the join with a single-use token. The worklets are inlined from a Blob, so the app ships one bundle.",
+   "reverse_if": "a deployment cannot expose the runtime over wss on the product's hostname or a sibling one; or the runtime moves to WebRTC proper (offerUrl), when the page would negotiate a peer connection instead"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-23.browser-call-direct-to-runtime", "to": "measure.2026-10-21.voice-audio-multiprocess-sandbox", "relation": "informed-by" },
+  { "from": "measure.2026-10-23.browser-call-e2e", "to": "decision.2026-10-23.browser-call-direct-to-runtime", "relation": "tests" }
+ ],
+ "events": []
+}

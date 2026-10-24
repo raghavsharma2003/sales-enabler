@@ -1,0 +1,15 @@
+stage dev  start 2026-10-24T04:15:10Z spent=₹0
+analysis-dev-mini.current-p1 exit=0 spent=₹2.17 04:17:24
+analysis-dev-mini.r5-short-objection-p1 exit=0 spent=₹4.25 04:19:29
+analysis-dev-mini.r5-outcome-first-p1 exit=0 spent=₹6.46 04:21:43
+analysis-dev-mini.r5-moment-not-outcome-p1 exit=0 spent=₹8.66 04:23:56
+analysis-dev-mini.current-p2 exit=0 spent=₹10.81 04:26:09
+analysis-dev-mini.r5-short-objection-p2 exit=0 spent=₹12.9 04:28:14
+analysis-dev-mini.r5-outcome-first-p2 exit=0 spent=₹15.11 04:30:27
+analysis-dev-mini.r5-moment-not-outcome-p2 exit=0 spent=₹17.33 04:32:39
+stage dev  done 2026-10-24T04:32:39Z
+stage test r5-outcome-first start 2026-10-24T04:33:10Z spent=₹17.33
+analysis-mini.r5-outcome-first-p1 exit=0 spent=₹19.54 04:35:24
+analysis-mini.r5-outcome-first-p2 exit=0 spent=₹21.74 04:37:37
+analysis-tiered.r5-outcome-first-p1 exit=0 spent=₹23.91 04:39:49
+stage test r5-outcome-first done 2026-10-24T04:39:49Z

@@ -1,0 +1,50 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.notifier-own-connection-and-stop",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The notifier listens on its own connection, never a pooled one: a pg.Client built from pool.options, with its socket unref'd. So pool.end() never waits on it, and it can never be what keeps a process alive. startNotifier returns stop(), which ends the connection, clears every timer and never reconnects. Modules gain an optional stop(). buildApp returns stop(), which runs each module's stop once and also runs when the server closes. main.ts calls it on SIGINT and SIGTERM before ending the pool. The workspace module's stop clears the 5 s outbox timer and stops the notifier; that timer also stops itself once the pool is ending. The duty roster starts no timers.",
+      "rationale": "Fixes rejected.2026-10-24.notifier-listen-client-hangs-bench. Owning the connection makes a hang impossible even for a caller that never stops the app, such as the Operator bench, which only ends its pool. stop() gives production a clean graceful shutdown.",
+      "reverse_if": "A deployment needs the listener to hold the process open on purpose (a dedicated notifier worker); then that worker should keep a ref'd handle of its own.",
+      "path": "product/server/modules/workspace/notifications.ts"
+    },
+    {
+      "id": "measure.2026-10-24.notifier-shutdown",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "tests/notifier-shutdown.test.ts runs a child process that builds the app with the notifier on (NODE_ENV=production). It waits until its LISTEN connection is up (counted in pg_stat_activity for this database only), then shuts down in one of two ways:\n- close: server.close(), stop(), pool.end();\n- pool-only: pool.end() alone, as the bench does.\nWith the fix, the process exited by itself after about 1.5 s in both modes (1636 and 1456 ms; the listener connects about 1 s after start). Against the previous notifications.ts and index.ts, both modes were still alive 20 s later and were killed. The first version of the test passed for a wrong reason, because it counted another database's LISTEN sessions; that was fixed before relying on it.",
+      "n": 2,
+      "method": "node --test spawning a child process on a throwaway Postgres 16; the old code was swapped in to show the failure",
+      "path": "product/tests/notifier-shutdown.test.ts"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.notifier-own-connection-and-stop",
+      "to": "rejected.2026-10-24.notifier-listen-client-hangs-bench",
+      "relation": "supersedes"
+    },
+    {
+      "from": "measure.2026-10-24.notifier-shutdown",
+      "to": "decision.2026-10-24.notifier-own-connection-and-stop",
+      "relation": "supports"
+    },
+    {
+      "from": "decision.2026-10-24.notifier-own-connection-and-stop",
+      "to": "decision.2026-10-24.crisis-wake-notify",
+      "relation": "extends"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "notifier-shutdown-fixed",
+      "details": "Fixes rejected.2026-10-24.notifier-listen-client-hangs-bench. The notifier now uses its own unref'd connection with stop(); modules gain stop(); buildApp stop() also runs on server close, and main.ts calls it. Proved by tests/notifier-shutdown.test.ts, which fails (hangs) on the old code and passes in about 1.5 s on the new."
+    }
+  ]
+}

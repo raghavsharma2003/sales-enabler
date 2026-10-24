@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battery Player</title>
+<style>
+  :root { --bg:#fbfaf7; --fg:#1d1d1b; --mut:#6b6a66; --line:#e2dfd8; --acc:#2f5d50; --warn:#9a4b16; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#171716; --fg:#ecebe6; --mut:#a3a29c; --line:#34332f; --acc:#7fbfa9; --warn:#e3a372; } }
+  :root[data-theme="dark"] { --bg:#171716; --fg:#ecebe6; --mut:#a3a29c; --line:#34332f; --acc:#7fbfa9; --warn:#e3a372; }
+  body { background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; margin:0; padding:16px; max-width:760px; }
+  h1 { font-size:20px; margin:0 0 4px; } p { color:var(--mut); margin:4px 0 12px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+  button, select { font:inherit; padding:8px 12px; border:1px solid var(--line); background:transparent; color:var(--fg); border-radius:6px; }
+  button.primary { background:var(--acc); color:var(--bg); border-color:var(--acc); }
+  #state { font-weight:600; } #log { font:12px/1.4 ui-monospace, monospace; white-space:pre-wrap; border:1px solid var(--line); padding:8px; height:280px; overflow:auto; }
+  .meter { height:8px; background:var(--line); border-radius:4px; overflow:hidden; flex:1; min-width:160px; } .meter i { display:block; height:100%; width:0; background:var(--acc); }
+  .warn { color:var(--warn); }
+</style>
+</head>
+<body>
+<h1>Battery player for phone demos</h1>
+<p>Put the phone on speaker next to this laptop, dial the vendor's demo, then press Start. The page listens through
+the laptop microphone, waits for the agent to finish each turn, plays the next caller clip through the laptop
+speaker, and records the whole room. Use headphones-free speakers at a normal talking volume. At the end it
+downloads the recording and an event log for <code>score.py owner --layout mono --events</code>.</p>
+<div class="row">
+  <label>Persona <select id="persona"></select></label>
+  <label>Vendor <input id="vendor" placeholder="e.g. ravan_phone" style="font:inherit;padding:7px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--fg)"></label>
+</div>
+<div class="row">
+  <button class="primary" id="start">Start</button>
+  <button id="stop" disabled>Stop and download</button>
+  <span id="state">idle</span>
+</div>
+<div class="row"><span>agent level</span><div class="meter"><i id="lvl"></i></div></div>
+<p class="warn" id="warn"></p>
+<div id="log"></div>
+<script>
+// Turn logic mirrors vp_harness.mjs: QUIET_MS of agent silence ends an agent turn; a 'barge' clip is played
+// BARGE_DELAY_MS after the agent starts its reply to the previous clip; a 'silence' turn waits 5 s.
+const QUIET_MS = 1300, BARGE_DELAY_MS = 1500, NO_REPLY_MS = 15000;
+const $ = (id) => document.getElementById(id);
+let battery, ctx, mic, rec, chunks = [], t0 = 0, events = [], stopFlag = false, analyser, lastVoice = 0, floorDb = -60, voiceHist = [];
+const log = (k, d) => { const t = Math.round(performance.now() - t0); events.push({ t, k, d }); $('log').textContent += `${(t / 1000).toFixed(2)}s  ${k} ${d ? JSON.stringify(d) : ''}\n`; $('log').scrollTop = 1e9; };
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+fetch('../battery/battery.json').then(r => r.json()).then(b => {
+  battery = b;
+  for (const p of b.personas) { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.id}: ${p.name}`; $('persona').appendChild(o); }
+}).catch(() => { $('warn').textContent = 'Could not load ../battery/battery.json. Serve the lane folder over http (python3 -m http.server) and open harness/player.html.'; });
+
+let playing = false;
+function levelLoop() {
+  if (!analyser) return;
+  const buf = new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(buf);
+  let s = 0; for (const v of buf) s += v * v; const db = 10 * Math.log10(s / buf.length + 1e-12);
+  voiceHist.push(db); if (voiceHist.length > 300) voiceHist.shift();
+  const sorted = voiceHist.slice().sort((a, b) => a - b); floorDb = sorted[Math.floor(sorted.length * 0.1)];
+  const thr = Math.max(floorDb + 12, -55);
+  // our own clip is audible to the mic: do not count it as agent speech
+  if (!playing && db > thr) lastVoice = performance.now();
+  $('lvl').style.width = Math.max(0, Math.min(100, (db + 70) * 1.6)) + '%';
+  requestAnimationFrame(levelLoop);
+}
+async function waitDone(since, maxMs = NO_REPLY_MS) {
+  const st = performance.now(); let heard = false;
+  while (!stopFlag) {
+    if (lastVoice > since) heard = true;
+    const quiet = performance.now() - lastVoice;
+    if (heard && quiet >= QUIET_MS) return { heard: true };
+    if (!heard && performance.now() - st > maxMs) return { heard: false };
+    await sleep(40);
+  }
+  return { heard, stopped: true };
+}
+async function waitOnset(since, maxMs = NO_REPLY_MS) {
+  const st = performance.now();
+  while (!stopFlag && performance.now() - st < maxMs) { if (lastVoice > since && performance.now() - lastVoice < 120) return true; await sleep(30); }
+  return false;
+}
+async function play(id) {
+  const buf = await (await fetch(`../battery/audio/${id}.wav`)).arrayBuffer();
+  const ab = await ctx.decodeAudioData(buf);
+  const src = ctx.createBufferSource(); src.buffer = ab; src.connect(ctx.destination);
+  playing = true; log('play', { id, dur: +ab.duration.toFixed(3) });
+  await new Promise(r => { src.onended = r; src.start(); });
+  playing = false; log('end', { id }); lastVoice = 0;
+}
+$('start').onclick = async () => {
+  if (!battery) return;
+  const persona = battery.personas.find(p => p.id === $('persona').value);
+  ctx = new AudioContext();
+  mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+  const src = ctx.createMediaStreamSource(mic); analyser = ctx.createAnalyser(); analyser.fftSize = 1024; src.connect(analyser);
+  rec = new MediaRecorder(mic, { mimeType: 'audio/webm;codecs=opus', audioBitsPerSecond: 64000 }); chunks = [];
+  rec.ondataavailable = e => chunks.push(e.data); rec.start(1000); t0 = performance.now(); events = []; stopFlag = false;
+  $('start').disabled = true; $('stop').disabled = false; levelLoop();
+  log('start', { persona: persona.id, vendor: $('vendor').value, ua: navigator.userAgent });
+  $('state').textContent = 'waiting for the agent greeting';
+  let g = await waitDone(performance.now(), 25000); log('greeting', g);
+  if (persona.noise_bed) { $('warn').textContent = 'This persona has a noise bed in the harness; the phone path cannot reproduce it. Results for P2 noise are not comparable.'; }
+  let lastEnd = performance.now();
+  for (let i = 0; i < persona.turns.length && !stopFlag; i++) {
+    const t = persona.turns[i]; const nextBarge = persona.turns[i + 1] && persona.turns[i + 1].type === 'barge';
+    $('state').textContent = `${t.id} (${t.type}: ${t.trap})`;
+    if (t.type === 'silence') { log('silence', { id: t.id }); await sleep(t.silence_ms || 5000); const r = await waitDone(performance.now() - 5000, 8000); log('after', { id: t.id, ...r }); lastEnd = performance.now(); continue; }
+    if (t.type === 'barge') {
+      const on = await waitOnset(lastEnd);
+      if (on) await sleep(BARGE_DELAY_MS); else await waitDone(lastEnd);
+      log('barge', { id: t.id, applied: on });
+    }
+    await play(t.id); lastEnd = performance.now();
+    if (!nextBarge) { const r = await waitDone(lastEnd); log('after', { id: t.id, ...r }); }
+  }
+  await sleep(3000); finish();
+};
+$('stop').onclick = () => { stopFlag = true; finish(); };
+function finish() {
+  if (!rec || rec.state === 'inactive') return;
+  rec.onstop = () => {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const name = `${$('vendor').value || 'vendor'}__${$('persona').value}__${stamp}`;
+    const dl = (blob, fn) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fn; a.click(); };
+    dl(new Blob(chunks, { type: 'audio/webm' }), name + '.webm');
+    dl(new Blob([JSON.stringify({ persona: $('persona').value, vendor: $('vendor').value, events }, null, 1)], { type: 'application/json' }), name + '.events.json');
+    $('state').textContent = 'done: two files downloaded';
+  };
+  rec.stop(); mic.getTracks().forEach(t => t.stop()); $('stop').disabled = true; $('start').disabled = false;
+}
+</script>
+</body>
+</html>

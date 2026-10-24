@@ -1,0 +1,31 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.gate-already-paid",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Dial gate G4 refuses 'already_paid' (blocked, not retried) when intake's paidSinceImport (aaf502d: a verified gateway payment matched by the workspace's record key, not more than 24 h older than the person's record of that key) finds one, for campaign, API and retry attempts only; a callback the person asked for, a member's single call, a test and a transfer still go. The member reads 'They already paid ₹14,250 through Razorpay on 30 December, after this list was imported, so they are not called.' A list imported more than a day after the payment opens the next cycle. On a passing G4 the gate's note records paidChecked, and the call page's 'Why this call was allowed' line adds 'no payment from them has come in since this list was imported'.",
+   "rationale": "Intake's payment webhooks seam, agreed 2026-10-24; G4 rather than a new G13 keeps the 12-check trace stable.",
+   "reverse_if": "A paid person is called anyway on staging (then the record-key match or the 24 h margin is wrong), or businesses need paid people called for a receipt confirmation (then a per-campaign opt-out of this check).",
+   "evidence": [
+    "product/tests/campaigns.test.ts 'G4 already_paid': an API attempt refused with the words above and outcome blocked; callback and single calls allowed; a newer list allowed"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.gate-already-paid",
+   "to": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "gate-already-paid",
+   "details": "Wired; full suite on a fresh DB 891/893 with 1 skipped (an intake test waiting on workspace start-over) and 1 failure in telephony's tests/telephony-verify.test.ts ('the code expired'), which also fails 1 in 2 standalone: a flake in telephony's own test, reported to the telephony builder, not this change."
+  }
+ ]
+}

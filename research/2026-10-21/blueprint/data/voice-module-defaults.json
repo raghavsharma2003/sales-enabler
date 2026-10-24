@@ -1,0 +1,207 @@
+{
+  "id": "blueprint.voice.defaults.2026-10-21",
+  "module": "voice",
+  "status": "proposed: every timing below is a starting value; VP's own stereo battery (W3/W4, KC6) sets the shipped value. Nothing here is measured unless its evidence says so.",
+  "grades": "M measured by us (n, method) | C computed | O observed | V vendor-claimed | I inferred | U unknown",
+  "sources": {
+    "PV2": "voicelab/server/persona_v2.py",
+    "CALLS": "voicelab/server/calls.py",
+    "AUDIO": "voicelab/server/audio.py",
+    "L8R2": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md",
+    "LAB2": "research/2026-10-20/voicelab/round1-review-and-v2.md",
+    "TXV": "docs/harvest/tx-voice.md",
+    "HV": "docs/harvest/SYNTHESIS.md",
+    "SCH": "research/2026-10-20/account-phase/synthesis/vp-v1-schema.json",
+    "WT": "research/2026-10-21/walkthroughs/SYNTHESIS.md",
+    "G5": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"
+  },
+
+  "brief_schema": {
+    "compile_order": [
+      {"section": "SCRIPT", "source": "code, per language", "cap_bytes": 600, "why": "script rule drifted when moved mid-brief (LAB2)"},
+      {"section": "IDENTITY", "source": "Agent.name, Brand.trade_name, register sliders -> shapes", "cap_bytes": 1200, "locked": ["is an AI assistant", "no invented life"]},
+      {"section": "GOVERNOR", "source": "code", "cap_bytes": 400},
+      {"section": "MEDIUM", "source": "code, per language mode", "cap_bytes": 1800},
+      {"section": "SOUNDS", "source": "code; only if voice.supports_sound_tags", "cap_bytes": 300},
+      {"section": "CORE", "source": "code + register sliders", "cap_bytes": 2400},
+      {"section": "SITUATION_GOAL", "source": "Campaign goal + OutcomeDefinition, written as shapes", "cap_bytes": 900},
+      {"section": "OPENING", "source": "code shape: value-first; first turn checks the name only", "cap_bytes": 500},
+      {"section": "SAFETY", "source": "code; backup only, enforcement is the reply door", "cap_bytes": 1100},
+      {"section": "MEMORY_BRIEF", "source": "memory-omni, delimited data block, consent-checked", "cap_bytes": 1200, "optional": true},
+      {"section": "FACTS_ROWS", "source": "Offering facts + contact variables, key:value, delimited data block", "cap_bytes": 2500},
+      {"section": "DELIVERY", "source": "code; only if voice.supports_styles", "cap_bytes": 300}
+    ],
+    "tail_per_turn": [
+      {"section": "LEDGER", "source": "code, pure function of transcript + LedgerPack", "cap_rows": 12, "cap_bytes": 1100},
+      {"section": "COUNTS_AND_GOAL_CHECK", "source": "code; always last", "cap_bytes": 800}
+    ],
+    "core_cap_bytes": 12000,
+    "tail_cap_bytes": 1900,
+    "budget_rule": "count UTF-8 bytes per section after escaping; any section over cap throws at compile and blocks publish naming the section; never slice (HV law 4)",
+    "measured_reference": "lab renewal brief v2 compiled core 7,345 bytes, tail 869 bytes (computed 2026-10-21 from PV2 compile_prompt/tail with memory, notes and sounds on)",
+    "cache_rule": "SCRIPT..SAFETY are byte-stable per Version and sent first; MEMORY_BRIEF and FACTS_ROWS vary per contact; tail varies per turn (HV law 6). Read cached-token counts off real responses."
+  },
+
+  "register_defaults": {
+    "address": "aap with plural verb forms, unless the contact's memory says otherwise",
+    "agent_gender_forms": "feminine by default; must match the chosen voice",
+    "warmth": {"service": "warm", "renewal": "warm", "complaint": "low-warm, straight answer first", "collections": "low-warm, no humour, no sound tags"},
+    "humour": {"default": "light", "complaint": "off", "collections": "off"},
+    "length": "most turns one short sentence; up to three when information is asked or the caller is worried or confused",
+    "questions": "most turns none; max one per turn; never two question endings in a row",
+    "goal_steps": "max one per turn; never on two turns running",
+    "laugh_cap": "no laugh within 3 turns of the last; at most 2 per call",
+    "sound_tags": "Gemini voices only; max one per reply; stripped for every other voice",
+    "speaking_rate": {"default": 1.0, "range": [0.85, 1.15], "chat_phrases": {"thoda slow": -0.1, "thoda fast": 0.08}}
+  },
+
+  "lint_rules": [
+    {"id": "L1", "rule": "quoted sentence or first-person line inside any shape field", "severity": "block publish", "why": "quotes recited 4/5 to 0 after removal (HV law 2)"},
+    {"id": "L2", "rule": "bracketed stage direction or 'say in a ... tone' text anywhere that can reach TTS", "severity": "block publish", "why": "Gemini TTS spoke the style prefix (rejected.2026-10-20.gemini-tts-style-prefix); brackets spoken in 4/4 (TXV)"},
+    {"id": "L3", "rule": "number, price, date or percentage written in prose instead of FACTS_ROWS", "severity": "block publish", "why": "facts live in data (HV law 22)"},
+    {"id": "L4", "rule": "named-feeling empathy labels ('I understand', 'that must be frustrating')", "severity": "warn", "why": "stock phrases 1.8-2.7 per call in v1 (LAB2)"},
+    {"id": "L5", "rule": "more than 3 instructions that ask her to ask questions", "severity": "warn", "why": "v1 had about 12; 62-76% question endings (LAB2)"},
+    {"id": "L6", "rule": "a must-fire rule placed outside the tail", "severity": "block publish", "why": "0/8 mid-brief vs 8/8 last (HV law 1)"},
+    {"id": "L7", "rule": "client text that removes or contradicts the AI disclosure, crisis lines, or the no-OTP rule", "severity": "block publish", "why": "disclosure non-removable on every creation path (decision.2026-10-21.wt-synthesis-must-be-changes)"}
+  ],
+
+  "ledger_pack": {
+    "derived_at": "publish, by the Brief writer agent (LLM-assisted), then frozen into the Version and reviewed by the client as 'What she tracks'",
+    "contents": {
+      "told": "one pattern set per fact row (Devanagari, Latin, digits)",
+      "offers": "one pattern set per next step in the agenda",
+      "numbers": "set of every number in FACTS_ROWS and contact variables, canonicalised",
+      "lexicons": "NO / YES / CLOSING / CUES per language mode (seed: PV2)"
+    },
+    "validation": "Test pilot labels synthetic transcripts; each told/offer pattern needs precision >= 0.95 and recall >= 0.9 on its keys or publish is blocked with the failing row",
+    "runtime": "deterministic; no model call on the turn path"
+  },
+
+  "turn_presets": {
+    "Standard": {
+      "ears_segmentation_ms": 500,
+      "release": {"complete": 0, "unsure_hold_ms": 600, "incomplete_hold_ms": 1400},
+      "short_answer_fast_path": "if her last turn was a yes/no question or offer and the caller's final is a single answer token, release at once",
+      "withdraw_if_caller_speaks_ms": 250,
+      "barge_in": {"min_voiced_ms": 300, "min_words": 2, "or_voiced_ms": 700, "stop_term_min_voiced_ms": 200},
+      "quiet_reply_rescue": "VAD segment 200-700 ms with no final within 900 ms after her question -> gated short check from the acknowledgement bank, never two turns running",
+      "silence_ladder_s": {"nudge_1": 6, "nudge_2": 12, "close": 17},
+      "listen_during_opening": true,
+      "speaking_rate": 1.0
+    },
+    "Patient": {
+      "use_for": "elderly or slow speakers; auto-suggested when in-call pace is slow or memory says so",
+      "ears_segmentation_ms": 800,
+      "release": {"complete": 0, "unsure_hold_ms": 1200, "incomplete_hold_ms": 2600},
+      "continuer": "gated 'जी' / 'हाँ जी' from the acknowledgement bank at 2,000 ms of VAD speech with no final, never two turns running",
+      "withdraw_if_caller_speaks_ms": 250,
+      "barge_in": {"min_voiced_ms": 400, "min_words": 2, "or_voiced_ms": 800, "stop_term_min_voiced_ms": 250},
+      "silence_ladder_s": {"nudge_1": 9, "nudge_2": 18, "close": 25},
+      "listen_during_opening": true,
+      "speaking_rate": 0.92,
+      "target": "no cut-in on the 2.4 s elderly mid-sentence pause in >= 10/12 battery turns (every VP stack took it 12/12 today, L8R2)"
+    },
+    "Brisk": {
+      "use_for": "busy professionals; auto-suggested when the ledger reads 'in a hurry'",
+      "ears_segmentation_ms": 500,
+      "release": {"complete": 0, "unsure_hold_ms": 400, "incomplete_hold_ms": 1000},
+      "withdraw_if_caller_speaks_ms": 250,
+      "barge_in": {"min_voiced_ms": 250, "min_words": 2, "or_voiced_ms": 600, "stop_term_min_voiced_ms": 200},
+      "silence_ladder_s": {"nudge_1": 5, "nudge_2": 10, "close": 14},
+      "listen_during_opening": true,
+      "speaking_rate": 1.05
+    },
+    "lab_reference": "lab policy: release on latest final or 1.2 s silence; 1,400 ms hold on continuation words; withdraw at 250 ms; barge-in 300 ms + 2 words or 700 ms (CALLS _tick). Result: 15-42% cut-ins, elderly 2.4 s pause taken 12/12 (L8R2)."
+  },
+
+  "completeness_cues": {
+    "complete_endings_hi": ["है", "हैं", "था", "थी", "थे", "गा", "गी", "गे", "दो", "दीजिए", "कीजिए", "करो", "चाहिए", "सकते", "रहा", "रही", "हुआ", "नहीं", "ठीक है"],
+    "incomplete_endings_hi": ["का", "की", "के", "को", "में", "से", "पर", "और", "लेकिन", "तो", "कि", "क्योंकि", "मतलब", "जैसे", "या", "अगर", "फिर", "यानी", "वो", "जो"],
+    "incomplete_endings_en": ["and", "but", "so", "because", "like", "or", "the", "a", "an", "um", "uh", "actually", "basically", "which", "that", "if", "then", "with", "aur", "lekin", "toh", "ki", "matlab", "jaise", "ya", "agar", "phir"],
+    "punctuation": "trailing comma, ellipsis or dash = incomplete; question mark after a question word = complete",
+    "basis": "Hindi is verb-final, so an ending on a postposition or conjunction signals an unfinished thought [I]; continuation list from CALLS CUES [O]. Must be measured on the battery before it ships as default."
+  },
+
+  "lexicons": {
+    "acknowledgement_continue": ["हाँ", "हां", "हाँ जी", "जी", "जी हाँ", "हम्म", "हूँ", "अच्छा", "अच्छा जी", "ओके", "सही", "बिल्कुल", "haan", "haan ji", "ji", "hmm", "achha", "accha", "ok", "okay", "right", "sure", "yes", "yeah"],
+    "context_dependent": {"ठीक है / theek hai / ok": "acknowledgement while she explains; an answer (yield after the current clause) when her current clause is a question or an offer"},
+    "stop_yield_now": ["रुको", "रुकिए", "एक मिनट", "एक सेकंड", "बस", "सुनिए", "सुनो", "अरे", "हेलो", "ruko", "rukiye", "ek minute", "ek second", "bas", "suniye", "arre", "hello", "wait", "hold on", "stop", "one minute", "sorry", "excuse me"],
+    "answer_or_objection_yield_after_clause": ["नहीं", "नही", "ना", "मत", "गलत", "पहले ही", "बाद में", "कौन", "nahi", "nahin", "na", "mat", "galat", "already", "no", "not now", "later", "busy", "wrong number", "kaun"],
+    "never_discard_rule": "every short final heard over her is classified (acknowledgement | stop | answer/objection | unknown) and logged; none is dropped. Bolna discards finals of 1 word or fewer not on an English stop list (research/2026-10-20/account-phase/bolna/report.md s1.3).",
+    "goodbye_hi_en": ["bye", "बाय", "नमस्ते", "ख्याल रखिए", "take care", "अच्छा दिन", "धन्यवाद", "शुक्रिया", "thank you", "फिर बात करते हैं", "all the best"],
+    "caller_closing": ["bye", "बाय", "thank you", "थैंक", "धन्यवाद", "शुक्रिया", "चलो ठीक है", "ठीक है फिर", "बाद में बात", "रखता हूँ", "रखती हूँ", "हो गया", "बस इतना", "ok bye"],
+    "version_rule": "lexicons are versioned data, editable per agent, shipped as defaults per language mode; the version is written into the run manifest"
+  },
+
+  "acknowledgement_bank": {
+    "what": "short tokens (जी, हाँ, अच्छा, हम्म, ओके) pre-rendered in the agent's own voice and style at publish",
+    "phase": "v1 for quiet-reply rescue and the Patient continuer; acknowledgement-first rendering of reply openers in v2",
+    "uses": ["first word of a reply when the brain's first clause is one of these tokens (no TTS wait for it)", "Patient preset continuer", "quiet-reply rescue"],
+    "gates": "never two turns running; never while echo hold is active; never as a static filler on every turn (HV/TXV: a static 'hmm' list became a tic)",
+    "why_own_voice": "a synthesised 'mm' in another timbre was rejected by ear (docs/harvest/hp-main.md)",
+    "metric_rule": "reply gap is reported to the first content word; first sound is reported separately"
+  },
+
+  "reply_door": {
+    "order": [
+      "R1 strip: tone notes, brackets, unknown tags, end-call marker; keep sound tags only for voices that support them",
+      "R2 disclosure present: the introduction turn must carry the light AI line; if missing, the door appends the Brand's approved disclosure clause (code-owned text, 3 approved variants per language, never removable)",
+      "R3 never denied: a clause that claims or implies being human is replaced by the approved honest clause; classifier tuned on keys because a naive gate misread 'मैं human advisor...' (L8R2 gate false positives 14/60 on one config)",
+      "R4 disclosure not repeated: an unprompted second disclosure clause is dropped (21% of round-1 turns restated it, LAB2)",
+      "R5 crisis: caller-side crisis detector suspends the goal, forces the crisis shape with Tele-MANAS 14416 and 112, alerts the Supervisor; she never ends a crisis call first",
+      "R6 numbers from data: every amount, date, time and percent must match FACTS_ROWS, contact variables or numbers confirmed earlier in this call, after canonicalising lakh, hazaar, Devanagari digits and times; else the clause becomes the approved 'a colleague will confirm' clause and an Issue is logged",
+      "R7 promotion fence: on a service-category call, clauses matching the Offering never-say list or the promotional classifier are blocked",
+      "R8 no OTP, PIN, card, CVV, bank-detail or payment ask; payment only as a link on the client's domain via follow-up",
+      "R9 no internals: no vendor or model names",
+      "R10 monologue guard: a reply is cut at the clause boundary after 60 words",
+      "R11 hang-up guard: end honoured only if her line is a goodbye and the caller's last turn was not a question; audio finishes, 1.5 s beat, cancelled if the caller speaks"
+    ],
+    "cost": "per-clause gate measured at 21-24 microseconds (L8R2)",
+    "lookahead": "one clause of lookahead before TTS (TXV agent lane)"
+  },
+
+  "silence_and_limits": {
+    "silence_ladder": "nudge in the caller's language (short, warm, not 'are you still there'), second nudge offering a better time, then a polite close and a callback scheduled inside window and budget",
+    "max_duration_default_s": 480,
+    "max_duration_range_s": [60, 1200],
+    "near_limit": "at max minus 45 s the ledger adds a row to start closing; at max she closes with one warm line",
+    "competitor_defaults_for_contrast": {"Retell": "10 min silence, 1 h max", "ElevenLabs": "silence end disabled, 600 s", "Bolna": "20 s silence, 90 s max", "Sarvam": "5 s nudges, 15 min", "Exotel": "3 nudges at 7 s, no max"}
+  },
+
+  "operator_and_voicemail": {
+    "goal": "classify switched-off, not-reachable, busy, invalid number, voicemail and IVR within 4 s median, with a reason code, and bill the fewest seconds",
+    "seed_phrases_hi_en": ["switched off", "स्विच ऑफ", "पहुँच से बाहर", "not reachable", "out of coverage", "दूसरी कॉल पर व्यस्त", "busy on another call", "मौजूद नहीं है", "does not exist", "the number you have dialled", "आप जिस नंबर", "कृपया लाइन पर बने रहें", "please leave a message", "बीप के बाद"],
+    "method": "STT phrase match plus an acoustic fingerprint of recorded carrier announcements (they are fixed recordings); first 6 s only; 'haan', 'hello', 'boliye' within the window = human",
+    "default_actions": {"voicemail": "hang up, no message (configurable: short message naming the company)", "ivr": "hang up (configurable: navigate by DTMF)", "operator_message": "end, reason code, retry per campaign ladder"},
+    "contrast": "Bolna waits for 7+ words, checks every 7 s up to 30 s, billed, no Hindi operator messages (research/2026-10-20/account-phase/bolna/report.md)",
+    "status": "untested (plan T4); needs a call lab"
+  },
+
+  "person_reading": {
+    "signals": ["lexical cues (PV2 CUES, per language)", "speech rate from STT word timings", "loudness vs the call's own baseline", "turn length and answer latency", "overlaps and barge-ins", "pause length mid-turn"],
+    "states": {
+      "in a hurry": {"brief_row": true, "rate": 1.05, "preset_hint": "Brisk", "length": "compress"},
+      "irritated": {"brief_row": true, "warmth": "low-warm", "humour": "off", "sound_tags": "off", "order": "straight answer first, goal waits"},
+      "worried": {"brief_row": true, "rate": 0.92, "style": "softvoice/gentle", "length": "up to three concrete sentences"},
+      "chatty": {"brief_row": true, "length": "two easy sentences", "laugh_cap": "1 in 3 turns"},
+      "confused": {"brief_row": true, "rate": 0.92, "length": "one fact at a time"},
+      "slow-paced": {"preset_hint": "Patient"}
+    },
+    "validation": "classified against synthetic callers with known hidden states; never graded by the model that produced it (HV law 9)"
+  },
+
+  "predicted_gap": {
+    "formula": "ears final lag p50 (for ears + segmentation) + expected hold (P(unsure) x unsure hold + P(incomplete) x incomplete hold) + brain first token p50 (model + region) + first clause time + voice first audio p50 + leading silence + phone leg",
+    "phone_leg_ms": {"value": "250-450", "grade": "I until a handset battery runs"},
+    "display": "stacked bar in ms next to the measured India p50 with n and date, or 'not measured'",
+    "accuracy_target_ms": 150
+  },
+
+  "stack_presets_candidates": {
+    "status": "default chosen only after round-2 human ratings and a handset battery (open.2026-10-20.default-stack)",
+    "Natural": {"candidate": "gated Gemini ears + Gemini 3.5 Flash-Lite or GPT-5.4 mini or gpt-4.1-mini (South India) + Gemini 3.8 Flash-Lite TTS direct stream", "evidence": "owner leaning (req-53); Gemini-voice cascade rated 6.0 with gpt-oss (n small); server gap 1.6-2.2 s smoke (LAB2)", "risk": "Google access, Tier-1 caps, price doubles 2027-01-01"},
+    "Fast": {"candidate": "Azure STT Central India + gpt-4.1-mini South India + MAI-Voice-2.1-Flash", "evidence": "MAI first audio 425 ms (n=5); cascade A p50 1,004 ms with a neural voice (n=60)", "risk": "MAI preview; Azure-voice family rated 1.5-4.5 in round 1"},
+    "Indic": {"candidate": "Sarvam Saaras v4 + sarvam-105b + Bulbul v4 Flash", "evidence": "0.97-1.18 s, Rs 1.39-1.51/min (n=9 replies); rated 6.0 with gpt-oss (n=2)", "risk": "trains on data unless opted out; competitor dependency"},
+    "Premium Live": {"candidate": "Gemini 3.8 Live, text-gated", "gate": "200+ attack-turn violation battery with 0 ungated violations heard, talk-over <= 5%, ear rating above best cascade beyond noise", "evidence": "talk-over 20/51 paid on non-pause turns (G5); Rs 3.3-5.7/min at 1-3 min", "status": "not offered until the gate passes"}
+  }
+}

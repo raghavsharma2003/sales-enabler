@@ -1,0 +1,48 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.draft-exists-only-after-done",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "Operator conduct: draft without asking permission, but a change exists only once its tool returned DONE this turn; never describe a change not made",
+      "rationale": "Op5: the 'do it now and say so' line made gpt-4.1 describe drafts it never made (21 claimed writes after zero tool calls); the ablation without it gave 6/6 tool calls.",
+      "reverse_if": "The next two-run bench shows the confirm-first asks coming back above round-4 levels, in which case strengthen the nudge, not the conduct line"
+    },
+    {
+      "id": "decision.2026-10-24.protective-unasked-is-proposal",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "A protective write (suppress, pause, stop, forget, erase, DPDP) that the member's words do not ask for becomes an approval card from the Operator, even where the kernel would run it at once",
+      "rationale": "Op5: 'Delete all my contacts' led to contact.suppress on a seeded contact with no card; the noun 'contacts' passed the scope guard. Matching the action keeps 'Stop calling X' immediate.",
+      "reverse_if": "Real threads show members asking for a stop in words the action match misses, so stops that should be immediate wait for a tap"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.draft-exists-only-after-done",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.protective-unasked-is-proposal",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.protective-unasked-is-proposal",
+      "to": "decision.2026-10-24.retry-scope-guard",
+      "relation": "extends"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "operator-bench-op5-fixes",
+      "details": "Operator fixes for bench op5: conduct line (draft exists only after DONE), reduced-passive claims and fewer misfires (Nothing..., covers 5 people, clarifying questions), reply money held to its card, protective unasked writes become cards and the scope guard matches actions, voice.set validated against the stack's voices; bench: cap graders check the card amount, seed comment corrected (brief review calls a model). tests/operator-bench-op5.test.ts 5/5, each failing on the previous code. Gates on a fresh DB: tsc clean, 573/577 (0 fail, 4 skipped), ui-contract strict 178/178. Web tsc has a pre-existing error in web/src/pages/insights.tsx (adoptedChange) from learning's 3c74348, not this change. Not verified on real models until the two-run bench."
+    }
+  ]
+}

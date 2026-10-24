@@ -1,0 +1,323 @@
+// The tool registry: every capability in VP is a tool. The Operator (chat), the HTTP API, MCP and the
+// UI all call the same tools, so "every page action is a tool and every tool has a page" holds by construction.
+//
+// Autonomy is decided here, in code:
+//   A1  read / draft / test tools run at once.
+//   A3  a closed list of risk-lowering verbs runs at once when VP itself (agent/system) calls it.
+//   A2  anything that reaches people, spends, deletes or changes policy is PROPOSED: the call stores the
+//       exact args and the object version and returns an approval card. A human member then approves that
+//       action id; the approval is single-use, bound to sha256(tool + canonical args), re-checked against
+//       the object version, and the tool runs in the same transaction. Nobody can hand execute() an approval.
+// Every run appends a hash-chained audit row in the same transaction as its effects.
+import type pg from 'pg';
+import { argsHash, authorise, canApprove, isA3, needsHumanApproval, type RiskClass, type Role } from '../shared/approval.ts';
+import { ValidationError, type Validator } from '../shared/validate.ts';
+import { publicReason } from './setup-error.ts';
+import { appendAudit } from './audit.ts';
+import { subjectOf } from './subject.ts';
+import { one, tx, type Queryable } from './db.ts';
+
+export interface Actor {
+  type: 'member' | 'agent' | 'vp_success' | 'system';
+  id?: string;
+  role?: Role;
+  /** API-key scopes: when non-empty the caller may use only tools whose name equals a scope or starts with
+   *  `<scope>.` (e.g. 'campaign' allows campaign.*; 'call.get' allows exactly that). Empty or absent = no narrowing. */
+  scopes?: readonly string[];
+}
+
+export function inScope(scopes: readonly string[] | undefined, tool: string): boolean {
+  if (!scopes || scopes.length === 0) return true;
+  return scopes.some(s => tool === s || tool.startsWith(s + '.'));
+}
+
+export interface ToolCtx {
+  q: Queryable;
+  workspaceId: string;
+  actor: Actor;
+}
+
+export interface PrepareCtx {
+  pool: pg.Pool; workspaceId: string; actor: Actor;
+  /** The held action being approved, when prepare() runs on the approval path: an idempotency key for a provider. */
+  actionId?: string;
+}
+
+export interface ToolDef<I = unknown, O = unknown> {
+  name: string;            // dotted verb, e.g. 'campaign.launch'
+  risk: RiskClass;
+  summary: string;         // plain words for approval cards: what it does
+  input: Validator<I>;
+  /** Slow work that must NOT hold a transaction open (an LLM call, a provider request): runs first, outside the
+   *  transaction, reading through the pool; its result is handed to run() as `prepared`. Writes belong in run(). */
+  prepare?(ctx: PrepareCtx, input: I): Promise<unknown>;
+  run(ctx: ToolCtx, input: I, prepared?: unknown): Promise<O>;
+  /** For A2 tools: the version of the object the approval is about (e.g. agent_version hash, campaign policy_version).
+   *  Read at proposal and again at execution; a mismatch voids the approval. */
+  version?(ctx: ToolCtx, input: I): Promise<string | null>;
+  /** For A2 tools: one plain sentence describing exactly this call, shown on the approval card. */
+  describe?(input: I, ctx: ToolCtx): string | Promise<string>;
+  /** Roles that may call (or propose) this tool. Defaults by risk class; approval rights are separate (shared/approval.ts). */
+  roles?: readonly Role[];
+  /** What to persist in action.result (and so show in /v1/actions) instead of the raw result, when the result holds
+   *  something that must be shown once and never stored (a token, a secret). The live receipt still carries the raw result. */
+  redactResult?(out: O): unknown;
+}
+
+const DEFAULT_ROLES: Record<RiskClass, readonly Role[]> = {
+  read: ['owner', 'builder', 'operator', 'compliance', 'viewer'],
+  draft: ['owner', 'builder', 'operator'],
+  test: ['owner', 'builder', 'operator'],
+  external: ['owner', 'builder', 'operator'],
+  spend: ['owner', 'builder', 'operator'],        // anyone working may PROPOSE spend; only an owner approves it
+  destructive: ['owner', 'operator', 'compliance'],
+  policy: ['owner', 'builder', 'operator', 'compliance'],
+};
+
+/** Define a tool. Takes the validator first so the input type is inferred for run/describe/version
+ *  (an inline generic validator inside one object literal is not inferred by TypeScript). */
+export function tool<I, O>(input: Validator<I>, def: Omit<ToolDef<I, O>, 'input'>): ToolDef<I, O> {
+  return { ...def, input };
+}
+
+export type Receipt<O = unknown> =
+  | { status: 'confirmed'; mode: 'A1' | 'A2' | 'A3'; result: O; argsHash: string; actionId?: string }
+  | { status: 'needs_approval'; actionId: string; argsHash: string; risk: RiskClass; summary: string; expiresAt: string }
+  | { status: 'not_executed'; reason: string; argsHash?: string; path?: string; code?: string }
+  | { status: 'unknown'; reason: string; argsHash: string; actionId?: string };
+
+/** Throw this from a tool whose side effect may have happened (e.g. a carrier request timed out). */
+export class UnknownOutcome extends Error {
+  constructor(message: string) { super(message); this.name = 'UnknownOutcome'; }
+}
+
+const APPROVAL_TTL_MS = 24 * 3600_000;
+const actorId = (a: Actor) => a.id ?? a.type;
+
+/** Whether a call waits for a member's tap. A3 verbs only lower risk or spend (pause, stop, suppress after opt-out,
+ *  revert to last good), so they run at once for VP itself and for any member whose role may call the tool: nobody waits
+ *  to make things safer. The exception is attempt.retry_per_ladder, which re-dials someone: only VP itself (system, or
+ *  an agent with no member behind it) runs it at once. An agent acting for a member, like the Operator, carries that
+ *  member's role and is held exactly as the member would be, so no chat turn can talk its way past a card. */
+export function heldForApproval(name: string, risk: RiskClass, actor: Actor): boolean {
+  if (!needsHumanApproval(risk)) return false;
+  if (!isA3(name)) return true;
+  const autonomous = actor.type === 'system' || (actor.type === 'agent' && !actor.role);
+  return name === 'attempt.retry_per_ladder' && !autonomous;
+}
+
+export class Registry {
+  private tools = new Map<string, ToolDef<any, any>>();
+
+  register<I, O>(t: ToolDef<I, O>): void {
+    if (this.tools.has(t.name)) throw new Error(`tool ${t.name} is already registered`);
+    this.tools.set(t.name, t);
+  }
+
+  get(name: string): ToolDef | undefined { return this.tools.get(name); }
+
+  list(): { name: string; risk: RiskClass; summary: string; needsApproval: boolean; roles: readonly Role[] }[] {
+    return [...this.tools.values()]
+      .map(t => ({ name: t.name, risk: t.risk, summary: t.summary, needsApproval: needsHumanApproval(t.risk), roles: t.roles ?? DEFAULT_ROLES[t.risk] }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /** Call a tool. A1/A3 run now; A2 is stored as a proposed action and returns an approval card. */
+  async execute<O = unknown>(pool: pg.Pool, name: string, raw: unknown, opts: { workspaceId: string; actor: Actor; threadId?: string }): Promise<Receipt<O>> {
+    return asPublic(await this.executeRaw<O>(pool, name, raw, opts), name);
+  }
+
+  private async executeRaw<O = unknown>(pool: pg.Pool, name: string, raw: unknown, opts: { workspaceId: string; actor: Actor; threadId?: string }): Promise<Receipt<O>> {
+    const t = this.tools.get(name);
+    if (!t) return { status: 'not_executed', reason: `unknown tool "${name}"` };
+    // Members (and agents acting for one, which carry that member's role) are held to the tool's roles.
+    // Internal workers (system, or an agent with no role) are trusted code paths.
+    if (opts.actor.type === 'member' || opts.actor.role) {
+      const allowed = t.roles ?? DEFAULT_ROLES[t.risk];
+      if (!opts.actor.role || !allowed.includes(opts.actor.role)) return { status: 'not_executed', reason: `a ${opts.actor.role ?? 'caller without a role'} cannot use ${name}` };
+    }
+    if (!inScope(opts.actor.scopes, name)) return { status: 'not_executed', reason: `this API key's scopes do not include ${name}` };
+
+    let input: unknown;
+    try { input = t.input(raw); } catch (e) {
+      if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path };
+      throw e;
+    }
+    const h = argsHash(name, input);
+    const ctxFor = (q: Queryable): ToolCtx => ({ q, workspaceId: opts.workspaceId, actor: opts.actor });
+
+    if (heldForApproval(name, t.risk, opts.actor)) {
+      const row = await tx(pool, async c => {
+        // describe() may look up names (an approval card shows names, never ids), so it runs inside the transaction.
+        const summary = t.describe ? await t.describe(input, ctxFor(c)) : t.summary;
+        const version = t.version ? await t.version(ctxFor(c), input) : null;
+        const a = await one<{ id: string; expires_at: Date }>(c,
+          `INSERT INTO action (workspace_id, thread_id, tool, args, args_hash, risk_class, status, proposed_by, object_version, summary, expires_at)
+           VALUES ($1,$2,$3,$4,$5,$6,'proposed',$7,$8,$9,$10) RETURNING id, expires_at`,
+          [opts.workspaceId, opts.threadId ?? null, name, JSON.stringify(input), h, t.risk, actorId(opts.actor), version, summary, new Date(Date.now() + APPROVAL_TTL_MS)]);
+        await appendAudit(c, { workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: 'action.propose',
+          objectType: 'action', objectId: a!.id, argsHash: h, payload: { tool: name, risk: t.risk, subject: subjectOf(input, undefined, name) } });
+        return { ...a!, summary };
+      });
+      return { status: 'needs_approval', actionId: row.id, argsHash: h, risk: t.risk, summary: row.summary, expiresAt: row.expires_at.toISOString() };
+    }
+
+    const mode: 'A1' | 'A3' = isA3(name) ? 'A3' : 'A1';     // not held: an A3 verb here ran at once
+    return this.run<O>(pool, t, input, h, mode, opts.workspaceId, opts.actor, async (c, out) => {
+      if (t.risk === 'read') return out;     // reads change nothing; auditing them would bury the changes
+      await appendAudit(c,{ workspaceId: opts.workspaceId, actorType: opts.actor.type, actorId: opts.actor.id, action: name, argsHash: h, payload: { mode, risk: t.risk, subject: subjectOf(input, out, name) } });
+      return out;
+    });
+  }
+
+  /** A human member approves a proposed action; it runs now, once, if nothing changed since it was proposed. */
+  async approve<O = unknown>(pool: pg.Pool, actionId: string, approver: { workspaceId: string; memberId: string }): Promise<Receipt<O>> {
+    return asPublic(await this.approveRaw<O>(pool, actionId, approver));
+  }
+
+  private async approveRaw<O = unknown>(pool: pg.Pool, actionId: string, approver: { workspaceId: string; memberId: string }): Promise<Receipt<O>> {
+    const pre = await one<{ tool: string }>(pool, 'SELECT tool FROM action WHERE id = $1 AND workspace_id = $2', [actionId, approver.workspaceId]);
+    if (!pre) return { status: 'not_executed', reason: 'no such action' };
+    const t = this.tools.get(pre.tool);
+    if (!t) return { status: 'not_executed', reason: `unknown tool "${pre.tool}"` };
+
+    let h = '';
+    let prepared: unknown;
+    if (t.prepare) {
+      // prepare() may reach a provider, so every check that can refuse runs BEFORE it, read-only; the transaction
+      // below repeats them under lock, so a race between here and there still cannot run a refused action.
+      const a0 = await one<{ args: unknown; args_hash: string; expires_at: Date | null; object_version: string | null }>(pool,
+        "SELECT args, args_hash, expires_at, object_version FROM action WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, approver.workspaceId]);
+      if (!a0) return { status: 'not_executed', reason: 'this action is no longer waiting for approval' };
+      if (a0.expires_at && a0.expires_at.getTime() < Date.now()) return { status: 'not_executed', reason: 'this approval request expired; ask again' };
+      const m0 = await one<{ role: Role }>(pool, "SELECT role FROM member WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [approver.memberId, approver.workspaceId]);
+      if (!m0) return { status: 'not_executed', reason: 'only an active member of this workspace can approve' };
+      if (!canApprove(m0.role, t.risk)) return { status: 'not_executed', reason: `a ${m0.role} cannot approve ${t.risk} actions` };
+      let input0: unknown;
+      try { input0 = t.input(a0.args); } catch (e) { return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e) }; }
+      if (argsHash(t.name, input0) !== a0.args_hash) return { status: 'not_executed', reason: 'the stored action does not match its hash; it was not run' };
+      const actor0: Actor = { type: 'member', id: approver.memberId, role: m0.role };
+      if (t.version && (await t.version({ q: pool, workspaceId: approver.workspaceId, actor: actor0 }, input0)) !== a0.object_version) {
+        return { status: 'not_executed', reason: 'what you approved has changed since it was proposed; review it again' };
+      }
+      try { prepared = await t.prepare({ pool, workspaceId: approver.workspaceId, actor: actor0, actionId }, input0); }
+      catch (e) {
+        // A provider call whose outcome is unknown (a charge that may have gone through) is recorded as unknown, never
+        // as not run: the action must not look approvable again.
+        if (e instanceof UnknownOutcome) return this.markUnknown(pool, actionId, approver, t.name, argsHash(t.name, input0), e.message);
+        return refused(e);
+      }
+    }
+    try {
+      return await tx(pool, async c => {
+        const a = await one<{ args: unknown; args_hash: string; status: string; risk_class: RiskClass; expires_at: Date | null; object_version: string | null }>(c,
+          'SELECT args, args_hash, status, risk_class, expires_at, object_version FROM action WHERE id = $1 AND workspace_id = $2 FOR UPDATE',
+          [actionId, approver.workspaceId]);
+        if (!a) throw new Refusal('no such action');
+        if (a.status !== 'proposed') throw new Refusal(`this action is already ${a.status}`);
+        if (a.expires_at && a.expires_at.getTime() < Date.now()) {
+          await c.query("UPDATE action SET status = 'expired' WHERE id = $1", [actionId]);
+          throw new Refusal('this approval request expired; ask again', true);
+        }
+        const m = await one<{ role: Role }>(c, "SELECT role FROM member WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [approver.memberId, approver.workspaceId]);
+        if (!m) throw new Refusal('only an active member of this workspace can approve');
+
+        const input = t.input(a.args);              // re-validate what is stored, not what was sent
+        h = argsHash(t.name, input);
+        if (h !== a.args_hash) throw new Refusal('the stored action does not match its hash; it was not run');
+        // Any held action (A2, or a draft held because the workspace lowered autonomy to A0) needs an approver whose
+        // role may approve its risk class; authorise() alone lets non-A2 classes through.
+        if (!canApprove(m.role, t.risk)) throw new Refusal(`a ${m.role} cannot approve ${t.risk} actions`);
+        const v = authorise({ tool: t.name, args: input, risk: t.risk, approver: { role: m.role }, tokenArgsHash: a.args_hash });
+        if (!v.allowed) throw new Refusal(v.reason);
+
+        const actor: Actor = { type: 'member', id: approver.memberId, role: m.role };
+        const ctx: ToolCtx = { q: c, workspaceId: approver.workspaceId, actor };
+        if (t.version) {
+          const now = await t.version(ctx, input);
+          if (now !== a.object_version) {
+            await c.query("UPDATE action SET status = 'cancelled' WHERE id = $1", [actionId]);
+            throw new Refusal('what you approved has changed since it was proposed; review it again', true);
+          }
+        }
+        await c.query('INSERT INTO approval_token (action_id, approver_id, args_hash, object_version) VALUES ($1,$2,$3,$4)', [actionId, approver.memberId, h, a.object_version]);
+        const out = await t.run(ctx, input, prepared);
+        const stored = t.redactResult ? t.redactResult(out) : out;
+        await c.query("UPDATE action SET status = 'executed', result = $2, executed_at = now() WHERE id = $1", [actionId, JSON.stringify(stored ?? null)]);
+        await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: t.name,
+          objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', risk: t.risk, approverRole: m.role, subject: subjectOf(input, out, t.name) } });
+        return { status: 'confirmed', mode: 'A2', result: out as O, argsHash: h, actionId } as Receipt<O>;
+      });
+    } catch (e) {
+      if (e instanceof Refusal) {
+        if (e.persist) await this.persistStatusChange(pool, actionId, approver.workspaceId, e.message);
+        return { status: 'not_executed', reason: e.message, argsHash: h || undefined };
+      }
+      if (e instanceof UnknownOutcome) return this.markUnknown(pool, actionId, approver, t.name, h, e.message);
+      if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path, argsHash: h || undefined };
+      return refused(e, h || undefined);
+    }
+  }
+
+  private async markUnknown<O>(pool: pg.Pool, actionId: string, approver: { workspaceId: string; memberId: string }, tool: string, h: string,
+    reason: string): Promise<Receipt<O>> {
+    await tx(pool, async c => {
+      await c.query("UPDATE action SET status = 'unknown' WHERE id = $1 AND workspace_id = $2", [actionId, approver.workspaceId]);
+      await appendAudit(c, { workspaceId: approver.workspaceId, actorType: 'member', actorId: approver.memberId, action: tool,
+        objectType: 'action', objectId: actionId, argsHash: h, payload: { mode: 'A2', outcome: 'unknown', reason } });
+    });
+    return { status: 'unknown', reason, argsHash: h, actionId };
+  }
+
+  /** Decline a proposed action. Deciding is approving's mirror: only a member who could approve it, or the member who
+   *  proposed it (withdrawing their own request), may decline it. */
+  async decline(pool: pg.Pool, actionId: string, by: { workspaceId: string; memberId: string }): Promise<boolean> {
+    return tx(pool, async c => {
+      const m = await one<{ role: Role }>(c, "SELECT role FROM member WHERE id = $1 AND workspace_id = $2 AND status = 'active'", [by.memberId, by.workspaceId]);
+      const a = await one<{ risk_class: RiskClass; proposed_by: string }>(c,
+        "SELECT risk_class, proposed_by FROM action WHERE id = $1 AND workspace_id = $2 AND status = 'proposed' FOR UPDATE", [actionId, by.workspaceId]);
+      if (!m || !a) return false;
+      if (!canApprove(m.role, a.risk_class) && a.proposed_by !== by.memberId) return false;
+      const r = await c.query("UPDATE action SET status = 'cancelled' WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, by.workspaceId]);
+      if (!r.rowCount) return false;
+      await appendAudit(c, { workspaceId: by.workspaceId, actorType: 'member', actorId: by.memberId, action: 'action.decline', objectType: 'action', objectId: actionId });
+      return true;
+    });
+  }
+
+  // Expiry and version-change cancellations happen inside a transaction that then rolls back; write them again.
+  private async persistStatusChange(pool: pg.Pool, actionId: string, ws: string, reason: string) {
+    const status = reason.includes('expired') ? 'expired' : 'cancelled';
+    await pool.query("UPDATE action SET status = $3 WHERE id = $1 AND workspace_id = $2 AND status = 'proposed'", [actionId, ws, status]);
+  }
+
+  private async run<O>(pool: pg.Pool, t: ToolDef, input: unknown, h: string, mode: 'A1' | 'A3', ws: string, actor: Actor,
+    finish: (c: pg.PoolClient, out: unknown) => Promise<unknown>): Promise<Receipt<O>> {
+    try {
+      const prepared = t.prepare ? await t.prepare({ pool, workspaceId: ws, actor }, input) : undefined;
+      const result = await tx(pool, async c => finish(c, await t.run({ q: c, workspaceId: ws, actor }, input, prepared)));
+      return { status: 'confirmed', mode, result: result as O, argsHash: h };
+    } catch (e) {
+      if (e instanceof UnknownOutcome) {
+        await tx(pool, c => appendAudit(c, { workspaceId: ws, actorType: actor.type, actorId: actor.id, action: t.name, argsHash: h, payload: { mode, outcome: 'unknown', reason: e.message } }));
+        return { status: 'unknown', reason: e.message, argsHash: h };
+      }
+      if (e instanceof ValidationError) return { status: 'not_executed', reason: e.message, path: e.path, argsHash: h };
+      return refused(e, h);
+    }
+  }
+}
+
+/** A thrown error as a refusal; a SetupError (or any error with a string code) passes its code on. */
+function refused(e: unknown, argsHash?: string): Receipt<never> {
+  const code = e && typeof e === 'object' && typeof (e as { code?: unknown }).code === 'string' && /^[a-z][a-z0-9_]*$/.test((e as { code: string }).code) ? (e as { code: string }).code : undefined;
+  return { status: 'not_executed', reason: e instanceof Error ? e.message : String(e), ...(argsHash ? { argsHash } : {}), ...(code ? { code } : {}) };
+}
+/** Every receipt a caller sees: a reason carrying server detail (an env var, a path, a stack) is logged and replaced. */
+function asPublic<O>(r: Receipt<O>, tool?: string): Receipt<O> {
+  return r.status === 'not_executed' || r.status === 'unknown' ? { ...r, reason: publicReason(r.reason, tool) } : r;
+}
+
+class Refusal extends Error {
+  constructor(message: string, public persist = false) { super(message); this.name = 'Refusal'; }
+}

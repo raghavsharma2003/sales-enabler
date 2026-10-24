@@ -1,0 +1,146 @@
+{
+ "source": "each run database, read by harness/misses.py before the cluster was removed; conversations mapped to bench items by contact number, stored outcome and reason code asserted equal to the bench JSON",
+ "runs": {
+  "dev-gpt-4.1-mini.current-p1": {
+   "db": "checked (name withheld)",
+   "misses": [
+    {
+     "id": "wrong_person.telecom.hinglish",
+     "key": "wrong_person",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_WRONG_PERSON",
+     "storedReasonCode": "CONV_WRONG_PERSON",
+     "tier": null
+    }
+   ],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.current-p2": {
+   "db": "checked (name withheld)",
+   "misses": [
+    {
+     "id": "wrong_person.healthcare.hinglish",
+     "key": "wrong_person",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_WRONG_PERSON",
+     "storedReasonCode": "CONV_WRONG_PERSON",
+     "tier": null
+    },
+    {
+     "id": "complaint.healthcare.hinglish",
+     "key": "needs_human",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_NEEDS_HUMAN",
+     "storedReasonCode": "CONV_NEEDS_HUMAN",
+     "tier": null
+    }
+   ],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.r5-short-objection-p1": {
+   "db": "checked (name withheld)",
+   "misses": [
+    {
+     "id": "complaint.lending.hinglish",
+     "key": "needs_human",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_COMPLAINT",
+     "storedReasonCode": "CONV_COMPLAINT",
+     "tier": null
+    },
+    {
+     "id": "complaint.healthcare.hinglish",
+     "key": "needs_human",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_NEEDS_HUMAN",
+     "storedReasonCode": "CONV_NEEDS_HUMAN",
+     "tier": null
+    }
+   ],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.r5-short-objection-p2": {
+   "db": "checked (name withheld)",
+   "misses": [
+    {
+     "id": "complaint.telecom.hinglish",
+     "key": "needs_human",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_NEEDS_HUMAN",
+     "storedReasonCode": "CONV_NEEDS_HUMAN",
+     "tier": null
+    }
+   ],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.r5-outcome-first-p1": {
+   "db": "checked (name withheld)",
+   "misses": [],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.r5-outcome-first-p2": {
+   "db": "checked (name withheld)",
+   "misses": [],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.r5-moment-not-outcome-p1": {
+   "db": "checked (name withheld)",
+   "misses": [
+    {
+     "id": "complaint.healthcare.hinglish",
+     "key": "needs_human",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_NEEDS_HUMAN",
+     "storedReasonCode": "CONV_NEEDS_HUMAN",
+     "tier": null
+    }
+   ],
+   "allMappedAndMatched": true
+  },
+  "dev-gpt-4.1-mini.r5-moment-not-outcome-p2": {
+   "db": "checked (name withheld)",
+   "misses": [
+    {
+     "id": "wrong_person.healthcare.hinglish",
+     "key": "wrong_person",
+     "stored": null,
+     "outcomeUnclear": null,
+     "outcomeConfidence": null,
+     "modelReasonCode": "CONV_WRONG_PERSON",
+     "storedReasonCode": "CONV_WRONG_PERSON",
+     "tier": null
+    }
+   ],
+   "allMappedAndMatched": true
+  },
+  "gpt-4.1-mini.r5-outcome-first-p1": {
+   "db": "checked (name withheld)",
+   "misses": [],
+   "allMappedAndMatched": true
+  },
+  "gpt-4.1-mini.r5-outcome-first-p2": {
+   "db": "checked (name withheld)",
+   "misses": [],
+   "allMappedAndMatched": true
+  },
+  "tiered.r5-outcome-first-p1": {
+   "db": "checked (name withheld)",
+   "misses": [],
+   "allMappedAndMatched": true
+  }
+ }
+}

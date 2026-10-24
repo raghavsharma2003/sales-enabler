@@ -1,0 +1,33 @@
+## bihar: first 48 pids
+Block B per-listener condition counts ['neutral_hinglish', 'bhojpuri_mix']: {(3, 3): 48}
+Block B (turn, condition) range: 24..24 over 12 cells
+Block B (condition, voice): bhojpuri_m/Diya:Dra=72, bhojpuri_m/MadhurNe=72, neutral_hi/Diya:Dra=72, neutral_hi/MadhurNe=72
+Block A x1: 576 trials, target played first in 288 (0.50)
+Block A wideband share: 144/576 = 0.25
+Block A trials per listener (incl. identical catch): {13: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+
+## outgroup: first 48 pids
+Block B per-listener condition counts ['neutral_hinglish', 'bhojpuri_mix']: {(3, 3): 48}
+Block B (turn, condition) range: 24..24 over 12 cells
+Block B (condition, voice): bhojpuri_m/Diya:Dra=72, bhojpuri_m/MadhurNe=72, neutral_hi/Diya:Dra=72, neutral_hi/MadhurNe=72
+Block A x1: 576 trials, target played first in 288 (0.50)
+Block A wideband share: 144/576 = 0.25
+Block A trials per listener (incl. identical catch): {13: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+
+## tamilnadu: first 48 pids
+Block B per-listener condition counts ['tamil_english', 'neutral_hinglish', 'indian_english']: {(2, 2, 2): 48}
+Block B (turn, condition) range: 16..16 over 18 cells
+Block B (condition, voice): indian_eng/Arjun:Dr=48, indian_eng/Meera:Dr=48, neutral_hi/Arjun:Dr=48, neutral_hi/Meera:Dr=48, tamil_engl/Arjun:Dr=48, tamil_engl/Meera:Dr=48
+Block A v1: 96 trials, target played first in 48 (0.50)
+Block A x1: 288 trials, target played first in 144 (0.50)
+Block A x2: 288 trials, target played first in 144 (0.50)
+Block A wideband share: 168/672 = 0.25
+Block A trials per listener (incl. identical catch): {15: 48}; Block B cards: {7: 48}; Block C: {0: 48}
+
+## maharashtra: first 48 pids
+Block B per-listener condition counts ['marathi_mix', 'neutral_hinglish']: {(3, 3): 48}
+Block B (turn, condition) range: 24..24 over 12 cells
+Block B (condition, voice): marathi_mi/Diya:Dra=88, marathi_mi/AarohiNe=28, marathi_mi/ManoharN=28, neutral_hi/Diya:Dra=88, neutral_hi/AarohiNe=28, neutral_hi/ManoharN=28
+Block A x1: 528 trials, target played first in 264 (0.50)
+Block A wideband share: 132/528 = 0.25
+Block A trials per listener (incl. identical catch): {12: 48}; Block B cards: {7: 48}; Block C: {0: 48}

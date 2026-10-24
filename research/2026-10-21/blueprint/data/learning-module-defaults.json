@@ -1,0 +1,691 @@
+{
+ "id": "learning-module-defaults",
+ "module": "learning",
+ "status": "proposed (blueprint, owner review)",
+ "date": "2026-10-21",
+ "directive": "directive.2026-10-21.blueprint-end-to-end",
+ "grades": "M measured, C computed, O observed, V vendor-claimed, I inferred (proposed default to recalibrate on design-partner data), U unknown",
+ "seams": {
+  "intelligence": "supplies signals (moment hazard, cut-ins, ASR-empty, outcomes, judge agreement) via data/blueprint/intelligence-module.json metric_layer; this module proposes harmonising monitor M10 to fast_lane.rule below (continuous, not 'first 30 connected')",
+  "voice": "compile(), brief sections, lint L1-L7, turn presets, ledger pack, reply door: data/blueprint/voice-module-defaults.json",
+  "workspace": "cards, approval token, risk classes, tools proposal.accept / experiment.start / experiment.stop: data/blueprint/workspace-tool-registry.json",
+  "memory-omni": "facts and the pre-call memory brief; this module may only test the memory COMPILE policy, never write facts",
+  "campaigns": "windows, pacing, retry ladder; best-time proposals stay inside the category window (predicate)",
+  "trust-telephony": "predicates, monitor M08 per-CLI early hang-up (TRAI reg 21A), locked sections",
+  "economics-platform": "test budget, pricing unit, Scout radar"
+ },
+ "learnable": [
+  {
+   "target": "turn-taking numbers (unsure/incomplete hold ms, barge-in ms, segmentation ms, continuer timing, speaking rate within 0.9-1.1)",
+   "object": "Stack.turn_policy / preset",
+   "level": "tenant, segment by measured pace",
+   "decision_metric": "cut_in_rate (stereo)",
+   "guardrails": [
+    "reply gap p50 non-inferior within +150 ms",
+    "short_reply_kept_rate"
+   ],
+   "calls_to_prove": "70-163 calls/arm for 25%->18% (ICC assumed 0.05-0.2) [C]",
+   "phase": "v2",
+   "grade": "C"
+  },
+  {
+   "target": "lexicons: Hindi/Hinglish backchannels, continuation words, stop terms, YES/NO/CLOSING cues",
+   "object": "LedgerPack.lexicons, turn lexicons",
+   "level": "tenant (proposals), VP-wide invariant library",
+   "decision_metric": "short_reply_kept_rate, cut_in_rate, ledger precision/recall on keys",
+   "calls_to_prove": "offline first (ledger keys precision>=0.95, recall>=0.9); then turn-level test as above",
+   "phase": "v2",
+   "grade": "I"
+  },
+  {
+   "target": "OPENING slot: the useful-first shape after the locked disclosure",
+   "object": "Brief.OPENING (shape)",
+   "level": "script",
+   "decision_metric": "early_hangup_10s_rate",
+   "calls_to_prove": "686/arm for 15%->10%; 2,036/arm for 15%->12% [C]",
+   "phase": "v2",
+   "grade": "C"
+  },
+  {
+   "target": "a moment's shape in CORE / SITUATION_GOAL middle slots (the owner's call 100 -> 101 line)",
+   "object": "Brief middle slot (shape)",
+   "level": "script version",
+   "decision_metric": "local hazard at the moment, then agenda milestone",
+   "calls_to_prove": "fast lane: catastrophic lines flagged at median call 13-15 [C]; ordinary fix proved at ~592 calls/arm on local hazard vs 4,028 completion vs 25,963 conversion [C, l6]",
+   "phase": "v1 fast lane; v2 tests",
+   "grade": "C"
+  },
+  {
+   "target": "objection packs (on-demand skills)",
+   "object": "Skill pack",
+   "level": "tenant",
+   "decision_metric": "call continues 2+ turns past the objection and the next ledger milestone is reached",
+   "calls_to_prove": "388/arm calls reaching the objection for 50%->60% [C]",
+   "phase": "v2",
+   "grade": "C/I"
+  },
+  {
+   "target": "tool guidance and talk-while-waiting shapes",
+   "object": "Tool.guidance",
+   "level": "tenant",
+   "decision_metric": "dead air during tool calls, hang-up during tool wait",
+   "calls_to_prove": "local, ~400-700/arm [I]",
+   "phase": "v2",
+   "grade": "I"
+  },
+  {
+   "target": "best time inside the legal/category window",
+   "object": "Campaign.pacing hour weights",
+   "level": "segment within tenant; per contact = stated preference + pickup prior",
+   "decision_metric": "connect_rate",
+   "calls_to_prove": "963-1,565 dials/arm [C]",
+   "phase": "v2",
+   "grade": "C"
+  },
+  {
+   "target": "memory compile policy (which fact types, order, cap)",
+   "object": "MemoryBrief compiler policy",
+   "level": "tenant",
+   "decision_metric": "preference adherence on next call (code), then agenda milestone",
+   "calls_to_prove": "adherence: per-contact, 1 call; policy test ~1,000/arm [I]",
+   "phase": "v2",
+   "grade": "I"
+  },
+  {
+   "target": "register within bounds (warmth one step, pace) per segment",
+   "object": "register sliders",
+   "level": "segment",
+   "decision_metric": "blind listener panel first (metrics do not pick voices), then early hang-up",
+   "calls_to_prove": "panel + 686/arm [C]",
+   "phase": "v3",
+   "grade": "I"
+  },
+  {
+   "target": "voice per segment",
+   "object": "Voice",
+   "level": "segment, volume only",
+   "decision_metric": "listener panel + language match; never auto-swapped",
+   "calls_to_prove": "effects likely tiny (TTS vendor moved intro hang-up 87.9-90.3% over ~99,400 calls [V])",
+   "phase": "v3",
+   "grade": "V"
+  },
+  {
+   "target": "business outcome (renewal paid, promise kept, booking confirmed)",
+   "object": "any approved variant",
+   "level": "tenant cohort",
+   "decision_metric": "outcome earned in code (webhook, CRM, booking)",
+   "calls_to_prove": "20->25%: 1,094/arm; 20->22%: 6,510/arm; 10->11%: 14,751/arm [C]",
+   "phase": "v2 when powered; v3 bandits",
+   "grade": "C"
+  }
+ ],
+ "never_learned": [
+  "AI disclosure and its 3 approved variants",
+  "recording notice",
+  "consent, opt-out and DND handling",
+  "crisis lines Tele-MANAS 14416 and 112 and the crisis shape",
+  "identity (IDENTITY locked lines, SCRIPT rule)",
+  "prices, offers, amounts, dates (FACTS_ROWS are client data)",
+  "the call-category promotion fence",
+  "reply-door predicates R1-R11 and the hang-up guard",
+  "LEDGER and COUNTS_AND_GOAL_CHECK tail (rules appended last)",
+  "the governor",
+  "sound-tag caps"
+ ],
+ "fast_lane": {
+  "rule": "after every connected call, for each moment j on the script version: flag when hang-ups k_j >= 10 AND P(h_j > 3 x reference_j | Beta(0.5+k, 0.5+n-k)) >= 0.99, n = callers who reached moment j",
+  "reference_curve": "tenant's own median per-position hazard from its other scripts once it has 1,000+ connected calls; else the VP default prior [0.15, 0.08, 0.06, 0.05, 0.05, 0.04, 0.04, 0.04] (ASSUMED, l6)",
+  "alignment": "hang-up time (carrier BYE, caller side) attributed to the moment whose clause audio was playing or ended within the last 2.0 s (I); hang-ups during the caller's own turn are attributed to the caller turn after the moment",
+  "moment_identity": "brief slot + clause index + shape hash; a changed shape is a new moment with fresh counts",
+  "triage_order": [
+   "engineering first: TTS error or silence at the clause, reply gap at the moment over 2.5 s, empty ASR, carrier drop at the same second across calls -> Issue to voice/economics-platform",
+   "content second: Coach proposal"
+  ],
+  "auto_actions": {
+   "regression": "if the current version introduced the moment and the previous version ran 200+ connected calls without this flag: revert to the previous version (A3, inside the launch card's 'auto-revert on catastrophic regression' policy, default ON), notify, undo",
+   "not_a_regression": "throttle pacing for that script to 25% until a human decides (A3 spend- and contact-saving, undo); never auto-rewrite"
+  },
+  "card_sla": "proposal card within 15 min p90 of the flag (text sims: 6 base + up to 6 failure personas x 3 seeds) (I)",
+  "computed": [
+   {
+    "scenario": "healthy script exactly on the reference curve",
+    "p_flag_by_15": 0.0,
+    "p_flag_by_20": 0.0,
+    "p_flag_by_30": 0.0,
+    "p_flag_by_50": 0.0,
+    "p_flag_by_100": 0.0,
+    "p_flag_by_300": 0.0,
+    "median_call_of_flag": null
+   },
+   {
+    "scenario": "healthy script, every line 1.5x the reference (harder audience)",
+    "p_flag_by_15": 0.0,
+    "p_flag_by_20": 0.0,
+    "p_flag_by_30": 0.0,
+    "p_flag_by_50": 0.0,
+    "p_flag_by_100": 0.0003,
+    "p_flag_by_300": 0.0005,
+    "median_call_of_flag": null
+   },
+   {
+    "scenario": "healthy script, every line 2x the reference (badly mis-specified curve)",
+    "p_flag_by_15": 0.0008,
+    "p_flag_by_20": 0.0008,
+    "p_flag_by_30": 0.0015,
+    "p_flag_by_50": 0.0047,
+    "p_flag_by_100": 0.0095,
+    "p_flag_by_300": 0.013,
+    "median_call_of_flag": null
+   },
+   {
+    "scenario": "catastrophic line at moment 2 (the useful-first slot right after the opening): 90% of callers who hear it hang up",
+    "p_flag_by_15": 0.8885,
+    "p_flag_by_20": 0.9972,
+    "p_flag_by_30": 1.0,
+    "p_flag_by_50": 1.0,
+    "p_flag_by_100": 1.0,
+    "p_flag_by_300": 1.0,
+    "median_call_of_flag": 13.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 2 (the useful-first slot right after the opening): 60% of callers who hear it hang up",
+    "p_flag_by_15": 0.1752,
+    "p_flag_by_20": 0.619,
+    "p_flag_by_30": 0.9583,
+    "p_flag_by_50": 0.998,
+    "p_flag_by_100": 1.0,
+    "p_flag_by_300": 1.0,
+    "median_call_of_flag": 19.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 2 (the useful-first slot right after the opening): 40% of callers who hear it hang up",
+    "p_flag_by_15": 0.0088,
+    "p_flag_by_20": 0.096,
+    "p_flag_by_30": 0.389,
+    "p_flag_by_50": 0.6245,
+    "p_flag_by_100": 0.8938,
+    "p_flag_by_300": 0.9998,
+    "median_call_of_flag": 38.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 2 (the useful-first slot right after the opening): 30% of callers who hear it hang up",
+    "p_flag_by_15": 0.0015,
+    "p_flag_by_20": 0.0175,
+    "p_flag_by_30": 0.095,
+    "p_flag_by_50": 0.1645,
+    "p_flag_by_100": 0.299,
+    "p_flag_by_300": 0.6418,
+    "median_call_of_flag": 109.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 2 (the useful-first slot right after the opening): 20% of callers who hear it hang up",
+    "p_flag_by_15": 0.0,
+    "p_flag_by_20": 0.001,
+    "p_flag_by_30": 0.0055,
+    "p_flag_by_50": 0.0085,
+    "p_flag_by_100": 0.011,
+    "p_flag_by_300": 0.0118,
+    "median_call_of_flag": null,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 4 (mid-call): 90% of callers who hear it hang up",
+    "p_flag_by_15": 0.6032,
+    "p_flag_by_20": 0.9593,
+    "p_flag_by_30": 0.9998,
+    "p_flag_by_50": 1.0,
+    "p_flag_by_100": 1.0,
+    "p_flag_by_300": 1.0,
+    "median_call_of_flag": 15.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 4 (mid-call): 60% of callers who hear it hang up",
+    "p_flag_by_15": 0.0673,
+    "p_flag_by_20": 0.3735,
+    "p_flag_by_30": 0.9115,
+    "p_flag_by_50": 0.9998,
+    "p_flag_by_100": 1.0,
+    "p_flag_by_300": 1.0,
+    "median_call_of_flag": 22.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 4 (mid-call): 40% of callers who hear it hang up",
+    "p_flag_by_15": 0.0032,
+    "p_flag_by_20": 0.0418,
+    "p_flag_by_30": 0.3835,
+    "p_flag_by_50": 0.9045,
+    "p_flag_by_100": 0.997,
+    "p_flag_by_300": 1.0,
+    "median_call_of_flag": 33.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 4 (mid-call): 30% of callers who hear it hang up",
+    "p_flag_by_15": 0.0,
+    "p_flag_by_20": 0.0053,
+    "p_flag_by_30": 0.0953,
+    "p_flag_by_50": 0.5595,
+    "p_flag_by_100": 0.869,
+    "p_flag_by_300": 1.0,
+    "median_call_of_flag": 47.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   },
+   {
+    "scenario": "catastrophic line at moment 4 (mid-call): 20% of callers who hear it hang up",
+    "p_flag_by_15": 0.0,
+    "p_flag_by_20": 0.0,
+    "p_flag_by_30": 0.007,
+    "p_flag_by_50": 0.1095,
+    "p_flag_by_100": 0.2467,
+    "p_flag_by_300": 0.5723,
+    "median_call_of_flag": 121.0,
+    "share_of_flags_on_the_right_moment": 1.0
+   }
+  ],
+  "readouts_after_fix": {
+   "assumptions": "reference hazard at the moment 0.06 (moment 2 on the l6 curve); the fixed line's true hazard after the fix equals the reference; Jeffreys prior; sequential check per caller",
+   "no_longer_catastrophic: P(h < 3x ref) >= 0.99": {
+    "median": 29.0,
+    "p90": 81.0,
+    "share_within_nmax": 1.0
+   },
+   "back_to_normal: P(h < 1.5x ref) >= 0.95": {
+    "median": 92.0,
+    "p90": 441.0,
+    "share_within_nmax": 1.0
+   }
+  },
+  "label": "before/after on one script, not randomised; shown as 'fixed (before/after)' never as 'proved'"
+ },
+ "slow_lane_flag": "P(hazard > 1.25x reference) >= 0.99 with 50+ callers reaching the moment (intelligence statistics_rules.hazard_flag); 2x lines found 19% / 67% / 94% at 100 / 500 / 1,000 calls (C, l6)",
+ "ppc": {
+  "trigger": [
+   "slow-lane or fast-lane flag",
+   "cut-in spike (M11)",
+   "ASR-empty cluster (M14)",
+   "tool-error cluster (M13)",
+   "language-hold miss",
+   "reply-door replacement cluster (R3/R6)",
+   "knowledge gap: 5+ calls where R6 replaced a number or she deferred to a colleague on the same question (I)",
+   "manager marks a call 'went badly'"
+  ],
+  "failure_set": "up to 12 real failing calls -> pattern extracted -> synthetic personas with hidden keys and fictional values; real transcripts and personal data never enter the sim lab",
+  "personas": "6 base Hinglish personas (busy, sceptical, elderly 2.4 s pause, noisy, angry, wrong person) + up to 6 failure-derived",
+  "repeats": "3 seeds per persona per candidate; reference run twice to measure sim noise (A/A floor n>=60 per arm, l6 L11)",
+  "candidates": [
+   "reference (published version)",
+   "invariant candidate (conversation craft: turn length, question endings, repair, pacing)",
+   "domain candidate (tenant product facts, objections, procedures)",
+   "composed"
+  ],
+  "contrasts_in_code": [
+   "words_per_turn",
+   "question_ending_rate",
+   "stock_phrase_count",
+   "agenda ledger completion",
+   "disclosure_delivered",
+   "language_hold (LID)",
+   "hidden-key belief extraction score (judge extracts, code scores)",
+   "simulated hang-up at the moment",
+   "cut-ins and reply gap (audio sims only)",
+   "sim TTFT delta"
+  ],
+  "verdict": "fixed / unchanged / regressed; 'fixed' only when the improvement exceeds the reference-vs-reference spread",
+  "compose_rule": "every merge decision cites observation ids (contrast id + sim call id); a premise shared by both candidates is probed alone (shared-assumption probe) before merge",
+  "library_first": "Propose reads the tenant library; a change already rejected or found null on this tenant is not re-proposed unless its evidence changed",
+  "cycles_cap": "2 PPC cycles per problem per day; workspace test budget INR 200/day (workspace-tool-registry test class, proposed)",
+  "sim_cost_estimate": "about INR 100-200 per full cycle on a cheap text brain plus one strong editor pass (I, not metered)"
+ },
+ "gates_throw": [
+  "one compile(): same order, must-fire rules last",
+  "voice lint L1-L7 (quoted lines, stage directions, numbers in prose, named-feeling labels, question instructions, must-fire outside tail, disclosure/crisis removal)",
+  "per-section byte caps; core 12,000 / tail 1,900 bytes; never slice",
+  "locked-section diff is empty (computed on the resolved config, not the editor text)",
+  "provenance: no new number, price, date, percent, identifier, URL or brand absent from FACTS_ROWS",
+  "manipulation lint: urgency, scarcity, fear, guilt, false social proof, authority impersonation shapes -> block",
+  "promotion fence on service-category agents",
+  "India latency: sim first-token delta <= +50 ms p50; skills loaded on demand (I)",
+  "every language variant updated or explicitly unchanged",
+  "full regression suite incl. multi-call memory tests passes"
+ ],
+ "statistics": {
+  "unit": "contact; arm = hash(contact_id, experiment_id), sticky for the experiment",
+  "allocation": "50/50; safety ramp: first 50 variant calls at 20%, guardrails only, excluded from the confirmatory read (I)",
+  "preregistration": [
+   "one primary metric",
+   "MDE",
+   "alpha 0.05 two-sided",
+   "power 0.8",
+   "n per arm",
+   "max duration 28 days, min 7 days so weekdays and novelty effects wash out (I; novelty variants were falsely declared in 82% of Thompson runs, l6 s.4.6)",
+   "guardrails",
+   "analysis: two-proportion with contact-clustered standard errors",
+   "stop rule: fixed horizon; harm-only early stop by always-valid test on guardrails",
+   "expiry date"
+  ],
+  "power_formula": "Fleiss two-proportion, alpha 0.05 two-sided, power 0.8, no continuity correction; reproduces l6 50->45 = 1565",
+  "power_table": [
+   {
+    "test": "line fix, local hazard at the line 10% -> 5% (l6 s.4.8 uses 435 reaching ~ 592 calls/arm)",
+    "unit": "callers reaching the line",
+    "n_per_arm": 435,
+    "n_total": 870,
+    "days_at_50_per_day": 18,
+    "days_at_100": 9,
+    "days_at_300": 3,
+    "days_at_1000": 1
+   },
+   {
+    "test": "opening: early hang-up under 10 s 15% -> 10%",
+    "unit": "connected calls",
+    "n_per_arm": 686,
+    "n_total": 1372,
+    "days_at_50_per_day": 28,
+    "days_at_100": 14,
+    "days_at_300": 5,
+    "days_at_1000": 2
+   },
+   {
+    "test": "opening: early hang-up under 10 s 15% -> 12%",
+    "unit": "connected calls",
+    "n_per_arm": 2036,
+    "n_total": 4072,
+    "days_at_50_per_day": 82,
+    "days_at_100": 41,
+    "days_at_300": 14,
+    "days_at_1000": 5
+   },
+   {
+    "test": "best time: connect rate 50% -> 55%",
+    "unit": "dials",
+    "n_per_arm": 1565,
+    "n_total": 3130,
+    "days_at_50_per_day": 63,
+    "days_at_100": 32,
+    "days_at_300": 11,
+    "days_at_1000": 4
+   },
+   {
+    "test": "best time: connect rate 30% -> 36%",
+    "unit": "dials",
+    "n_per_arm": 963,
+    "n_total": 1926,
+    "days_at_50_per_day": 39,
+    "days_at_100": 20,
+    "days_at_300": 7,
+    "days_at_1000": 2
+   },
+   {
+    "test": "objection: call continues 2+ turns past the objection 50% -> 60%",
+    "unit": "calls reaching an objection",
+    "n_per_arm": 388,
+    "n_total": 776,
+    "days_at_50_per_day": 16,
+    "days_at_100": 8,
+    "days_at_300": 3,
+    "days_at_1000": 1
+   },
+   {
+    "test": "agenda milestone reached 60% -> 66% (+10% rel)",
+    "unit": "connected calls",
+    "n_per_arm": 1016,
+    "n_total": 2032,
+    "days_at_50_per_day": 41,
+    "days_at_100": 21,
+    "days_at_300": 7,
+    "days_at_1000": 3
+   },
+   {
+    "test": "business outcome 20% -> 25% (+25% rel)",
+    "unit": "connected calls",
+    "n_per_arm": 1094,
+    "n_total": 2188,
+    "days_at_50_per_day": 44,
+    "days_at_100": 22,
+    "days_at_300": 8,
+    "days_at_1000": 3
+   },
+   {
+    "test": "business outcome 20% -> 22% (+10% rel)",
+    "unit": "connected calls",
+    "n_per_arm": 6510,
+    "n_total": 13020,
+    "days_at_50_per_day": 261,
+    "days_at_100": 131,
+    "days_at_300": 44,
+    "days_at_1000": 14
+   },
+   {
+    "test": "business outcome 10% -> 11% (+10% rel)",
+    "unit": "connected calls",
+    "n_per_arm": 14751,
+    "n_total": 29502,
+    "days_at_50_per_day": 591,
+    "days_at_100": 296,
+    "days_at_300": 99,
+    "days_at_1000": 30
+   }
+  ],
+  "turn_taking": {
+   "turns_per_arm_unclustered": 540,
+   "clustered": [
+    {
+     "turns_per_call": 8,
+     "icc_assumed": 0.05,
+     "design_effect": 1.35,
+     "calls_per_arm": 92
+    },
+    {
+     "turns_per_call": 8,
+     "icc_assumed": 0.1,
+     "design_effect": 1.7,
+     "calls_per_arm": 115
+    },
+    {
+     "turns_per_call": 8,
+     "icc_assumed": 0.2,
+     "design_effect": 2.4,
+     "calls_per_arm": 163
+    },
+    {
+     "turns_per_call": 10,
+     "icc_assumed": 0.05,
+     "design_effect": 1.45,
+     "calls_per_arm": 79
+    },
+    {
+     "turns_per_call": 10,
+     "icc_assumed": 0.1,
+     "design_effect": 1.9,
+     "calls_per_arm": 103
+    },
+    {
+     "turns_per_call": 10,
+     "icc_assumed": 0.2,
+     "design_effect": 2.8,
+     "calls_per_arm": 152
+    },
+    {
+     "turns_per_call": 12,
+     "icc_assumed": 0.05,
+     "design_effect": 1.55,
+     "calls_per_arm": 70
+    },
+    {
+     "turns_per_call": 12,
+     "icc_assumed": 0.1,
+     "design_effect": 2.1,
+     "calls_per_arm": 95
+    },
+    {
+     "turns_per_call": 12,
+     "icc_assumed": 0.2,
+     "design_effect": 3.2,
+     "calls_per_arm": 144
+    }
+   ],
+   "calls_per_arm_range": [
+    70,
+    163
+   ]
+  },
+  "reply_gap_guardrail": {
+   "margin_s": 0.15,
+   "sd_per_turn_s_assumed": 0.45,
+   "alpha_one_sided": 0.05,
+   "power": 0.8,
+   "turns_per_arm_unclustered": 112
+  },
+  "under_powered": "if projected n by max duration < required: state 'under-powered: about N more calls (~D days at your volume)'; options: larger MDE only, exploratory (observed, not causal), simulate only, wait",
+  "concurrency": "one confirmatory experiment per slot; at most 3 per agent on orthogonal slots; K>2 arms -> Bonferroni",
+  "aa": {
+   "shadow": "every eligible call carries a shadow label S1/S2 = hash(contact_id,'shadow',month); the production procedure runs on shadow labels for every metric that may be a primary",
+   "permutation": "1,000 re-randomisations of contacts over the last 90 days",
+   "gate": "an experiment on metric X starts only when shadow A/A on X has the planned n per arm and the empirical false-winner rate is <= 6.5% (binomial noise band around 5% at 1,000 permutations) (C/I)"
+  },
+  "readout": "effect and 95% interval from the pre-registered test; for bandits from a 10% uniform held-out split or AIPW, never from the bandit's own means",
+  "decision": {
+   "promote": "interval excludes 0 in the right direction and no guardrail breached -> A2 card",
+   "discard": "harm, or interval excludes the MDE",
+   "inconclusive": "keep control; lesson 'no detectable effect at n'"
+  },
+  "expiry": "60 days default, 90 max (l6 60-90); drift: promoted metric outside the test interval two weeks running -> 'stale'; expiry -> re-confirm card (10% holdback for the re-test horizon if powered, else label 'unconfirmed since <date>')",
+  "bandits": {
+   "policy": "discounted Thompson, gamma 0.97/day; 10% uniform exploration floor used for read-outs",
+   "eligibility": [
+    "1,000+ connected/day on one script for 14 days",
+    "outcome delay <= 7 days or a validated leading indicator",
+    "shadow A/A passed",
+    "outcome or seat pricing",
+    "opt-in (Premium)"
+   ],
+   "stop": "exploration on 10-digit CLIs stops when monitor M08 fires (TRAI reg 21A)"
+  },
+  "segment_priors": "v3 only: aggregate counts, 10+ opted-in tenants, ~3,000+ calls/day combined, small estimated tau, contract clause, never WhatsApp platform data",
+  "holdout": "v3 opt-in: 5% of contacts on a client-chosen baseline version (predicate and catastrophic fixes still apply) for an honest 'since you started' number"
+ },
+ "guardrails_auto_stop": [
+  {
+   "signal": "opt-outs",
+   "rule": "always-valid one-sided test alpha 0.05, or 3+ opt-outs and 2x control (I)",
+   "action": "stop variant (A3), notify, undo"
+  },
+  {
+   "signal": "complaints",
+   "rule": "2+ and 2x control (I)",
+   "action": "stop (A3)"
+  },
+  {
+   "signal": "disclosure delivered",
+   "rule": "below 99% of conversations (door guarantees it; a drop is a bug)",
+   "action": "stop all experiments on the agent; Issue"
+  },
+  {
+   "signal": "crisis handling",
+   "rule": "any crisis turn without the crisis shape",
+   "action": "stop; Critical issue"
+  },
+  {
+   "signal": "reply-door replacements R3/R6",
+   "rule": "2x control on 50+ conversations",
+   "action": "stop"
+  },
+  {
+   "signal": "early hang-up per 10-digit CLI",
+   "rule": "monitor M08 (1.5x pool median on 50+ connected per CLI in 24 h)",
+   "action": "stop exploration on 10-digit CLIs; Line keeper pauses that CLI"
+  },
+  {
+   "signal": "minutes per agenda-done call",
+   "rule": "+10% with no agenda or outcome gain at horizon (Goodhart alarm)",
+   "action": "no promotion; card shows INR/month impact"
+  },
+  {
+   "signal": "empty ASR on short replies",
+   "rule": "+5 points vs control",
+   "action": "stop"
+  },
+  {
+   "signal": "cut-in rate",
+   "rule": "+5 points vs control",
+   "action": "stop"
+  },
+  {
+   "signal": "reply gap p90 (server)",
+   "rule": "over 2.5 s on 50+ turns",
+   "action": "stop"
+  }
+ ],
+ "levels_badge": [
+  {
+   "level": "L0 Listening",
+   "when": "0-99 connected on the version",
+   "unlocks": "memory, fast lane, sim-only proposals labelled 'simulated, not proved'"
+  },
+  {
+   "level": "L1 Finding",
+   "when": "100-499",
+   "unlocks": "moment ribbon with intervals; turn-taking tests when ~150-330 calls fit in 28 days"
+  },
+  {
+   "level": "L2 Proving",
+   "when": "projected 1,200+ calls in 28 days on the script",
+   "unlocks": "moment-fix, opening and objection tests"
+  },
+  {
+   "level": "L3 Proving outcomes",
+   "when": "projected n for the outcome MDE fits in 28 days (+25% rel at 20% needs ~2,200)",
+   "unlocks": "outcome tests"
+  },
+  {
+   "level": "L4 Optimising",
+   "when": "1,000+/day on one script, Premium, outcome or seat pricing",
+   "unlocks": "discounted Thompson, guarded auto-ramp"
+  }
+ ],
+ "inbox": {
+  "max_new_cards_per_day": 3,
+  "rank": "expected value = calls affected per week x expected effect x confidence (I)",
+  "fast_lane_bypasses_cap": true,
+  "push": "fast-lane cards push to the approver's phone (and WhatsApp if consented)"
+ },
+ "copy_rules": {
+  "allowed": [
+   "remembers every customer",
+   "shows where calls fail",
+   "proves the changes you approve",
+   "VP found",
+   "you approved",
+   "proved on N calls, 95% interval a-b",
+   "simulated, not yet proved",
+   "observed, not causal",
+   "fixed (before/after, not randomised)"
+  ],
+  "banned_below_L4": [
+   "learns on its own",
+   "self-learning",
+   "gets better with every call",
+   "AI-optimised",
+   "improves automatically"
+  ],
+  "enforced_in": [
+   "Operator replies",
+   "Today brief",
+   "cards",
+   "marketing site claim lint (I)"
+  ]
+ },
+ "pricing_interplay": "autonomous allocation (bandits, auto-ramp) and any objective that includes minutes (call length, completion without agenda, engagement) only under outcome or seat pricing; human-approved fixed-horizon tests may use agenda-milestone metrics under per-minute pricing, with the INR/month minutes impact on the card and the Goodhart alarm; proposed owner option: auto-revert plus credit of extra minutes when an approved change raises minutes per call 5%+ with no agenda or outcome gain at its horizon",
+ "tiers_proposed": {
+  "Base": "moment ribbon, fast lane with Coach proposal (a broken line is a defect, not an upsell), manual versions",
+  "Plus": "learning inbox with PPC, experiments with A/A, power meter, expiry, timeline, tenant library, memory",
+  "Premium": "discounted Thompson, guarded auto-ramp, holdout, segment priors (when they exist), surrogate validation"
+ },
+ "computed_source": "computed by this step 2026-10-21 with a seeded script (fast-lane sequential rule, readouts, power table); reference hazard curve and ICC are assumptions"
+}

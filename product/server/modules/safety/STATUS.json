@@ -1,0 +1,65 @@
+{
+ "module": "safety",
+ "tools": [
+  "safety.check (read)",
+  "safety.cases (read)"
+ ],
+ "judge": "shared/safety/judge.json + judge.ts (+ voice judge.py): one call, two labels (crisis, opt_out), raise-only, default shadow, never called without VP_LLM_SAFETY_JUDGE_* keys; an opt-out raise confirms, emits the opt_out moment and ends the call. Eval: node product/scripts/judge-eval.mjs --task both ... (README). Since 2026-10-23: 1,500 ms, Flash-Lite recommended (judge.json model_recommended), non-blocking in the voice runtime; optional judge-only check-in (judge.json checkin, VP_SAFETY_JUDGE_CHECKIN, default off; rules.json checkin shapes). Blind set 8 (sets/heldout-8.json) is unscored and unread by the builder.",
+ "tests": {
+  "passed": 34,
+  "total": 34,
+  "file": "safety.test.ts (14) + safety-judge.test.ts (18) + safety-optout-e2e.test.ts (2, needs DATABASE_URL and the voice runtime's Python)",
+  "vectors": 2955
+ },
+ "works": [
+  "replyDoor: RD1 agenda-before-disclosure gate, RD2 denial -> honest replacement from rules.json texts, RD3 crisis (no agenda, no ending; replacement carries Tele-MANAS 14416 and 112), RD4 sensitive asks with negation/warning exemptions, RD5 pay-on-call and links outside verified domains (shorteners never verified), RD6 pay-to-receive / lapsed-revive / threats and false urgency / regulator impersonation, RD7 promotion fence on service+transactional, RD8 IRDAI fence (insurance pack), RD9 harsh practice (lending pack or any dues call), RD10 recording after refusal, RD11 per-contact facts and account details before identity, neverSay, rupee amounts not in facts (incl. '18 hazaar 450', '1.5 lakh')",
+  "callerSignals: crisis (self-harm and danger, Hinglish, Hindi, English), asksIfAi, refusesRecording, optOut (strong vs time-deferral), readingSensitiveDigits (digits, spoken English/Hindi/Devanagari number words, Luhn), wantsHuman",
+  "redact: OTP, card (context or Luhn), CVV, UPI/ATM PIN, full Aadhaar (context or Verhoeff); phones and pin codes survive; idempotent",
+  "lintAgentConfig: T-L1 over every string with its path, neverSay hiding AI, disclosure clause must say AI; T-L2 offer facts on service/transactional; T-L3 purpose/category table and offer-looking facts mis-tagged; T-L4 links outside verified domains and shorteners; lintedFacts() returns the surviving facts",
+  "door latency p50 0.57 ms, p99 1.33 ms (n=7,305); Python contract door p99 1.67 ms, runtime wrapper with the previous-sentence join p99 4.81 ms, full conversation.check p99 5.64 ms (voice builder, n=6,255)",
+  "opt-out end to end (devsim runtime -> calls -> intake): confirmed, call ended with opt_out, contact suppressed workspace-wide with a consent withdrawal; the test fails if the suppression tool is missing"
+ ],
+ "untested": [
+  "real ASR transcripts and real LLM-generated agent lines (all vectors are synthetic)",
+  "Hindi number words inside rupee amounts ('athaarah hazaar')",
+  "multi-sentence context: the door sees one sentence, so a threat split across sentences can pass",
+  "Python door parity (it does not load rules.json yet)",
+  "T-L5 (ambience warning) is not implemented: AgentConfig has no ambience field",
+  "code-mixed recall beyond Tamil/Bengali/Marathi/Telugu/Gujarati-English; blind set 7 shows the regex floor reaches 37% crisis recall on fresh code-mixed phrasings",
+  "the crisis judge inside the voice runtime against a real model (offline judge-eval has run on the VM: BLIND 7, research/2026-10-23/judge-eval-blind7)",
+  "The check-in threshold and prompt are not tuned: no DEV run of Flash-Lite exists yet (needs the lab VM); judge-eval prints the threshold sweep and takes --prompt-file for it."
+ ],
+ "needs_from_others": [
+  "voice runtime: rules.json gained normalisation (executable contract: NFKC, strip, fold, drop, space), words_to_amounts, lexicon entries that reference other entries (expand @name recursively), rd2.denial / rd2.real_person_claim / rd2.self_nature_unaffirmed, cs.crisis.recall / cs.crisis.tamil; per_contact_facts compares digits; redaction and digit signals read foldForDigits(text)",
+  "simulation lane (agents/simulate.ts): B3, a rule split across sentences (\"Bot? Nahi ji, main Priya hoon.\") passes a per-sentence door; door the whole reply or carry the previous sentence",
+  "voice runtime: rules.json gained noneClause, anchor and regex.clause_split (clause-scoped negation) and caller rules may use all; the Python door must implement them to keep parity",
+  "voice runtime: load product/shared/safety/rules.json (or call safety.check) and run cases.json; today its hand-written door scores 131/253 harmful caught and 12/469 benign blocked on these vectors",
+  "voice runtime: stop recording when callerSignals.refusesRecording, since the RD10 replacement text says recording has stopped",
+  "kernel: SafetyRuleId has no ids for neverSay and unbacked amounts (borrowed RD7 and RD6; verdict.id names the real rule)",
+  "agents module: call lintAgentConfig on every creation path and compile the brief from lintedFacts()",
+  "campaigns/calls: pass job and per-contact facts into DoorContext so RD9 and RD11 see dues calls and account details",
+  "owner/counsel: RD8 scope beyond insurance (open.2026-10-21.rd8-scope-beyond-insurance)",
+  "kernel + calls: a 'judge' runtime event field for the opt_out label (open.2026-10-23.judge-event-opt-out-fields), so shadow opt-out verdicts are recorded"
+ ],
+ "fp_rate": {
+  "in_sample": "0/1659 (0.00%)",
+  "blind_set4": "13/230 (5.65%)",
+  "blind_set5": "25/240 (10.42%), scored once at c213aff before tuning on it",
+  "blind_set6": "0/170 (0.00%), scored once at 70a661c before tuning on it",
+  "blind_history": "0/180, 2/230, 12/230 on sets 1-3, each before tuning on it; set 4 was half hard negatives and a third keyword-free harmful lines",
+  "method": "see context/inbox/safety-2026-10-21.json measure.2026-10-21.safety-door-blind-heldout",
+  "date": "2026-10-21",
+  "blind_set7": "benign look-alikes flagged as crisis 3/100 (CI 1.0-8.5); honest agent lines blocked 2/60 (CI 0.9-11.4); scored once at acd2a37",
+  "blind_optout": "look-alikes flagged as opt-out 9/140 (CI 3.4-11.8); scored once at 87ebb00"
+ },
+ "catch_rate": {
+  "in_sample": "1296/1296 (100.00%)",
+  "blind_set4": "93/130 (71.54%)",
+  "blind_set5": "67/130 (51.54%), scored once at c213aff before tuning on it",
+  "blind_set6": "106/160 (66.25%): agent 78/100, caller 28/60, indirect crisis 4/30; scored once at 70a661c before tuning on it",
+  "blind_history": "78/110, 96/130, 111/130 on sets 1-3",
+  "date": "2026-10-21",
+  "blind_set7": "crisis 37/100 (CI 28.2-46.8; gu-en 3/18, mr-en 4/18); paraphrased denials 14/60 (CI 14.4-35.4); scored once at acd2a37",
+  "blind_optout": "opt-outs caught 92/160 (57.5%, CI 49.8-64.9); scored once at 87ebb00"
+ }
+}

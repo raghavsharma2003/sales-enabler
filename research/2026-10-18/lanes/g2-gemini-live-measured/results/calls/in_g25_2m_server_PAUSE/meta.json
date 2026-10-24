@@ -1,0 +1,70 @@
+{
+ "args": {
+  "model": "gemini-2.5-flash-native-audio-latest",
+  "api": "v1alpha",
+  "minutes": 2.5,
+  "script": "PAUSE",
+  "compression": "off",
+  "vad": "server",
+  "thinking": "budget0",
+  "voice": "Despina",
+  "lang": "hi-IN",
+  "affective": true,
+  "proactive": true,
+  "stream_end": false,
+  "audio_dir": "/opt/g2/harness/audio_phone16k",
+  "persona": "/opt/g2/harness/persona.txt",
+  "gap_ms": 500,
+  "gap_jitter_ms": 400,
+  "reply_timeout": 10.0,
+  "seed": 15,
+  "save_audio": true,
+  "out": "runs_in",
+  "tag": "in_g25_2m_server_PAUSE"
+ },
+ "wall_start_utc": "2026-10-18T18:50:59Z",
+ "host": "g2vmcin",
+ "setup": {
+  "model": "models/gemini-2.5-flash-native-audio-latest",
+  "generationConfig": {
+   "responseModalities": [
+    "AUDIO"
+   ],
+   "speechConfig": {
+    "voiceConfig": {
+     "prebuiltVoiceConfig": {
+      "voiceName": "Despina"
+     }
+    },
+    "languageCode": "hi-IN"
+   },
+   "thinkingConfig": {
+    "thinkingBudget": 0
+   },
+   "enableAffectiveDialog": true
+  },
+  "systemInstruction": "<persona 2955 chars>",
+  "inputAudioTranscription": {},
+  "outputAudioTranscription": {},
+  "sessionResumption": {},
+  "proactivity": {
+   "proactiveAudio": true
+  }
+ },
+ "call_s": 145.174,
+ "n_frames": 7230,
+ "n_clip_frames": 4271,
+ "caller_speech_s": 85.42,
+ "agent_audio_s": 73.96,
+ "connections": [
+  {
+   "t": 2.79930000033346e-05,
+   "ws_open_ms": 118.11045500007822,
+   "setup_ms": 450.36098699995364,
+   "resumed": false,
+   "first_frame_t": 0.5530387910000445
+  }
+ ],
+ "errors": [],
+ "n_turns": 15
+}

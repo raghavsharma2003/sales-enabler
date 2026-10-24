@@ -1,0 +1,41 @@
+{
+ "nodes": [
+  {
+   "id": "evidence.2026-10-21.review-what-she-says",
+   "type": "evidence",
+   "status": "reproduced",
+   "date": "2026-10-21",
+   "source": "adversarial review (what she says / what the Operator can be made to do)",
+   "title": "Adversarial review of the reply door, caller signals, voice runtime, compile, calls hook/analysis and Operator: 13 findings (6 blocker, 6 major, 1 minor), each with a failing test. Blockers: plain AI denials pass both doors (B1); any 'AI/bot' token counts as disclosure (B2); a rule split over two sentences passes (B3); 'Hello? Kaun?' confirms identity (B4); a per-contact amount leaks before identity when spelled without the rupee mark (B5); common Hinglish and all Tamil-English crisis lines missed (B6). Majors: amounts in words (M1), Python door ASCII-only \\s and case folding vs TS (M2), S2S audio played before its transcript is doored and beta stack not gated (M3), brain cost metered 0 on blocked/withdrawn OpenAI-compatible streams (M4), draft continues after an RD2/RD3 replacement (M5), outcome evidenced by the agent's own line (M6). Verified: ~130 fuzz lines through both doors, sim calls, a LiveSession replay, an HttpBrain stream with fake HTTP, analysis on Postgres with a fake model; all 34 tests fail on their assertion. Not verified: live providers, audio, real Live message order.",
+   "path": "product/tests/review/what-she-says.md"
+  },
+  {
+   "id": "open.2026-10-21.review-what-she-says-fixes",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "review what-she-says",
+   "title": "Fix the 6 blockers of the what-she-says review before any live call (B1-B6), then M1-M6; promote candidate vectors into cases.json (safety builder decides).",
+   "closes_when": "product/voice/tests/test_review.py and product/tests/review/what-she-says.test.ts report unexpected successes for every B and M finding and their markers are dropped"
+  }
+ ],
+ "edges": [
+  {
+   "from": "evidence.2026-10-21.review-what-she-says",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-21.review-what-she-says-fixes",
+   "to": "evidence.2026-10-21.review-what-she-says",
+   "relation": "follows"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-21",
+   "event": "review-what-she-says",
+   "details": "Adversarial review committed: 26 expectedFailure Python tests, 8 todo TS tests (+1 passing parity reference), 58 candidate vectors, findings in product/tests/review/what-she-says.md. 6 blocker, 6 major, 1 minor."
+  }
+ ]
+}

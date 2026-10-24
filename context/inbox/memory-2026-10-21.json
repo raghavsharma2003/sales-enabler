@@ -1,0 +1,63 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-21.memory-gates-in-code",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "memory module builder (parallel build)",
+   "title": "Memory write gates are code: exact caller-turn quote, closed key vocabulary, value lint (60 chars, no instruction shapes), purpose = the call's TRAI category, a named lawful basis (consent needs a granted consent_record), refused categories by model label OR code detector unless policy names that category with the same basis, ephemeral facts never stored, nothing from test calls. Every drop is counted per conversation in memory_extraction.",
+   "rationale": "A model never grades; the model only proposes. Detectors on quote and value stop a model that forgets to label a sensitive category.",
+   "reverse_if": "The MEM-SIM suite or operator review shows the detectors refuse more than 5% of legitimate facts, or a gate lets a never-stored class through.",
+   "path": "product/server/modules/memory/gates.ts"
+  },
+  {
+   "id": "decision.2026-10-21.memory-undo-window-default-60min",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "memory module builder (parallel build)",
+   "title": "Auto-tier facts are unused until a per-workspace undo window passes (default 60 minutes, 0-7 days via memory.policy.set); commitments are review tier and unused until a member approves (fact.approve rejects non-member actors).",
+   "rationale": "The task asks for an undo window before use; the blueprint's 7-day undo is an after-use undo. 60 minutes lets an operator see the 'memory from this call' panel before the next dial without holding back same-day callbacks.",
+   "reverse_if": "The owner sets a different default, or same-day repeat calls show the window blocks useful memory."
+  },
+  {
+   "id": "decision.2026-10-21.memory-forget-deletes-no-resurrection",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "memory module builder (parallel build)",
+   "title": "fact.forget and contact.memory.forget DELETE rows (quotes are personal data); superseded_by has no FK, so an older value superseded by a forgotten one never resurfaces. Forget receipts hold counts only. contact.memory.forget can also close the contact's write gate (memory_optout).",
+   "rationale": "Forget must remove, not hide, and must never resurrect (blueprint metric: 0 resurrections).",
+   "reverse_if": "Counsel requires a retained, redacted forget trail per fact."
+  },
+  {
+   "id": "decision.2026-10-21.memory-brief-throws-at-dial",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "memory module builder (parallel build)",
+   "title": "memory.brief compiles key=value shapes with ages ('said 3 weeks ago'), groups prefs > open > heard > context with whole-entry caps (8/3/4/3), newest value per key, purpose-matched; over 1200 bytes it throws (registry returns not_executed) and the caller dials without memory, never a sliced brief.",
+   "rationale": "HV law 4 (never slice) and law 1 (shapes, not lines).",
+   "reverse_if": "Live data shows contacts routinely hitting the cap; then add a deterministic whole-entry drop order before throwing.",
+   "path": "product/server/modules/memory/brief.ts"
+  },
+  {
+   "id": "open.2026-10-21.memory-extraction-holds-tx-during-llm",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "memory module builder (parallel build)",
+   "title": "memory.extract calls the LLM inside the registry's tool transaction (holds a pooled connection up to the 60 s LLM timeout). Fine at low volume; at campaign scale run extraction as a two-phase job (read, call model outside tx, commit with transcript re-check).",
+   "closes_when": "memory.extract moves its LLM call into the kernel ToolDef.prepare() phase (added 2026-10-21), so no transaction is open during the call; verified by a test."
+  }
+ ],
+ "edges": [],
+ "events": [
+  {
+   "date": "2026-10-21",
+   "event": "memory-module-built",
+   "details": "product/server/modules/memory: tools memory.extract, memory.brief, contact.memory.get, fact.approve, fact.forget, contact.memory.forget, memory.policy.get, memory.policy.set; migration 0701_memory.sql. Verified: tsc clean; 13/13 node:test cases in tests/memory.test.ts against throwaway Postgres 16 (vp_mod_memory), fake LLM only. Not verified: a real model's extraction quality, refused-category detector precision/recall on real Hinglish, campaigns calling memory.brief at dial time, latency."
+  }
+ ]
+}

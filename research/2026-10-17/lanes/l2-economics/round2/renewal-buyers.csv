@@ -1,0 +1,4 @@
+buyer,due_per_month,mix,vp_revenue_month_p50,vp_revenue_trough_month_p50,buyer_commission_gain_month_p50,buyer_commission_gain_month_p10,vp_gm_launch_p50,vp_gm_scale_p50,human_desk_seats_equivalent_p50,human_desk_seats_seat_method_p50,supports_min_25k_in_trough,max_min_fee_at_50pct_of_gain_p50
+small_IMF_or_agency,150,"{""2W_motor"": 0.5, ""4W_motor"": 0.2, ""health"": 0.2, ""life_yr2plus"": 0.1}",2103,1704,6714,4277,0.42,0.621,0.01,0.05,False,3357
+mid_retail_broker_or_CA,1500,"{""2W_motor"": 0.4, ""4W_motor"": 0.3, ""health"": 0.25, ""life_yr2plus"": 0.05}",24068,19653,81195,49753,0.486,0.665,0.15,0.51,False,40597
+large_PoSP_platform,25000,"{""2W_motor"": 0.5, ""4W_motor"": 0.3, ""health"": 0.15, ""life_yr2plus"": 0.05}",395869,319839,1283549,778550,0.468,0.653,2.36,7.92,True,641775

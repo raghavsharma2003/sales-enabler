@@ -1,0 +1,52 @@
+{
+  "id": "call-quality-facts-2026-10-21",
+  "scope": "What VP knows about making the call itself great: human Hinglish voice, reply speed, turn-taking, ending calls. Compiled 2026-10-21 from research already done; no vendor call, no new measurement.",
+  "grades": "measured = we ran it (n, method given); observed = seen in a capture or API read-back; vendor-claimed; inferred; unknown",
+  "latency_by_stack": [
+    {"stack": "Cascade A: Azure STT Central India 500 ms seg + gpt-4.1-mini South India + Swara neural, clause gate", "metric": "server reply gap p50 / p90", "value": "1,004 / 1,100 ms", "n": "60 turns, 6 calls", "method": "India VM, l4b battery, no phone leg", "date": "2026-10-17", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"stack": "Cascade E: A + speculative LLM/TTS on partials", "metric": "server reply gap p50 / p90", "value": "823 / 1,029 ms", "n": "60 turns", "method": "same", "date": "2026-10-17", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"stack": "Lab base: gated Gemini transcribe-live + gpt-oss@Groq + Azure Swara", "metric": "server reply gap", "value": "0.49-0.91 s (STT 456, brain 330, voice 54 ms medians)", "n": "1 call, 3 replies", "method": "sim_caller.py from India VM", "date": "2026-10-19", "grade": "measured (smoke)", "path": "research/2026-10-19/voicelab/results/smoke-india-2026-10-19.md"},
+    {"stack": "Fast cascades C1/C1g/C3/C6/C6g", "metric": "p50 first audio", "value": "989-1,044 ms; cut-ins 15-32%", "n": "28-60 turns each", "method": "g3 India VM", "date": "2026-10-18", "grade": "measured", "path": "research/2026-10-18/SYNTHESIS.md"},
+    {"stack": "Gemini 3.8 Live (paid)", "metric": "p50 / p90; talk-over", "value": "1,006 / 1,524 ms; 42% talk-over", "n": "30 turns, 6 calls", "method": "g5 India VM", "date": "2026-10-18", "grade": "measured", "path": "research/2026-10-18/lanes/g5-gemini-paid/findings.md"},
+    {"stack": "Gemini 3.1 flash live (paid)", "metric": "p50 / p90", "value": "1,950 / 5,299 ms", "n": "33 turns", "method": "g5 India VM", "date": "2026-10-18", "grade": "measured", "path": "research/2026-10-18/SYNTHESIS.md"},
+    {"stack": "v2-live (Gemini 3.8 Live)", "metric": "server reply gap", "value": "0.79-1.55 s", "n": "1 call x ~3 replies", "method": "sim_caller.py from VM", "date": "2026-10-20", "grade": "measured (smoke)", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"stack": "v2-flashlite (Gemini ears + 3.5 Flash-Lite + 3.8 Flash-Lite TTS)", "metric": "server reply gap", "value": "1.6-2.2 s", "n": "1 call x ~3 replies", "method": "sim_caller.py from VM", "date": "2026-10-20", "grade": "measured (smoke)", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"stack": "v2-54mini / v2-luna / v2-38flash", "metric": "server reply gap", "value": "2.0-2.6 / 1.9-3.3 / 2.9-4.2 s", "n": "1 call x ~3 replies each", "method": "sim_caller.py", "date": "2026-10-20", "grade": "measured (smoke)", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"stack": "All-Sarvam (Saaras v4 + Sarvam-105B + Bulbul v4 Flash)", "metric": "server reply gap", "value": "0.97-1.18 s; 105B ~100 ms first token", "n": "9 replies", "method": "sim_caller.py from VM", "date": "2026-10-19", "grade": "measured (smoke)", "path": "context/graph.json measure.2026-10-19.sarvam-india"},
+    {"stack": "Round 1 all stacks", "metric": "server median reply gap", "value": "Azure-voice cascades 0.95-1.4 s; Gemini-voice cascades 2.4-2.8 s; browser median 1.74 s", "n": "199 browser replies", "method": "server timing + client playback clock", "date": "2026-10-20", "grade": "measured", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"stack": "Competitor demo agents (US vantage)", "metric": "clean-turn p50", "value": "Ultravox 1,540; Vapi 2,319; ElevenLabs 3,749; Cartesia 1,736; Smallest 2,362 ms", "n": "40-63 turns per vendor (first three)", "method": "l4b Playwright harness, bias ~60 ms", "date": "2026-10-17", "grade": "measured (demos, not configured platforms)", "path": "research/2026-10-17/lanes/l4b-measured/report.md"}
+  ],
+  "components_from_india": [
+    {"component": "Brain first token (v2 brief, n=5 medians)", "value": "gpt-oss@groq 535; GPT-4.1 mini 567; Gemini 3.5 Flash-Lite 699; GPT-5.4 mini 960; Gemini 3.6 Flash 1,102 (p90 13.3 s); GPT-6 Luna (OR) 1,438; Gemini 3.8 Flash 1,991; DeepSeek V4.1 Flash 2,800 ms", "grade": "measured", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"component": "gpt-4.1-mini South India Standard TTFT", "value": "304 ms p50 (n=33)", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"component": "Voice first audio (n=5)", "value": "MAI-Voice-2.1-Flash 425; Gemini 3.8 Flash-Lite TTS 624; Gemini 3.8 Flash TTS 772; Interactions API 4,700-5,100 ms", "grade": "measured", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"component": "Azure TTS warm websocket first audio", "value": "Swara 95; DragonHD 188; MAI-Voice-2.1-Flash 363 ms; short opening clause 19-29 ms", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"component": "Azure STT final after speech end", "value": "300 ms seg 450; 500 ms seg 622; 800 ms seg 985; Semantic 848 (p90 1,609) ms", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"component": "Gemini TTS leading silence", "value": "0.14-0.36 s", "grade": "measured", "path": "research/2026-10-18/lanes/g3-cascade-measured/findings.md"},
+    {"component": "Indian phone leg", "value": "0.25-0.45 s added", "grade": "inferred (from Twilio/Plivo/Exotel docs)", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"}
+  ],
+  "turn_taking": [
+    {"fact": "Cut-ins by config: A 25%, B 15%, C 33%, E 50% of 60 turns; 0/30 on turns without an internal pause >= 0.5 s; mid-turn 0.9-1.3 s pauses A 72%, E 100%; elderly 2.4 s pause 12/12 every config", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"fact": "Quiet elderly 'hmm' (0.45 s) never transcribed in any cascade or Voice Live arm: agent stays silent", "grade": "measured", "path": "research/2026-10-17/lanes/l8-azure-bench/round2/findings.md"},
+    {"fact": "Competitor demos: collisions Vapi 35%, Ultravox 18%, ElevenLabs 3%; barge-in handled Ultravox 6/6, ElevenLabs 3/7, Vapi 2/8; ElevenLabs answered haan/hmm with 'are you still there' 4/16", "grade": "measured", "path": "research/2026-10-17/lanes/l4b-measured/report.md"},
+    {"fact": "Taxila Voice Live ref-AEC front end: 0/66 echo false barge-in, 12/12 true barge-in, end-of-turn p50 1,480 ms vs 900 ms bar, empty transcripts on 5/14 short answers", "grade": "measured (harvest)", "path": "docs/harvest/tx-voice.md"},
+    {"fact": "Competitor defaults: Vapi 1.5 s end-of-turn wait; Retell 0 ms added wait, interruption 0.9; Bolna 500 + 900 ms; ElevenLabs eagerness Normal, Turn V3; 0 of 6 ship Hindi/Hinglish backchannel lists", "grade": "observed", "path": "research/2026-10-21/walkthroughs/SYNTHESIS.md"}
+  ],
+  "conversation_quality": [
+    {"fact": "Round-1 robotic signature: 53% turns end on a question, median 22 words (p90 37), 21% restate AI, 19% mention link/callback/advisor", "n": "316 agent turns", "grade": "measured", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"fact": "Brief v1 -> v2 same brains: words/turn 33.7/32.7 -> 20.9/18.7; question endings 62%/76% -> 13%/29%; stock phrases 1.8/2.7 -> 0.7/0 per call", "n": "6 simulated callers x 10 turns per brain per brief", "grade": "measured (text bench)", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"},
+    {"fact": "Hang-up guard: abrupt agent hang-ups 17-40% unguarded -> 0 with hangup_ok", "grade": "measured (text bench)", "path": "voicelab/evals/convo_bench.py"},
+    {"fact": "Round-1 human ratings /10: Gemini 3.1 Live 7.0 (2/2 would pick); Sarvam+gpt-oss+Bulbul 6.0; Gemini 3.8 Live 6.0; gpt-oss+Gemini voice 6.0; All-Gemini 5.5; Azure-voice stacks 1.5-4.5 (0 would pick)", "n": "33 ratings, 4 testers, n=1-4 per stack", "grade": "measured (small n)", "path": "research/2026-10-20/voicelab/round1-review-and-v2.md"}
+  ],
+  "cost_per_minute_ai_only_inr": [
+    {"stack": "C6g gated transcribe-live + gpt-oss@Groq + Azure neural", "value": "0.94 (3 min); MC p50 1.07", "grade": "measured usage x list price"},
+    {"stack": "G-A all-Gemini cascade", "value": "1.56 (2026) / 1.92 (2027)", "grade": "computed composite"},
+    {"stack": "G-E gated transcribe + gpt-oss + 3.8 Flash-Lite TTS", "value": "0.98 / 1.34 (2027)", "grade": "computed composite"},
+    {"stack": "All-Sarvam", "value": "1.39-1.51 (voice most of it)", "grade": "measured meter"},
+    {"stack": "Cascade A all-Azure India", "value": "~2.4 (STT 1.58)", "grade": "measured usage x list price"},
+    {"stack": "Gemini 3.1 flash live", "value": "2.47 (1 min) / 4.19-4.71 (3) / 6.38-10.74 (10)", "grade": "measured paid meter, n=1-2 per cell"},
+    {"stack": "Gemini 3.8 Live", "value": "3.31 / 5.72 / 9.05-12.70", "grade": "measured paid meter, n=1-2 per cell"},
+    {"stack": "Inworld all-in / self-host IndicConformer+Veena", "value": "0.53 / 0.43", "grade": "vendor-claimed desk prices; unheard"},
+    {"stack": "AI budget at Rs 2 ex-GST, 50% margin", "value": "0.54 (0.34-0.74 at 60-40%)", "grade": "computed"}
+  ]
+}

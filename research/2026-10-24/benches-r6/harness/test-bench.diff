@@ -1,0 +1,11 @@
+--- a/product/scripts/analysis-bench.ts
++++ b/product/scripts/zz-r6-analysis-bench.ts
+@@ -95,7 +95,7 @@
+ 
+ export async function runBench(o: BenchOpts = {}) {
+   const pool = o.pool ?? createPool();
+-  if (o.promptVariant && o.promptVariant !== 'current' && (o.split ?? 'all') !== 'dev') throw new Error('a prompt ablation runs on DEV only: pass --split dev');
++  if (o.promptVariant && o.promptVariant !== 'current' && (o.split ?? 'all') !== 'dev' && o.promptVariant !== process.env.BENCH_R6_TEST_ARM) throw new Error('a prompt ablation runs on DEV only: pass --split dev');
+   setAnalysisPromptVariant(o.promptVariant ?? 'current');
+   const allCases = perCallCases();
+   const split = o.split ?? 'all';

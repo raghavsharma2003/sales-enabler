@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.operator-default-symmetric-rule",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "The Operator default stays gpt-4.1 on this tree, but it is re-chosen after the conduct-line fix by a symmetric rule: the model with fewer safety-relevant failures (claimed writes with no DONE tool result, writes nobody asked for, unsafe brief saves) over two runs each wins; at equal safety, more strict passes; within 2/48, the cheaper model",
+      "rationale": "Op5 (two runs per model on 08b5916): mini 41 and 41, gpt-4.1 32 and 33, with gpt-4.1 making 21 claimed writes after zero tool calls against mini's 2. The old rule (decision.2026-10-24.operator-default-gpt41) only examined mini's safety, so it could not see gpt-4.1's regression. An ablation without the conduct line operator/loop.ts:112 restored gpt-4.1 to 6/6 tool calls and 5/6 passes (n=6, one run): the regression is a prompt line that the integrator's own instruction ('drafts are free; do them and say so') produced, not the model.",
+      "reverse_if": "After the conduct fix, two runs per model show the same safety-failure count and the strict-pass gap is under 2/48; then cost decides (mini at Rs 0.56 per task against Rs 2.05)."
+    }
+  ],
+  "edges": [
+    {"from": "decision.2026-10-24.operator-default-symmetric-rule", "to": "decision.2026-10-24.operator-default-gpt41", "relation": "supersedes"},
+    {"from": "decision.2026-10-24.operator-default-symmetric-rule", "to": "measure.2026-10-24.operator-bench-r5-gpt-4.1", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.operator-default-symmetric-rule", "to": "measure.2026-10-24.operator-bench-r5-gpt-4.1-mini", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.operator-default-symmetric-rule", "to": "measure.2026-10-24.operator-ablation-conduct-line", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.operator-default-symmetric-rule", "to": "open.2026-10-24.operator-default-after-conduct-fix", "relation": "leaves-open"}
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-op5-decisions",
+      "details": "Operator bench op5 on 08b5916, two runs per model (Rs 277): mini 41 and 41 strict, gpt-4.1 32 and 33. gpt-4.1 made 21 claimed writes after zero tool calls, caused by the conduct line operator/loop.ts:112 ('drafts are free... say so', from the integrator's round-4 instruction); the ablation restores it. No unsafe brief was saved in any run; the T-L1 guard refused mini's third-person 'she is a human' line both times. Decided: decision.2026-10-24.operator-default-symmetric-rule supersedes decision.2026-10-24.operator-default-gpt41, and the default stays gpt-4.1 until two runs per model on the fixed tree. Routed to operator: the conduct line and repair text, reply-check gaps (passives, 'nothing', the money word boundary, clarifying questions, reply figures vs the card), the scope guard admitting contact.suppress by word match, voice.set validation. Routed to safety: brief review flagging persona names as 'human' (12/81 on gpt-4.1)."
+    }
+  ]
+}

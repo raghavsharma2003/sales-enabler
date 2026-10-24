@@ -1,0 +1,558 @@
+{
+  "checked": "2026-10-24",
+  "about": "What VP adopts per part from the vendor pages saved beside this file (lists.json). vp is the stated-or-measured set in product/shared/components.ts, minus hinglish (VP's own code: offered where both hi-IN and en-IN are). removed and added are deliberate deviations from the docs list, each explained in why. tests/languages-docs.test.ts holds components.ts to this file.",
+  "parts": {
+    "ears/azure": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "azure-speech-language-support-stt.md"
+      ]
+    },
+    "ears/sarvam": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "sarvam-models.md",
+        "sarvam-saaras.md"
+      ]
+    },
+    "brain/gemini-3.5-flash-lite": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "google-vertex-models-gemini-languages.md",
+        "google-vertex-gemini-3-5-flash-lite.md",
+        "google-gemini-api-models.md"
+      ]
+    },
+    "brain/gemini-3.6-flash": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "google-vertex-models-gemini-languages.md",
+        "google-vertex-gemini-3-5-flash-lite.md",
+        "google-gemini-api-models.md"
+      ]
+    },
+    "brain/gemini-3.8-flash": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "google-vertex-models-gemini-languages.md",
+        "google-vertex-gemini-3-5-flash-lite.md",
+        "google-gemini-api-models.md"
+      ]
+    },
+    "brain/sarvam-105b": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "sarvam-105b.md",
+        "sarvam-models.md"
+      ]
+    },
+    "brain/llama-4-maverick": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "meta-llama-4-maverick-card.md"
+      ]
+    },
+    "brain/gpt-5.4-mini": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [],
+      "removed": [],
+      "added": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "why": "OpenAI publishes no per-language list. English is the language of every OpenAI model page; Hindi is named in its multilingual evaluation (MMMLU). Other Indian languages are unlisted, so VP does not claim them.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ]
+    },
+    "brain/gpt-4.1-mini-in": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [],
+      "removed": [],
+      "added": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "why": "OpenAI publishes no per-language list. English is the language of every OpenAI model page; Hindi is named in its multilingual evaluation (MMMLU). Other Indian languages are unlisted, so VP does not claim them.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ]
+    },
+    "brain/gpt-4.1": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "hi-IN"
+      ],
+      "removed": [
+        "bn-IN"
+      ],
+      "added": [
+        "en-IN"
+      ],
+      "why": "OpenAI publishes no per-language list. English is the language of every OpenAI model page; Hindi is named in its multilingual evaluation (MMMLU). Other Indian languages are unlisted, so VP does not claim them.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ]
+    },
+    "brain/gpt-6-luna@or": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [],
+      "removed": [],
+      "added": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "why": "OpenAI publishes no per-language list. English is the language of every OpenAI model page; Hindi is named in its multilingual evaluation (MMMLU). Other Indian languages are unlisted, so VP does not claim them.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ]
+    },
+    "brain/gpt-6-sol@or": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [],
+      "removed": [],
+      "added": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "why": "OpenAI publishes no per-language list. English is the language of every OpenAI model page; Hindi is named in its multilingual evaluation (MMMLU). Other Indian languages are unlisted, so VP does not claim them.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ]
+    },
+    "brain/gpt-oss-120b": {
+      "vp": [
+        "en-IN"
+      ],
+      "docs": [],
+      "removed": [],
+      "added": [
+        "en-IN"
+      ],
+      "why": "No per-language list; the model card returned 403 and the Hugging Face page names no languages. English only is claimed.",
+      "sources": [
+        "openai-model-pages.md",
+        "openai-mmmlu.md"
+      ]
+    },
+    "brain/kimi-k2.6": {
+      "vp": [
+        "en-IN"
+      ],
+      "docs": [],
+      "removed": [],
+      "added": [
+        "en-IN"
+      ],
+      "why": "No per-language list published; English only is claimed.",
+      "sources": [
+        "moonshot-kimi-k2-6.md"
+      ]
+    },
+    "voice/gemini-lite": {
+      "vp": [
+        "en-IN",
+        "hi-IN",
+        "mr-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [
+        "bn-IN",
+        "gu-IN",
+        "kn-IN",
+        "ml-IN",
+        "or-IN",
+        "pa-IN"
+      ],
+      "added": [],
+      "why": "VP reaches Gemini voices through Vertex, whose Cloud Text-to-Speech page lists en-IN, hi-IN, mr-IN, ta-IN and te-IN as generally available; kn, ml, gu, pa and or are preview only, and Bengali is listed only as bn-BD. The Gemini API page (all 11, no regions) is not the route VP uses.",
+      "sources": [
+        "google-cloud-gemini-tts.md",
+        "google-gemini-api-speech-generation.md"
+      ]
+    },
+    "voice/gemini": {
+      "vp": [
+        "en-IN",
+        "hi-IN",
+        "mr-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [
+        "bn-IN",
+        "gu-IN",
+        "kn-IN",
+        "ml-IN",
+        "or-IN",
+        "pa-IN"
+      ],
+      "added": [],
+      "why": "VP reaches Gemini voices through Vertex, whose Cloud Text-to-Speech page lists en-IN, hi-IN, mr-IN, ta-IN and te-IN as generally available; kn, ml, gu, pa and or are preview only, and Bengali is listed only as bn-BD. The Gemini API page (all 11, no regions) is not the route VP uses.",
+      "sources": [
+        "google-cloud-gemini-tts.md",
+        "google-gemini-api-speech-generation.md"
+      ]
+    },
+    "voice/azure": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [
+        "bn-IN",
+        "gu-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "added": [],
+      "why": "Azure lists neural voices for all 11 India locales, but VP offers only hi-IN and en-IN voices for this part; adding voices for the other locales would extend it.",
+      "sources": [
+        "azure-speech-language-support-tts.md"
+      ]
+    },
+    "voice/azure-hd": {
+      "vp": [
+        "en-IN"
+      ],
+      "docs": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "removed": [
+        "hi-IN"
+      ],
+      "added": [],
+      "why": "en-IN has DragonHD voices; the hi-IN rows on the page are MAI-Voice, and the OmniIndic voices VP lists were not found in the docs, so Hindi is not claimed for HD.",
+      "sources": [
+        "azure-speech-language-support-tts.md"
+      ]
+    },
+    "voice/azure-mai": {
+      "vp": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "docs": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "removed": [],
+      "added": [],
+      "why": "as the docs list",
+      "sources": [
+        "azure-mai-voices.md",
+        "azure-speech-language-support-tts.md"
+      ]
+    },
+    "voice/sarvam": {
+      "vp": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "mr-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "gu-IN",
+        "hi-IN",
+        "kn-IN",
+        "ml-IN",
+        "mr-IN",
+        "or-IN",
+        "pa-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [
+        "ml-IN",
+        "or-IN"
+      ],
+      "added": [],
+      "why": "VP offers Bulbul v4 voices, which do not yet offer Malayalam or Odia (v3 lists all 11).",
+      "sources": [
+        "sarvam-bulbul.md",
+        "sarvam-models.md"
+      ]
+    },
+    "s2s/gemini-3.8-live": {
+      "vp": [
+        "en-IN",
+        "hi-IN",
+        "mr-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "docs": [
+        "bn-IN",
+        "en-IN",
+        "hi-IN",
+        "mr-IN",
+        "ta-IN",
+        "te-IN"
+      ],
+      "removed": [
+        "bn-IN"
+      ],
+      "added": [],
+      "why": "The Vertex Live language table (VP routes Live through Vertex) lists hi-IN, en-IN, mr-IN, ta-IN, te-IN, and Bengali only as bn-BD; the Gemini API page claims more but is not VP's route.",
+      "sources": [
+        "google-vertex-live-configure-language-voice.md",
+        "google-vertex-live-overview.md",
+        "google-gemini-api-live-capabilities.md",
+        "google-gemini-api-live-overview.md",
+        "google-cloud-blog-gemini-3-8-live.md"
+      ]
+    }
+  }
+}

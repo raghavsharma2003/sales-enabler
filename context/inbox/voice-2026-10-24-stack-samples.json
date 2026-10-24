@@ -1,0 +1,34 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-stack-sample-renderer",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Stack voice samples are rendered by python -m vpvoice.samples through the runtime's own voice adapters (providers/tts.py make_voice; Gemini Live told to say the line verbatim for v2-live, with its own transcription kept as spokenText), the stack's default voice, neutral style. One fixed line, samples.TEXT: 'नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?' (the shared disclosure line, no brand, no claim). Stacks sharing a voice share one clip. Ogg/Opus 48 kHz mono, loudnorm to -16 LUFS / -1.5 dBTP, max 12 s; manifest.json {stackId: {file, durationS, text, recordedAt, combinationId, voice, tts, spokenText?}}, entries for stacks not rendered are kept. Refuses in production mode (NODE_ENV/VP_ENV/VP_MODE), writes only inside --out, Google requests at least 1 s apart",
+   "rationale": "Walkthrough R13 (open.2026-10-24.stack-voice-samples): every stack card says 'No sample recorded yet'. A sample from the product's own adapters sounds like her on that stack; a lab recording would not.",
+   "reverse_if": "web wants a different manifest shape (then change both sides together); or Live does not read the line verbatim on the VM (spokenText differs), then render v2-live's sample from a call recording instead"
+  },
+  {
+   "id": "measure.2026-10-24.voice-samples-offline",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Offline (devsim fake voice): the renderer writes one manifest entry for each of the 7 curated stacks (s2s included) from 4 clips, Opus mono at -16 LUFS within 2.5 LU (ffmpeg ebur128), refuses production mode, unknown stacks, --devsim without VP_DEVSIM=1 and any path outside --out; without keys the real adapters report the plain reason per stack and make no request. Real audio not rendered: no keys or network in the sandbox",
+   "n": 10,
+   "method": "product/voice/tests/test_samples.py (10 tests), 2026-10-24",
+   "path": "product/voice/vpvoice/samples.py",
+   "value": "7 entries, 4 clips, offline"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.voice-stack-sample-renderer",
+   "to": "open.2026-10-24.stack-voice-samples",
+   "relation": "implements"
+  }
+ ],
+ "events": []
+}

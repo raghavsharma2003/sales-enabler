@@ -1,0 +1,4 @@
+model,n_calls,n_invocations,invocations_per_min,S0_text_tok,A0_audio_tok,text_growth_tok_per_min,audio_growth_tok_per_min,resp_audio_tok_per_inv,thought_tok_per_inv,transcript_chars_per_min
+gemini-3.1-flash-live-preview,4,69,3.718,869.0,317.0,183.6,1234.0,226.7,0.0,623.5
+gemini-3.8-live,4,108,5.709,1029.0,257.0,185.5,1157.4,125.2,63.7,646.2
+gemini-2.5-flash-native-audio-latest,4,108,5.7,1207.0,1.0,1338.0,59.2,117.8,0.0,531.3

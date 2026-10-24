@@ -1,0 +1,298 @@
+# Sarvam AI teardown (account-free phase)
+
+Lane: `sarvam` (Voice Agents / Samvaad, plus its STT, TTS and LLM APIs). Date read: 2026-10-20.
+
+> **Provenance note.** The lane finished its claims, predictions, manifest and inbox proposals, but its report.md was
+> never written to disk (its inbox event says the harness refused the write; the prose existed only in the lane's
+> structured output, which is not in the repo). The adversarial verifier created this file so the Verification section
+> has somewhere to live. The findings index below is generated from `claims.json` **after** verification; the lane's
+> narrative prose is not reconstructed. Grades: observed | inferred | vendor-claimed | unknown, as in the teardown brief.
+
+Claims: 66 (45 observed, 13 inferred, 4 vendor-claimed, 4 unknown). Predictions: 14, pre-registered in `predictions.json`. Raw artifacts: `data/teardown/sarvam/` (sha256 in `manifest.csv`). Verifier detail: `verify.md`.
+
+## Findings by dimension (post-verification)
+
+### Product surface
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-01 | observed | One account on the "Indus" platform (indus.sarvam.ai) carries Model APIs, Voice Agents, Doc Agents, Content Studio, Cowork and a coding agent. Voice Agents (internally "Samvaad", renamed from "Conversations" on 2026-08-18) has 94 docs pages and 68 API-reference pages in its llms.txt index. | data/teardown/sarvam/web/docs.sarvam.ai_llms.txt; data/teardown/sarvam/web/docs.sarvam.ai_voice-agents_llms.txt; data/teardown/sarvam/web/changelog-entries.tsv (2026-08-18 Conversations is Now Voice Agents) |
+| SAR-02 | observed | Voice Agents surface: Build (Canvas with instruction editor, variables, core tools [end call, call transfer, KB query, voicemail detection, language switch], API tools with cURL import, Python code tools, data validator/verifier (alpha), mock tool, MCP tools, on-start/on-end hooks, knowledge bases, draft/committed/deployed versions, voices, conversation settings, multi-state agents, tests); Deploy (BYO telephony or rented numbers, number groups, inbound deployments, campaigns, DND list, web widget, API, Python/Web/React Native/Flutter SDKs); Monitor (Agent Analytics with 8 tabs, Log Analyser, SQL Boards); Settings (API keys, secrets, policy, extensions, data retention, BYOK). | data/teardown/sarvam/web/docs.sarvam.ai_voice-agents_llms.txt; data/teardown/sarvam/web/docs-md/ |
+| SAR-03 | observed | Genie, the in-dashboard copilot, builds and edits agents, puts an agent live on a number and places a test call to your phone, creates/pauses/resumes campaigns, and analyses calls (summarise performance, diagnose failed calls, read transcripts, build Boards). After a playground voice test of 5 s or more the UI asks "How did that call go?" and hands "something off" to Genie. | data/teardown/sarvam/web/docs-md/build__genie.md; data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (samvaad.test_call_feedback.submitted, samvaad.genie.*) |
+| SAR-04 | observed | The login-page bundle ships a 700-event product-analytics catalogue (583 active) with an owner team per event (by owner field: platform-team 202, samvaad-team 158, studio-team 147, devplatform-team 108, akshar-team 53, cart-abandonment-team 32) and an activation role on 77 events (aha 35, setup 34, habit 8). Voice Agents "aha" events: agent created, agent deployed, tool created, knowledge base created, inbound created, campaign created, board widget added, API key copied, code snippet or prompt copied, MCP connected or bound. | data/teardown/sarvam/platform-scripts/analytics-event-catalog.json; data/teardown/sarvam/har/indus-samvaad-login-2026-10-20.har |
+| SAR-05 | observed | A separate self-serve vertical product, Cart Abandonment, lives in the same dashboard: Shopify OAuth store link, Razorpay gateway connect, a questionnaire that sets the agent's allowed behaviours, a KYC-backed phone number, credits, an auto-created editable cart-recovery Workflow, and test calls. | data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (cart_abandonment.*) |
+| SAR-06 | observed | Self-serve onboarding is role -> product -> welcome; Voice Agents onboarding adds a phone number and an expected monthly volume bucket. The org-profile step was dropped on 2026-08-07. A waitlist/invite-code product gate, described as the gate for "Coding Agents / Work Agents", was retired on 2026-08-06. | data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (onboarding.*, platform.product_gate.*) |
+| SAR-07 | unknown | When Voice Agents self-serve opened is unknown. (The lane's inference from the 2026-08-06 gate retirement is refuted: that gate was for Coding Agents / Work Agents.) | SAR-06; data/teardown/sarvam/web/changelog-entries.tsv |
+| SAR-08 | observed | Sign-in offers Google, Microsoft, Apple, phone or email; there are 152 Ory Kratos references in the dashboard bundle (auth.sarvam.ai, sso.sarvam.ai, login.sarvam.ai). Sign-up is self-serve with "Create one". | data/teardown/sarvam/har/indus-samvaad-login.png; data/teardown/sarvam/platform-scripts/bundle-scan-summary.json |
+| SAR-09 | observed | Billing is prepaid credits (1 credit = INR 1) through Razorpay, with a GST split on each collection, UPI/bank autopay mandates for plans and auto top-up, and downloadable invoices. When credits run out, billable actions are refused (credit.exhausted). Enterprise is postpaid. | data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (platform.credit.*, platform.plan_*); data/teardown/sarvam/web/docs-md/pricing.md |
+| SAR-10 | observed | Teams: org > workspace hierarchy; member invites with workspace grants and roles; session idle timeout; an org-level model-training consent toggle (added 2026-08-07). Settings > Policy covers who can create agents, deploy, view recordings and manage secrets, "depending on plan". | data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (platform.member.*, platform.organisation.model_training_consent_updated); data/teardown/sarvam/web/docs-md/settings__policy.md |
+| SAR-11 | observed | Gated to Enterprise or higher plans: workflows, WhatsApp campaigns, custom tool authoring, custom rate limits, forward-deployed engineers, voice cloning, human handover, and custom SIP (Business/Enterprise, raised as a request). | data/teardown/sarvam/web/docs-md/pricing.md; data/teardown/sarvam/web/docs-md/build__voice-language.md; data/teardown/sarvam/web/docs-md/build__run-time.md; data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (samvaad.sip_request.raised) |
+| SAR-12 | observed | Not offered: DTMF/keypad input ("planned"), bring-your-own models at any stage ("does not support"), and any LLM or ASR picker (the LLM is routed internally; only temperature 0.1-0.9, default 0.3, is exposed). The TTS model is selectable per agent (Bulbul V3 or V4). | data/teardown/sarvam/web/docs-md/build__run-time.md; data/teardown/sarvam/web/docs-md/build__models.md; data/teardown/sarvam/web/docs-md/build__conversation-settings.md |
+| SAR-13 | vendor-claimed | Marketing claims "<500ms real-time latency", "350M+ conversations", "<5 minutes to go live", ISO 27001:2022 and SOC 2 Type II, and agents that "carry your customer context into every call". | data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents |
+| SAR-61 | observed | The homepage demos are Cart Recovery Nudge, EMI Payment Reminder and Appointment Booking; the use-case menu is Appointment Booking, Cart Abandonment, Lead Qualification, Pre-approved loans and Order status; the tagline is "Sales, collections, support, bookings". That spans pre-sale (cart recovery, lead qualification, pre-approved loans) and post-sale (EMI reminder, order status). The testimonial is from Tata Capital's CDO. The one productised vertical, Cart Abandonment, is a pre-purchase job. | data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents; data/teardown/sarvam/har/www-voice-agents-2026-10-20.har (/api/voice-agents/config: 6 agents); data/teardown/sarvam/platform-scripts/analytics-event-catalog.json |
+| SAR-62 | inferred | Sarvam already sells the post-sale collections and EMI-reminder job VP is weighing (showcase EMI agent with a full collections disposition model; Tata Capital testimonial), alongside pre-sale jobs, at INR 3-3.5/min list with India-hosted models. Post-sale-first is contested in collections specifically. VP's edge there must come from regulated plumbing (1600, A2P, category windows, enforced disclosure), call quality and fair short-call billing, not list price or language count. | SAR-61; SAR-45; SAR-46; SAR-53; research/2026-10-20/teardown/regulation-segment/claims.json |
+
+### Docs and API
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-14 | observed | The public Voice Agents OpenAPI 3.1 has 68 operations and 175 schemas. It covers deployments (inbound), campaigns, cohorts (CSV upload up to 100 MB, or a JSON stream of up to 1,000 users per request), instant outbound, analytics (attempts, interactions, recordings, transcripts), boards (SQL widgets, scheduled notifications), tests (suites, cases, runs up to 20x) and BYOK. It has no agent-create or agent-edit operation, although an app-authoring server is listed. | data/teardown/sarvam/web/docs.sarvam.ai_openapi_voice-agents.json; data/teardown/sarvam/web/docs-md/deploy__campaigns__cohorts.md |
+| SAR-15 | observed | Agent authoring is exposed through a hosted MCP server (mcp.sarvam.ai/voice-agents, streamable HTTP, Sarvam SSO OAuth, 24-hour token with no refresh) covering agents, telephony, campaigns, evals, knowledge bases, boards and analytics, not through REST. | data/teardown/sarvam/web/docs-md/mcp.md; data/teardown/sarvam/web/changelog-entries.tsv (2026-09-16) |
+| SAR-16 | observed | Data model: org > workspace > app (agent, versioned; app_type is always "agent") > deployment (inbound/outbound/both, connection plus numbers, availability) or campaign. A campaign has attempts_per_second 0.1-500, a retry policy per outcome (busy, failed, no_answer, short_duration, provider_error, internal_error) with per-attempt intervals, phone rotation, and an allowed_schedule (timezone, start, end, days). Below that: cohort (valid/rejected counts and a rejected_records file) > attempt (connectivity_status, failure_reason, ended_by, retry_attempt, is_debug_call, has_log_issues, masked and hashed contact) > interaction (original and English-translated transcripts, forwarded_calls blind or warm, average agent and user response time). | data/teardown/sarvam/web/docs.sarvam.ai_openapi_voice-agents.json |
+| SAR-17 | inferred | Failed calls and their reasons are first-class, queryable records: separate attempt and interaction objects carry failure_reason, ended_by and has_log_issues, and Call Logs filters by failure reason. | SAR-16; data/teardown/sarvam/web/docs-md/monitor__agent-analytics__call-logs.md |
+| SAR-18 | observed | Each deployment and campaign has its own webhook_config. Deliveries are recorded as running, completed or failed, and up to 200 attempts can be re-delivered per request. | data/teardown/sarvam/web/docs-md/deploy__inbounds.md; data/teardown/sarvam/web/docs.sarvam.ai_openapi_voice-agents.json |
+| SAR-19 | observed | Plan rate limits (concurrent calls / calls started per minute): PAYG 4/20, Pro 10/50, Growth 30/150, Business 120/600. A separate concurrent-campaign limit exists, and the analytics API is rate-limited per key with Retry-After. | data/teardown/sarvam/web/docs-md/pricing.md; data/teardown/sarvam/web/docs-md/api__analytics__overview.md |
+| SAR-20 | vendor-claimed | Boards run read-only SQL with AI-drafted queries, filter tokens and scheduled deliveries. The docs state the analytics store is ClickHouse, and the Boards API returns CLICKHOUSE_ERROR on execution failures. | data/teardown/sarvam/web/docs-md/monitor__clickhouse-sql-best-practices.md; data/teardown/sarvam/web/docs-md/api__boards__sql.md |
+
+### Architecture
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-21 | observed | The voice runtime and platform APIs (apps.sarvam.ai: app-runtime, app-authoring, scheduling, outbounds, analytics, evals) resolve to 4.213.213.141, inside AzureCloud.centralindia (4.213.0.0/16) in Microsoft service tags of 2026-10-12. They are served directly, not through Cloudflare. | data/teardown/sarvam/dns/doh.jsonl; data/teardown/sarvam/dns/azure-servicetags-20261012.json; data/teardown/sarvam/dns/rdap-4.213.213.141.json; data/teardown/sarvam/web/docs.sarvam.ai_openapi_voice-agents.json (servers) |
+| SAR-22 | observed | api.sarvam.ai (the Model APIs and the dashboard's production API base URL) CNAMEs to an AWS ELB named k8s-vistaar-... in ap-south-1 Mumbai (IPs rotate: 13.203.234.78 and 16.4.106.174 at 16:59Z; 16.4.106.174 and 43.205.26.180 at 19:16Z). The k8s-<namespace>- prefix is the AWS Load Balancer Controller's naming, so it is probably a Kubernetes ingress (inferred). | data/teardown/sarvam/dns/doh.jsonl; data/teardown/sarvam/dns/aws-ip-ranges.json; data/teardown/sarvam/dns/rdap-13.203.234.78.json |
+| SAR-23 | observed | The documented egress IPs for API tools are 4.213.167.70 (Azure Central India) and 35.154.84.150 (AWS ap-south-1). | data/teardown/sarvam/web/docs-md/build__tools__https-tool.md; data/teardown/sarvam/dns/azure-servicetags-20261012.json; data/teardown/sarvam/dns/aws-ip-ranges.json |
+| SAR-24 | inferred | Sarvam runs on two clouds with India regions: the Voice Agents runtime and REST APIs (apps.sarvam.ai) on Azure Central India; the Model APIs, the dashboard's API base (api.sarvam.ai) and the Mixpanel proxy on AWS Mumbai EKS-style ingresses. The dashboard frontend is on Azure Front Door (global). That fits the India-residency claim for the call runtime and API endpoints, not for dashboard telemetry (SAR-63). Where GPU inference runs behind them was not observed. | SAR-21; SAR-22; SAR-23 |
+| SAR-25 | observed | Web widget and SDK transport: an HTTPS GET with X-API-Key returns a signed WebSocket URL; the session is then one WebSocket to apps.sarvam.ai/api/app-runtime/... carrying JSON client.*/server.* messages (media.audio_chunk; event.transcription, user_interrupt, user_speech_start/end, tool_call, kb_query, state_transition, language_change, variable_update; action.interaction_connected/end; system.ping/pong). Agent audio arrives as base64 chunks labelled audio/wav that are headerless PCM, about 100 ms each at 16 kHz; SDK input is 8 or 16 kHz, output 16 or 22.05 kHz. No RTCPeerConnection was created in 8 widget calls. | data/teardown/sarvam/ws/widget-ws-protocol-summary-2026-10-17.json; data/teardown/sarvam/sdk/npm-conv-ai/x/package/dist/modules/socket-manager.js; data/teardown/sarvam/sdk/npm-conv-ai/x/package/dist/types/types.js; research/2026-10-17/lanes/l4b-measured/round2/recordings/sarvam_emi__P1__r1.json (pcs 0) |
+| SAR-26 | inferred | The web path uses no WebRTC media stack, so it is not a LiveKit or Daily room: the browser speaks a proprietary JSON schema to Sarvam's app-runtime over one WebSocket, and the npm SDK and 53-chunk dashboard bundle hold no LiveKit, Daily or Pipecat client code (the one "livekit" string is a docs-search keyword). Whether the server-side pipeline is Sarvam's own code or a framework such as Pipecat is unknown. | SAR-25; data/teardown/sarvam/platform-scripts/bundle-scan-summary.json; data/teardown/sarvam/web/changelog-entries.tsv (2026-08-18 Telephony, Frameworks & Migrations) |
+| SAR-27 | observed | Telephony: Exotel, Twilio, Tata Smartflo, Pulse, Intalk, Vobiz and Plivo connect self-serve. Intalk, Pulse and Smartflo stream to WSS endpoints at apps.sarvam.ai/api/app-runtime/channels/<provider>. Rented numbers appear as the "Sarvam Vobiz" connection. The docs distinguish SIP channels (held from the dial) from streaming channels (held from answer). | data/teardown/sarvam/web/docs-md/deploy__telephony__bring-your-own.md; data/teardown/sarvam/web/docs-md/deploy__telephony__pulse.md; data/teardown/sarvam/web/docs-md/deploy__telephony__smartflo.md; data/teardown/sarvam/web/docs-md/deploy__telephony__rent-from-sarvam.md; data/teardown/sarvam/web/docs-md/deploy__campaigns__dialing-rate.md |
+| SAR-28 | vendor-claimed | Sarvam says it self-hosts and co-locates every model: ASR Saaras v4, TTS Bulbul v3/v4, and an LLM layer described as "a constellation of open-weight models along with sarvam-105b-conversations" plus fine-tunes, routed per request with no customer choice. | data/teardown/sarvam/web/docs-md/build__models.md |
+| SAR-29 | unknown | The open-weight models in the Voice Agents LLM constellation are unknown. Sarvam serves Gemma 4, GLM 5.3 / 5.3 Flash and DeepSeek V4.1 Flash on its API, and one builder reports Work Agents (a different product) routing to GLM 5.2; neither shows what the voice router uses. | data/teardown/sarvam/web/www.sarvam.ai_api-pricing; data/teardown/sarvam/complaints/www_reddit_com_r_SarvamAI_new_.txt |
+| SAR-30 | observed | Ops tooling: SigNoz Cloud, India region (ingest.in.signoz.cloud, OpenTelemetry); Sentry; PostHog through a first-party proxy (k.sarvam.ai, which resolves to a US PostHog proxy); Mixpanel (mp.platform.sarvam.ai, api-in.mixpanel.com); status page on incident.io; docs on Fern; site on Cloudflare; assets on CloudFront. The dashboard frontend is Next.js served from cdn.sarvam.ai with no public source maps. | data/teardown/sarvam/platform-scripts/bundle-scan-summary.json; data/teardown/sarvam/har/www-voice-agents-2026-10-20.har; data/teardown/sarvam/dns/doh.jsonl; data/teardown/sarvam/web/status.sarvam.ai |
+| SAR-31 | unknown | The bundle names environments studio.qa01, studio.azure-stage01, api.azure-qa01 and api.saas-staging-vistaar (observed). Which cloud is primary for the platform is unknown: production's API base is on AWS and the Voice Agents runtime on Azure. | data/teardown/sarvam/platform-scripts/bundle-scan-summary.json |
+| SAR-32 | observed | SDK freshness: the Python conv-ai SDK is at 1.1.1 (2026-09-22); the npm SDK is at 0.0.42, last released 2026-03-30, and its tarball ships React Native Android build intermediates (127 files under android/). The sarvamai model SDK has 169 releases since 2025-03-07, the latest 0.1.37 on 2026-10-12. | data/teardown/sarvam/sdk/pypi-conv-ai/pypi-meta.json; data/teardown/sarvam/sdk/npm-conv-ai/x/package/package.json; data/teardown/sarvam/sdk/pypi-sarvamai/pypi-meta.json |
+| SAR-33 | observed | Code tools are Python SarvamTool classes whose run(context) returns message_to_llm or message_to_user and can change state or language, end the call, set variables and read secrets. The on-end hook receives the transcript as English text (en_text) and can request retry_interaction. The on-start hook can set ASR hotwords and the per-call TTS speaker, pitch and pace. | data/teardown/sarvam/sdk/pypi-conv-ai/x/sarvam_conv_ai_sdk/tool.py |
+| SAR-34 | observed | Our own lab ran Sarvam's models from the India VM, outside Sarvam's platform (Saaras v4, Sarvam-105B-conversations, Bulbul v4 Flash). Reply gaps were 968-1,181 ms (n=9 replies, 3 calls), first token about 100 ms, at INR 1.39-1.51/min; one cold Bulbul socket took 4.3 s to first audio. | research/2026-10-19/voicelab/results/smoke-india-2026-10-19.md |
+| SAR-35 | inferred | Sarvam's own homepage agent measured a clean-turn p50 of 3,116 ms (n=46 turns, 8 calls, browser-side, US-East vantage; about 2.8 s estimated from India) against "<500ms" in marketing. Sarvam's public model APIs reached 1.0-1.2 s server-side in our India pipeline. Most of the roughly 1.5 s that remains is probably platform orchestration, endpointing and demo configuration (which may include model routing) rather than the public models' speed. | research/2026-10-17/lanes/l4b-measured/round2/findings.md (section 1); research/2026-10-17/ledger.md (CMP-06); SAR-34 |
+
+### Pricing and unit economics
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-36 | observed | Rate card 2026-10-20: PAYG INR 3.50, Pro 3.25, Growth 3.15, Business 3.00 (coming soon), Enterprise custom from 2 lakh min/month. Billed per 60-s pulse, rounded up, ex GST, models included. Telephony (Vobiz) INR 0.20 per 30-s pulse; forwarding INR 0.40 (PSTN) or 0.35 (SIP) per 30-s pulse; numbers INR 59 per 30 days (11, 79, 80 series); simulated test run INR 2. Unanswered, busy and failed calls are free; voicemail is billed. Per-minute rates are unchanged from the 2026-10-17 pricing-history row. | data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents_pricing; data/teardown/sarvam/web/docs-md/pricing.md; research/2026-10-17/lanes/l4a-competitors/pricing-history.json (Sarvam Samvaad) |
+| SAR-37 | observed | Docs and marketing disagree on plan bands and fees on the same day. Marketing: Pro from 1,000 min at INR 2,000/month, Growth from 4,000 at INR 10,000, Business 16,000-2 lakh at INR 50,000, fees returned as credits. Docs: PAYG under 3,000; Pro INR 9,999/month for 3,000-16,000; Growth INR 49,999 for 16,000-65,000; Business INR 2,00,000 for 65,000-2 lakh. | data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents_pricing; data/teardown/sarvam/web/docs-md/pricing.md |
+| SAR-38 | inferred | Effective all-in INR per connected minute on Sarvam telephony, ex GST, computed from the observed rate card (60-s agent pulses plus 30-s telephony pulses). PAYG: 30-s call 7.40, 45-s 5.20, 60-s 3.90, 90-s 5.07, 120-s 3.90. Growth: 30-s 6.70, 90-s 4.60, 120-s 3.55. PAYG 90-s with 18% GST: 5.98 (USD 0.053 ex GST at INR 95). Calls that are not whole minutes cost INR 4.40-7.40 across plans for 30-90 s. The 2026-10-17 "INR 3.55-3.90 all-in" figure (ledger ECO-15) holds only for whole-minute calls. Actual debits are unverified (SAR-P13). | research/2026-10-20/teardown/sarvam/pricing-allin.csv; research/2026-10-17/ledger.md (ECO-15) |
+| SAR-39 | inferred | At Sarvam's own Growth API list prices one call-minute of its models costs INR 1.16-1.33 (STT 0.41 streamed; Bulbul V4 Flash 0.60 at 352 chars/min; Sarvam-105B 0.16-0.32); our lab measured 1.39-1.51 at PAYG. Against an INR 3.00-3.50 list price that is a markup of about INR 1.7-2.3 per minute over its own API list, before telephony and operations. | research/2026-10-18/model/results/inputs.csv; research/2026-10-18/lanes/g4-market-selfhost/prices.csv; research/2026-10-18/lanes/g4-market-selfhost/selfhost.csv; research/2026-10-19/voicelab/results/smoke-india-2026-10-19.md |
+| SAR-39b | unknown | Self-hosted marginal compute for Sarvam's stack of about INR 0.24-0.34/min, and so a compute gross margin of about 89-93%, is unknown. The lane derived it from g4 proxies (IndicConformer, Veena, Groq-class LLM serving at 50% utilisation), which are different models with throughput that g4 says nobody has measured. | research/2026-10-18/lanes/g4-market-selfhost/selfhost.csv; research/2026-10-18/lanes/g4-market-selfhost/findings.md (finding 4) |
+| SAR-40 | inferred | Sarvam's list price is 2.3-3.0x its own API list cost for the same models (SAR-39), so it could cut toward INR 1.5-2/min and stay above that cost. Its INR 3.50 PAYG is the lowest self-serve PAYG rate among the Indian vendors tracked, though managed (SquadStack INR 2-5) and enterprise (Ravan.ai USD 0.02-0.04) quotes go lower. A VP plan that undercuts on price faces a vendor with room to follow. | SAR-39; research/2026-10-17/lanes/l4a-competitors/pricing-history.json |
+| SAR-41 | observed | API price moves: sarvam-105b rose on 2026-08-18 (INR 4 / 2.5 / 16 to 29.28 / 10.98 / 73.2 per 1M input / cached / output tokens) and was cut on 2026-10-10 to INR 15 / 5 / 60. Bulbul V3 reaches end of life on Voice Agents on 2026-11-10, which forces existing agents onto V4 voice names. STT is INR 0.49 to 0.41 per minute by tier. | data/teardown/sarvam/web/changelog-entries.tsv; data/teardown/sarvam/web/www.sarvam.ai_api-pricing |
+
+### Velocity and reliability
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-42 | observed | Changelog: 58 entries in the last 6 months (2026-04-20 to 10-20) on 27 release days, none in July 2026. Voice Agents has 22 entries plus 1 shared, all between 2026-08-13 and 10-16: Agent Analytics GA 08-13; code tools and streaming cohorts 08-15; rename 08-18; outbound webhooks and 60-min max call 08-20; phone rotation 09-01; call transfer, inbound webhooks and Saaras v4 GA 09-02; per-language voices 09-09; data retention 09-15; MCP server and Boards API 09-16; Tests 09-17; Bulbul V4 10-06; volume control 10-14; stereo recordings 10-16. | data/teardown/sarvam/web/changelog-entries.tsv; data/teardown/sarvam/web/docs.sarvam.ai_changelog.json |
+| SAR-43 | observed | Status page (incident.io), Jul-Oct 2026 uptime: Voice Agents 99.94% (Calls 99.98%, Telephony 99.95%), APIs 99.57%. Of the 19 incidents from 2026-07-23 to 10-20, the voice-relevant ones are three Vobiz carrier/number-series incidents (08-12 79/80 series, 08-24 8071584 series, 08-28 7965 series), intermittent model failures affecting calls (08-07), KYC verification issues (09-20), a partial voice-agent outage from model latency (09-24), missing analytics data from a retention-config issue (09-30), Smartflo and analytics degradation (10-15), and a scheduling maintenance window that blocked campaign creation and cohort upload (10-20). | data/teardown/sarvam/web/status-incidents.tsv; data/teardown/sarvam/web/status.sarvam.ai; data/teardown/sarvam/web/status.sarvam.ai_feed.rss |
+
+### India operating plumbing
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-44 | observed | Compliance stance: an org-wide DND suppression list (manual, bulk CSV or API) applies to every campaign, and the docs say "Calling compliance is your responsibility" (consent, DND, telemarketing rules). Over the 162 docs pages read, NCPR, DLT, 140x, 1601, A2P, CNAP and DPDP appear 0 times; TRAI appears once, only as an example failure reason in which a BYO provider (Exotel) rejects an NDNC-registered number (a bounded negative). This confirms regulation-lane RS-22 and RS-26 and ledger CMP-27. | data/teardown/sarvam/web/docs-md/deploy__campaigns__dnd.md; data/teardown/sarvam/web/docs-md/; research/2026-10-20/teardown/regulation-segment/claims.json (RS-22, RS-26) |
+| SAR-45 | observed | Rented numbers are 10-digit geographic series (11, 79, 80; docs examples +9180..., +9120..., +9179...), rented after PAN/Aadhaar KYC as an Individual or Corporate. No 140xx or 1600xx option is offered. | data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents_pricing; data/teardown/sarvam/web/docs-md/deploy__telephony__rent-from-sarvam.md; data/teardown/sarvam/web/docs-md/deploy__campaigns__create-campaign.md; data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (samvaad.telephony.kyc_started) |
+| SAR-46 | inferred | Sarvam's own showcase jobs hit this gap. An RBI- or IRDAI-regulated lender or insurer making EMI or renewal service calls must use 1600xx and declared A2P CLIs, so it has to bring a 1600 trunk through a BYO provider. A Sarvam-rented 10-digit number cannot be used lawfully for that job. | SAR-45; research/2026-10-20/teardown/regulation-segment/claims.json (RS-07, RS-08) |
+| SAR-47 | observed | Phone-number rotation (2026-09-01) gives each retry to the same person a different caller ID, "to avoid a contact learning to ignore one number". Number groups are pitched as "automatic number rotation protects number health". | data/teardown/sarvam/web/docs-md/deploy__campaigns__create-campaign.md; data/teardown/sarvam/web/docs-md/deploy__telephony__rent-from-sarvam.md |
+| SAR-48 | inferred | Rotating 10-digit CLIs so that a contact does not learn to ignore one number keeps the calls on CLIs that the 2026 Third Amendment does not protect: 10-digit CLIs can be flagged as suspected spam and pay the A2P termination charge, while 140/1600/1601 cannot be flagged (RS-09). The buyer carries that exposure. No TRAI text on CLI rotation itself was cited. | SAR-47; research/2026-10-20/teardown/regulation-segment/claims.json (RS-08, RS-09) |
+| SAR-49 | observed | The calling window is set by the buyer per campaign (timezone, allowed days, daily window; the docs example is 09:00-18:00), and inbound availability defaults to 09:00-18:00 IST. No category-aware window (TRAI 10:00-21:00 promotional, RBI 08:00-19:00 collections) or warning is documented. "Outside business hours" appears as a failure reason. | data/teardown/sarvam/web/docs-md/deploy__campaigns__create-campaign.md; data/teardown/sarvam/web/docs-md/deploy__inbounds.md; data/teardown/sarvam/web/docs-md/monitor__agent-analytics__connectivity.md |
+| SAR-50 | vendor-claimed | The docs say "all data, including any PII, stays within India" because every model is self-hosted. | data/teardown/sarvam/web/docs-md/build__models.md; data/teardown/sarvam/web/docs-md/overview.md; data/teardown/sarvam/web/docs-md/why-voice-agents.md |
+| SAR-51 | observed | Data controls: workspace retention with a Voice Agents override (2026-09-15); a BYOK envelope-encryption contract; "Protect sensitive info" masks phone numbers and emails in logs; an org model-training consent toggle; stereo recordings for all calls (2026-10-16). DPDP is not named in the docs read. | data/teardown/sarvam/web/docs-md/extra__api__platform__data-retention.md; data/teardown/sarvam/web/docs-md/api__byok__overview.md; data/teardown/sarvam/web/docs-md/build__conversation-settings.md; data/teardown/sarvam/web/changelog-entries.tsv |
+| SAR-52 | observed | Correction to the 2026-10-19 desk note ("technical docs read contain no residency statement"): the Voice Agents Models page now states India residency in the technical docs. It remains a vendor claim until it is in a contract. | data/teardown/sarvam/web/docs-md/build__models.md; research/2026-10-19/voicelab/desk/provider-apis.md (section 2.1) |
+| SAR-63 | observed | The dashboard's main PostHog project records sessions. The bundle initialises it with api_host k.sarvam.ai, ui_host us.posthog.com, disable_session_recording false and maskAllInputs false; its remote config, fetched on the public login page, enables session recording at no sample limit (sampleRate null, 30 s minimum) with network body and header capture, console logs and canvas, and maskAllInputs false. k.sarvam.ai CNAMEs to *.cf-prod-us-proxy.proxyhog.com. The recorder script loaded on the login page; no replay upload was seen in the short capture. | data/teardown/sarvam/har/indus-samvaad-login-2026-10-20.har (k.sarvam.ai/array/<project>/config.js sessionRecording; k.sarvam.ai/static/posthog-recorder.js); data/teardown/sarvam/platform-scripts/files/ (posthog init with ui_host us.posthog.com); data/teardown/sarvam/verify/doh-recheck-2026-10-20.jsonl |
+| SAR-64 | inferred | Logged-in dashboard sessions, which show transcripts, recordings and contact numbers, are probably recorded to PostHog's US cloud with request and response bodies, unless Sarvam masks those views (a privacy-mask attribute exists in the block selector). That would contradict "all data, including any PII, stays within India" for the dashboard, though not for the call path. | SAR-63; SAR-50; data/teardown/sarvam/web/docs-md/build__models.md |
+| SAR-65 | inferred | Sarvam's productised Cart Abandonment vertical provisions a Sarvam-rented number after KYC (auto-purchase), and rented numbers are 11/79/80-series 10-digit CLIs (SAR-45). If cart-recovery calls are promotional, as a call meant to induce a purchase probably is, TRAI requires a 140xx CLI, which Sarvam does not offer. The regulation lane's job matrix does not classify cart recovery, so the promotional reading is ours. | data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (cart_abandonment.phone_number.connect_requested / connected); SAR-45; research/2026-10-20/teardown/regulation-segment/claims.json (RS-07); research/2026-10-20/teardown/regulation-segment/job-matrix.csv |
+
+### Failure modes
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-53 | observed | Measured on Sarvam's own EMI-reminder demo agent (round 2, 8 calls): it claimed to be human in 6 of 6 calls when asked; went silent under ~15 dB babble (2/2); cut into a 2.4 s elderly pause (2/2); did not register the correction 25,000 to 24,500 (2/2); ignored "Monday 3:30, call my son" (2/2). | research/2026-10-17/lanes/l4b-measured/round2/findings.md (section 1); research/2026-10-17/lanes/l4b-measured/round2/data/manual-codes-r2.csv; research/2026-10-17/ledger.md (CMP-07, CMP-09) |
+| SAR-54 | observed | The platform pushes toward human mimicry and leaves disclosure to the prompt: the headline is "Voice agents that sound human", there is optional artificial background sound (Quiet office, Call center, City traffic), and no AI-disclosure setting or non-removable guardrail appears in conversation settings or core tools (a bounded negative over the docs read). | data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents; data/teardown/sarvam/web/docs-md/build__conversation-settings.md; data/teardown/sarvam/web/docs-md/build__tools__core-tools.md |
+| SAR-55 | observed | Builder complaints (raw): "STT accuracy varies noticeably for the same speaker and similar audio quality ... TTS output quality, pronunciation, and naturalness seem inconsistent ... response times fluctuate significantly" (r/SarvamAI, about 2026-05/06). "The response time is too slow for real-time conversations" (r/LocalLLM 1s2cbss, LiveKit + Twilio on Sarvam models, about 2026-03). "In Hindi, genders get confused though" (r/AI_India 1wkv0jh). The WebSocket STT has no word timestamps, TTS v3 is "very expensive" next to Cartesia, and one builder switched to Deepgram after a week (r/SarvamAI 1tuj7io). Bulbul takes more than 1 s against 150-250 ms for rivals (r/indianstartups 1tkuf6k). | data/teardown/sarvam/complaints/www_reddit_com_r_SarvamAI_new_.txt; data/teardown/sarvam/complaints/www_reddit_com_comments_1s2cbss_.txt; data/teardown/sarvam/complaints/www_reddit_com_r_AI_India_comments_1wkv0jh_.txt; research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv (Sarvam rows) |
+| SAR-56 | observed | The public complaint base is thin. No G2, Capterra or Trustpilot page for Voice Agents was found. GitHub issue APIs are blocked from this sandbox (403), and Reddit served a bot challenge after 3 fetches. That leaves about 7 builder threads, all about the model APIs and none from platform buyers. | data/teardown/sarvam/complaints/; data/teardown/sarvam/complaints/gh-sarvam-python-sdk-issues.json |
+| SAR-57 | inferred | Sarvam's visible complaint codes are LATENCY, ASR/TTS consistency and TELEPHONY (the Vobiz number-series incidents), not the support and billing that dominate Indian complaints overall (r2: support 114, billing 107). Platform-buyer pain (support, billing, UI) is unmeasured, not absent. | SAR-43; SAR-55; research/2026-10-17/lanes/r2-untouched-raw/findings.md |
+
+### v2 notes (memory, personalisation, learning)
+
+| id | grade | claim | evidence |
+|---|---|---|---|
+| SAR-58 | observed | Memory and personalisation in the docs: per-call input and output variables, an on-start hook to load caller context, inbound "known callers" CSV lists mapped to variables, per-contact overrides (initial message, state, language), Indic number reading. No cross-call memory store is documented. Marketing's "carry your customer context into every call" fits per-call context injection; its privacy panel lists "Memory: Private", which hints at a memory feature that no docs page describes (unknown). | data/teardown/sarvam/web/docs-md/build__variables-personalization.md; data/teardown/sarvam/web/docs-md/deploy__inbounds.md; data/teardown/sarvam/web/www.sarvam.ai_products_voice-agents |
+| SAR-59 | observed | The learning loop is manual: build, test, outcome variables, deploy, metrics, improve. Goals are rule-based (equals, not_equals, in, gt, lt) over output variables and are evaluated on every connected call. Tests use a simulated user and an AI judge, up to 20 runs per case. Genie reviews instructions, keeps a history of suggestions and diagnoses failed calls. No automatic prompt optimisation, A/B traffic split or bandit is documented. | data/teardown/sarvam/web/docs-md/build__process.md; data/teardown/sarvam/web/docs-md/build__tests.md; data/teardown/sarvam/web/docs-md/build__genie.md; data/teardown/sarvam/platform-scripts/analytics-event-catalog.json (agents.prompt_suggestion.*) |
+| SAR-60 | observed | The showcase collections agent's variables encode a full collections disposition model (promised_to_pay date and time, refused_to_pay_reason, willingness_to_pay, ptp_extraction_effort, wrong_number, related_party, dispute, settlement, final_disposition) plus self-QA flags (bot_went_on_loop, is_hallucinating, language_switch_handling). | data/teardown/sarvam/ws/widget-ws-protocol-summary-2026-10-17.json (interaction_connected_example) |
+
+## What this means for the three decisions (after verification)
+
+1. **Pre-sale or post-sale first.** Sarvam is broad, not post-sale-only: its demos and menu span cart recovery, lead
+   qualification and pre-approved loans (pre-sale) and EMI reminders and order status (post-sale) (SAR-61). Its deepest
+   visible post-sale investment is collections: a showcase EMI agent with a full disposition model and a Tata Capital
+   testimonial (SAR-60, SAR-62). So post-sale-first is contested in collections specifically. Its numbering is 10-digit only
+   (SAR-45), which a regulated lender cannot use for service calls (SAR-46, inferred) and which a promotional cart-recovery
+   call cannot use either (SAR-65, inferred). Regulated BFSI service calls on 1600 remain an opening.
+2. **v1 parity floor.** Sarvam sets a high self-serve floor for an Indian buyer: BYO telephony from 7 Indian/global
+   providers, campaigns with per-outcome retries and phone rotation, a DND list, webhooks with re-delivery, Agent
+   Analytics and SQL Boards, Tests with a simulated user and judge, an MCP server, a copilot (Genie), prepaid INR credits
+   through Razorpay with UPI autopay, and data-retention and BYOK controls (SAR-02, 09, 14-19, 33, 51, 59).
+3. **Where VP can be measurably better.** Enforced AI disclosure (no platform control exists, SAR-54; the demo claimed to
+   be human 6/6, SAR-53); handset reply gap (demo 3.1 s browser-side, SAR-35); turn-taking under elderly pauses and babble
+   (SAR-53); regulated-call plumbing (1600/A2P, category windows, SAR-44-49); fair short-call billing (60-s pulses make
+   30-90 s non-whole-minute calls INR 4.40-7.40/min, SAR-38, computed); and dashboard data kept in India (SAR-63/64,
+   the inference needs a logged-in check). Not price: Sarvam's list price is 2.3-3.0x its own API list cost and it can
+   follow a cut (SAR-40). Not language hold (CMP-08).
+
+## Account phase needs
+
+Only a trial account can settle: the sign-up and KYC path and time to first call (SAR-P01, P02a/b); what Genie builds and
+whether it adds a disclosure rule (P03, P14); messy-CSV handling, duplicates and the opt-out row (P04); out-of-hours window
+acceptance (P05); voicemail on Indian operator announcements and warm vs blind transfer on BYO Plivo (P06); failed-call
+reason lookup and export columns (P07, P08); handset reply gap, turn-taking, language and noise on PSTN (P09-P12); per-call
+credit debits (P13, scored in credits); whether a BYO 1600 trunk works (SAR-46); and whether logged-in dashboard sessions
+upload replays with network bodies to PostHog (SAR-63/64).
+
+## Verification
+
+Adversarial verifier, 2026-10-20. Every observed or inferred claim on architecture, pricing, India plumbing and v2 was
+re-checked against the saved evidence, plus the surface, docs-API, velocity and failure-mode claims that feed a
+decision. Re-checks run: DNS re-resolved through Cloudflare and Google DoH at 19:16Z (saved as
+`data/teardown/sarvam/verify/doh-recheck-2026-10-20.jsonl`); npm publish times re-fetched (saved as
+`data/teardown/sarvam/verify/npm-conv-ai-time-2026-10-20.json`); all 12,420 widget audio chunks from the round-2 dumps
+decoded; all 36 rows of `pricing-allin.csv` recomputed; Azure service tags and AWS ranges re-matched; the OpenAPI, docs
+pages, bundle chunks, analytics catalogue and HAR (including PostHog remote config) re-read; manifest hashes re-verified
+(577 of 577 rows matched and no file was unlisted, checked before the verifier appended its 2 rows).
+
+Outcome over the lane's 62 claims: 30 confirmed, 16 corrected, 3 downgraded, 2 refuted, 1 regraded, 10 not re-checked; plus 1 split out (SAR-39b) and 3 added (SAR-63, SAR-64, SAR-65).
+
+### Changes, with reasons
+
+| id | result | grade before -> after | reason |
+|---|---|---|---|
+| SAR-07 | refuted | inferred -> unknown | The gate retired on 2026-08-06 was for Coding Agents / Work Agents (event descriptions), so it says nothing about Voice Agents. The first Voice Agents changelog entry (2026-08-13) dates the changelog section, not self-serve opening. When Voice Agents became self-serve is not observed. |
+| SAR-31 | refuted | inferred -> unknown | The bundle's environment switch maps production to api.sarvam.ai (AWS, k8s-vistaar ELB) and staging to api.saas-staging-vistaar.sarvam.ai (the same "vistaar" name as the AWS prod ingress); only QA/stage01 hosts carry "azure". The Mixpanel proxy runs on an AWS EKS-style ingress named saasprodplatform. Platform components sit on both clouds; nothing here shows Azure is primary. |
+| SAR-26 | downgraded | inferred -> inferred | Narrowed. No WebRTC in 8 calls and a browser-to-server JSON WebSocket rule out a LiveKit or Daily room on the web path. They do not rule out a server-side framework: Pipecat (and similar) run behind custom WebSocket serializers, so client bundles and the SDK would not show them. The server-side orchestration framework is unknown. |
+| SAR-29 | downgraded | inferred -> unknown | Which open-weight models run in the voice stack is not observed. The API price list shows what Sarvam resells, not what its voice router uses, and the one routing report (GLM 5.2) is about Work Agents/Cowork, a different product. |
+| SAR-38 | downgraded | observed -> inferred | All 36 rows of pricing-allin.csv recompute exactly from the rate card. But it is a computation, not an observation of billing: whether debits follow the rate card is what SAR-P13 tests. Also, 30-90 s calls are not all 4.6-7.4: a 60-s call is 3.40-3.90, and the non-whole-minute range across plans is 4.40 (Business 90 s) to 7.40 (PAYG 30 s). |
+| SAR-39b | split-from-SAR-39 | inferred -> unknown | Split out of SAR-39 by the verifier: the proxies are not Sarvam's models (Saaras, Bulbul, Sarvam-105B) and their throughput is assumed, so the margin is not supported. |
+| SAR-20 | regraded | inferred -> vendor-claimed | Not an inference: the Boards SQL API page states "Sarvam's analytics store is ClickHouse" and returns a CLICKHOUSE_ERROR code. It is a vendor statement in the docs, not something we observed in the system. |
+| SAR-04 | corrected | observed -> observed | Team counts were counted by event-name prefix, not by the owner field. By owner: platform-team 202, samvaad-team 158 (prefix counts 175 and 142). 583 of 700 events are active; 77 carry an activation role (aha 35, setup 34, habit 8). agents.agent.deployed is also an aha event. |
+| SAR-06 | corrected | observed -> observed | The catalogue says the org-profile step was dropped on 2026-08-07 ("current onboarding is role -> product -> welcome only"); phone and volume are Voice Agents onboarding steps. The retired product gate is described as the gate for "Coding Agents / Work Agents", not Voice Agents. |
+| SAR-12 | corrected | observed -> observed | The "no model picker" sentence in the docs is about the LLM. The TTS model is chosen per agent (Bulbul V3 or V4; V3 end of life on Voice Agents 2026-11-10). |
+| SAR-22 | corrected | observed -> observed | DNS and region confirmed, but (a) ELB IPs rotate: at 19:16Z the A records were 16.4.106.174 and 43.205.26.180; (b) "Kubernetes ingress" is an inference from the AWS Load Balancer Controller naming convention k8s-<namespace>-; (c) api.sarvam.ai is also the dashboard's production API base URL (bundle: NEXT_PUBLIC_API_BASE_URL default), so it is not only the model front door. |
+| SAR-24 | corrected | inferred -> inferred | The two-cloud, both-Mumbai/Pune picture holds for the call runtime and the API endpoints, but the split is not "control plane on Azure": the dashboard's prod API base (api.sarvam.ai) and the Mixpanel proxy (mp.platform.sarvam.ai, ELB k8s-saasprodplatforma-...) are AWS Mumbai; the dashboard frontend (cdn.sarvam.ai) is on Azure Front Door, a global anycast CDN; and dashboard product telemetry and session replay go to PostHog's US cloud (SAR-63). The residency fit is for the runtime and API endpoints only. |
+| SAR-25 | corrected | observed -> observed | Transport confirmed (8 calls, pcs=0 in all 8 recordings; SDK getSignedUrl() sends X-API-Key; message types present in the SDK). Correction: the chunks are labelled format audio/wav but none of 12,420 decoded chunks carries a RIFF header; they are raw PCM (3,200 bytes = 100 ms at 16 kHz 16-bit; 1,600 bytes on the 8 kHz chunks). The 16-bit width is inferred from that framing. SDK output rates are 16 or 22.05 kHz. |
+| SAR-35 | corrected | inferred -> inferred | Kept as inference but narrowed. The two numbers are not like-for-like: the demo p50 is browser-side from a US-East vantage; ours is server-side on an India VM with our own endpointing. "The same models" is not established: the platform routes among several LLMs and the demo's TTS version is unknown. Even allowing ~0.3 s for vantage and ~0.1 s for the browser, a gap of about 1.5 s remains that the public-API model speed does not explain. |
+| SAR-37 | corrected | observed -> observed | Confirmed and extended: the marketing page's structured plan data also carries monthly fees that differ from the docs: Pro INR 2,000, Growth 10,000, Business 50,000 (docs: 9,999 / 49,999 / 2,00,000). |
+| SAR-39 | corrected | inferred -> inferred | Split. The API-list part recomputes: Growth STT 0.41 + Bulbul V4 Flash 1.70 per 1,000 chars x 352 = 0.60 + Sarvam-105B 0.16-0.32 = 1.17-1.33 (the lab's PAYG 1.39-1.51 agrees). The self-hosted compute figure and the 89-93% margin are moved to SAR-39b and graded unknown. |
+| SAR-40 | corrected | inferred -> inferred | Two parts fail. (1) "Already posts the lowest Indian list price": SquadStack quotes INR 2-5/min including telephony and Ravan.ai's enterprise tier is USD 0.02-0.04 (INR ~1.8-3.5) in pricing-history.json; Sarvam's INR 3.50 is the lowest self-serve PAYG rate tracked. (2) The "5-10x compute cushion" rests on SAR-39b (unknown) and does not match its own inputs (3.00/0.34 = 8.8x to 3.50/0.24 = 14.6x). Kept: list price is 2.3-3.0x its own API list cost. |
+| SAR-41 | corrected | observed -> observed | Confirmed, and the 2026-08-18 entry shows sarvam-105b was first raised from INR 4 / 2.5 / 16 to 29.28 / 10.98 / 73.2 per 1M tokens before the 2026-10-10 cut to 15 / 5 / 60. Two LLM reprices in eight weeks. |
+| SAR-44 | corrected | observed -> observed | The bounded negative is slightly wrong. Over the 162 saved docs pages, "TRAI" appears once, in the instant-outbound webhook example failure_reason "exotel: Phone number is registered under TRAI NDNC": a BYO provider's NDNC rejection surfaces as a failure reason. NCPR, DLT, 140x, 1601, A2P, CNAP and DPDP: 0. The DND page quote is verbatim. |
+| SAR-48 | corrected | inferred -> inferred | The exposure inference follows from RS-09 (only 140/1600/1601 CLIs are protected from spam flagging and the A2P termination charge). Calling it a "spam-evasion pattern" is a judgement no cited TRAI text makes; no regulatory text on CLI rotation was cited. |
+| SAR-58 | corrected | observed -> observed | Doc facts confirmed; no cross-call memory in the 162 pages (only a BYOK in-memory key cache). The "marketing and docs disagree" conclusion does not hold: "Memory: Private" sits in a privacy panel (Conversation data / Context / Memory / Transcripts), and "carry your customer context into every call" is consistent with the per-call variables and on-start hooks the docs describe. Whether a cross-call memory feature exists is unknown. |
+| SAR-61 | corrected | observed -> observed | The lists are right; the "lean post-sale" reading is not. Cart Recovery is a pre-purchase sales nudge, and Lead Qualification and Pre-approved loans are pre-sale; the page's own line is "Sales, collections, support, bookings". The one productised vertical, Cart Abandonment, is a pre-purchase job. |
+| SAR-62 | corrected | inferred -> inferred | Rebased on the corrected SAR-61/38/40/63: Sarvam is broad, not converging on post-sale; its deepest observed post-sale investment is collections (EMI demo with a full disposition model, Tata Capital). Price is INR 3-3.5 list but 4.4-7.4 effective on short non-whole-minute calls; India residency is a vendor claim with a telemetry counterexample. |
+| SAR-63 | added-by-verifier | (new) -> observed | Found while re-checking SAR-24/30/50. |
+| SAR-64 | added-by-verifier | (new) -> inferred | Inference from SAR-63; needs a logged-in capture to confirm (account phase). |
+| SAR-65 | added-by-verifier | (new) -> inferred | Found while re-checking SAR-61. |
+
+### Confirmed without change
+
+SAR-09, SAR-11, SAR-14, SAR-15, SAR-16, SAR-17, SAR-18, SAR-19, SAR-21, SAR-23, SAR-27, SAR-28, SAR-30, SAR-32, SAR-33, SAR-34, SAR-36, SAR-42, SAR-43, SAR-45, SAR-46, SAR-47, SAR-49, SAR-50, SAR-51, SAR-52, SAR-53, SAR-54, SAR-59, SAR-60. Each carries a `verification.note` in `claims.json` saying what was re-checked.
+
+### Not re-checked
+
+SAR-01, SAR-02, SAR-03, SAR-05, SAR-08, SAR-10, SAR-13, SAR-55, SAR-56, SAR-57: surface descriptions read straight from docs pages, marketing claims already graded vendor-claimed, and the complaint-mining claims (SAR-55-57). They are outside the architecture, pricing, plumbing and v2 scope and were not re-opened.
+
+### Predictions
+
+All 14 are falsifiable with a stated scoring method. Two needed tightening, done as `verifier_note` fields without
+changing the pre-registered text: SAR-P02 is an 'either ... or' and should be scored as P02a (KYC path) and P02b (BYO
+Plivo time); SAR-P13 is ambiguous about GST and should be scored in credits (45-s call 3.90, 61-s call 7.60, test run 2).
+SAR-P09 got a note that its basis mixes a browser-side and a server-side number.
+
+### Inbox changes (`context/inbox/teardown-sarvam.json`)
+
+- `evidence...sarvam-lane`: counts updated to the verified totals.
+- `evidence...sarvam-hosting-orchestration`: api.sarvam.ai is also the dashboard's prod API base; Mixpanel proxy on AWS;
+  frontend on Azure Front Door; audio is headerless PCM; "no framework" narrowed to no LiveKit/Daily room.
+- `measure...sarvam-effective-price-per-connected-min`: status proposed, source model (a computation, not billing);
+  range corrected to 4.40-7.40 for non-whole-minute 30-90 s calls.
+- `measure...sarvam-cogs-inference`: the 89-93% self-host margin removed (SAR-39b unknown); API-list COGS kept.
+- `evidence...sarvam-compliance-gaps`: TRAI bounded negative corrected; Cart Abandonment inference added.
+- `evidence...sarvam-analytics-event-catalog`: team counts corrected.
+- `risk...sarvam-postsale-contested`: cart recovery is pre-sale; risk narrowed to collections; mitigation adds billing.
+- `decision...sarvam-where-vp-wins`: "leads on price" narrowed to list price; demo number labelled browser-side.
+- `rejected...sarvam-rea-cdp-bundle`: `broke` corrected (the 'Attention Required' title is not in the saved REA JSON;
+  both browsers got the same challenge script, only the Playwright one passed).
+- `open...sarvam-account-phase`: adds the logged-in PostHog replay check and the P02/P13 scoring notes.
+- Added `evidence.2026-10-20.sarvam-dashboard-telemetry-us` with 4 edges, and a `teardown_lane_sarvam_verified` event.
+- No node was removed: none of the refuted claims (SAR-07, SAR-31) had its own node.
+
+
+
+## Verification (adversarial verifier, workflow wf_560edf6c-5d6)
+
+- Checked: 52; confirmed: 30; downgraded: 7; refuted: 2
+- Hit rate: 30 of 52 re-checked claims (58%) held without change. 46 of 52 (88%) hold in substance once corrected. 2 were refuted, 3 downgraded, 1 regraded and 1 split into an unknown.
+
+### Refuted
+
+- SAR-07: The invite gate retired on 2026-08-06 was described in the event catalogue as the gate for 'Coding Agents / Work Agents', not Voice Agents. The changelog start date marks when the changelog section began, not when self-serve opened. The claim is now graded unknown.
+- SAR-31: The bundle maps production to api.sarvam.ai (AWS, ELB k8s-vistaar) and staging to saas-staging-vistaar. Only the QA and stage01 hosts carry 'azure', and the Mixpanel proxy is on AWS (k8s-saasprodplatforma). Nothing shows Azure is the primary platform cloud. The claim is now graded unknown.
+
+### Downgraded
+
+- SAR-38 (observed -> inferred): The effective price per connected minute is computed from the rate card, not seen in billing (SAR-P13 tests billing). The 36 rows recompute exactly. The range was misstated: a 60-s call is INR 3.40-3.90, and 30-90 s calls that are not whole minutes are 4.40-7.40.
+- SAR-39b (inferred -> unknown): Split out of SAR-39. The self-hosted compute figure of INR 0.24-0.34/min and the 89-93% margin came from g4 proxies of different models (IndicConformer, Veena, Groq-class serving) whose throughput is assumed. The API-list COGS of INR 1.16-1.33 stays inferred.
+- SAR-29 (inferred -> unknown): Which open-weight models run in the voice stack was not observed. The API price list shows what Sarvam resells, and the one GLM routing report is about Work Agents/Cowork, a different product.
+- SAR-26 (inferred -> inferred (narrowed)): No WebRTC rules out only a LiveKit or Daily room on the web path. Pipecat-style server frameworks run behind custom WebSocket serializers, so client code cannot exclude them. The server-side framework is now stated as unknown.
+- SAR-20 (inferred -> vendor-claimed): The docs say outright that the analytics store is ClickHouse, and the Boards API returns CLICKHOUSE_ERROR. That is a vendor statement, not our inference.
+- SAR-40 (inferred -> inferred (narrowed)): 'Lowest Indian list price' is wrong: SquadStack quotes INR 2-5 and Ravan's enterprise tier is USD 0.02-0.04. The '5-10x compute cushion' rested on SAR-39b and did not match its own inputs. Kept: Sarvam's list price is 2.3-3.0x its own API list cost.
+- SAR-61/SAR-62 (observed/inferred -> observed/inferred (reframed)): Cart recovery, the one productised vertical, is a pre-purchase job, and the menu also has lead qualification and pre-approved loans. So 'lean/converging post-sale' does not hold. The overlap with VP is collections and EMI reminders specifically.
+
+### Notes
+
+The lane's report.md was never on disk; its own inbox event says the harness refused the write. The verifier created /home/user/sales-enabler/research/2026-10-20/teardown/sarvam/report.md: a provenance note, a findings index by dimension built from the verified claims.json, short sections on the three decisions and account-phase needs, and the Verification section. Detail is in /home/user/sales-enabler/research/2026-10-20/teardown/sarvam/verify.md.
+
+Re-checks run:
+- DNS through 2 DoH resolvers, saved to data/teardown/sarvam/verify/doh-recheck-2026-10-20.jsonl.
+- npm publish times, saved to data/teardown/sarvam/verify/npm-conv-ai-time-2026-10-20.json.
+- All 12,420 widget audio chunks decoded: none has a RIFF header. They are labelled audio/wav but are headerless PCM, about 100 ms each at 16 kHz.
+- All 36 price rows recomputed.
+- 162 docs pages grepped with word boundaries: TRAI appears once, as an Exotel NDNC failure-reason example.
+- The OpenAPI, bundle, event catalogue and HAR re-read.
+- 577 of 577 manifest hashes matched.
+
+Corrections with the grade kept:
+- SAR-04: team counts by owner are platform 202 and samvaad 158.
+- SAR-06: the org-profile step was dropped on 2026-08-07.
+- SAR-12: the TTS model (Bulbul V3/V4) is selectable per agent.
+- SAR-22: ELB IPs rotate, and api.sarvam.ai is also the dashboard's production API base.
+- SAR-24: the Azure/AWS split is corrected.
+- SAR-25: audio format corrected as above.
+- SAR-35: the comparison is not like-for-like, and 'same models' is not established.
+- SAR-37: marketing fees are Pro 2,000, Growth 10,000, Business 50,000.
+- SAR-41: sarvam-105b was raised on 2026-08-18 before the 10-10 cut.
+- SAR-44: the TRAI negative is corrected.
+- SAR-48: the 'spam-evasion' label is removed.
+- SAR-58: 'marketing vs docs disagree' does not hold.
+
+New claims:
+- SAR-63 (observed): the dashboard's main PostHog project records sessions to the US cloud (ui_host us.posthog.com; k.sarvam.ai CNAMEs to a cf-prod-us proxy). It records 100% of sessions, with inputs unmasked and network bodies and headers captured.
+- SAR-64 (inferred): this probably breaks the 'all data stays in India' claim for the dashboard, pending a logged-in check.
+- SAR-65 (inferred): the Cart Abandonment vertical auto-rents 10-digit numbers, while a promotional cart-recovery call needs 140xx.
+
+Predictions: all 14 are falsifiable. verifier_notes were added to P02 (split into a/b), P13 (score in credits) and P09.
+
+Inbox /home/user/sales-enabler/context/inbox/teardown-sarvam.json:
+- 10 nodes corrected. The price measure is now source model / proposed. The COGS node drops the 89-93% margin. The post-sale risk is narrowed. The REA rejection's 'broke' field is fixed.
+- Added evidence.2026-10-20.sarvam-dashboard-telemetry-us with 4 edges, plus a teardown_lane_sarvam_verified event.
+- Validated with nodeErrors: 0 errors, all edge ends exist. No node needed removal, because neither refuted claim had its own node.
+
+Other files:
+- claims.json was edited in place. Each re-checked claim carries a verification object, and the original text is kept as claim_before_verification.
+- 2 rows were appended to manifest.csv for the saved re-checks.
+
+Not re-checked: SAR-01, 02, 03, 05, 08, 10, 13, 55, 56, 57.
+
+Residual risks:
+- DNS was resolved from a US vantage only.
+- The raw round-2 WebSocket dumps are only in the ephemeral scratchpad.
+- SAR-63 shows configuration, not captured traffic.
+
+No git commit or push was made, and graph.json was not touched.

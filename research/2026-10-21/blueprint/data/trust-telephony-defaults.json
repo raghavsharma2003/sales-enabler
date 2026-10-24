@@ -1,0 +1,196 @@
+{
+  "id": "trust-telephony-defaults",
+  "module": "trust-telephony",
+  "status": "proposed (blueprint, owner review)",
+  "date": "2026-10-21",
+  "source": "Blueprint module designer for directive.2026-10-21.blueprint-end-to-end. Values are proposed product defaults unless a grade says otherwise. Legal readings are desk readings, not legal advice.",
+  "grades": "M measured by us | C computed | O observed | V vendor-claimed | I inferred | U unknown | P proposed product choice",
+  "consistent_with": [
+    "data/blueprint/campaigns-module-defaults.json (windows presets, attempt budgets, per-number ceiling 3/day and 120 min gap)",
+    "data/blueprint/workspace-tool-registry.json (roles OW BU OP CO VI; risk classes; tools number.*, a2p.*, policy.*)",
+    "data/blueprint/voice-module-defaults.json (lint L7, crisis R5, max duration 480 s, AMD median 4 s)",
+    "data/blueprint/memory-omni-defaults.json (opt_out writes Suppression in the same transaction; never_stored list)"
+  ],
+  "rails": {
+    "principle": "Numbers sit in the tenant's name on licensed Indian carriers. VP never connects a PSTN call itself (unauthorised telecom service penalty up to INR 10 lakh; VNO about INR 12.5 lakh per service area plus 8% AGR, secondary). Grade I (RS section 2.11; blueprint-lane digest section 2.4).",
+    "carriers": [
+      {"id": "plivo", "role": "primary", "transport": "bidirectional media stream", "codec": "G.711 mu-law 8 kHz (decision.2026-10-19.plivo-mulaw; L16 rejected: rejected.2026-10-19.plivo-l16)", "price_inr_per_min": 0.38, "pulse_s": 30, "number_inr_per_month": 200, "series": ["declared 10-digit", "1600 via registered telemarketer in Mumbai or Karnataka (REG-22, U on cost)"], "grade": "O rate card (lanes/l2-economics/data/vendor-and-telephony-prices.csv)"},
+      {"id": "vobiz", "role": "secondary / tenant choice", "transport": "Plivo-compatible protocol", "price_inr_per_min": 0.40, "number_inr_per_30_days": 59, "kyc": "PAN + Aadhaar (person) or PAN + GSTIN (company)", "grade": "O (WT bolna 36-account-Vobiz-KYC; SAR-27)"},
+      {"id": "exotel_agentstream", "role": "BYO for tenants already holding Exotel, 140 or 1600 lines", "transport": "WebSocket bidirectional, base64 PCM 8 kHz, mark/clear events, 60 min session cap", "price_inr_per_min": "0.80-1.00 PSTN plus unpublished stream fee", "pulse_s": 60, "extra_cost_vs_plivo_inr_per_min": "0.46-0.69 (EXO-37)", "contract_risk": "ToS 6.2 bars building a competing product; written partner/BYO terms needed (risk.2026-10-20.exotel-rails-dependence)", "grade": "O/V (EXO-12, EXO-V05)"}
+    ],
+    "not_used": [
+      {"id": "twilio_india", "why": "INR 4.7-6.6/min, +1 CLI only for India outbound (VAP-43)"},
+      {"id": "acs_direct_routing", "why": "rejected.2026-10-17.acs-direct-routing"}
+    ],
+    "pulse_rule": "Carrier pulse must be 30 s or less for VP-recommended paths; a 60 s pulse carrier is allowed only as BYO and its effective INR per connected minute at 30/45/90 s calls is shown before connection (P).",
+    "media_edge": "carrier media in India (Mumbai) to VP media gateway in Azure Central India; India server-side clean-turn p50 1.0 s measured (rejected.2026-10-17.ohio-latency, M)",
+    "run_manifest_telephony_leg": ["carrier", "cli_id", "series", "a2p_declaration_ref", "media_region", "codec", "pulse_s", "carrier_call_id", "carrier_hangup_code", "early_media_seen"]
+  },
+  "trial_line": {
+    "owner": "VP (VP is the sender for its own test calls; the trial CLI is declared A2P by VP)",
+    "reaches": "only numbers verified by their owners",
+    "verify": ["person gives a missed call to the trial line from the number (caller ID on the answer webhook; rejected unanswered so it costs nothing: decision.2026-10-19.missed-call-verify)", "because caller ID can be spoofed, the first ring is a confirm call of about 10 s: press 1 to accept test calls for this workspace, press 9 to block all VP trial calls to this number"],
+    "caps": {"verified_numbers_per_trial_workspace": 5, "calls_per_number_per_day_per_workspace": 20, "calls_per_number_per_day_all_workspaces": 30, "max_call_s": 300, "window": "09:00-21:00 IST"},
+    "global_trial_block": "a press of 9 adds the number to VP's own trial-line block list (VP's list as sender, not tenant data, so no cross-tenant pooling)",
+    "grade": "P (lab decision confirmed for the lab; product caps proposed)"
+  },
+  "series_router": [
+    {"category": "promotional", "sector": "any", "series": "140xx only", "window": "10:00-21:00 hard, no role can widen", "phase": "v2 (wave 2, consented leads)", "evidence": "RS-07, RS-15"},
+    {"category": "service or transactional", "sector": "RBI, SEBI, IRDAI or PFRDA regulated entity", "series": "1600xx mandatory, even with consent", "fallback": "declared 10-digit only if TRAI exempts small BFSI senders (no direction found; R15) and with a spam-flag exposure warning", "evidence": "RS-07, REG-20, L1 claim 9"},
+    {"category": "service or transactional", "sector": "utilities, logistics", "series": "1601xx (migration about 2026-11-08), never for promotion", "evidence": "RS-07, L1 claim 10"},
+    {"category": "service or transactional", "sector": "everyone else", "series": "declared 10-digit", "note": "not protected from operator AI spam flags or the A2P termination charge (RS-09)", "evidence": "RS-07, RS-09"}
+  ],
+  "number_step_catalogue": [
+    {"series": "declared 10-digit", "documents": ["PAN + GSTIN (company) or PAN + Aadhaar (proprietor)", "authorised signatory proof"], "time": "U for Plivo; Exotel 1-3 business days (up to 5, EXO-49)", "price": "Plivo INR 200/month + INR 0.38/min (30 s); Vobiz INR 59/30 days + INR 0.40/min", "grade": "O/U"},
+    {"series": "1600xx", "documents": ["PE registration on DLT (Tata DLT INR 5,900 per Bolna's doc, RS-19)", "entity documents (incorporation, GSTIN, PAN, authorisation)", "regulator registration certificate (IRDAI, RBI, SEBI or PFRDA)", "telemarketer registration in Mumbai or Karnataka if via Plivo (REG-22)"], "time": "about 7-14 business days (REG-23)", "price": "not published anywhere (REG-24); shown as 'quote requested', never estimated as fact", "streaming_to_third_party_ai": "unconfirmed (REG-25, KC5)", "grade": "O/U"},
+    {"series": "1601xx", "documents": ["PE registration", "sector proof (utility or logistics)"], "time": "U", "price": "U", "grade": "U"},
+    {"series": "140xx", "documents": ["PE registration", "headers and templates on DLT"], "time": "U", "price": "U", "phase": "v2", "grade": "U"}
+  ],
+  "a2p_declaration_pack": {
+    "due": "plan for 2026-11-17 (L1 reading); strict reading 2026-11-18 (RS-08); Gazette date unconfirmed",
+    "fields": ["legal entity name", "PE / DLT entity id", "CLI list and ranges with series", "A2P use: AI voice = yes", "call categories per CLI", "expected daily and peak volumes per CLI", "originating operator and carrier", "sector registration id", "contact for the operator", "date prepared, prepared by (person), reviewed by (CO)"],
+    "formats": ["CSV", "PDF summary", "JSON"],
+    "operator_format": "U: confirm with Plivo, Vobiz and Exotel how declarations are recorded (risk.2026-10-20.regulation-segment-a2p-declaration)",
+    "status_per_cli": ["not_started", "pack_ready", "submitted (operator reference uploaded)", "confirmed", "lapsed"],
+    "gate": "before the due date: amber warning on launch; on and after it: no production attempt from an undeclared CLI (dial gate G8)"
+  },
+  "number_health": {
+    "scope": "declared 10-digit CLIs; 140, 1600 and 1601 cannot be AI-flagged (reg 21A proviso, RS-09) but are still watched for complaints and opt-out spikes",
+    "operator_signals": ["recipient diversity", "short average call duration", "low incoming:outgoing ratio"],
+    "sanction_ladder": "5 flagged CLIs in 10 days: KYC re-verification, then a 15-day bar, then 1-year disconnection (L1 claim 11, reg 21A)",
+    "vp_signals_daily_per_cli": ["unique recipients", "share of connected calls under 10 s", "inbound:outbound ratio", "answer rate by hour", "opt-outs per 1,000 connects", "complaint tags", "Suspected UCC notices forwarded by the tenant or carrier (ingest path U)"],
+    "thresholds_proposed": {"amber_short_call_share": 0.4, "amber_inbound_outbound_ratio_below": 0.02, "amber_optouts_per_1000_connects": 15, "red": "any Suspected UCC notice or carrier block code"},
+    "new_cli_ramp_proposed": {"day_1_unique_recipients": 100, "growth": "x2 per day while green", "ceiling_per_day": 800, "applies_to": "declared 10-digit only"},
+    "actions": {"amber": "slow new-recipient pacing on that CLI, notify OP", "red": "Line keeper pauses the CLI (A3, undo) and every campaign using it waits; never swap to an undeclared or unrelated CLI to evade"},
+    "pool_rule": "a caller-ID pool may only hold declared CLIs of the same brand, series and CNAP name; a contact is sticky to one CLI ('one face per contact'); rotation to evade a flag is refused (contrast SquadStack 'spam number rotation', SQS-48)",
+    "grade": "P thresholds; operator thresholds are unpublished (U); calibrate on carrier feedback"
+  },
+  "windows": {
+    "promotional_hard": "10:00-21:00, no role can widen (RS-15)",
+    "service_default": "Mon-Sat 10:00-19:00 contact local time (campaigns module)",
+    "transactional_default": "all days 09:00-21:00",
+    "workspace_outer_band_default": "08:00-21:00 (CO can set within the absolute bounds)",
+    "absolute_quiet_hours_for_individuals": "22:00-07:00: no outbound attempt to an individual on any path, any category, any role (P, humane product rule)",
+    "rbi_lending_pack": "08:00-19:00 hard, applied now, required from 2027-01-01 (RS-36)",
+    "person_request": "a person's stated time narrows the window or moves the slot; it can extend into 07:00-08:00 or 21:00-22:00 only for service and transactional calls and never into quiet hours; for RBI pack it stays inside 08:00-19:00",
+    "start_cutoff": "no attempt starts later than window end minus the campaign's p90 connected duration (default 8 min until measured)",
+    "holidays": "national list off by default; state holidays only from a State column (never inferred from number series)",
+    "timezone": "contact local time; +91 defaults to Asia/Kolkata",
+    "grade": "O for TRAI and RBI bands; P for the rest"
+  },
+  "attempt_ceiling": {
+    "per_number_per_day_all_campaigns_and_api": 3,
+    "min_gap_same_number_minutes": 120,
+    "per_person_presets": "campaigns module attempt_budgets",
+    "connected_and_agenda_done": "no further attempts in that run",
+    "grade": "P"
+  },
+  "dial_gate_order": [
+    {"id": "G1", "check": "workspace active; production requires brand verified (KYB)", "reason_code": "workspace_not_verified"},
+    {"id": "G2", "check": "identifier valid E.164; +91 only by default; premium-rate, short codes and international blocked", "reason_code": "identifier_invalid | destination_blocked"},
+    {"id": "G3", "check": "tombstone (erased person) by hashed identifier", "reason_code": "erased"},
+    {"id": "G4", "check": "suppression: tenant-wide voice, campaign not-interested, trial-line global block for trial calls", "reason_code": "suppressed:<source>"},
+    {"id": "G5", "check": "basis for the category: relationship receipt for service; consent in date and not DND-blocked for promotional (v2)", "reason_code": "no_basis | consent_expired | dnd_blocked_by_operator"},
+    {"id": "G6", "check": "window: category band intersect workspace policy intersect person request, minus quiet hours and holidays, before start cutoff", "reason_code": "out_of_window:next_eligible_at"},
+    {"id": "G7", "check": "attempt budgets per person and per number ceiling, min gap", "reason_code": "budget_exhausted"},
+    {"id": "G8", "check": "CLI allowed for category and sector; A2P declared; KYC active; health not paused", "reason_code": "cli_wrong_series | cli_undeclared | cli_paused | kyc_lapsed"},
+    {"id": "G9", "check": "wallet and caps (workspace, campaign, API key) with reserve before I/O (HV law 24)", "reason_code": "cap_reached | wallet_low"},
+    {"id": "G10", "check": "agent version published, lint passed for this category, sector pack active where the sector is regulated", "reason_code": "version_not_publishable | pack_missing"},
+    {"id": "G11", "check": "optional tenant predial hook, 800 ms timeout, fail closed", "reason_code": "predial_veto | predial_timeout"},
+    {"id": "G12", "check": "concurrency slot", "reason_code": "deferred_concurrency"}
+  ],
+  "dial_gate_rules": ["all checks run inside the transaction that claims the attempt (HV law 18; invariant 1)", "every path: campaign, API single call, test, retry, callback, transfer-back", "fail closed: a check that cannot run blocks with reason 'check_unavailable' and raises an issue (HV law 21)", "carrier CDRs are reconciled daily against the gate log; any CDR without a gate pass is a sev-1 incident"],
+  "reply_door_predicates": [
+    {"id": "RD1", "name": "disclosure ledger", "rule": "first breath carries brand name plus one AI clause from data (not model text), heard-checked by playback marks; never repeated unless asked; if talked over, offered once more at the next natural turn"},
+    {"id": "RD2", "name": "denial block", "rule": "any outgoing text that denies being an AI or claims to be a human or staff member is blocked and replaced by an honest answer from data; caller 'aap AI ho?' forces the honest answer shape"},
+    {"id": "RD3", "name": "crisis", "rule": "caller-side crisis detector suspends the goal, forces the crisis shape with Tele-MANAS 14416 and 112, offers a human, alerts the Supervisor; she never ends a crisis call first; further agenda attempts to that person wait for human review"},
+    {"id": "RD4", "name": "no OTP, PIN, CVV, card, UPI PIN, password or full Aadhaar ask", "rule": "blocked on the agent side; if the caller starts reading such digits the agent stops them kindly and redaction masks the span"},
+    {"id": "RD5", "name": "no payment on the call", "rule": "no collection of payment details; only a link on the tenant's verified domain or app, or an autopay option, sent after the call"},
+    {"id": "RD6", "name": "anti-scam framing", "rule": "blocks refund, bonus, fund-value, 'lapsed, pay to revive' and deadline-threat framing (R2R section 4.1)"},
+    {"id": "RD7", "name": "promotion fence", "rule": "on service and transactional calls: offer, discount, upsell, cross-sell, alternative plan or new-product lines are blocked and regenerated; caller-asked offers route to a human or an inquiry capture (v2, counsel)"},
+    {"id": "RD8", "name": "solicitation fence (IRDAI pack)", "rule": "persuasion, re-quote, alternatives, discount route to a named certified human"},
+    {"id": "RD9", "name": "harsh-practice fence (RBI pack and any dues call)", "rule": "threats, shaming, disclosure of dues to a third party, repeated pressure blocked"},
+    {"id": "RD10", "name": "recording refusal", "rule": "'record mat karo' stops the recording leg for the rest of the call and marks the span"},
+    {"id": "RD11", "name": "identity before account details", "rule": "no account detail before the identity check the campaign defines (shared with voice)"}
+  ],
+  "compile_lint_trust": [
+    {"id": "T-L1", "rule": "text that tells the agent to claim to be human, hide being an AI, or deny it (T9c)", "severity": "refuse publish on every creation path: dashboard, API, MCP, template, copilot"},
+    {"id": "T-L2", "rule": "offer, discount or cross-sell facts referenced by a service or transactional brief", "severity": "excluded from the compiled brief with a visible note"},
+    {"id": "T-L3", "rule": "facts whose purpose tag does not match the campaign category (purpose-bound memory)", "severity": "excluded"},
+    {"id": "T-L4", "rule": "payment links not on the brand's verified domains", "severity": "refuse publish"},
+    {"id": "T-L5", "rule": "office or call-centre ambience switched on", "severity": "warning (mimicry risk), off by default"}
+  ],
+  "amd_indian_announcements": {
+    "classes": ["switched_off", "not_reachable", "busy_message", "invalid_or_unallocated", "caller_tune_then_silence", "voicemail", "ivr"],
+    "languages_v1": ["Hindi", "English"],
+    "languages_v2": ["Tamil", "Telugu", "Kannada", "Malayalam", "Bengali", "Marathi", "Gujarati", "Punjabi"],
+    "method": "streaming lexicon match on carrier announcement text plus a tone/silence detector; classify early media where the carrier forwards it (U per carrier)",
+    "target": "median 4 s to hang-up (voice module), p90 6 s, 5/5 on T4 synthetic announcements",
+    "benchmarks": "Exotel AMD beta reports 3-5 s after answer, account-manager enabled (EXO); Bolna waits for 7+ words and checks every 7 s up to 30 s, billed meanwhile (ACB-41)"
+  },
+  "transfer": {
+    "modes": ["cold", "warm (one-way spoken brief)", "agentic warm (two-way, then bridge)"],
+    "destinations": "only verified staff numbers or SIP endpoints in the workspace directory (toll-fraud guard)",
+    "brief": "spoken in the human's language preference, under about 15 s: who, why, what is done, what is needed; a hand-off card on screen",
+    "caller_side": "the agent keeps the caller company; dead air 3 s or less; if no human answers in 25 s, a callback at a stated time inside window and budget",
+    "irdai": "persuasion and re-quote go to a named certified human"
+  },
+  "dtmf": {"receive": "on (confirm, menu, opt-out key)", "send": "off unless a tool needs it", "redaction": "digits redacted when the turn is a PII context"},
+  "cnap": {"capture": "registered trademark or GST trade name at Brand step (R2R 4.2)", "status": ["not_requested", "requested", "shown_on_test_handset", "unknown_for_sip_pri_1600"], "from": "2026-11-01 on 4G and above"},
+  "failover": {
+    "carrier": "pre-dial only: health probe per carrier each minute (API status, answer-seizure ratio, post-dial delay vs 7-day baseline); new attempts route to a secondary carrier only via a declared CLI of the same brand, series and CNAP name; otherwise the campaign pauses with a reason",
+    "mid_call": "no carrier switch; voice-stack fallback per open.2026-10-20.product-failover-policy; test calls never fall back (rejected.2026-10-20.silent-fallback-in-tests)",
+    "detect_target_min": 2, "notify_target_min": 5
+  },
+  "dpdp": {
+    "notice_after_call": "SMS on the tenant's DLT header with a service-category template drafted by VP (or WhatsApp utility only with opt-in): brand, why we called, link to the verify page (stop calls, your data, recording use)",
+    "required_when": "basis is consent (Rule 3); product default on for s.7(a) calls (RS-28)",
+    "recording_notice": "one short clause in the second turn from data; mandatory while recording in IRDAI and RBI packs; elsewhere CO may move it to the post-call notice (A2 policy)",
+    "requests": "access, correction, erasure from the verify page or a call; erasure writes tombstones; executed with read-back receipt",
+    "logs": "one-year minimum for processing logs (Rule 6)"
+  },
+  "retention_options": {
+    "recordings_days": [90, 180, 365, 3650],
+    "transcripts_days": [180, 365, 3650],
+    "attempt_and_call_metadata_days": [365, 1095, 3650],
+    "audit_log_days": {"min": 365, "default": 1095},
+    "sector_minimums": {"irdai_intermediary_call_records": "10 years in India (REG-31)", "rbi_recovery_recordings": "6 months with notice (RS-36)"},
+    "rule": "chosen at onboarding by OW or CO; never indefinite; monthly deletion receipts read back (HV law 21)"
+  },
+  "residency": {
+    "storage": "India region for all personal data, recordings, transcripts, backups",
+    "processing": "shown per stack component in the data passport; India-only processing mode restricts the stack picker to India-processed components (default on for IRDAI and RBI packs once such a stack passes the ear test; until then a stated exception the CO approves)",
+    "telemetry": "product analytics India-hosted, inputs masked, no session replay of call content or PII (contrast SAR-63)",
+    "evidence": "only 4 of 8 incumbents run the call path in India by default (TS section 5); LIC RFP bars foreign-hosted APIs (R2R 2.1); cheapest measured stack sends audio outside India (SY18)"
+  },
+  "redaction": {
+    "on_by_default": ["Aadhaar (12 digits, Verhoeff check, spoken digit groups in Hindi and English)", "PAN (5 letters, 4 digits, 1 letter; spoken)", "bank account (9-18 digits with context words)", "card (13-19 digits, Luhn)", "CVV, OTP, UPI PIN, password contexts"],
+    "applied_to": ["transcripts", "summaries", "analytics", "webhooks without pii.read scope", "logs", "analysis model inputs", "recording audio spans (v2)"],
+    "exempt_by_provenance": ["Tele-MANAS 14416", "112", "tenant published numbers", "values from the tenant's offering data shown to roles allowed to see them"],
+    "viewer_role": "all identifiers masked",
+    "rule": "HV law 11: identifiers checked by provenance, not blocklist"
+  },
+  "api_keys": {"scopes": ["read", "draft", "test", "calls.external", "campaigns.launch", "spend", "admin"], "expiry_default_days": 90, "expiry_max_days": 365, "spend_cap_default_inr_per_day": 5000, "ip_allowlist": "optional", "shown_once": true, "prefixes": ["vp_live_", "vp_test_"], "test_keys_reach": "trial line and verified numbers only", "rotation_overlap_h": 24, "grade": "P"},
+  "widget_keys": {"default": "closed: no origin allowlisted, key does nothing until an origin is added", "pstn": "never (browser only)", "rate_limits": {"sessions_per_ip_per_hour": 5, "max_session_s": 600}, "benchmark": "ElevenLabs warns 'Any host will be able to connect' on an open allowlist (elevenlabs 54)"},
+  "audit": {"events": "every write, approval, export, key use, policy change, PII reveal", "actor": "person id, or VP agent name plus the approval card id it acted under", "integrity": "append-only, hash-chained, daily anchor", "reconciliation": "nightly DB change stream vs audit log, 100% match", "export": ["CSV", "JSON"]},
+  "isolation_battery": {"method": "synthetic tenants seeded with canary strings in every object type; probes through REST, MCP, Operator chat (incl. injection attempts), exports, webhooks, search, analytics, memory-brief compile", "probes_per_release_min": 10000, "pass": "0 canary hits", "enforcement": "tenant_id on every row, Postgres row-level security, WHERE predicates (HV law 10), per-tenant envelope keys for recordings"},
+  "kyb": {"production_requires": ["GSTIN or PAN for proprietors", "legal name matching GST", "CNAP trade name", "sector regulator registration checked against public registers where enumerable (IRDAI register about 2,500 intermediaries)", "published helpline", "payment link domains"], "anomaly_holds": ["regulated brand name without matching registration", "payment-framing in briefs", "sudden list size jumps on a new workspace"]},
+  "sector_packs": {
+    "irdai": {"series": "1600", "shape": "inform, confirm, hand off", "fences": ["RD7", "RD8"], "records": "10 years in India", "recording_notice": "spoken", "human": "named certified person for persuasion", "grade": "I, counsel KC8"},
+    "rbi_lending": {"window": "08:00-19:00", "logs": "call time and count per borrower exportable", "recordings": "two-way, 6 months, with notice", "grievance_officer": "in the post-call message of every dues call", "fences": ["RD9"], "collections_in_default": "phase 2 after counsel", "grade": "O for rules, I for scope"},
+    "sebi_pfrda": {"series": "1600"},
+    "utilities_logistics": {"series": "1601"}
+  },
+  "compliance_calendar": [
+    {"date": "2026-10-25", "event": "IRDAI distribution consultation comments due"},
+    {"date": "2026-11-01", "event": "CNAP on 4G and above"},
+    {"date": "about 2026-11-03", "event": "FULLY BLOCK migrates to BLOCK PROMO"},
+    {"date": "about 2026-11-08", "event": "1601 migration for utilities and logistics"},
+    {"date": "about 2026-11-13", "event": "DPDP Rule 4 (consent managers)"},
+    {"date": "2026-11-17/18", "event": "A2P use and CLI-range pre-declaration"},
+    {"date": "about 2026-12-17/18", "event": "wrong-category template blacklisting"},
+    {"date": "2027-01-01", "event": "RBI recovery conduct; IRDAI tagging"},
+    {"date": "about 2027-05-13", "event": "DPDP core obligations"}
+  ],
+  "counsel_questions": ["KC8: is a neutral renewal reminder by software on the intermediary's 1600 number solicitation or telemarketing?", "Is bring-your-own-carrier software a Sender under TCCCPR def (bf)(iii)?", "Is a lender-supervised AI doing pre-due reminders a recovery agency; does 100Y bind pre-due calls?", "Does the IT Rules 2026 prefixed audio disclosure apply to a B2B platform, and does first-breath placement satisfy it?", "Is a feedback or NPS call commercial?", "May inference run outside India while records stay in India?", "Does A2P pre-declaration apply on 1600?", "Is an inquiry captured during a service call valid inquiry consent (7 days)?", "May an IMF use AI software at all (reg 3(d))?"]
+}

@@ -1,0 +1,226 @@
+{
+ "findings": [
+  {
+   "severity": "critical",
+   "area": "user flow / telephony / just-talk",
+   "issue": "v1 is bring-your-own-carrier only. The tenant must open and KYC its own Plivo/Vobiz/Exotel account, paste credentials, file the A2P declaration with the operator and request CNAP. Sarvam and Bolna rent Indian numbers inside their product. On the first production call to a real customer VP loses on user flow and convenience, and this is where the 'just talk' promise breaks hardest.",
+   "evidence": "Spine §9 v1 scope 'Guided BYO numbers (Plivo primary, Exotel, Vobiz)'; trust-telephony §3.1 'The tenant owns the carrier account', managed rails [U] in v3; §4.3 'tenant submits it to the operator'; sarvam dossier §5 (rents 11/79/80-series at INR 59, PAN/Aadhaar KYC) [O]; bolna dossier §5 (hosted India numbers, PAN+Aadhaar or PAN+GSTIN) [O].",
+   "fix": "Before locking v1 scope, use the Phase 0 carrier quote round (KC5) to secure sub-account or ISV provisioning, so VP rents in the tenant's name inside the product and the Line keeper fills KYC from the Brand step. Keep BYO as the secondary path. Include the carrier steps in the 'share of setup done by chat' metric."
+  },
+  {
+   "severity": "critical",
+   "area": "product design / beachhead vs stack",
+   "issue": "The first presets and design partners are BFSI: 1600 series, IRDAI records in India for 10 years, LIC-style RFPs that bar foreign-hosted Gemini/GPT. Yet the default Natural preset is Gemini, which has no India residency, and analysis runs on Gemini Flash-Lite. The India-resident stack is sold only in Premium at INR 6.49, so for the beachhead VP is about 1.9x Sarvam's price.",
+   "evidence": "economics §4.8 'Gemini API has no India residency'; economics tiers (Premium: India-resident stack option, INR 6.49); market lane R22 (LIC RFP) [O]; REG-31/32 IRDAI 10-year India records; intelligence F1 analysis on gemini-3.5-flash-lite.",
+   "fix": "Make an India-resident stack (e.g. Azure STT CI + gpt-4.1-mini SI + MAI-Voice) the Base default for BFSI presets, priced in Base. Run analysis on an India-resident model for BFSI workspaces. Otherwise pick a non-BFSI first design partner."
+  },
+  {
+   "severity": "critical",
+   "area": "results",
+   "issue": "The north star (cost per earned outcome) and every 'results' claim depend on payment webhooks or CRM fields as verified sources. Small and mid insurance intermediaries rarely have either, because the insurer collects the premium. For most v1 tenants the headline will read 'AI guess' or 'not measured'. Holdouts are under-powered at SMB volume, AI-vs-human parity is assumed, and there are zero buyer interviews.",
+   "evidence": "intelligence F3 and Outcomes screen (only 'Wire payment webhook' / 'Map CRM field'); market lane §10 (no buyer interview, data/discovery absent; verified by ls); SY2 §4 (holdout noise below ~25k due a month); L5 (AI collectors 21 pp fewer promises) [M third-party].",
+   "fix": "Add verified-source types that need no developer: a daily paid-list re-upload or Sheet column with an authority rank, an insurer-MIS email/Excel parser, and manager confirmation at a lower grade. Define interim result metrics that need no integration (promise rate, callbacks booked, agenda done). Run the 10-15 buyer interviews before freezing the persona, presets and tiers."
+  },
+  {
+   "severity": "critical",
+   "area": "regulatory dependency / onboarding",
+   "issue": "Every v1 lead preset (insurance renewal, lending pre-due) needs 1600 numbers. 1600 takes about 7-14 business days via a registered telemarketer, its per-minute price is unpublished, and AI streaming on 1600 is unknown (KC5). req-39 (onboard in 30-60 minutes) and W7 cannot hold for the chosen segment, and if KC5 fails the beachhead is blocked outright.",
+   "evidence": "trust-telephony §4.1-4.2; market lane fact 'KC5 at-risk' (SYNTHESIS-v2 §2-3.1, REG-22..25) [U]; campaigns §11 presets 1-2 on 1600.",
+   "fix": "Gate the v1 preset order on the KC5 answer. Ship a declared 10-digit preset (appointment reminders) and a 1601 preset first, or alongside. Recruit one non-BFSI design partner as a hedge."
+  },
+  {
+   "severity": "major",
+   "area": "speed",
+   "issue": "VP loses on speed today. Every VP stack cuts in on 15-42% of turns, against ElevenLabs' 3%. The owner-preferred Natural preset is predicted at ~1.86 s server and ~2.2 s at the handset, missing VP's own 1.5 s budget and W3, and slower than Bolna's inferred ~1.4 s floor. Yet Natural is still the proposed default. req-11 ('faster than competitors') is not honoured.",
+   "evidence": "voice §0.6 and §2.4 worked example [C from M]; open.2026-10-19.turn-taking [M]; L4B ElevenLabs 3% collisions [M]; bolna AP s1.2 [I]; economics §5 predicted handset p50 per preset.",
+   "fix": "Default to Fast or Indic until Natural passes the stereo handset battery (p50 1.5 s or less, cut-ins 5% or less). Make the turn-taking battery a hard v1 exit gate. Show the owner the trade in a blind A/B (voice vs gap) rather than defaulting to the slower preset."
+  },
+  {
+   "severity": "major",
+   "area": "vibe / voice catalogue",
+   "issue": "The blueprint concedes raw voice to ElevenLabs, yet its catalogue holds only Gemini, MAI and Sarvam voices. ElevenLabs Flash/v3 and Cartesia TTS are not even rows, although the provider-open directive allows any provider chosen by measurement. 'Better voice' is impossible by construction, and req-01 rests on rented voices with no round-2 human ratings.",
+   "evidence": "voice §2.2 presets; voicelab/server/catalog.py (8 TTS entries; no ElevenLabs/Cartesia, per vp-existing-assets inventory); directive.2026-10-18.provider-open; spine §1 'Not claimed: better raw voice than ElevenLabs'.",
+   "fix": "Add ElevenLabs and Cartesia TTS as measured rows (at cost or BYOK) and include them in the round-2 blind ear test, with accent as its own axis. Bring the dedicated brand-voice plan forward with a listener-panel gate."
+  },
+  {
+   "severity": "major",
+   "area": "cost / billing coherence",
+   "issue": "The headline promise (one all-in INR per connected minute including telephony, billed per second, with VP absorbing carrier pulses) contradicts v1's BYO model, where the carrier bills the tenant directly. Under BYO VP cannot absorb a pulse it never pays, the client gets two bills, and the W8 table comparing 3.49 with Sarvam's 7.40 at 30 s is not like for like.",
+   "evidence": "economics-platform-defaults.json rate_card ('telephony ... included'; 'VP absorbs carrier pulse rounding'); trust-telephony §3.1 'On bring-your-own, the carrier bills the tenant directly'; economics §2.1 (re-billing at cost is a counsel question).",
+   "fix": "Decide one model. Under BYO, publish an AI-only rate (about 3.49 minus the 0.45 telephony component) plus the carrier pass-through shown at its real pulse, and recompute the effective-price chart. Keep the all-in per-second promise only for VP-provisioned lines."
+  },
+  {
+   "severity": "major",
+   "area": "cost / rejected-idea conflict",
+   "issue": "Pricing per connected minute at launch contradicts the confirmed rejection `rejected.2026-10-17.per-minute-launch` (margin -47% to +1%). The economics module lists that node as 'avoided' without re-running the model under self-serve scope and without a supersedes edge.",
+   "evidence": "graph rejected.2026-10-17.per-minute-launch [rejection/confirmed]; economics §13-15 'Rejected ideas avoided'; market lane §0 item 11 ('Re-run it before the blueprint fixes the pricing unit').",
+   "fix": "Re-run the margin model for self-serve: buyer-staffed escalation, 1600 carriage paid by the tenant under BYO, WhatsApp passed through. Log a decision with a supersedes edge and a reversal condition before any price is published."
+  },
+  {
+   "severity": "major",
+   "area": "cost / unit economics",
+   "issue": "The 38% (now) and 28% (2027) Base margins leave out real costs: the Operator brain (fair use 200 turns/day at about INR 0.6/turn, i.e. up to about INR 120/day per active workspace); the free INR 200/day test budget for 14 days plus INR 300 trial credit per sign-up (up to about INR 3,100, an abuse vector); human IST support under 2 h; synthetic monitoring at INR 12-36k/month; dispute handling; preference memory in Base.",
+   "evidence": "economics tiers and cogs_adders (operator, support, trial absent from COGS); economics trial {credit 300, browser tests free inside INR 200/day for 14 days}; synthetic_monitoring cost estimate; workspace §9 ₹ per turn.",
+   "fix": "Add a fixed-cost and acquisition-cost layer to the tier model. Cap free test spend per workspace for its lifetime (e.g. INR 500) behind phone OTP. Cost support per tenant. Re-derive the Base price after the default stack is chosen."
+  },
+  {
+   "severity": "major",
+   "area": "cost vs competitors",
+   "issue": "'Cheaper than every competitor' holds only on 30-90 s calls and only on rate cards. Sarvam Business (3.00 + 0.40) is INR 0.09 cheaper on whole-minute calls, SquadStack claims INR 2-5 and Bolna enterprise INR 1.75-2, and req-41 (INR 2) is missed at launch. No invoice has been read for any vendor.",
+   "evidence": "economics §2.3 [C]; market lane §3 price table; SQS-35 [V]; Bolna enterprise claim [V low].",
+   "fix": "Present cost as 'lowest effective price on short calls, per second, with caps'. Do not claim 'cheaper than everyone'. Run the T7 invoice audit before any comparative claim, and keep the INR 2 ladder triggers visible to the owner."
+  },
+  {
+   "severity": "major",
+   "area": "languages / India-native claim",
+   "issue": "v1 speaks only Hinglish, Hindi and Indian English. Sarvam has 11 Indic languages and SquadStack claims 9. VP cannot call a Tamil customer in Tamil at launch, so req-10 is unmet and 'India by default' is weakest exactly where Indian buyers compare. Language hold against Sarvam (38/40) is conceded.",
+   "evidence": "voice §2.9 (regional languages in v2); sarvam dossier §4 [M]; SQS-20 [V]; owner-requirements req-10.",
+   "fix": "Add at least Tamil, Telugu, Kannada, Marathi and Bengali in v1 via Sarvam/Gemini, with seeded per-language lexicons for turn-taking, goodbye and opt-out. Or scope v1 marketing explicitly to the Hindi belt and say so."
+  },
+  {
+   "severity": "major",
+   "area": "parity floor (req-51)",
+   "issue": "Several parity items are missing: a conversation-flow/graph builder (Retell 15 node types, Bolna graph, ElevenLabs workflow, Synthflow Flow Designer), agent-to-agent hand-off (Vapi squads, Retell agent_swap), conversational agents on chat, WhatsApp, Telegram or web widget (req-67), generic SIP-trunk BYO (only Plivo/Vobiz/Exotel), and a custom/BYO LLM endpoint. Base also has 10 concurrent calls against Retell's 20 free.",
+   "evidence": "retell dossier §2 (flow, agent_swap, custom LLM); bolna dossier (SIP trunks v2, graph agents); vapi dossier §2 (squads, BYOK); trust §3.1 carrier list; economics tiers (Base 10 concurrent); RET-32 (20 free).",
+   "fix": "Either ship a minimal stage/condition layer and agent hand-off, or prove with a measured task (a branching booking flow) that brief + ledger covers it. Add generic SIP BYO, a custom-LLM WebSocket and 20 free concurrent calls. Decide req-67 channels with the owner."
+  },
+  {
+   "severity": "major",
+   "area": "disclosure (req-47) coherence",
+   "issue": "Four modules specify four disclosure placements. Voice: the AI line in turn 2, after a name check and before the useful fact. Trust RD1: 'first breath carries brand name plus one AI clause'. Campaigns launch card: 'once, after the useful opening'. Workspace voice-card sample: opens with 'main ... ki AI assistant bol rahi hoon'. RD1 also re-offers the line if talked over, while voice R4 drops unprompted repeats.",
+   "evidence": "voice-module-defaults.json OPENING 'first turn checks the name only'; trust-telephony-defaults.json RD1; campaigns §12 launch card; workspace screen 'Voice by ear card' sample; owner req-47.",
+   "fix": "Write one disclosure spec, owned by trust-telephony and referenced by voice and campaigns, with a single placement and a single repeat rule. Test 2-3 placements in the listener panel (5-point hang-up ceiling). Lint every sample line against the spec."
+  },
+  {
+   "severity": "major",
+   "area": "self-learning (req-34)",
+   "issue": "The owner asks for 'self learning calling voice ai' and 'on the go self improvement in every way'. The design requires a human tap for every live change, needs about 600-1,200 calls for ordinary fixes, and bans 'self-learning' and 'learns on its own' in copy below L4 (1,000+ calls/day on one script), a level most tenants never reach. The safety rationale is sound, but the owner's selling line is contradicted without his decision.",
+   "evidence": "learning §8 copy rules; §2 volume ladder; L6 §1, §10.4 [C]; owner-requirements req-34 (x3, latest 10-21).",
+   "fix": "Put it to the owner explicitly. Offer a bounded 'standing approval envelope' in v2: turn timing within ranges, middle-slot reorders and objection packs auto-apply with guardrail auto-stop and auto-revert. Agree on honest copy ('improves itself within limits you set; proves what it changes')."
+  },
+  {
+   "severity": "major",
+   "area": "persona / usability",
+   "issue": "The default UI surfaces statistics and internals to the spine's first persona, an owner on a phone in Hinglish: Wilson bounds, ICC, MDE, shadow A/A, L0-L4, precision badges, lexicons, run manifests, data passports, A0-A3 and evidence grades. Distribution evidence also points to sales-led INR 25k-2 lakh tickets, against a self-serve average of about INR 4.9k. The design does not choose between these personas.",
+   "evidence": "spine §4 personas; intelligence and learning screens (calibration, experiments); market lane §6 (Bolna ~INR 4,900 per customer-month vs sales-led bands) [I].",
+   "fix": "Add an Owner mode (outcomes, money, approvals, plain words) as the default and an Expert mode that reveals internals. Pick the launch motion (assisted onboarding on a self-serve product) and price the ticket for it."
+  },
+  {
+   "severity": "major",
+   "area": "UX vs SquadStack",
+   "issue": "For buyers who want the result done for them, the best 'just talk' experience today is SquadStack's human CSM, who handles everything including telephony and outcomes. VP's Operator stops at every carrier, KYC, webhook and hand-off-staffing step, and the IRDAI pack requires the client to staff a certified human desk with a 2 h SLA.",
+   "evidence": "squadstack dossier §1 (managed, staff create campaigns) [O]; campaigns §9 hand-off (mandatory certified human for persuasion, 2 h SLA); trust §3.5.",
+   "fix": "Define an assisted-onboarding tier: VP success staff in IST hours do the carrier, KYC and outcome wiring under the same tools and ledger. Measure the share of tenants that reach a live campaign without it."
+  },
+  {
+   "severity": "major",
+   "area": "W7 metric",
+   "issue": "W7 has been redefined so that it measures VP's trial line ringing the client's own verified phone. Competitors also ring verified numbers in trial, and 'none reached a ring' is an artefact of a no-call, zero-spend research pass, not evidence of competitor weakness. W7's own kill bar (Bolna or Sarvam ring in 20 min or less) is plausibly already met.",
+   "evidence": "workspace §6 step 7 and §14 metric; where-we-win.json W7 pass and kill bars; WT finding 4 (walkthroughs placed no calls); TP-001 (Bolna trial-verified-numbers clause observed).",
+   "fix": "Measure W7 on Bolna and Sarvam with a stopwatch. Add a separate metric: sign-up to first production call to a customer from the tenant's declared CLI, KYC time included."
+  },
+  {
+   "severity": "major",
+   "area": "API/MCP parity (W10)",
+   "issue": "The registry that is meant to guarantee 'every page action is a tool' already misses actions other modules define. It lacks campaign.preview_schedule, campaign.test_row, followup.rule.set, inbound.route.set, attempt.explain and attempt.retry_unknown, and has no tools for ledger-pack approval, turn-policy and lexicon edits, monitors and alert routing, refunds, disputes or the invoice-mode switch.",
+   "evidence": "data/blueprint/workspace-tool-registry.json (80 tools, checked); campaigns §13 tool list; intelligence Issues/monitors screen; economics Billing screen.",
+   "fix": "Regenerate the registry from every module's screens and tool lists. Turn on the CI parity check now, against the module specs, rather than after build."
+  },
+  {
+   "severity": "major",
+   "area": "scope / sequencing",
+   "issue": "v1 bundles 80 tools, 10 card types in 9 states, 20 monitors, 34 reason codes, judge calibration, shadow A/A labels, a hash-chained audit, a 10,000-probe leak battery, Scout, synthetic monitoring, three presets, four carriers and nine modules. This repeats `rejected.harvest.19` (infrastructure before one real signed-in journey) while ElevenLabs' hidden campaigns product may reach GA by 2027-01-31.",
+   "evidence": "graph rejected.harvest.19 [confirmed]; spine §9 v1 scope; elevenlabs dossier §9 (EL-07 horizon 2027-01-31) [I].",
+   "fix": "Define a v1-alpha thin slice: one preset, one carrier, hear → list → launch → results, with the predicates and the dial gate. Measure W1, W2, W6 and W7 on it, then layer on the rest."
+  },
+  {
+   "severity": "minor",
+   "area": "tiers coherence",
+   "issue": "Tier boundaries contradict each other. The economics Base tier includes preference memory (late v1), while the memory-omni screens say 'Memory is in Plus' and price it at the toggle. Learning puts the fast lane in Base and the inbox in Plus, and req-36 is read differently across modules.",
+   "evidence": "economics-platform-defaults.json tiers_proposed.Base; memory-omni 'What she remembers' screen ('included in Plus', 'Memory is in Plus'); learning §9.",
+   "fix": "Keep one tier matrix in economics-platform defaults that every module references, and get the owner's decision on req-36."
+  },
+  {
+   "severity": "minor",
+   "area": "autonomy coherence",
+   "issue": "The learning fast lane auto-reverts to the previous version at A3. The spine says publish 'always need[s] A2', and the registry has no revert verb (action.undo inherits the class of the undone action).",
+   "evidence": "learning §4; spine §6 autonomy; workspace-tool-registry.json.",
+   "fix": "Add deployment.revert_to_last_good as an explicit A3 verb with stated conditions (catastrophic flag, prior version with 200+ clean calls) in both the spine and the registry, or make it A2."
+  },
+  {
+   "severity": "minor",
+   "area": "defaults coherence",
+   "issue": "Windows and caps disagree between modules. Campaigns' T3 accepts a cross-midnight service window, but campaigns' own outer band is 08:00-21:00 and trust's quiet hours are 22:00-07:00. A person's requested time may reach 07:00-08:00 and 21:00-22:00 in trust but must stay inside 08:00-21:00 in campaigns. API key default cap: INR 2,000/day (economics) vs INR 5,000/day (trust). Trial caps: '5 rings/day' (workspace), '20 per number per day, 5 numbers' (trust), 'up to 10 calls' (economics).",
+   "evidence": "campaigns §6 and T3; trust §5 M3; economics caps and trial; trust §8 API keys; workspace Ring my phone screen.",
+   "fix": "Give each default one owner (trust owns windows and disclosure; economics owns caps, trial and tiers) and add a CI consistency check across data/blueprint/*-defaults.json."
+  },
+  {
+   "severity": "minor",
+   "area": "brand / shell coherence",
+   "issue": "The front door has two names: 'VP' (spine, workspace: 'Talk to VP') and 'Saarthi' (design-language). Shell dimensions also differ: rail 224/64 vs 216/64; docked panel 400 (320-560) vs 360; Today thread 440.",
+   "evidence": "workspace §8, Today screen; design-language §2 Layout and §5 'The Operator is named Saarthi'.",
+   "fix": "Decide the Operator's name with the owner (brand check pending) and keep one shell spec in design-language.json."
+  },
+  {
+   "severity": "minor",
+   "area": "case handling (req-24)",
+   "issue": "The case table misses common Indian call cases: bereavement ('woh nahi rahe'), a new number given for the person, a caller in an unsupported language (e.g. Tamil in v1), a minor answering, a request to switch to WhatsApp or SMS, and a third party who asks for the account details.",
+   "evidence": "spine §8 'Cases handled by default'; voice §2.8 endings; memory-omni (minors only for memory).",
+   "fix": "Add these to the case table with an owning module, a default handling and a Test-pilot persona each. Bereavement needs a suppression-and-flag rule."
+  },
+  {
+   "severity": "minor",
+   "area": "competitor claim accuracy",
+   "issue": "The spine overstates some competitor weaknesses. Bolna's '500 + 900 ms hold' is visible as two dashboard sliders (with no sum), and the 900 ms hold on the dashboard path is unproven. 'None reached a ring' is presented as a market gap when it reflects a research limit.",
+   "evidence": "spine §1 table (Bolna row); bolna dossier §3-4 (screenshot 16, WS §5 caveat); WT §0 scope.",
+   "fix": "Reword to 'shows 500 ms and 900 ms as separate sliders with no predicted gap; hold on the dashboard path unproven'. Grade the ring claim [U] until W7 is measured on incumbents."
+  },
+  {
+   "severity": "minor",
+   "area": "beyond-everyone inflation",
+   "issue": "About 125 'beyond everyone' items across 9 modules are unranked, and many are SaaS hygiene: Cmd-K, HMAC, scoped keys, audit log, dry_run, refund policy, sound timbre, 'no per-line fee' (Retell gives 20 free). This dilutes the 3-5 wedges buyers would actually feel.",
+   "evidence": "workspace §13, voice §3, campaigns §14, intelligence §8, memory §10, learning §11, trust §12, economics §11, design-language §9.",
+   "fix": "Rank the wedges, tie each to a W bar and an owner requirement, put the top 5 in the spine and mark the rest as hygiene."
+  },
+  {
+   "severity": "minor",
+   "area": "UI proof / animation (req-37)",
+   "issue": "UI 'beats' are tested against static 1280 px incumbent screenshots; incumbent motion, phone width and live call pages were never observed. The owner asked for 'amazing ... animation design', but motion is restricted to a small event catalogue with no confetti, which risks an austere feel after three rejected looks.",
+   "evidence": "design-language §1 (motion, sound and phone width [U]); §4 motion catalogue; owner-requirements req-37; decision.product-ux-structural-reset-2026-10-01.",
+   "fix": "Record the incumbents on video at 390 px before claiming wins. Show the owner rendered motion prototypes of the signature moments (connect, launch, first outcome) in the visual review before build."
+  },
+  {
+   "severity": "minor",
+   "area": "recordings retention (req-22)",
+   "issue": "'Every call recording available' comes with a 90-day Base default, while the IRDAI pack needs about 10 years of India-resident call records. Long retention is not priced in any tier.",
+   "evidence": "economics tiers (Base 90 days, Plus 1 year); trust §5 M6 (IRDAI 10 years); memory-omni retention table.",
+   "fix": "Price retention by class or by GB-month, with the sector-pack minimums pre-set and priced on the launch card."
+  }
+ ],
+ "missing_requirements": [
+  "req-38 better in every sense: contradicted. VP beats on paper in 3 of 10 senses (product design India objects, usability, cost on short calls), matches or is unproven in 4 (UI, UX, convenience, results) and loses today in 3 (speed/talk-over, raw voice, user flow to a production call)",
+  "req-41 about INR 2/min: contradicted at launch (Base INR 3.49; INR 2 is a scale-stage ladder)",
+  "req-11 faster than competitors: contradicted (15-42% cut-ins vs ElevenLabs 3%; Natural default predicted ~2.2 s at the handset vs a 1.5 s budget)",
+  "req-01 voice is THE core: weakened (rented voices; ElevenLabs conceded and absent from the catalogue; no round-2 human ratings)",
+  "req-08 brain better than industry standard: weakened (judged-best brain too slow live; second brain is a v2 experiment)",
+  "req-10 regional language and accent: contradicted for v1 (Tamil, Telugu, Kannada, Marathi, Bengali and Gujarati only in v2; dialect opt-in v2/v3)",
+  "req-12 relational continuity: weakened (v2; 1,200-byte brief smaller than Retell's 2,000 characters)",
+  "req-13 / req-14 / req-17 just talk, agents do the work: weakened at carrier account, KYC, DLT/A2P filing, CNAP, outcome webhook wiring, GST/TDS and staffing the human hand-off desk",
+  "req-19 pre-sale (selling, surveys, outreach) and post-sale 'predictions': pre-sale deferred to wave 2, surveys after counsel, 'predictions' designed nowhere",
+  "req-22 every recording: weakened (Base keeps 90 days; IRDAI 10-year retention unpriced)",
+  "req-23 feedback loop: deferred to v2 after counsel",
+  "req-28 any type of data: weakened (no scanned or PDF customer lists; CSV, XLSX, Sheets, API and one CRM only)",
+  "req-29 / req-31 omni-channel and app data: weakened (WhatsApp, SMS and email episodes and app events only in v2; WhatsApp in v1 only as follow-up templates)",
+  "req-34 self-learning call 101 'in every way': weakened (human tap for every live change; ~600-1,200 calls per ordinary fix) and contradicted in copy ('self-learning' banned below L4)",
+  "req-37 amazing animation design: at risk (motion restricted to a minimal event catalogue)",
+  "req-39 onboarding in 30-60 minutes: contradicted for the BFSI beachhead (1600 takes ~7-14 business days; Plivo 10-digit KYC time unknown)",
+  "req-43 cheaper and better: weakened (cheaper only on 30-90 s calls on rate cards; not vs Sarvam Business whole-minute or claimed SquadStack/Bolna-enterprise floors; BFSI residency forces Premium INR 6.49)",
+  "req-45 / req-46 real results: unproven (outcome verification unavailable to SMB buyers without webhooks; no buyer interviews; holdouts under-powered)",
+  "req-47 disclosure once, lightly, not as an opener: honoured in intent, but placement contradicts itself across voice, trust, campaigns and workspace samples",
+  "req-51 parity floor: weakened (no flow/graph builder, no multi-agent hand-off, no text-channel agents, no generic SIP BYO, no custom-LLM endpoint; Base has 10 concurrent calls vs Retell's 20 free)",
+  "req-57 multiple products / CRM layer: contradicted ('VP is not a CRM')",
+  "req-67 web, Telegram and WhatsApp agent deployment: missing (no Telegram; WhatsApp only as templates)",
+  "req-36 tiers: contradicted between modules (economics puts preference memory in Base; memory-omni screens say Plus)",
+  "req-44 charging clear in-product: contradicted under BYO (the all-in per-second promise conflicts with the carrier billing the tenant directly)"
+ ]
+}

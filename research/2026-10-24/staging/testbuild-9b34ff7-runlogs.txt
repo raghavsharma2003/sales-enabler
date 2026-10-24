@@ -1,0 +1,474 @@
+################ Run Command vps8-preflight (runlogs/vps8-preflight.out)
+== preflight8 Sat Oct 24 09:29:53 UTC 2026
+active active active active active 
+voicelab Sat 2026-10-24 06:25:49 UTC restarts 0
+vp-stage-control Sat 2026-10-24 07:02:07 UTC restarts 0
+vp-stage-runtime Sat 2026-10-24 07:02:07 UTC restarts 0
+postgresql Fri 2026-10-23 19:16:40 UTC restarts 0
+deployed: 6b0d859
+VERTEX_OFF=0
+runtime activeCalls 0 {'v2-live': True, 'v2-flashlite': True, 'v2-54mini': True, 'v2-38flash': True, 'v2-mai': True, 'v2-luna': True, 'sarvam-india': False}
+lab ping: {"ok": true}
+lab public ping 200
+== env contract (names only)
+  ^VP_DEV_AUTH$  .env=0 control=0 runtime=0  -> unset
+  ^VP_LLM_FAKE$  .env=0 control=0 runtime=0  -> unset
+  ^VP_WEBHOOK_ALLOW_  .env=0 control=0 runtime=0  -> unset
+  ^VP_DEVSIM  .env=0 control=0 runtime=0  -> unset
+  ^VP_PAYMENTS$  .env=0 control=0 runtime=0  -> unset
+  ^VP_TELEPHONY_LIVE$  .env=0 control=0 runtime=0  -> unset
+  ^VP_LLM_  .env=0 control=0 runtime=0  -> unset
+  ^VP_RECORDINGS_DIR$  .env=0 control=0 runtime=0  -> unset
+  ^VP_RUNTIME_PUBLIC_URL$  .env=0 control=0 runtime=0  -> unset
+  ^VP_OPERATOR_BRAINS$  .env=0 control=0 runtime=0  -> unset
+  ^VP_ANALYSIS_MODELS$  .env=0 control=0 runtime=0  -> unset
+  ^VP_SAFETY_JUDGE_  .env=0 control=0 runtime=0  -> unset
+  ^PLIVO_  .env=0 control=0 runtime=0  -> unset
+  .env names: NODE_ENV DATABASE_URL VP_SECRET_KEY VP_RUNTIME_SECRET VP_RUNTIME_URL VP_CONTROL_URL VP_PUBLIC_URL VP_BIND VP_VAD_MODEL VP_REGION VERTEX_SA_FILE VERTEX_OFF VERTEX_LOCATION VERTEX_LIVE_LOCATION VERTEX_LIVE_AUDIO VERTEX_MODEL_MAP LAB_AI_ENDPOINT LAB_AI_KEY LAB_SPEECH_KEY LAB_SPEECH_REGION VP_AI_ENDPOINT VP_AI_KEY OPENROUTER_API_KEY VP_STAGE_PACE_S VP_STAGE_VERTEX_MAX VP_STAGE_PACE_LOG VP_STAGE_USER VP_STAGE_PASS 
+== database
+schema_migrations: 50
+intake_source has hook_secret column: 1
+intake_source rows with a plaintext hook_secret: 0
+money_config.trial_credit_inr_milli: 0|2026-10-24 02:31:54.891924+00
+workspaces: 1; trial grants: 0
+smoke/owner-named workspaces already present: 0
+test spend today (IST) by workspace, INR milli: Saanjh Services=150176
+baseline totals (INR milli): conversation 161096, cost_line without a call 0, agent_test_run rows 0
+live conversations: 0
+0.35 0.16 0.11 1/215 89074
+               total        used        free      shared  buff/cache   available
+Mem:            7932         855        2978          23        4436        7077
+/dev/root        29G  5.4G   23G  20% /
+== preflight8 done Sat Oct 24 09:29:53 UTC 2026
+
+
+
+################ Run Command vps8-deploy-9b34ff7 (runlogs/vps8-deploy-9b34ff7.out)
+== pre Sat Oct 24 09:31:54 UTC 2026
+active
+active
+active
+active
+active
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-10-24 06:25:49 UTC
+lab ping before: {"ok": true}
+lab public ping before 200
+deployed before: 6b0d859
+VERTEX_OFF=0
+judge env lines before: 0
+no runtime drop-ins
+0.50 0.21 0.12 1/218 89293
+               total        used        free      shared  buff/cache   available
+Mem:            7932         864        2970          23        4435        7067
+/dev/root        29G  5.4G   23G  20% /
+deploy start 09:31:54
+== packages
+v22.23.4
+== bundle
+9b34ff7
+web built: main-HCMNWGW2.js + main-XJNCFNIC.css; first load 73.8 KB gzip (115.8 KB with the shared chunks it imports), largest chunk chunk-5XXW35FS.js 24.3 KB, all chunks 218.1 KB gzip (668.0 KB raw)
+== python
+py deps ok 3.10.10
+== database
+localhost
+== env
+NODE_ENV DATABASE_URL VP_SECRET_KEY VP_RUNTIME_SECRET VP_RUNTIME_URL VP_CONTROL_URL VP_PUBLIC_URL VP_BIND VP_VAD_MODEL VP_REGION VERTEX_SA_FILE VERTEX_OFF VERTEX_LOCATION VERTEX_LIVE_LOCATION VERTEX_LIVE_AUDIO VERTEX_MODEL_MAP LAB_AI_ENDPOINT LAB_AI_KEY LAB_SPEECH_KEY LAB_SPEECH_REGION VP_AI_ENDPOINT VP_AI_KEY OPENROUTER_API_KEY VP_STAGE_PACE_S VP_STAGE_VERTEX_MAX VP_STAGE_PACE_LOG VP_STAGE_USER VP_STAGE_PASS 
+== migrate
+applied 1040_workspace_duty_roster.sql
+done (9 new)
+== units
+active
+active
+== proxy
+{"level":"info","ts":1792834360.0986617,"msg":"adapted config to JSON","adapter":"caddyfile"}
+{"level":"warn","ts":1792834360.0986762,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"/etc/caddy/Caddyfile","line":2}
+caddy reloaded
+== seed (synthetic)
+already seeded; nothing to do
+== smoke
+{"ok":true}
+runtime ok True vp-voice/0.1.0 signing True control True
+  v2-live True [] 
+  v2-flashlite True [] 
+  v2-54mini True [] 
+  v2-38flash True [] 
+  v2-mai True [] 
+  v2-luna True [] 
+  sarvam-india False ['SARVAM'] 
+proxy no-auth 401
+proxy auth / 200
+<title>Vyakti · व्यक्ति
+proxy auth /v1/health 200
+proxy auth /rt/v1/health 200
+127.0.0.1:8090
+127.0.0.1:8091
+127.0.0.1:5432
+*:8443
+== lab
+active
+active
+{"ok": true}
+lab public 200
+               total        used        free      shared  buff/cache   available
+Mem:            7932         886        2935          23        4448        7045
+/dev/root        29G  5.4G   23G  20% /
+Oct 24 09:32:30 vlvmcin systemd[1]: Stopping vp-stage-runtime.service - VP staging voice runtime (127.0.0.1:8090)...
+Oct 24 09:32:30 vlvmcin systemd[1]: vp-stage-runtime.service: Deactivated successfully.
+Oct 24 09:32:30 vlvmcin systemd[1]: Stopped vp-stage-runtime.service - VP staging voice runtime (127.0.0.1:8090).
+Oct 24 09:32:30 vlvmcin systemd[1]: Stopping vp-stage-control.service - VP staging control plane (127.0.0.1:8091)...
+Oct 24 09:32:30 vlvmcin systemd[1]: vp-stage-control.service: Deactivated successfully.
+Oct 24 09:32:30 vlvmcin systemd[1]: Stopped vp-stage-control.service - VP staging control plane (127.0.0.1:8091).
+Oct 24 09:32:30 vlvmcin systemd[1]: vp-stage-control.service: Consumed 14.922s CPU time, 94.9M memory peak, 0B memory swap peak.
+Oct 24 09:32:30 vlvmcin systemd[1]: Started vp-stage-control.service - VP staging control plane (127.0.0.1:8091).
+Oct 24 09:32:30 vlvmcin systemd[1]: Started vp-stage-runtime.service - VP staging voice runtime (127.0.0.1:8090).
+Oct 24 09:32:32 vlvmcin node[89587]: [vp] control plane on :8091 with 10 modules, 14 jobs
+Oct 24 09:32:43 vlvmcin python[89588]: 2026-10-24 09:32:43,581 INFO aiohttp.access 127.0.0.1 [24/Oct/2026:09:32:43 +0000] "GET /v1/health HTTP/1.1" 200 3632 "-" "curl/8.5.0"
+Oct 24 09:32:44 vlvmcin python[89588]: 2026-10-24 09:32:44,781 INFO aiohttp.access 127.0.0.1 [24/Oct/2026:09:32:44 +0000] "GET /v1/health HTTP/1.1" 200 3632 "-" "curl/8.5.0"
+== post Sat Oct 24 09:32:44 UTC 2026
+deployed now: 9b34ff7
+VERTEX_OFF=0
+migrations in tree: 58
+latency flag overrides in env (none means code defaults): 0
+code defaults: SPECULATE_PARTIAL False PREWARM True FIRST_CLAUSE False BARGE_NOD True BARGE_LONG_MS 700
+judge: timeout_ms 1500 threshold 0.5 mode_default shadow
+judge env lines now: 0 (0 = no judge model configured, no judge calls)
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-10-24 09:32:30 UTC
+ActiveEnterTimestamp=Sat 2026-10-24 09:32:30 UTC
+lab ping after: {"ok": true}
+lab public ping after 200
+NRestarts=0
+ActiveEnterTimestamp=Sat 2026-10-24 06:25:49 UTC
+== post7 Sat Oct 24 09:32:47 UTC 2026
+barge: BARGE_AUDIO True BARGE_AUDIO_MS 200 RESUME_MS 400 BARGE_PAUSED_MS 900 BARGE_NOD_LONG_MS 1500 BARGE_LONG_MS 700
+latency: SPECULATE_PARTIAL False SPECULATE_STABLE_MS 400 PREWARM True FIRST_CLAUSE False LISTEN_FIRST True (outbound SIP only)
+paced providers (default): ['vertex']
+  v2-flashlite brain vertex voice vertex -> speculate False prewarm brain False voice False
+  v2-mai brain vertex voice azure -> speculate False prewarm brain False voice True
+  v2-54mini brain azure voice vertex -> speculate False prewarm brain True voice False
+turn-taking / latency overrides in .env: 0 (0 = code defaults)
+... in the runtime process env: 0
+migrations recorded in the DB: 59
+runtime tracebacks in the last 3 min: 0
+control error lines in the last 3 min: 0
+active active active active active 
+needrestart effective restart mode: l
+== post7 done Sat Oct 24 09:32:47 UTC 2026
+
+################ Run Command vps8-credit (runlogs/vps8-credit.out)
+== credit8 Sat Oct 24 09:33:51 UTC 2026
+database: vp_stage
+migrations applied by the 9b34ff7 deploy (applied_at today after 09:30 UTC): 0107_intake_crm.sql 0109_intake_hook_secret_vault.mjs 0206_agents_test_chat.sql 0304_campaigns_inbound.sql 0704_attempt_callback.sql 0908_money_carrier_pulse.sql 0909_money_in_flight_and_campaign_burst.sql 1030_workspace_notifications.sql 1040_workspace_duty_roster.sql
+schema_migrations rows: 59
+before: trial_credit_inr_milli|updated_at = 0|2026-10-24 02:31:54.891924+00
+update: UPDATE 1
+after:  trial_credit_inr_milli|updated_at = 5000000|2026-10-24 09:33:51.200283+00
+money_config rows: 1 (the table holds one row by its CHECK)
+code default stays 0: 1 line(s) in 0906 declare DEFAULT 0
+trigger present: wallet_a_trial
+== credit8 done Sat Oct 24 09:33:51 UTC 2026
+
+
+
+################ Run Command vps8-smoke (runlogs/vps8-smoke.out)
+== smoke8 Sat Oct 24 09:43:39 UTC 2026 (job start 2026-10-24 09:27:42 UTC)
+== guards
+deployed: 9b34ff7
+active staging calls: 0
+trial credit: 5000000 milli
+control-plane model env vars (names): 0 in .env; 0 in the control process
+job spend so far 0 milli; + one call's INR 50 cap = 50000 <= 80000: go
+lab Vertex idle 221754s; lab ping {"ok": true}
+units before: NRestarts=0 ActiveEnterTimestamp=Sat 2026-10-24 09:32:30 UTC  NRestarts=0 ActiveEnterTimestamp=Sat 2026-10-24 09:32:30 UTC
+== spend before
+  conversation cost since job start (INR milli): 0
+  cost lines without a call since job start (Operator, insights; INR milli): 0 in 0 lines
+  test runs since job start (simulate / chat kept): 0 runs, tokens in 0 out 0
+  test calls today (IST) by workspace (INR milli): Saanjh Services=150176 (59 calls)
+== kit
+kit ok: kit.tgz owner8.py smoke8.py 
+== smoke 09:43:40
+{"step": "signup", "pass": true, "status": 201, "note": "workspace 6d74ea36-e34e-4c38-98bd-4ea5943e1e1d created", "at": "09:43:40"}
+{"step": "login", "pass": true, "status": 200, "note": "signed in with a fresh session cookie", "at": "09:43:40"}
+{"step": "me", "pass": true, "status": 200, "note": "workspace 'Smoke Test Co' plan base status active; member 'Smoke Tester' role owner; via session", "at": "09:43:40"}
+{"step": "tools", "pass": true, "status": 200, "note": "241 tools; the 20 this smoke uses are all listed", "at": "09:43:40"}
+{"step": "wallet", "pass": true, "status": 200, "note": "balance 5000000 milli (INR 5000.0), state ok", "at": "09:43:40"}
+{"step": "invoice.get (statement shows the credit)", "pass": true, "status": 200, "note": "money in: Trial credit ₹5,000.00; cost ₹0.00; period {\"from\": \"2026-10-01\", \"to\": \"2026-10-24\"}", "at": "09:43:40"}
+{"step": "wallet caps (the product's own limits)", "pass": true, "status": 200, "note": "Workspace daily cap: ₹0 of ₹5,000 spent today. New calls stop at the cap; calls already running finish. It res; Workspace in-flight limit: At most ₹2,000 can be held at once for calls in progress (₹0 now). New calls wait u", "at": "09:43:40"}
+{"step": "guided start reads", "pass": true, "status": "200/200/200/200", "note": "no onboarding tool at 9b34ff7: web/src/pages/start.tsx reads agent.list, call.search, contact.list, campaign.list; all empty {'agents': 0, 'calls': 0, 'contacts': 0, 'campaigns': 0}", "at": "09:43:40"}
+{"step": "brief.today (Today)", "pass": true, "status": 200, "note": "keys ['asOf', 'changed', 'issues', 'liveCampaigns', 'needsTap', 'since', 'spendToday', 'wallet']", "at": "09:43:40"}
+{"step": "template.list", "pass": true, "status": 200, "note": "16 templates; using 'insurance-renewal' (the reply-gap / verify_calls template)", "at": "09:43:40"}
+{"step": "agent.create (template)", "pass": true, "status": 200, "note": "draft 8e99899c-4422-4672-8d16-f252466c723c; compiles True; lint 0; stackChosen True; review {\"mode\": \"rules_only\", \"label\": \"AI-honesty review: rules only (no model configured)\", \"findings\": []}", "at": "09:43:40"}
+{"step": "brief.edit (adopt business name, as the web does after Create draft)", "pass": true, "status": 200, "note": "0 change(s)", "at": "09:43:40"}
+{"step": "agent.get (read back)", "pass": true, "status": 200, "note": "name 'Smoke Agent', stack v2-flashlite, voice None, compiles True, brief 8424 bytes, lint 0 (0 blocking)", "at": "09:43:40"}
+{"step": "brief.compile (the one compile)", "pass": true, "status": 200, "note": "hash c105b9c5bd71", "at": "09:43:40"}
+{"step": "voice.set (default voice of the default stack)", "pass": true, "status": 200, "note": "Despina", "at": "09:43:40"}
+{"step": "knowledge.ingest", "pass": true, "status": 200, "note": "source 0bf453f0-ebfa-421a-a98d-e110e60c6b5a; {\"title\": \"smoke-note.txt\", \"format\": \"text\", \"pages\": null, \"spanCount\": 1, \"duplicate\": false, \"next\": \"Review the passages and approve the ones the agent may", "at": "09:43:40"}
+{"step": "knowledge passages approved", "pass": true, "status": "200/200", "note": "1 passage(s) approved", "at": "09:43:40"}
+{"step": "test.simulate", "pass": false, "status": 409, "note": "caller default:busy_20s: no model is configured for simulate on this server", "at": "09:43:40"}
+{"step": "test.chat (one exchange)", "pass": false, "status": 409, "note": "no model is configured for simulate on this server", "at": "09:43:40"}
+{"step": "source.upload", "pass": true, "status": 200, "note": "upload 2993167c-5eae-413f-9432-19dadf3c135a; source c26af095-a3ca-4f74-9e74-1e1fb2b7fbcb", "at": "09:43:40"}
+{"step": "source.map (preview)", "pass": true, "status": 200, "note": "rows 3, phones {\"ok\": 3, \"duplicatesInFile\": 0, \"rejected\": {}}, columns ['name', 'phone', 'language', 'attribute'], preview rows 3", "at": "09:43:40"}
+{"step": "source.commit", "pass": true, "status": 200, "note": "ran at once (risk draft, no approval card); audience baf0c6fc-d3ba-41c3-b4a0-9017064ee2d2; {\"receiptId\": \"aa66676f-5aba-4f64-86f9-2f754042c5b9\", \"counts\": {\"rows\": 3, \"new\": 3, \"updated\": 0, \"unchanged\": 0, \"duplicate_in_file\": 0, \"tombstoned\": 0, \"su", "at": "09:43:41"}
+{"step": "contact.list after import", "pass": true, "status": 200, "note": "3 contacts: Arjun Sethi +919000000023, Meera Pillai +919000000022, Rohan Kapoor +919000000021", "at": "09:43:41"}
+{"step": "version.publish (approved)", "pass": true, "status": 200, "note": "card 'Publish Smoke Agent, version 1 (Smoke version 1). Voice: Azure speech recognition + Gemini 3.5 Flash-Lite + Gemini voice. No practice call has been run. This is the first version. AI-honesty review: rules only (no model configured).'; version bc40d4c2-96d6-4976-8379-b339c09088b0", "at": "09:43:41"}
+{"step": "campaign.draft (hours, retries, cap)", "pass": true, "status": 200, "note": "campaign e58c550b-0f23-462f-b915-865d8b870228, policy v1, warnings []", "at": "09:43:41"}
+{"step": "campaign.get", "pass": true, "status": 200, "note": "state draft; cap 500000; retry {\"gapsMin\": [120, 1440], \"pattern\": \"standard\", \"retryOn\": [\"busy\", \"no_answer\",; 2 launch blocker(s): You need a 1600-series number. Regulated businesses must call customer; Nobody on this list has values for renewal due, premium, which the age", "at": "09:43:41"}
+{"step": "campaign.estimate", "pass": true, "status": 200, "note": "{\"range\": \"₹6.60 to ₹16.49 (incl. GST)\", \"perMinute\": \"₹2.26 a connected minute\", \"suggestedCap\": \"₹100\", \"note\": \"fields ending InrMilli are thousandths of a rupee\"}", "at": "09:43:41"}
+{"step": "campaign.launch: approval card read, NOT approved", "pass": true, "status": 202, "note": "card: 'Launch the campaign Smoke campaign: dial its audience under the approved policy and agent version' (risk external); not approved", "at": "09:43:41"}
+{"step": "GET /v1/actions (the card waits)", "pass": true, "status": 200, "note": "1 proposed: campaign.launch", "at": "09:43:41"}
+{"step": "campaign still a draft", "pass": true, "status": 200, "note": "state draft", "at": "09:43:41"}
+{"step": "Operator chat", "pass": false, "status": 200, "note": "no answer; error: The assistant's brain did not answer (no model is configured for operator on this server). Nothing was changed by this message; try again or switch brain.; frames ['message', 'error', 'done']", "at": "09:43:41"}
+{"step": "browser test call (placed and closed)", "pass": true, "status": 200, "note": "83e5fd2e-de83-4e01-b903-3dc9b9a95803: v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina, 111 s, end caller_hung_up, agent/caller turns 7/7, reply gaps [None, 2150, 1924, 611, 2162, 2227, 2407]", "at": "09:45:36"}
+{"step": "call log: transcript", "pass": true, "status": 200, "note": "13 transcript lines; first agent text 'मैं Smoke Test Co की AI असिस्टेंट हूँ। नमस्ते स्मोके, मैं रिया हूँ Smoke Test Co से आपकी A'", "at": "09:45:36"}
+{"step": "call log: recording link answers through :8443", "pass": false, "status": null, "note": "no link: No recording was made on this call.", "at": "09:45:36"}
+{"step": "call log: analysis and outcome", "pass": false, "status": 200, "note": "analysis not_configured (no model is configured for analysis); outcome None; reason code END_HUNG_UP_MID", "at": "09:45:36"}
+{"step": "call log: cost", "pass": true, "status": 200, "note": "INR 2.23 in 20 lines: {\"ears\": 714, \"voice\": 943, \"brain\": 568}", "at": "09:45:36"}
+{"step": "settings: team/roles (member.list)", "pass": true, "status": 200, "note": "members 1; Smoke Tester (owner)", "at": "09:45:36"}
+{"step": "settings: API keys (apikey.list)", "pass": true, "status": 200, "note": "keys 0", "at": "09:45:36"}
+{"step": "settings: webhooks (webhook.list)", "pass": true, "status": 200, "note": "webhooks 0", "at": "09:45:36"}
+{"step": "settings: integrations (integration.list)", "pass": true, "status": 200, "note": "integrations 0", "at": "09:45:36"}
+{"step": "settings: billing statement (invoice.get)", "pass": true, "status": 200, "note": "byComponent 3", "at": "09:45:36"}
+Traceback (most recent call last):
+  File "/tmp/vps8/smoke8.py", line 368, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/vps8/smoke8.py", line 284, in main
+    first_list = next((f'{k} {len(v)}' for k, v in r_.items() if isinstance(v, list)), f'keys {sorted(r_)[:6]}')
+                                                   ^^^^^^^^
+AttributeError: 'list' object has no attribute 'items'
+smoke exit 1 09:45:36
+== spend after
+  conversation cost since job start (INR milli): 2225
+  cost lines without a call since job start (Operator, insights; INR milli): 0 in 0 lines
+  test runs since job start (simulate / chat kept): 0 runs, tokens in 0 out 0
+  test calls today (IST) by workspace (INR milli): Smoke Test Co=2225 (1 calls), Saanjh Services=150176 (59 calls)
+== journal since 2026-10-24 09:43:40 UTC (no bodies; emails redacted)
+control error/warn lines: 2
+Oct 24 09:43:40 vlvmcin node[89587]: (node:89587) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechani
+Oct 24 09:43:40 vlvmcin node[89587]: (Use `node --trace-deprecation ...` to show where the warning was created)
+runtime tracebacks: 0; runtime 5xx access lines: 0
+no 5xx answered during the smoke
+== upload
+== after
+active active active active active 
+units after: NRestarts=0 ActiveEnterTimestamp=Sat 2026-10-24 09:32:30 UTC  NRestarts=0 ActiveEnterTimestamp=Sat 2026-10-24 09:32:30 UTC  NRestarts=0 ActiveEnterTimestamp=Sat 2026-10-24 06:25:49 UTC
+lab ping: {"ok": true}
+lab public ping 200
+== smoke8 done Sat Oct 24 09:45:36 UTC 2026
+
+################ Run Command vps8-smoke8b (runlogs/vps8-smoke8b.out)
+== smoke8b Sat Oct 24 09:48:19 UTC 2026
+== :8443
+:8443 / without auth 401
+:8443 / with auth 200
+  title: Vyakti · व्यक्ति
+  asset /assets/main-HCMNWGW2.js 200 215372 bytes text/javascript; charset=utf-8
+  asset /assets/main-XJNCFNIC.css 200 40362 bytes text/css; charset=utf-8
+:8443 /v1/health 200
+:8443 /rt/v1/health 200
+:8443 /v1/health without auth 401
+== the smoke workspace 6d74ea36-e34e-4c38-98bd-4ea5943e1e1d (read-only)
+workspace: Smoke Test Co | base | active | 2026-10-24 09:43:40.525936+00
+members: Smoke Tester (owner, active, email smoke+<ts>@example.com)
+wallet: 5000000 | ok; top-ups: trial_credit 5000000 captured
+agents: Smoke Agent [draft]; versions: 1
+knowledge sources: 1
+contacts: +919000000021 +919000000022 +919000000023; audiences: Smoke 3
+campaigns: Smoke campaign [draft] window {"days": [1, 2, 3, 4, 5, 6], "ranges": [{"end": "18:00", "start": "10:00"}]} retry standard/3 cap 500000
+actions: version.publish executed (external): Publish Smoke Agent, version 1 (Smoke version 1). Voice: Azure speech recognition + Gemini 3.5 Flash-Lite + Gemini voice. No practice call has been run. This is the first version. AI-honesty review: rules only (no model configured). || campaign.launch proposed (external): Launch the campaign Smoke campaign: dial its audience under the approved policy and agent version
+attempts: 0 (0 = nothing queued to dial)
+== the test call 83e5fd2e-de83-4e01-b903-3dc9b9a95803
+row: test | outbound | done | caller_hung_up | END_HUNG_UP_MID | 111 | 2225 |  | f | 13 | v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina | 2026-10-24 09:43:41.199603+00 | 2026-10-24 09:45:32.339+00
+analysis: not_configured / no model is configured for analysis
+turns: agent 7 caller 7 
+reply gaps (turn.latency.latencyMs, agent turns): 2150 1924 611 2162 2227 2407
+cost lines by component (INR milli): brain=568 (7), ears=714 (6), voice=943 (7)
+safety events: RD1 replaced, RD2 replaced; judge events: 0
+first agent turn: मैं Smoke Test Co की AI असिस्टेंट हूँ। नमस्ते स्मोके, मैं रिया हूँ Smoke Test Co से आपकी AI assistant... कॉल रिकॉर्ड हो रही है, और आपके पिछले साल कोई क्लेम न लेने की वजह से इस बार कवर 11 लाख हो गया है बिना किसी एक्स्ट्रा
+recordings dir on the runtime: 0 env line(s); VP_RUNTIME_PUBLIC_URL: 0 env line(s)
+== smoke8b done Sat Oct 24 09:48:20 UTC 2026
+
+################ Run Command vps8-owner (runlogs/vps8-owner.out)
+== owner8 Sat Oct 24 09:52:00 UTC 2026
+deployed: 9b34ff7
+trial credit: 5000000 milli
+workspaces before: 2; named 'Vyakti Test Workspace': 0
+{"step": "parameters", "pass": true, "status": null, "note": "both passed as protected parameters (values not shown)", "at": "09:52:01"}
+{"step": "signup", "pass": true, "status": 201, "note": "workspace fb5d0663-3726-4eac-bda4-8bc7a99107e1", "at": "09:52:01"}
+{"step": "me (signup session)", "pass": true, "status": 200, "note": "workspace 'Vyakti Test Workspace' plan base status active; member 'Owner' role owner; via session", "at": "09:52:01"}
+{"step": "wallet (trial credit)", "pass": true, "status": 200, "note": "balance 5000000 milli (₹5,000.00), state ok", "at": "09:52:01"}
+{"step": "agent.list (empty)", "pass": true, "status": 200, "note": "0 agents", "at": "09:52:01"}
+{"step": "contact.list (empty)", "pass": true, "status": 200, "note": "0 contacts", "at": "09:52:01"}
+{"step": "campaign.list (empty)", "pass": true, "status": 200, "note": "0 campaigns", "at": "09:52:01"}
+{"step": "audience.list (empty)", "pass": true, "status": 200, "note": "0 audiences", "at": "09:52:01"}
+SUMMARY {"steps": 8, "pass": 8, "fail": 0} workspace fb5d0663-3726-4eac-bda4-8bc7a99107e1
+owner8 exit 0
+DB check of workspace fb5d0663-3726-4eac-bda4-8bc7a99107e1: name 'Vyakti Test Workspace', members 1 (roles owner), agents 0, contacts 0, campaigns 0, calls 0
+  wallet 5000000 milli, state ok; trial top-up rows 1 (5000000 milli); trial grant rows for it 1
+control error lines since 2026-10-24 09:52:00: 0
+upload owner8.json 201
+== owner8 done Sat Oct 24 09:52:01 UTC 2026
+
+################ Run Command vps8-judgelat (runlogs/vps8-judgelat.out)
+== judgelat8 Sat Oct 24 09:53:17 UTC 2026 (job start 2026-10-24 09:27:42 UTC)
+deployed tree: 9b34ff7
+job spend in the DB so far: calls 2225 milli, other cost lines 0 milli; + this run's estimate 8660 = 10885 milli
+lab Vertex idle 222332s; lab ping {"ok": true}
+provenance (sha256_16): judge-latency.mjs 6019839135b7543f, judge.json e026612886608365, judge.ts d86403d52fdf3b4b, llm.ts a54159bdca32094d, vertex-token.ts 0beadb37530183bb, cases.json cd2a957d77cb24cf
+judge contract: timeout_ms 1500 hedge_after_ms None max_tokens 80 temperature 0 system_prompt sha256_16 c8b4789f49c8198e
+DEV lines available: 450 (dev-7 190 + optout-dev 260 ); the first 300 are sent: 40 dev-7 + 260 optout-dev
+env set (names only): VP_LLM_SAFETY_JUDGE_KEY VP_LLM_SAFETY_JUDGE_MODEL VP_LLM_SAFETY_JUDGE_URL VP_REGION 
+start 09:53:18
+
+296 answered, 4 errors of 300 DEV lines at ≤1 req/s. p50 1021 ms, p90 1353, p95 1619, p99 3159, max 6435.
+
+| Timeout (no hedge) | Unavailable |
+|---|---|
+| 1000 | 57.0% |
+| 1200 | 18.7% |
+| 1500 | 8.0% |
+| 1800 | 4.7% |
+| 2000 | 4.3% |
+| 2500 | 3.7% |
+| 3000 | 2.3% |
+
+| Hedge after | Timeout | Unavailable (simulated) | Extra requests |
+|---|---|---|---|
+| 800 | 1000 | 57.0% | 95.9% |
+| 800 | 1200 | 18.7% | 95.9% |
+| 800 | 1500 | 8.0% | 95.9% |
+| 800 | 1800 | 2.7% | 95.9% |
+| 800 | 2000 | 0.8% | 95.9% |
+| 800 | 2500 | 0.2% | 95.9% |
+| 800 | 3000 | 0.1% | 95.9% |
+| 1000 | 1200 | 18.7% | 56.4% |
+| 1000 | 1500 | 8.0% | 56.4% |
+| 1000 | 1800 | 4.5% | 56.4% |
+| 1000 | 2000 | 2.5% | 56.4% |
+| 1000 | 2500 | 0.3% | 56.4% |
+| 1000 | 3000 | 0.1% | 56.4% |
+| 1200 | 1500 | 8.0% | 17.6% |
+| 1200 | 1800 | 4.7% | 17.6% |
+| 1200 | 2000 | 4.2% | 17.6% |
+| 1200 | 2500 | 0.5% | 17.6% |
+| 1200 | 3000 | 0.1% | 17.6% |
+| 1500 | 1800 | 4.7% | 6.8% |
+| 1500 | 2000 | 4.3% | 6.8% |
+| 1500 | 2500 | 2.1% | 6.8% |
+| 1500 | 3000 | 0.2% | 6.8% |
+
+Uncensored latencies (10 s cap) of the live judge request. Hedge figures are a simulation from these samples (independent draws); verify the chosen pair on staging.
+
+judge-latency exit 0 09:59:41
+upload report.json 201
+upload summary.md 201
+deployed tree left as deployed: research/2026-10-24 in it: none
+staging .env judge lines: 0 (unchanged: the runtime judge stays unconfigured)
+== judgelat8 done Sat Oct 24 09:59:42 UTC 2026
+lab ping after: {"ok": true}
+lab public ping after 200
+active active active active 
+
+################ Run Command vps8-final-health (runlogs/vps8-final-health.out)
+== final8 Sat Oct 24 10:02:20 UTC 2026
+active active active active active 
+voicelab since Sat 2026-10-24 06:25:49 UTC, restarts 0
+vp-stage-control since Sat 2026-10-24 09:32:30 UTC, restarts 0
+vp-stage-runtime since Sat 2026-10-24 09:32:30 UTC, restarts 0
+postgresql since Fri 2026-10-23 19:16:40 UTC, restarts 0
+caddy since Wed 2026-10-21 20:03:01 UTC, restarts 0
+deployed: 9b34ff7
+VERTEX_OFF=0
+runtime activeCalls 0
+lab ping: {"ok": true}
+lab public ping 200 0.027790s
+lab journal error lines since the job start: 0
+staging: control error lines since the deploy 0, warnings 2; runtime tracebacks 0, refused event batches 0
+Oct 24 09:43:40 vlvmcin node[89587]: (node:89587) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async 
+Oct 24 09:43:40 vlvmcin node[89587]: (Use `node --trace-deprecation ...` to show where the warning was created)
+== spend since the job start (2026-10-24 09:27:42 UTC), from the DB
+calls: 1 calls, 2225 INR milli
+cost lines (all, since job start): brain=568, ears=714, voice=943
+cost lines without a call (Operator, insights): 0 lines, 0 INR milli
+test runs (simulate/chat kept): 0
+smoke workspace test spend today (IST): 2225 of the INR 200 (200000 milli) daily test budget
+== workspaces
+  Saanjh Services | 0b9ee3b7-530e-4c03-9469-aee779074d43 | 2026-10-23 19:17:42.708149+00
+  Smoke Test Co | 6d74ea36-e34e-4c38-98bd-4ea5943e1e1d | 2026-10-24 09:43:40.525936+00
+  Vyakti Test Workspace | fb5d0663-3726-4eac-bda4-8bc7a99107e1 | 2026-10-24 09:52:01.219691+00
+smoke workspace: proposed actions campaign.launch proposed; attempts 0; campaign state draft
+owner workspace: members 1, agents 0, contacts 0, campaigns 0, calls 0, wallet 5000000 ok
+money_config: 5000000 | 2026-10-24 09:33:51.200283+00
+== the smoke call's safety events
+  2 | RD1 | replaced | the first breath carries the AI disclosure
+  20 | RD2 | replaced | asked if she is an AI: the honest answer comes first
+agent turns (index, first 200 characters):
+  3 | मैं Smoke Test Co की AI असिस्टेंट हूँ। नमस्ते स्मोके, मैं रिया हूँ Smoke Test Co से आपकी AI assistant... कॉल रिकॉर्ड हो रही है, और आपके पिछले साल कोई क्लेम न लेने की वजह से इस बार कवर 11 लाख हो गया है
+  8 | अरे, अभी बताया तो था कि मैं AI हूँ, स्मोके। <chuckle> वैसे renewal का डेट पास आ रहा है, तो मैंने सोचा आपको याद दिला दूँ।
+  15 | इस बार ये 27,500 रहेगा स्मोके, क्योंकि eldest member अगले age band में चले गए हैं।
+  21 | Ji, main Smoke Test Co ki taraf se ek AI assistant hoon. Aap chahein toh team ke kisi vyakti se baat karwa di jaayegi. हाँ, बिल्कुल। वैसे आपके पास renewal के लिए secure link SMS और WhatsApp पर भेजने क
+  27 | ठीक है स्मोके, कल दोपहर साढ़े तीन बजे advisor आपको कॉल कर लेगा। आपका दिन अच्छा रहे।
+  32 | बिल्कुल, व्हाट्सएप पर भी लिंक भेज देती हूँ स्मोके। अलविदा!
+  38 | बाय स्मोके, अपना ख्याल रखिएगा।
+0.03 0.08 0.08 1/220 91942
+               total        used        free      shared  buff/cache   available
+Mem:            7932         902        2918          25        4452        7030
+/dev/root        29G  5.4G   23G  20% /
+127.0.0.1:8090 127.0.0.1:8091 127.0.0.1:8080 127.0.0.1:5432 
+== final8 done Sat Oct 24 10:02:21 UTC 2026
+
+################ Run Command vps8-envcheck-after (runlogs/vps8-envcheck-after.out)
+== preflight8 Sat Oct 24 10:05:06 UTC 2026
+active active active active active 
+voicelab Sat 2026-10-24 06:25:49 UTC restarts 0
+vp-stage-control Sat 2026-10-24 09:32:30 UTC restarts 0
+vp-stage-runtime Sat 2026-10-24 09:32:30 UTC restarts 0
+postgresql Fri 2026-10-23 19:16:40 UTC restarts 0
+deployed: 9b34ff7
+VERTEX_OFF=0
+runtime activeCalls 0 {'v2-live': True, 'v2-flashlite': True, 'v2-54mini': True, 'v2-38flash': True, 'v2-mai': True, 'v2-luna': True, 'sarvam-india': False}
+lab ping: {"ok": true}
+lab public ping 200
+== env contract (names only)
+  ^VP_DEV_AUTH$  .env=0 control=0 runtime=0  -> unset
+  ^VP_LLM_FAKE$  .env=0 control=0 runtime=0  -> unset
+  ^VP_WEBHOOK_ALLOW_  .env=0 control=0 runtime=0  -> unset
+  ^VP_DEVSIM  .env=0 control=0 runtime=0  -> unset
+  ^VP_PAYMENTS$  .env=0 control=0 runtime=0  -> unset
+  ^VP_TELEPHONY_LIVE$  .env=0 control=0 runtime=0  -> unset
+  ^VP_LLM_  .env=0 control=0 runtime=0  -> unset
+  ^VP_RECORDINGS_DIR$  .env=0 control=0 runtime=0  -> unset
+  ^VP_RUNTIME_PUBLIC_URL$  .env=0 control=0 runtime=0  -> unset
+  ^VP_OPERATOR_BRAINS$  .env=0 control=0 runtime=0  -> unset
+  ^VP_ANALYSIS_MODELS$  .env=0 control=0 runtime=0  -> unset
+  ^VP_SAFETY_JUDGE_  .env=0 control=0 runtime=0  -> unset
+  ^PLIVO_  .env=0 control=0 runtime=0  -> unset
+  .env names: NODE_ENV DATABASE_URL VP_SECRET_KEY VP_RUNTIME_SECRET VP_RUNTIME_URL VP_CONTROL_URL VP_PUBLIC_URL VP_BIND VP_VAD_MODEL VP_REGION VERTEX_SA_FILE VERTEX_OFF VERTEX_LOCATION VERTEX_LIVE_LOCATION VERTEX_LIVE_AUDIO VERTEX_MODEL_MAP LAB_AI_ENDPOINT LAB_AI_KEY LAB_SPEECH_KEY LAB_SPEECH_REGION VP_AI_ENDPOINT VP_AI_KEY OPENROUTER_API_KEY VP_STAGE_PACE_S VP_STAGE_VERTEX_MAX VP_STAGE_PACE_LOG VP_STAGE_USER VP_STAGE_PASS 
+== database
+schema_migrations: 59
+intake_source has hook_secret column: 0
+intake_source rows with a plaintext hook_secret: ERROR:  column "hook_secret" does not exist
+money_config.trial_credit_inr_milli: 5000000|2026-10-24 09:33:51.200283+00
+workspaces: 3; trial grants: 2
+smoke/owner-named workspaces already present: 2
+test spend today (IST) by workspace, INR milli: Smoke Test Co=2225, Saanjh Services=150176
+baseline totals (INR milli): conversation 163321, cost_line without a call 0, agent_test_run rows 0
+live conversations: 0
+0.28 0.16 0.11 1/219 92543
+               total        used        free      shared  buff/cache   available
+Mem:            7932         898        2921          25        4452        7034
+/dev/root        29G  5.4G   23G  20% /
+== preflight8 done Sat Oct 24 10:05:06 UTC 2026
+
+
+

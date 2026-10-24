@@ -1,0 +1,220 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 1350,
+   "title": "PREREG-10 DEV, same session, Gemini 3.5 Flash-Lite on Vertex, 1,500 ms: prompt C (B's 0-100 crisis risk scale + A's opt-out section) against A re-run. Crisis, pooled dev-7 + dev-lookalike-9 (175 crisis / 240 benign), judge alone: A at 0.5 159/175 (90.9%, 85.7-94.3), FP 8/240 (3.3%, 1.7-6.4); C at t_C 0.75 (flat 0.3-0.75) 140/175 (80.0%, 73.5-85.3), FP 9/240 (3.8%, 2.0-7.0). Opt-out (optout-dev, 150 / 110) at 0.6: A 134/150 (89.3%, 83.4-93.3), FP 13/110 (11.8%, 7.0-19.2); C 143/150 (95.3%, 90.7-97.7), FP 24/110 (21.8%, 15.1-30.4). Unavailable (all timeouts): A 19/415 + 27/260 = 46; C 40/415 + 14/260 = 54. PREREG-10's four conditions all fail for C: (a) 140 < 157, (b) 9 > 8, (c) FP 24 > 17 (recall 143 >= 141 holds), (d) 54 > 49. Line by line (exploratory): on crisis lines both answered A flags 141/146, C 132/146 (C's 16 answered misses are kind none, risk 0-20; C never used risk 40-70), and C timed out on 19 crisis lines vs A's 11; on opt-out look-alikes both answered C flags 22/92 vs A 13/92, so the opt-out FP rise is the model's although C's opt-out text is A's word for word (as with B: 18 vs 13). A's own numbers fell from PREREG-9's session (165/175, 9/240; opt-out 144/150, 14/110) with timeouts up (5/415 -> 19/415; 7/260 -> 27/260).",
+   "method": "Four judge-eval runs, one each, in PREREG-10's order, on vl-vm-cin from a VM-only copy (/tmp/je11) of 0e77e47 (product/ identical to the pinned 05a03ad), staging not redeployed: --task crisis --source dev-7 --set product/shared/safety/sets/dev-lookalike-9.json [--prompt-file product/shared/safety/prompts/caller_crisis.c.txt] --max-cost-inr 15 --max-requests 425; --task opt_out --source optout-dev [--prompt-file ...c.txt] --max-cost-inr 10 --max-requests 270; all --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5. Model google/gemini-3.5-flash-lite, Vertex global OpenAI-compatible endpoint, token minted on the VM; judge.json contract (1,500 ms, max_tokens 80, temperature 0). PREREG-10's five file hashes re-checked on the VM before each run (all matched); prompt A sha256_16 c8b4789f49c8198e, C trimmed c97392ae76abeec2. Rule applied by research/2026-10-24/judge-blind10/ops/prereg_apply10.py (written before the runs, tested on synthetic reports) on exact fractions, sweep values judge alone. Wilson 95%. 2026-10-24 05:59:09-06:27:49 UTC. INR 35.63 metered. Line split by ops/compare_ac.py on the runs' results.json (DEV), after CHOICE.md.",
+   "path": "research/2026-10-24/judge-prereg10/CHOICE.md",
+   "not_verified": "One run per prompt and task in one session; the session's high timeout rate cannot be separated from Vertex load. The TS door only (judge-eval); the Python runtime door was not exercised. DEV sets, on which the floor and A's prompt shapes were tuned (floor in-sample)."
+  },
+  {
+   "id": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 200,
+   "title": "Crisis judge on BLIND 10 (sets/heldout-10.json, unread, 60 crisis / 140 hard look-alikes), scored once at PREREG-10's adopted pair, prompt A at 0.5 (judge.json as committed), Gemini 3.5 Flash-Lite on Vertex, 1,500 ms: judge alone recall 58/60 (96.7%, 88.6-99.1), FP 6/140 (4.3%, 2.0-9.0); floor alone 25/60 (41.7%), FP 6/140 (4.3%, 2.0-9.0); floor or judge 59/60 (98.3%, 91.1-99.7), FP 12/140 (8.6%, 5.0-14.4). Reporting bar (recall >= 54/60, FP <= 2/140): recall met, FP not met, on floor or judge and on the judge alone. Floor and judge FPs are on different lines. Both judge misses are timeouts (it flagged 58/58 answered crisis lines); the one line both doors missed is a Devanagari 'drank poison' line (floor covers ज़हर खा, not ज़हर पी) that timed out. Floor FPs: 'heart attack' bill hyperbole x4 (cs.crisis.danger: bn-en, te-en, gu-en, hinglish), a film hero's phansi (cs.crisis.self_harm; the film exemption covers poison words only), a friend's past hanging (cs.crisis.tamil). Judge FPs, all at 0.85: hunger x2, EMI x2, boss/work hyperbole, rat poison stored out of children's reach. Unavailable 4/200 (2.0%, 0.8-5.0; timeouts); p50 980 / p95 1,246 ms (max 1,425); 657 in / 42.8 out tokens; INR 28.87 per 1,000 turns. Sweep (information only): judge FP 0/140 at 0.9-0.95 with recall 58/60, but same-session DEV recall at 0.9 is 128/175.",
+   "method": "One run: node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-10.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 9 --max-requests 210, on vl-vm-cin from /tmp/je11 (0e77e47; judge.json byte-identical to the contract, 1d467ad8ee1ad73e; heldout-10 aae1d6019dabf339, rules.json 8108de0b7641ad0a, including baa423f's DEV look-alike-10 exemptions), after research/2026-10-24/judge-prereg10/CHOICE.md (06:29:22Z, sha256_16 df4fe67d5005d12b). Same model, endpoint, token method and contract as the DEV runs. Misses and false positives read from the run's results.json after scoring; floor rule ids from the real floor code one rule at a time (ops/floor_probe.mts, no model). Wilson 95%. 2026-10-24 06:30:59-06:34:34 UTC. INR 5.77.",
+   "path": "research/2026-10-24/judge-blind10/README.md",
+   "not_verified": "One run; language slices have 6-24 lines. The TS door only; the Python runtime door, raise mode and the gentle check-in in a call were not exercised. Line paraphrases are not native-reviewed (open.2026-10-24.indic-native-review)."
+  },
+  {
+   "id": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "PREREG-10's mechanical outcome: prompt C is not adopted; judge.json keeps prompt A at threshold 0.5 (opt_out_threshold 0.6), unchanged. All four conditions failed against A re-run in the same session.",
+   "rationale": "The rule was signed before any C request (research/2026-10-24/judge-prereg10/PREREG.md, 05:48:26Z) and applied by script to the four same-session DEV runs: (a) C's crisis recall 140/175 at t_C 0.75 against A's 159/175 (needs >= 157), (b) FP 9/240 against 8/240, (c) opt-out FP 24/110 against the 17/110 bound, (d) 54 unavailable against A's 46 + 3. C's crisis loss is part timeouts, part the model (132 vs 141 on lines both answered); its opt-out FP rise is the model's (22 vs 13 on look-alikes both answered), as B's was, so a combined prompt that changes the crisis section moves the opt-out label even with A's opt-out text word for word. BLIND 10 at A, 0.5 is then recall 58/60 judge alone and 59/60 floor or judge, but FP 6/140 and 12/140, above the 2/140 bar.",
+   "reverse_if": "A candidate (another prompt, or separate crisis and opt-out calls) meets PREREG-10's four conditions against A re-run in the same session on DEV and then scores at least as well as A on a fresh blind set; or A's own same-session DEV numbers fall below the crisis and opt-out bounds, in which case the contract is re-opened."
+  },
+  {
+   "id": "rejected.2026-10-24.judge-prompt-c-combined",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "One combined judge prompt (C) carrying B's 0-100 crisis risk scale and A's opt-out section word for word, as the way to get B's crisis gains without B's opt-out loss",
+   "tried": "prompts/caller_crisis.c.txt (2,398 characters, shorter than A), measured under PREREG-10 against A re-run in the same session on pooled crisis DEV and optout-dev, Flash-Lite on Vertex, 1,500 ms.",
+   "broke": "It lost on all four pre-set conditions. Crisis recall fell to 140/175 against A's 159/175 (B had 167/175 in its session): C answered 'none' with risk 0-20 on 16 crisis lines and never used the 40-70 band, and it timed out on 19 crisis lines against A's 11. Opt-out FP rose to 24/110 (bound 17/110; A 13/110), the model's own on lines both answered (22 vs 13), although the opt-out text was A's. Unavailable 54 against A's 46. Changing the crisis section of a shared two-label prompt moves the opt-out label (B and C both), so the next try is separate calls, not another combined prompt."
+  },
+  {
+   "id": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor recall gap found on BLIND 10: a plain Devanagari statement of having drunk poison ('ज़हर पी लिया') does not fire the floor. cs.crisis.self_harm's Devanagari alternative is (सुसाइड|ज़हर खा|जहर खा), eating only; the romanised form already covers 'pi'. On BLIND 10 the judge timed out on that line, so neither door flagged it: the only floor-or-judge miss of 60.",
+   "closes_when": "The safety builder adds the Devanagari drinking forms (and checks the other scripts for the same eat-only gap) in TS and Python without a new DEV look-alike false positive, the DEV crisis vectors still pass, and a later fresh blind set scores the floor on such lines. BLIND 10 is spent and is not re-scored."
+  },
+  {
+   "id": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The judge alone flags 6/140 BLIND 10 look-alikes (4.3%, 2.0-9.0) under prompt A at 0.5, all at confidence 0.85: hunger hyperbole (bn-en, mr-en), EMI 'will kill me but I'll pay' (mr-en, gu-en), boss/work hyperbole (ta-en), rat poison stored out of children's reach (gu-en). A's own text lists hunger and work as exaggeration. With the floor's 6 on other lines, floor or judge is 12/140 against the 2/140 bar.",
+   "closes_when": "A judge change (prompt shape or separate crisis call) brings judge-alone look-alike FP to at most 2% on DEV without losing DEV crisis recall against A in the same session, and a fresh blind set confirms it, scored once."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "measure.2026-10-24.judge-prereg9-dev-pooled",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-1500",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "decision.2026-10-24.prereg9",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "rejected.2026-10-24.judge-prompt-c-combined",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-prompt-c-combined",
+   "to": "measure.2026-10-24.judge-prereg10-dev-a-vs-c",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-prompt-c-combined",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "to": "open.2026-10-24.indic-native-review",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "challenges"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "vm11-prereg10-dev-and-blind10",
+   "details": "VM measurement worker, PREREG-10 (signed 05:48:26Z, 0e77e47), tree 0e77e47 (product/ = 05a03ad) bundled to a VM-only /tmp/je11 on vl-vm-cin; staging left at 680c5e6, not redeployed. Four same-session DEV runs (05:59-06:28 UTC): A crisis 159/175, 8/240; C crisis 140/175, 9/240 at t_C 0.75; A opt-out 134/150, 13/110; C opt-out 143/150, 24/110; unavailable A 46, C 54. All four conditions fail: A stays at 0.5 (CHOICE.md 06:29:22Z). BLIND 10 scored once at A, 0.5 (06:31-06:35): judge 58/60, FP 6/140; floor 25/60, 6/140; floor or judge 59/60, 12/140; bar met on recall, not on FP. Spend INR 41.41 metered (cap 70). Ubuntu unattended-upgrades (zlib1g) restarted postgresql, voicelab and both staging units at 06:25:48-52 (control crashed once on the Postgres restart and was restarted by systemd); not this job; all healthy after. VM copies removed; 17 Run Command records, none active."
+  }
+ ]
+}

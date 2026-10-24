@@ -1,0 +1,48 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The product's analysis contract (single, and tiered's first pass) is r6's r5-outcome-first: the OUTCOME block before KIND, with the workspace's client outcome rule inside it (directly after the block, as it always followed it). PROMPT_VARIANTS 'current' is that contract; 'r5-outcome-first' names the same; 'r5-kinds-first' is the contract current named before r6, kept for A/B. The default setting is unchanged (tiered)",
+   "rationale": "Bench r6 (research/2026-10-24/benches-r6, a9c58df), gpt-4.1-mini single: r5-outcome-first DEV 42/42 twice, TEST 42/42 twice, objections 52/52, complaint and wrong-person false nulls 0 of 12; the kinds-first contract DEV 41/40, TEST (r5) 38/39. Ship gate: scripts/analysis-variant-probe.ts (no model) and tests/calls-analysis-contract.test.ts require the shipped prompt on the bench's outcome definition to be byte-identical to scripts/analysis-bench/contracts/r6-outcome-first.bench.txt, which was written from the tree r6 ran (calls/analysis.ts unchanged since 839292d; 2,817 characters, r6's recorded length; sha256 ba7656b7...642fbb).",
+   "reverse_if": "Round 7's two TEST passes each of mini single and tiered on the shipped contract fall below r6's, or a contract change is measured better (then ship it with a new measured file)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "decision.2026-10-24.objection-always-a-moment",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "open.2026-10-24.analysis-outcome-first-second-round",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "analysis-contract-outcome-first-shipped",
+   "details": "tests/calls-analysis-contract.test.ts (2) failed 2/2 on the code before and pass now. The other arms are byte-identical to before (r4-table, r3-stance, no-outcome-rules, r5-short-objection, r5-moment-not-outcome; with and without a question, with and without a client rule), and r5-kinds-first reproduces the previous current exactly. Nothing is closed here (open.2026-10-24.analysis-contract-objections-and-outcome was closed by r6). Ready for r7: two TEST passes each of mini single (--model gpt-4.1-mini) and tiered on the shipped contract."
+  }
+ ]
+}

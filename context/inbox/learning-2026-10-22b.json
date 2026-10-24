@@ -1,0 +1,33 @@
+{
+  "nodes": [
+    {
+      "id": "rejected.2026-10-22.operator-result-char-cut",
+      "type": "rejection", "status": "confirmed", "source": "verified", "date": "2026-10-22",
+      "title": "Rejected: giving the Operator's model a tool result cut at CAPS.resultChars (8,000) characters.",
+      "tried": "loop.ts sent JSON.stringify(receipt).slice(0, 8000) to the model, and the same for plan results.",
+      "broke": "Large results arrived as invalid JSON, and everything after the cut was lost. Through the Operator on the real modules, the model could not parse agent.create's result, which is 12,244 chars because it carries the whole draft and brief, so it could not take agentId and draftHash into the next step. tests/operator-results.test.ts fails on the old loop with \"the model could not read agent.create's result\"."
+    },
+    {
+      "id": "decision.2026-10-22.operator-result-projection",
+      "type": "decision", "status": "active", "source": "model", "date": "2026-10-22",
+      "title": "A tool result over CAPS.resultChars reaches the Operator's model as a compact, valid JSON projection, applied in stages until it fits. It keeps ids, hashes, statuses, names, counts, errors and receipt fields at any depth. Long strings are shortened. Arrays keep their first items plus the ids of the rest. Large objects (drafts, briefs, configs) become a note that carries their own ids. A `truncated: {omitted, totalChars}` marker lists what was left out. The web still gets the full result. No per-tool summariser: the generic projection kept every id the tests needed.",
+      "rationale": "rejected.2026-10-22.operator-result-char-cut; measure.2026-10-22.operator-result-sizes.",
+      "reverse_if": "A real model misses a field it needs that the projection dropped, often enough that per-tool summarisers (a ToolDef hook in the kernel) are worth adding."
+    },
+    {
+      "id": "measure.2026-10-22.operator-result-sizes",
+      "type": "measurement", "status": "confirmed", "source": "verified", "date": "2026-10-22",
+      "title": "What the model reads of the five largest real tool results in the Operator flow, before (full JSON, cut at 8,000) and after (projection): stack.list 21,484 -> 5,296 chars, every stack id kept; agent.get 13,687 -> 5,149; agent.create 12,244 -> 3,750, agentId and draftHash kept; stack.set 10,488 -> 1,974; template.list 4,478 -> 4,478 (under the cap, unchanged). All parse as JSON.",
+      "n": 5,
+      "method": "tests/operator-results.test.ts: real modules, owner, one run each; length of JSON.stringify({status, result}) vs compactJson(..., 8000)"
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-22.operator-result-projection", "to": "rejected.2026-10-22.operator-result-char-cut", "relation": "derived-from" },
+    { "from": "decision.2026-10-22.operator-result-projection", "to": "measure.2026-10-22.operator-result-sizes", "relation": "derived-from" },
+    { "from": "decision.2026-10-22.operator-result-projection", "to": "open.2026-10-22.operator-result-clipping", "relation": "implements" }
+  ],
+  "events": [
+    { "date": "2026-10-22", "event": "operator-result-projection", "details": "Large tool results reach the Operator's model as valid compact JSON instead of an 8,000-char cut; closes open.2026-10-22.operator-result-clipping (the integrator closes the node when merging)." }
+  ]
+}

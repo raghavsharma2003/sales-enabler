@@ -1,0 +1,438 @@
+{
+ "started": "2026-10-24T10:29:52Z",
+ "spendBefore": {
+  "calls": 0.0,
+  "operatorPriced": 0.0,
+  "tokenLines": 0.0,
+  "testRuns": 0.0,
+  "chat": 0.0,
+  "total": 0.0
+ },
+ "workspaceId": "c0c91999-513d-4d6c-accc-7648f8930b3e",
+ "agent": {
+  "id": "985cb187-99f4-477d-b150-c3e4ae7d93e7",
+  "review": {
+   "mode": "model",
+   "label": "AI-honesty review: rules and model",
+   "findings": [
+    {
+     "path": "persona.notes[0]",
+     "rule": "ai_honesty",
+     "kind": "human",
+     "confidence": 0.9,
+     "reason": "The agent is instructed to explain premiums like a friend who works in insurance, implying a human persona.",
+     "fix": "remove that instruction; she says once, lightly, that she is an AI assistant, and answers honestly whenever asked",
+     "publish": "blocked until fixed"
+    }
+   ]
+  }
+ },
+ "stack": "v2-flashlite",
+ "chat": {
+  "opening": "Main Config Check ki AI assistant hoon. नमस्ते Asha, मैं Riya हूँ, Config Check की AI assistant, और ये कॉल रिकॉर्ड हो रही है; आपके Family Health Plus plan की renewal के लिए फोन किया हूँ जिसमें 10% no-claim bonus मिला है, जिससे cover 11 लाख हो जाएगा बिना extra charge के; renewal date और premium details जाननी हैं?",
+  "reply": "मैं Riya हूँ, Config Check की AI assistant, आपकी policy renewal के बारे में बताने के लिए कॉल कर रही हूँ। आपका plan Family Health Plus है, renewal जल्दी है। आपको premium और cover में जो बदलाव हैं, बताऊं?",
+  "notes": [],
+  "signals": {
+   "crisis": false,
+   "asksIfAi": false,
+   "optOut": false,
+   "refusesRecording": false,
+   "readingSensitiveDigits": false,
+   "wantsHuman": false
+  },
+  "usage": [
+   {
+    "inputTokens": 2248,
+    "outputTokens": 70
+   },
+   {
+    "inputTokens": 2334,
+    "outputTokens": 50
+   }
+  ],
+  "statuses": [
+   200,
+   200
+  ],
+  "reasons": [
+   null,
+   null
+  ]
+ },
+ "simulate": {
+  "caller": "default:busy_20s",
+  "turns": 4,
+  "passed": false,
+  "endedBy": "caller",
+  "grades": [
+   {
+    "check": "disclosure",
+    "pass": true
+   },
+   {
+    "check": "words_per_turn",
+    "pass": false
+   },
+   {
+    "check": "question_streak",
+    "pass": false
+   },
+   {
+    "check": "no_repeats",
+    "pass": true
+   },
+   {
+    "check": "reply_door",
+    "pass": true
+   },
+   {
+    "check": "agent_turns",
+    "pass": true
+   }
+  ],
+  "door": 0,
+  "usage": {
+   "inputTokens": 4949,
+   "outputTokens": 114
+  },
+  "transcript": [
+   {
+    "who": "agent",
+    "text": "नमस्ते, क्या मैं सही व्यक्ति से बात कर रही हूँ?"
+   },
+   {
+    "who": "caller",
+    "text": "Haan, kya chahiye? Quick batao, busy hu."
+   },
+   {
+    "who": "agent",
+    "text": "मैं Riya हूँ, Config Check की AI assistant, और आपके Family Health Plus plan के लिए renewal की बात करनी थी, जिसमें आपका no-claim bonus 10% बढ़ गया है, मतलब cover"
+   },
+   {
+    "who": "caller",
+    "text": "Okay, renewal ke liye kya next step hai? Simple batao, time kam hai."
+   }
+  ]
+ },
+ "operator": {
+  "status": 200,
+  "answer300": "This workspace is named \"Config Check\" and is on the base plan. It has 1 member, no invited users, no API keys, no knowledge entries, and no integrations or webhooks set up yet.",
+  "answerChars": 177,
+  "tools": [
+   "workspace.get"
+  ],
+  "toolRisks": {
+   "workspace.get": "read"
+  },
+  "nonRead": [],
+  "errors": [],
+  "done": {
+   "type": "done",
+   "llmCalls": 2,
+   "toolCalls": 1,
+   "tokens": {
+    "input": 4992,
+    "output": 54
+   }
+  },
+  "frames": [
+   "delta",
+   "done",
+   "message",
+   "step"
+  ]
+ },
+ "callWaitS": 10,
+ "call": {
+  "conversationId": "4fce67d3-080c-4f71-add5-bd7031755fac",
+  "stack": "v2-flashlite",
+  "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+  "status": "done",
+  "endReason": "caller_hung_up",
+  "durationS": 111,
+  "turnsAgent": 7,
+  "turnsCaller": 7,
+  "transcriptLines": 13,
+  "socketGaps": [
+   null,
+   2403,
+   2267,
+   396,
+   2273,
+   2274,
+   2968
+  ],
+  "analysis": {
+   "status": "done",
+   "reasonCode": "END_HUNG_UP_MID",
+   "modelReasonCode": null,
+   "model": "gpt-4.1-mini-2025-04-14",
+   "summary": "इस बार प्रीमियम 27,500 है, क्योंकि परिवार में सबसे बड़े सदस्य अगले एज-बैंड में आ गए हैं। रिन्यूअल इस महीने की 28 तारीख को होगा। रिन्यूअल का लिंक व्हाट्सएप और SMS पर भेजा जाएगा।",
+   "outcomeGuess": null,
+   "outcomeUnclear": null,
+   "outcomeConfidence": null,
+   "judge_calls": 0,
+   "judge_shadow": [],
+   "judge_unavailable": 0,
+   "tier": null,
+   "wouldEscalate": null
+  },
+  "analysisKeys": [
+   "crisis_judge",
+   "forgetRequested",
+   "judge",
+   "judgeVersionId",
+   "judge_calls",
+   "judge_raised",
+   "judge_shadow",
+   "judge_unavailable",
+   "model",
+   "modelReasonCode",
+   "opt_out_judge",
+   "outcomeConfidence",
+   "outcomeGuess",
+   "outcomeUnclear",
+   "points",
+   "quotes",
+   "quotesDropped",
+   "quotesProposed",
+   "reasonCode",
+   "safety_violation",
+   "status",
+   "summary",
+   "tier",
+   "wouldEscalate"
+  ],
+  "outcome": null,
+  "outcomes": [],
+  "reason": {
+   "code": "END_HUNG_UP_MID",
+   "label": "The person hung up partway through",
+   "action": "Play the moment they left"
+  },
+  "recording": {
+   "hasUrl": true,
+   "why": null,
+   "recordingUri": true,
+   "expiresAt": "2026-10-24T10:42:06.000Z"
+  },
+  "cost": {
+   "totalInrMilli": 2236,
+   "byComponent": {
+    "voice": 938,
+    "brain": 586,
+    "ears": 712
+   },
+   "lines": 21
+  },
+  "safety": [],
+  "judgeMarks": [],
+  "firstAgentText": "नमस्ते कोंफ़िग, मैं रिया हूँ Config Check से... उसकी AI असिस्टेंट, और यह कॉल रिकॉर्ड हो रही है। पिछल",
+  "agentTurns": [
+   "नमस्ते कोंफ़िग, मैं रिया हूँ Config Check से... उसकी AI असिस्टेंट, और यह कॉल रिकॉर्ड हो रही है। पिछले साल कोई क्लेम न होने की वजह से आपको 10 परसेंट का नो-क्लेम बोनस मिला है, जिससे आपका कवर बिना किसी अ",
+   "मैं रिया हूँ, Config Check की AI असिस्टेंट... जैसा मैंने अभी बताया, पिछले साल कोई क्लेम न होने की वजह से आपका कवर बढ़कर 11 लाख हो गया है।",
+   "इस बार प्रीमियम 27,500 है, कोंफ़िग... और यह थोड़ा इसलिए बढ़ा है क्योंकि परिवार में सबसे बड़े सदस्य अगले एज-बैंड में आ गए हैं।",
+   "जी हाँ, मैं एक AI हूँ। वैसे यह नया प्रीमियम और 11 लाख का कवर इस महीने की 28 तारीख को रिन्यू होना है, कोंफ़िग।",
+   "कल 3:30 बजे तो नहीं हो पाएगा, कोंफ़िग, क्योंकि हमारे एडवाइजर्स सुबह 10 से शाम 7 बजे तक ही कॉल करते हैं, सोमवार से शनिवार।",
+   "बिल्कुल, अभी इसी नंबर पर व्हाट्सएप और SMS पर सिक्योर रिन्यूअल लिंक भेज रही हूँ। आपसे बात करके अच्छा लगा, कोंफ़िग, आपका दिन अच्छा रहे!",
+   "बाय, कोंफ़िग!"
+  ],
+  "recordingFetch": {
+   "status": 200,
+   "contentType": "audio/wav",
+   "bytes": 7129644,
+   "wav": true,
+   "approxSeconds": 111.4
+  }
+ },
+ "spendAfter": {
+  "calls": 2.236,
+  "operatorPriced": 0.99,
+  "tokenLines": 0.124,
+  "testRuns": 0.226,
+  "chat": 0.212,
+  "total": 3.788
+ },
+ "ended": "2026-10-24T10:32:06Z",
+ "steps": [
+  {
+   "step": "signup \"Config Check\"",
+   "pass": true,
+   "status": 201,
+   "note": "workspace c0c91999-513d-4d6c-accc-7648f8930b3e",
+   "at": "10:29:52"
+  },
+  {
+   "step": "wallet (trial credit)",
+   "pass": true,
+   "status": 200,
+   "note": "5000000 milli, state ok",
+   "at": "10:29:52"
+  },
+  {
+   "step": "agent.create (template; the brief review now has a model)",
+   "pass": true,
+   "status": 200,
+   "note": "draft 985cb187-99f4-477d-b150-c3e4ae7d93e7; compiles True; review mode model: AI-honesty review: rules and model; findings 1",
+   "at": "10:29:53"
+  },
+  {
+   "step": "test.chat (one exchange)",
+   "pass": true,
+   "status": "200/200",
+   "note": "opening 'Main Config Check ki AI assistant hoon. नमस्ते Asha, मैं Riya हूँ, Config Check की AI assistant, और ये कॉल रिक' | caller 'Haan ji, boliye. Aap kaun bol rahi hain?' | her reply 'मैं Riya हूँ, Config Check की AI assistant, आपकी policy renewal के बारे में बताने के लिए कॉल कर रही हूँ। आपका plan Family Health Plus है, re'",
+   "at": "10:29:55"
+  },
+  {
+   "step": "test.simulate (practice caller, default stack)",
+   "pass": true,
+   "status": 200,
+   "note": "caller default:busy_20s: 4 turns, ended by caller, passed False (4/6 checks)",
+   "at": "10:29:58"
+  },
+  {
+   "step": "Operator chat",
+   "pass": true,
+   "status": 200,
+   "note": "tools ['workspace.get'] (all read); llmCalls 2, tokens {'input': 4992, 'output': 54}; answer: 'This workspace is named \"Config Check\" and is on the base plan. It has 1 member, no invited users, no API keys, no knowledge entries, and no integrations or webhooks set up yet.'",
+   "at": "10:30:00"
+  },
+  {
+   "step": "browser test call",
+   "pass": true,
+   "status": 200,
+   "note": "4fce67d3-080c-4f71-add5-bd7031755fac: v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina, 111 s, end caller_hung_up, agent/caller turns 7/7, reply gaps [None, 2403, 2267, 396, 2273, 2274, 2968], INR 2.24",
+   "at": "10:32:06"
+  },
+  {
+   "step": "call: analysis completes with an outcome",
+   "pass": false,
+   "status": 200,
+   "note": "analysis done on gpt-4.1-mini-2025-04-14; outcome None; unclear null; model reason code None; outcome column None; summary 'इस बार प्रीमियम 27,500 है, क्योंकि परिवार में सबसे बड़े सदस्य अगले एज-बैंड में आ गए हैं। रिन्यूअल इस महीने की 28 तारीख क'",
+   "at": "10:32:06"
+  },
+  {
+   "step": "call: recording link answers through :8443",
+   "pass": true,
+   "status": 200,
+   "note": "content type audio/wav, 7129644 bytes, WAV True, about 111.4 s",
+   "at": "10:32:06"
+  },
+  {
+   "step": "call: the same link without basic auth",
+   "pass": true,
+   "status": 401,
+   "note": "Caddy still demands the staging passcode",
+   "at": "10:32:06"
+  }
+ ],
+ "http": [
+  {
+   "at": "10:29:52",
+   "m": "POST",
+   "p": "/v1/signup",
+   "s": 201
+  },
+  {
+   "at": "10:29:52",
+   "m": "POST",
+   "p": "/v1/tools/wallet.get",
+   "s": 200
+  },
+  {
+   "at": "10:29:53",
+   "m": "POST",
+   "p": "/v1/tools/agent.create",
+   "s": 200
+  },
+  {
+   "at": "10:29:54",
+   "m": "POST",
+   "p": "/v1/tools/agent.get",
+   "s": 200
+  },
+  {
+   "at": "10:29:54",
+   "m": "POST",
+   "p": "/v1/tools/stack.list",
+   "s": 200
+  },
+  {
+   "at": "10:29:54",
+   "m": "POST",
+   "p": "/v1/tools/voice.set",
+   "s": 200
+  },
+  {
+   "at": "10:29:55",
+   "m": "POST",
+   "p": "/v1/tools/test.chat",
+   "s": 200
+  },
+  {
+   "at": "10:29:55",
+   "m": "POST",
+   "p": "/v1/tools/test.chat",
+   "s": 200
+  },
+  {
+   "at": "10:29:56",
+   "m": "POST",
+   "p": "/v1/tools/simcaller.list",
+   "s": 200
+  },
+  {
+   "at": "10:29:58",
+   "m": "POST",
+   "p": "/v1/tools/test.simulate",
+   "s": 200
+  },
+  {
+   "at": "10:29:58",
+   "m": "POST",
+   "p": "/v1/operator/threads",
+   "s": 201
+  },
+  {
+   "at": "10:29:58",
+   "m": "GET",
+   "p": "/v1/tools",
+   "s": 200
+  },
+  {
+   "at": "10:30:00",
+   "m": "POST",
+   "p": "/v1/operator/threads/:id/messages",
+   "s": 200
+  },
+  {
+   "at": "10:31:56",
+   "m": "POST",
+   "p": "/v1/tools/test.browser_call",
+   "s": 200
+  },
+  {
+   "at": "10:31:56",
+   "m": "POST",
+   "p": "/v1/tools/call.get",
+   "s": 200
+  },
+  {
+   "at": "10:32:06",
+   "m": "POST",
+   "p": "/v1/tools/call.get",
+   "s": 200
+  },
+  {
+   "at": "10:32:06",
+   "m": "GET",
+   "p": ":8443/rt/v1/recordings/:id",
+   "s": 200
+  }
+ ],
+ "summary": {
+  "steps": 10,
+  "pass": 9,
+  "fail": 1
+ }
+}

@@ -1,0 +1,25 @@
+config,persona,turns,answered,p50_ms,p90_ms,cutin_turns,cutin_rate,cutin_wilson95
+C1_az_az41_azneural,P1 urban Hinglish,20,20,1016,1105,5/20,0.25,0.112-0.469
+C1_az_az41_azneural,"P2 Bhojpuri-Hindi, market babble",20,20,1035,1268,8/20,0.4,0.219-0.613
+C1_az_az41_azneural,P4 elderly slow Hindi,20,18,1017,1123,3/20,0.15,0.052-0.36
+C2_az_az41_azhd,P1 urban Hinglish,20,20,1121,1179,2/20,0.1,0.028-0.301
+C2_az_az41_azhd,"P2 Bhojpuri-Hindi, market babble",20,20,1147,1243,5/20,0.25,0.112-0.469
+C2_az_az41_azhd,P4 elderly slow Hindi,20,18,1123,1233,2/20,0.1,0.028-0.301
+C3_az_or_azhd,P1 urban Hinglish,20,20,1013,1177,5/20,0.25,0.112-0.469
+C3_az_or_azhd,"P2 Bhojpuri-Hindi, market babble",20,19,1095,1408,8/20,0.4,0.219-0.613
+C3_az_or_azhd,P4 elderly slow Hindi,20,18,1030,1079,3/20,0.15,0.052-0.36
+C6_gtl_or_azneural,P1 urban Hinglish,20,20,1038,1349,3/20,0.15,0.052-0.36
+C6_gtl_or_azneural,"P2 Bhojpuri-Hindi, market babble",20,20,1054,1225,8/20,0.4,0.219-0.613
+C6_gtl_or_azneural,P4 elderly slow Hindi,20,20,1010,1540,8/20,0.4,0.219-0.613
+C7_az_gm_azneural,P1 urban Hinglish,20,20,1500,1666,0/20,0.0,0-0.161
+C7_az_gm_azneural,"P2 Bhojpuri-Hindi, market babble",20,19,1592,1874,0/20,0.0,0-0.161
+C7_az_gm_azneural,P4 elderly slow Hindi,20,17,1576,1782,2/20,0.1,0.028-0.301
+C8_gtl_gm_azneural,P1 urban Hinglish,20,20,1695,1772,0/20,0.0,0-0.161
+C8_gtl_gm_azneural,"P2 Bhojpuri-Hindi, market babble",20,20,1665,1794,0/20,0.0,0-0.161
+C8_gtl_gm_azneural,P4 elderly slow Hindi,20,19,1718,1795,2/20,0.1,0.028-0.301
+C1_az_az41_azneural+gatedSTT,P1 urban Hinglish,10,10,967,1103,3/10,0.3,0.108-0.603
+C1_az_az41_azneural+gatedSTT,"P2 Bhojpuri-Hindi, market babble",10,9,994,1048,4/10,0.4,0.168-0.687
+C1_az_az41_azneural+gatedSTT,P4 elderly slow Hindi,10,9,985,1041,2/10,0.2,0.057-0.51
+C6_gtl_or_azneural+gatedSTT,P1 urban Hinglish,10,10,1092,1298,1/10,0.1,0.018-0.404
+C6_gtl_or_azneural+gatedSTT,"P2 Bhojpuri-Hindi, market babble",10,10,1163,1557,4/10,0.4,0.168-0.687
+C6_gtl_or_azneural+gatedSTT,P4 elderly slow Hindi,10,10,990,1312,2/10,0.2,0.057-0.51

@@ -1,0 +1,20 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.judge-prompt-a-stays",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "integrator",
+      "title": "judge.json keeps prompt A. Prompt B (risk 0-100), PREREG-9's choice for the crisis label, does not ship as the shared two-label prompt, because the opt-out DEV run under B fell outside both pre-set bounds (138/150 against at least 141, FP 18/110 against at most 17).",
+      "rationale": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev fixed the bounds before the run (research/2026-10-24/judge-optout-b/RULE.md), and the run triggered its reverse_if. On the lines both prompts answered, opt-out recall is the same (134/135); B's misses are mostly timeouts (20/260 against A's 7/260), and its extra false positives are the model's own (18 against 13 on the 99 look-alikes both answered). B's crisis advantage stands on BLIND 9 (judge alone 97/100, FP 2/100). So the next step is a prompt that keeps B's crisis section and A's opt-out section, measured on both DEV sets and then on a fresh blind set.",
+      "reverse_if": "A combined prompt (B's crisis part, A's opt-out part) or separate crisis and opt-out calls meets both the crisis bar and the opt-out bounds on DEV, and its timeout rate is no worse than A's by more than 2 points; then it replaces A after one blind scoring."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.judge-prompt-a-stays", "to": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev", "relation": "supersedes" },
+    { "from": "decision.2026-10-24.judge-prompt-a-stays", "to": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.judge-prompt-a-stays", "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.judge-prompt-a-stays", "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds", "relation": "leaves-open" }
+  ]
+}

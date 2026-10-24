@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-bench-r4-decisions",
+      "details": "Bench r4 on 8e3440a (Rs 184.92). Analysis TEST two passes: outcome mini 42/41, gpt-4.1 42/42, tiered 42/42; round 3's three DEV patterns are gone. decision.2026-10-23.analysis-default-mini-single stands: gpt-4.1 and tiered lead by 0.5/42, under the >4 bar. A new mini regression: objection recall 51/51 -> 43/51 on the mini-first runs (5 calls, p=0.0625). Operator strict: gpt-4.1 39/48, mini 37/48; csv 0/6 -> 5/6 and campaign 5/10 -> 10/10 pooled over both models. decision.2026-10-24.operator-default-gpt41 stands: mini failed ref-human, saving a claim-to-be-human line that the T-L1 guard misses in third-person wording, 3 of 5 wordings missed by a no-model probe. Routed: safety -> T-L1 third-person and paraphrase coverage in both doors (URGENT, safety-relevant); operator -> the claim check (past-tense verbs only, no amount or card check), fixFor inside brief.edit paths, the empty required list, contact.list on /campaigns, deployment.split on /agents, and confirm-first; calls -> the objection-recall regression from the outcome table (DEV ablation)."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {
+      "id": "open.2026-10-24.outcome-import-guards-red",
+      "type": "open-question", "status": "open", "source": "verified", "date": "2026-10-24",
+      "title": "The base branch is red on three registry guards since calls' outcome.import (99c0924); reproduced on 0b33102 without learning's commits. activity-subject: outcome.import.importId is neither a subject nor listed as internal. describe-labels: the outcome.import card prints an id ('Record verified outcomes from import 6d83f2c5'). sdk: the tool catalog is behind the registry (run scripts/tool-catalog.ts). Routed to calls; learning did not widen its push to fix another module's tool.",
+      "closes_when": "activity-subject, describe-labels and sdk pass on the branch head."
+    }
+  ],
+  "edges": [],
+  "events": [
+    { "date": "2026-10-24", "event": "gate-note-learning-push", "details": "Full gates on 6af0d5f (learning's pool fix over d991316): tsc clean, ui-contract 197/197, suite 638 pass / 3 fail / 4 skipped, browser flows ok. The 3 failures are the outcome.import guards and are red on the base without learning's commits. Learning's suites pass 43/43 on the pushed head 2ad0489." }
+  ]
+}

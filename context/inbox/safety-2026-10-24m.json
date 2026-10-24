@@ -1,0 +1,22 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.reply-door-for-people",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "A team member's written reply (channels gate.ts doorOver, c61a613) runs the reply door subset RD3, RD4, RD5, RD6, RD8 and RD9, not only RD4 and RD5. The conduct rules (impersonation, pay-to-receive, threats and false urgency, secrecy, IRDAI solicitation, harsh dues, no agenda in a crisis thread) bind the business whoever writes. RD1, RD2, RD7, RD10, RD11 and rd.amount_not_in_facts are about her or her config and are skipped. For people, a block stops the send with the reason. A replace becomes a suggestion or a block, and never silently rewrites a person's words. Sent to the channels builder as an objection.",
+   "rationale": "RBI fair-practice collection and IRDAI rules apply to human staff. A WhatsApp message from the company's number carries the company's liability. Crisis threads are handed to people.",
+   "reverse_if": "Team members on staging are blocked on legitimate replies by RD6/RD9 more than rarely (measured on real sends), in which case narrow the shapes, not the subset."
+  }
+ ],
+ "edges": [],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-reply-door-people",
+   "details": "Objected to the channels builder running only RD4/RD5 on people's WhatsApp replies; asked for RD3/4/5/6/8/9, with block-with-reason and no silent replace."
+  }
+ ]
+}

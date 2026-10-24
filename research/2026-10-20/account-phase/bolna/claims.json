@@ -1,0 +1,663 @@
+[
+ {
+  "id": "ACB-01",
+  "area": "method",
+  "claim": "Bolna OSS engine read at HEAD bc59921 (2026-10-20 14:43 IST, package 0.10.306, MIT): 120 source files / 43,962 Python lines under bolna/ plus 173 test files / 35,097 lines; task_manager.py alone is 9,772 lines.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/pyproject.toml",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-02",
+  "area": "method",
+  "claim": "Blind black-box inferences scored against the code by the pre-registered rule: 20 checkable uncontaminated rows = 14 TRUE, 6 PARTLY, 0 FALSE; hit rate 0.85, Brier 0.086, mean stated confidence 0.69 (none-only n=18: 0.86, Brier 0.093). Architecture inference from outside is reliable at ~85%; the method was under-confident.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/blind-scoring.json",
+   "research/2026-10-20/teardown/bolna/blind-inferences.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-03",
+  "area": "method",
+  "claim": "The black box missed every behaviour-defining constant and policy that only code shows: the 900 ms post-final audio hold, pre-welcome speech drop, short-final drop, the Haiku language-switch judge, Azure PTU overflow, heard-text history trimming, 40-character TTS chunking and auto-generated dispositions. For closed vendors, turn-taking and policy must be measured in the call battery, not inferred.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/bolna/blind-scoring.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-04",
+  "area": "method",
+  "claim": "The API phase used 57 requests over 6 minutes (18:49-18:55 UTC), far below the documented 1,000/min default; status mix 47x200, 2x201, 4x404, 2x403, 1x400, 1x422; no call, number search/buy, batch, workflow, campaign or disposition test was made; wallet 500.0 before and after; account left with 0 agents.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/_requests.csv",
+   "data/account-phase/bolna/api-live/user_me.json",
+   "data/account-phase/bolna/api-live/user_me_final.json",
+   "data/account-phase/bolna/api-live/v2_agent_all_final.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-05",
+  "area": "api",
+  "claim": "No standalone OpenAPI file is served, but every API-reference page embeds an OpenAPI 3.1 fragment; merging the 128 fragments yields 96 paths and 183 component schemas with zero conflicts.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+   "data/account-phase/bolna/openapi/endpoints.csv",
+   "data/account-phase/bolna/docs/"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-06",
+  "area": "api",
+  "claim": "POST /v2/agent returns 201 {agent_id, state:'created'}; GET /v2/agent/{id} and deprecated GET /agent/{id} return byte-identical objects; DELETE returns {message:'success', status:'deleted'} and a later GET is 404 'Agent not found.'",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agent_create_min.json",
+   "data/account-phase/bolna/api-live/agentA_readback_v1.json",
+   "data/account-phase/bolna/api-live/agentA_readback_v2.json",
+   "data/account-phase/bolna/api-live/agentA_delete.json",
+   "data/account-phase/bolna/api-live/agentA_after_delete.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-07",
+  "area": "api",
+  "claim": "PATCH /v2/agent accepts only top-level fields (agent_name, welcome, webhook_url, synthesizer, ingest_source_config, telephony_provider, calling_guardrails, call_summary_enabled) and merges them; telephony_provider rewrites input and output providers together. Task-level changes need PUT, which replaces the whole agent.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agentA_patch.json",
+   "data/account-phase/bolna/api-live/agentA_after_patch.json",
+   "data/account-phase/bolna/api-live/agentA_put.json",
+   "data/account-phase/bolna/api-live/agentA_after_put.json",
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-08",
+  "area": "api",
+  "claim": "Stored defaults for an API-created agent are the OSS Pydantic defaults and contradict the API docs: number_of_words_for_interruption 1 (docs 2), incremental_delay 900 (docs 400), hangup_after_silence 20 (docs 10), synthesizer stream false / buffer_size 40 / audio_format pcm (docs true / 250 / wav), transcriber stream false, endpointing 500, llm max_tokens 100, temperature 0.1.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agentA_readback_v2.json",
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+   "data/account-phase/bolna/code/bolna/models.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-09",
+  "area": "api",
+  "claim": "POST /v2/agent accepts an unknown top-level field (201) and silently drops it; this contradicts the public-phase claim that unknown fields are rejected (BOL-15 / BI-35). Validation of known fields is live: a Sarvam voice_id under ElevenLabs returns 400 with a provider-mismatch message, and a missing query param returns a Pydantic 422.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/probe_unknown_field.json",
+   "data/account-phase/bolna/api-live/agentB_readback.json",
+   "data/account-phase/bolna/api-live/probe_bad_voice.json",
+   "data/account-phase/bolna/api-live/voice_config_tts.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-10",
+  "area": "api",
+  "claim": "The documented llm_agent.routes (semantic FAQ routes with utterances, response and score_threshold) was accepted on PUT (200) and not present on readback; the OSS engine also strips routes from llm configs. The feature is documented but dead on the API path.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agentA_put.json",
+   "data/account-phase/bolna/api-live/agentA_after_put.json",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-11",
+  "area": "api",
+  "claim": "A Hindi-language agent created via API carries the English check-in 'Hey, are you still there' and English default stop/filler vocabularies; nothing in the default config localises them.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agentA_readback_v2.json",
+   "data/account-phase/bolna/code/bolna/constants.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-12",
+  "area": "api",
+  "claim": "On every agent create the platform asynchronously generates two LLM-judge dispositions from templates, rewritten for the agent's prompt: 'Call Success' (success/failure/unsure, about 5 s after create) and 'Call Completion' (complete/incomplete/unsure, about 25 s after). Both use gpt-4.1-mini and treat Hinglish deferrals ('dekhta hoon', 'baad mein') as not-success. They did not move the wallet and were deleted with the agent.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/disposition_default.json",
+   "data/account-phase/bolna/api-live/disposition_after_put.json",
+   "data/account-phase/bolna/api-live/agentA_after_put.json",
+   "data/account-phase/bolna/api-live/agentB_disposition_after_delete.json",
+   "data/account-phase/bolna/api-live/user_me_final.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-13",
+  "area": "api",
+  "claim": "GET /dispositions/ and GET /dispositions/?agent_id= returned empty lists while the agent held two auto-created dispositions retrievable by id; system-generated judges are invisible in list views.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/dispositions_list_after.json",
+   "data/account-phase/bolna/api-live/agentA_dispositions_after_put.json",
+   "data/account-phase/bolna/api-live/agentA_after_put.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-14",
+  "area": "api",
+  "claim": "GET /v2/agent/{id}/executions wraps rows in UI filter metadata; the status filter lists an undocumented 'prepared' status and omits 'rescheduled' and 'call-disconnected'; the provider filter lists twilio, plivo, exotel, vobiz, sip-trunk, trunk, web-call, websocket while the documented telephony_data.provider enum is only twilio|plivo.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agentA_executions_v2.json",
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-15",
+  "area": "api",
+  "claim": "Sub-accounts endpoints return 403 'This feature is not available for your account' on our PAYG account (Enterprise-only), consistent with BOL-05.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/sub_accounts_all.json",
+   "data/account-phase/bolna/api-live/sub_accounts_usage.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-16",
+  "area": "api",
+  "claim": "GET /trunk/pop returns the SIP edge trunk.bolna.ai with two IPs (15.252.21.46, 13.206.230.198), port 5060, UDP/TCP and RTP 30000-40000; trunk presets are plivo, telnyx, twilio, exotel, vobiz, vonage and custom.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/trunk_pop.json",
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-17",
+  "area": "voice",
+  "claim": "The TTS catalogue for language 'hi' lists 16 providers (incl. inworld and styletts, which the OSS engine lacks) with per-model quality tier, concurrency group, UI control ranges and an ElevenLabs character_cost_multiplier (Flash/Turbo 0.5, Multilingual v2 1.0); ElevenLabs eleven_turbo_v2_5 alone has 1,280 Hindi voices with gender/accent/age/use-case metadata, Sarvam bulbul:v3 has 16.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/voice_config_tts_hi.json",
+   "data/account-phase/bolna/api-live/voices_elevenlabs_turbo_hi.json",
+   "data/account-phase/bolna/api-live/voices_sarvam_v3_hi.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-18",
+  "area": "workflows",
+  "claim": "The workflow engine catalogue exposes 9 node types (start, agent, extraction, api, callback, time, retry, aisensy_whatsapp, end), 8 namespaces (call, callback, entry, extraction, node, response, state, whatsapp) and effects set_value (state.* survives calls, retries and the whole execution) and notify (unavailable, 'no executor yet'). Retry is the only node allowed to close a cycle.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/workflow_node_types.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-19",
+  "area": "campaigns",
+  "claim": "Two parallel outbound systems exist: batches (CSV with contact_number in E.164, only valid_contacts/total_contacts reported, retry_config, batch webhook) and workflow campaigns (row-level failure codes invalid_phone, invalid_field_type, missing_required_value, duplicate_reference_id, empty_row; corrective re-upload; unknown column rejects the whole upload with 422; funnel and termination-reason report).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+   "data/account-phase/bolna/docs/limits.md",
+   "data/account-phase/bolna/docs/workflow-campaigns_upload-entries.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-20",
+  "area": "campaigns",
+  "claim": "Workflow campaigns de-duplicate on reference_id, not on phone number, and callback correlation reads numbers without a country code as +91; neither batches nor campaigns have opt-out/DND column semantics (inferred from schema).",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+   "data/account-phase/bolna/api-live/workflow_node_types.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-21",
+  "area": "data-model",
+  "claim": "The data model is call-centric: the execution (one call) carries status, transcript, cost_breakdown{llm, network, platform, synthesizer, transcriber} in cents, telephony_data (hangup_by/reason/provider_code, ring_duration, post_dial_delay, to_number_carrier, recording_url), transfer_call_data, batch_run_details{retried}, extracted_data, node_extracted_data, summary and context_details. There is no contact, lead, consent or memory entity in the API or the code.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+   "data/account-phase/bolna/code/bolna"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-22",
+  "area": "data-model",
+  "claim": "The engine's per-call output is far richer than the documented execution: progression_data with per-turn ASR/LLM/TTS latencies (first token, tokens, cached tokens), user_bot_latencies, interruption_stats, language-ID and switch events, DTMF/transfer/hangup-cancel events, blocked_audio_events, TTS audio quality and hangup_detail.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-23",
+  "area": "architecture",
+  "claim": "End to end: a telephony server places the call through the provider REST API and answers with <Stream bidirectional> XML (Plivo) or TwiML pointing at the ws route /chat/v1/{agent_id}; AssistantManager runs one TaskManager per task in sequence; TaskManager gathers transcriber, LLM, synthesizer, output-gate and completion-watchdog asyncio tasks linked by queues.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/local_setup/quickstart_server.py",
+   "data/account-phase/bolna/code/local_setup/telephony_server/plivo_api_server.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/assistant_manager.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-24",
+  "area": "architecture",
+  "claim": "Vobiz speaks the Plivo media-stream protocol (callId/streamId, playAudio/checkpoint/clearAudio) and is disconnected via api.vobiz.ai/api/v1/Account/{id}/Call/{uuid}; telephony STT runs at 8 kHz (mulaw for Twilio and sip-trunk, linear16 otherwise); the input handler batches 10 media frames per STT send.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/input_handlers/telephony_providers/vobiz.py",
+   "data/account-phase/bolna/code/bolna/input_handlers/telephony.py",
+   "data/account-phase/bolna/code/bolna/output_handlers/telephony_providers/plivo.py",
+   "data/account-phase/bolna/code/bolna/transcriber/deepgram_transcriber.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-25",
+  "area": "architecture",
+  "claim": "Web calls and v2 SIP trunk legs share a patched FreeSWITCH mod_audio_stream WebSocket fork (L16 16 kHz in); legacy sip-trunk is an Asterisk chan_websocket client streaming ulaw 20 ms frames.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/input_handlers/telephony_providers/freeswitch.py",
+   "data/account-phase/bolna/code/bolna/input_handlers/telephony_providers/sip_trunk.py",
+   "data/account-phase/bolna/code/bolna/enums.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-26",
+  "area": "architecture",
+  "claim": "The public browser SDK @bolna/web-call 3.0.1 (npm, modified 2026-08-20) depends on sip.js ^0.21.2, mints a single-use session via the customer's backend calling POST /web-call/freeswitch-session with a bn- key (run_id, sip_username/password, sip_domain, wss_url, sip_register, expires_in, ice_servers), sends X-Agent-Id/X-Run-Id, uses Google STUN, and documents a Kamailio SIP edge (sip_register=false) in front of FreeSWITCH plus at_capacity scopes global/customer/not_enabled.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/pkg/npm-web-call/x/package/dist/index.d.ts",
+   "data/account-phase/bolna/pkg/npm-web-call/x/package/package.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-27",
+  "area": "architecture",
+  "claim": "LLM routing: openai, azure/azure-openai and google use native SDK clients; cohere, ollama, deepinfra, together, fireworks, perplexity, vllm, anyscale, groq, anthropic, deepseek and openrouter go through LiteLLM 1.84.0; custom, ola and a Bolna-hosted 'bolna' provider use the OpenAI-compatible client. ASR provider 'bolna' is a self-hosted realtime-protocol transcriber.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/providers.py",
+   "data/account-phase/bolna/code/requirements.txt",
+   "data/account-phase/bolna/code/bolna/transcriber/realtime_transcriber.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-28",
+  "area": "architecture",
+  "claim": "There is no Pipecat, LiveKit, Vocode, Silero, webrtcvad or torch dependency; VAD comes from the STT provider (Deepgram vad_events, Sarvam high_vad_sensitivity) or the S2S provider (OpenAI semantic_vad, Gemini Live).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/requirements.txt",
+   "data/account-phase/bolna/code/bolna/transcriber/deepgram_transcriber.py",
+   "data/account-phase/bolna/code/bolna/models.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-29",
+  "area": "architecture",
+  "claim": "No outbound scheduling, batch, calling-guardrail, workflow, WhatsApp, consent or DND code exists in the OSS engine; those are closed hosted services.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-30",
+  "area": "architecture",
+  "claim": "Knowledge-base retrieval calls a separate closed 'rag-proxy-server' (/conversation/query, collection health) before generation; the OSS keeps only LanceDB and MongoDB config types and a reranker config (bge-base/large/multilingual, minilm-l6-v2, 20 candidates down to 5).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/helpers/rag_service_client.py",
+   "data/account-phase/bolna/code/bolna/models.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-31",
+  "area": "architecture",
+  "claim": "Agent prompts are stored per agent in S3 as agent_data/{agent_id}/conversation_details.json; recordings are saved to S3; the welcome clip is handed to the engine preloaded, and the OSS TTS cache is per-call in-memory keyed by text.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/helpers/utils.py",
+   "data/account-phase/bolna/code/bolna/memory/cache/inmemory_scalar_cache.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-32",
+  "area": "turn-taking",
+  "claim": "Audio for every reply passes a tri-state gate: BLOCK if its sequence id was invalidated by an interruption, WAIT while the caller is speaking or while less than incremental_delay ms (default 900) have passed since the last final transcript (after the first two history entries), else SEND; WAIT polls every 50 ms and self-releases after 2 s of no new speech.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/interruption_manager.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/bolna/constants.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-33",
+  "area": "turn-taking",
+  "claim": "With the stored API defaults (endpointing 500 ms, incremental_delay 900 ms) Bolna cannot start a reply sooner than about 1.4 s after the caller's last word from turn 2 onward, before transport and buffering; this is the likely code-level cause of the reported 1.5-2.0 s perceived latency. Not yet measured on a call.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/interruption_manager.py",
+   "data/account-phase/bolna/api-live/agentA_readback_v2.json",
+   "research/2026-10-20/teardown/bolna/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-34",
+  "area": "turn-taking",
+  "claim": "Barge-in fires when the interim transcript exceeds number_of_words_for_interruption words (default 1, so 2 words) or exactly equals an entry of the English-only ACCIDENTAL_INTERRUPTION_PHRASES list; while the agent speaks, a final of N words or fewer that is not on the list is discarded as a false interruption, so short Hindi replies such as 'nahi', 'haan', 'ruko' or 'bas' never reach the LLM.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/interruption_manager.py",
+   "data/account-phase/bolna/code/bolna/constants.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-35",
+  "area": "turn-taking",
+  "claim": "Every transcript produced while the welcome message is still playing is dropped from the conversation and used only as voicemail evidence; discard_pre_welcome_utterance additionally drops speech that started before the welcome ended.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-36",
+  "area": "turn-taking",
+  "claim": "Barge-in recovery: after an interruption the assistant history entry is trimmed to the text actually heard (telephony mark/checkpoint echoes plus a proportional estimate for the chunk in flight); a user final that lands while the previous reply is unheard is merged with the previous user turn and regenerated, with a 0.7 s settle window; a regenerated reply that duplicates the last spoken turn (similarity 0.9) is blocked; barge-ins are deferred while a tool call is in flight.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/bolna/constants.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-37",
+  "area": "turn-taking",
+  "claim": "Deepgram Flux runs with end-of-turn confidence 0.7 and eot_timeout 500 ms by default; when eager_eot_threshold is set, an EagerEndOfTurn starts a speculative LLM task that is reused on EndOfTurn or cancelled (history reverted) on TurnResumed.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/constants.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/bolna/transcriber/deepgram_transcriber.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-38",
+  "area": "voice",
+  "claim": "LLM text is pushed to TTS whenever the buffer reaches buffer_size characters (default 40), cut at the last space, not at sentence ends; pre-tool-call filler lines exist only in en/de and the transfer filler only in en/fr.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/llms/openai_base.py",
+   "data/account-phase/bolna/code/bolna/constants.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-39",
+  "area": "voice",
+  "claim": "Backchanneling plays a random pre-recorded per-voice clip every backchanneling_message_gap seconds once the caller has spoken longer than backchanneling_start_delay; use_fillers only adds a prompt note, and the ambient-noise presets ship as WAVs with no mixing code in the OSS engine.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/local_setup/presets/ambient_noise"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-40",
+  "area": "call-control",
+  "claim": "Hangup paths: a per-turn hangup-check LLM call (CHECK_FOR_COMPLETION_PROMPT) when hangup_after_LLMCall is on, or an end_call tool (end_call_tool_mode primary); plus silence hangup, 'are you still there' check-in, call_terminate cap (default 90 s), a 60 s no-progress stall backstop and component-error hangups, each recorded as a hangup_detail enum.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/bolna/enums.py",
+   "data/account-phase/bolna/code/bolna/prompts.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-41",
+  "area": "call-control",
+  "claim": "Voicemail detection is a gpt-4.1-mini classification of user transcript lines (interim checks every 7 s once 7+ words, 30 s window); its prompt treats 'Haan', 'Haan bolo', 'Bol' as human and Indian recording notices as not-voicemail, but lists no Hindi or regional carrier messages ('switched off', 'not reachable', 'busy').",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/voicemail_handler.py",
+   "data/account-phase/bolna/code/bolna/prompts.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-42",
+  "area": "call-control",
+  "claim": "Call transfer is a POST of {call_sid, provider, stream_sid, from_number, execution_id, call_transfer_number} to a closed /process_transfer telephony webhook after a fixed 2 s sleep; no conversation summary is passed, so transfers are cold in the OSS engine.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-43",
+  "area": "tools",
+  "claim": "Custom HTTP tools pass an SSRF guard (private, reserved and metadata addresses blocked; env host allowlist), carry templated params, optional pre_call_message and pre-call webhooks, and can be scoped to graph nodes; the engine recovers tool calls that a model narrates as text ('functions.name(...)').",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/helpers/function_calling_helpers.py",
+   "data/account-phase/bolna/code/bolna/llms/types.py",
+   "data/account-phase/bolna/code/bolna/llms/openai_base.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-44",
+  "area": "tools",
+  "claim": "Graph agents run a forced-tool-call routing LLM before each reply unless a deterministic edge (expression, event, unconditional) matches; the decision is read from the stream before trailing reasoning/confidence fields, and a separate routing provider/model (e.g. Groq) can be set to cut this serial hop.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_types/graph_agent.py",
+   "data/account-phase/bolna/code/bolna/llms/routing_stream.py",
+   "data/account-phase/bolna/code/bolna/models.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-45",
+  "area": "tools",
+  "claim": "Live events can be injected into a running call (POST /v1/call/{run_id}/events with {event, properties, timestamp}); graph agents route on event edges and generate a proactive reply at a safe point.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/models.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-46",
+  "area": "multilingual",
+  "claim": "Multilingual calls keep one pre-warmed STT socket per language (silence keepalives every 4 s, up to 5 reconnects per call) and swap STT, TTS and system prompt atomically, playing a pre-rendered handoff clip; the hosted readback adds language_switch_trigger 'requested_or_auto_detected'.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/transcriber/transcriber_pool.py",
+   "data/account-phase/bolna/api-live/agentA_after_put.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-47",
+  "area": "multilingual",
+  "claim": "The flagged language-switch flow runs an unbiased Sarvam saaras:v3 language-ID stream next to the language-locked live ASR and asks a dedicated Switch LLM (default claude-haiku-4-5, prompt padded past the 4,096-token cache minimum, Bedrock region ap-south-1 when used via Bedrock) to judge the matrix language under about 15 Indic rules (transliteration, acknowledgements, numeric readouts never switch, sustained drift).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/helpers/language_switcher.py",
+   "data/account-phase/bolna/code/bolna/prompts.py",
+   "data/account-phase/bolna/code/bolna/lid/sarvam.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-48",
+  "area": "reliability",
+  "claim": "Azure OpenAI turns run on a provisioned deployment and are re-issued on a configured pay-as-you-go overflow deployment when the pool is saturated (429/5xx) or the stream drops before any output; SDK retries are disabled when an overflow exists, and overflow turns are metered via on_overflow.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/llms/azure_llm.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-49",
+  "area": "reliability",
+  "claim": "Per-provider health signals feed a circuit breaker that runs in shadow mode and never changes the call; STT and TTS have reconnect logic but no cross-provider fallback, and telephony is one provider per agent.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/bolna/transcriber/transcriber_pool.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-50",
+  "area": "billing",
+  "claim": "Metering: the engine reports billed STT audio seconds (provider-reported where available; only the active leg of a pool), synthesized characters, and per-turn LLM input/output/cached/reasoning tokens; the hosted service prices these into cost_breakdown in cents; telephony bills by the minute (rounded) and the platform fee by duration.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/transcriber/base_transcriber.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/openapi/bolna-openapi-merged.json",
+   "data/account-phase/bolna/docs/guide_pricing_call-pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-51",
+  "area": "billing",
+  "claim": "The flat per-minute rate covers only 'preferred models'; any other model bills that component at base usage rates, and on the Basic plan any single BYOK component drops the whole call to base usage pricing (other plans only when all three are BYOK).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/bolna/docs/guide_pricing_call-pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-52",
+  "area": "billing",
+  "claim": "Whether the $0.02/min platform fee applies on the bundled plan remains unverified (BOL-35); it needs an invoice or the dashboard billing page.",
+  "grade": "unknown",
+  "evidence": [
+   "data/account-phase/bolna/docs/guide_pricing_call-pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-53",
+  "area": "webhooks",
+  "claim": "Execution webhooks POST the full GET-execution body on each status change from three fixed IPs (13.203.39.153, 13.126.9.249, 13.202.133.53), can be limited to chosen statuses and carry static custom headers, are retried on non-2xx, and carry no HMAC signature; workflow callback nodes, by contrast, support an optional per-node signing secret with rotation.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/bolna/docs/guide_post-call_polling-call-status-webhooks.md",
+   "data/account-phase/bolna/docs/limits.md",
+   "data/account-phase/bolna/api-live/workflow_node_types.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-54",
+  "area": "india",
+  "claim": "calling_guardrails is null on a newly created agent (off by default) and accepts only whole hours (call_start_hour/call_end_hour 0-23); the OSS DEFAULT_TIMEZONE is America/Los_Angeles unless recipient_data.timezone is passed.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/agentA_readback_v2.json",
+   "data/account-phase/bolna/api-live/agentA_after_patch.json",
+   "data/account-phase/bolna/code/bolna/constants.py",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-55",
+  "area": "v2",
+  "claim": "The only state that survives across calls is a workflow execution's state.* (set_value effect), scoped to one contact's journey; there is no persistent contact memory, so marketing, docs, API and code agree that Bolna has no cross-call memory (refines BOL-60).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/api-live/workflow_node_types.json",
+   "data/account-phase/bolna/code/bolna/memory"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-56",
+  "area": "v2",
+  "claim": "Bolna's auto-generated LLM-judge dispositions plus per-turn latency and token telemetry are the raw material of a learning loop, but there is no customer-facing path from graded calls to prompt or policy changes (consistent with BOL-61/62).",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/bolna/api-live/disposition_default.json",
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "ACB-57",
+  "area": "velocity",
+  "claim": "The OSS repo's HEAD commit (2026-10-20 14:43 IST) forces live calls to stream regardless of the stored stream:false flag (BOLNA-2967), which is exactly the default our API-created agent carried; hosted behaviour may lead or lag the OSS by hours.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py",
+   "data/account-phase/bolna/code/tests/test_live_call_streams_pipeline.py",
+   "data/account-phase/bolna/api-live/agentA_readback_v2.json"
+  ],
+  "date": "2026-10-20"
+ }
+]

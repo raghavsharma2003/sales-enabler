@@ -1,0 +1,6 @@
+ts,round,arm,chars,kind,status,ttfb_ms,hdr_ms,total_ms,audio_s,in_tokens,out_tokens,err,max_underrun_ms,rtf
+2026-10-18T18:43:08Z,0,gg:gemini-3.8-flash-lite-tts:Despina,130,sentence,200,1132.1,1132.0,2990.1,13.48,48,337,,0.0,0.222
+2026-10-18T18:43:11Z,0,az:hi-IN-SwaraNeural,130,sentence,200,92.7,,386.7,12.425,,,,0.0,0.031
+2026-10-18T18:43:11Z,0,gi:gemini-3.8-flash-lite-tts:Despina,130,sentence,429,,421.7,421.9,0,,,"429 {""error"":{""message"":""Rate limit exceeded for model gemini-3.8-flash-lite-tts (limit: 10 requests per day on Free Tier). Please retry in 5h16m30s or upgrade your tier at https://ai.dev/rate-limit."",""code"":""too_many_requests""}}",,
+2026-10-18T18:43:29Z,0,az:en-IN-Aarti:DragonHDLatestNeural,130,sentence,200,170.5,,2177.0,7.5,,,,0.0,0.29
+2026-10-18T18:43:31Z,0,az:hi-in-diya:DragonHDOmniIndicNeural,130,sentence,200,304.0,,2255.7,9.45,,,,0.0,0.239

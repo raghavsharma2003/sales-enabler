@@ -1,0 +1,88 @@
+{
+ "lane": "vapi",
+ "registered": "2026-10-20",
+ "status": "pre-registered before any trial account exists; score after the account phase",
+ "how_to_score": "Each prediction states a measurable quantity and a pass/fail rule. Record the observed value, the run date, n, and whether the prediction held. Do not edit the predictions after the account exists.",
+ "predictions": [
+  {
+   "id": "VAP-P01",
+   "task": "onboarding to first browser test call",
+   "prediction": "Sign-up (email or Google, Cloudflare Turnstile) to the first browser 'Talk' call on a template or Composer-built assistant takes <= 10 min (point 6 min), with no card required thanks to $5 free credits.",
+   "holds_if": "median of 2 runs <= 10 min and no card prompt before the first browser call",
+   "basis": "VAP-05, VAP-33; docs quickstart",
+   "confidence": 0.75
+  },
+  {
+   "id": "VAP-P02",
+   "task": "first live PSTN call to our Indian handset",
+   "prediction": "Cannot be done with Vapi alone. The free Vapi number is US, inbound-only and blocked from campaigns. It needs a second vendor account (Twilio, Telnyx or Vonage) with card, verification and India geo-permission, and shows an international (+1) CLI. Time from sign-up to first ring on our handset >= 45 min (point 75 min) when the Twilio account already exists; otherwise not same-day.",
+   "holds_if": ">= 45 min, or a second vendor account is required, or the CLI shown is non-Indian",
+   "basis": "VAP-09, VAP-42, VAP-43",
+   "confidence": 0.85
+  },
+  {
+   "id": "VAP-P03",
+   "task": "build the standard agent (Hinglish renewal-reminder spec)",
+   "prediction": "Succeeds in 15-35 min, but only after manual provider choice. Defaults (English endpointing, English voices) do not hold Hinglish: we must pick a multilingual transcriber (Deepgram multi/Flux multi or Google), a Hindi-capable voice, and turn LiveKit smart endpointing off. With automatic language detection left on, >= 1 of 2 Hinglish test calls replies in a non-Hindi Indian language or English for >= 3 turns.",
+   "holds_if": "build succeeds AND (manual multilingual config needed OR the language misfire reproduces)",
+   "basis": "VAP-31 (Hinglish config), l4b CMP-03 (Gujarati replies)",
+   "confidence": 0.7
+  },
+  {
+   "id": "VAP-P04",
+   "task": "upload messy 50-row synthetic CSV (duplicates, bad numbers, Hindi names, empty columns, an opt-out row)",
+   "prediction": "Awkward or fail. (a) Any row with an empty number rejects the whole file. (b) 10-digit numbers without +91 are silently turned into '+98...'/'+7...'/'+6...' (wrong countries) or '+0...' and only fail later. (c) Duplicates are dialled twice. (d) The opt-out row is dialled unless we build a pre-dial webhook. (e) A 'Number' or 'Phone' header instead of lowercase 'number' fails. Devanagari names <= 40 chars pass; empty cells are dropped as variables.",
+   "holds_if": ">= 3 of (a)-(e) observed",
+   "basis": "VAP-49 (dashboard CSV code), VAP-03",
+   "confidence": 0.8
+  },
+  {
+   "id": "VAP-P05",
+   "task": "schedule within calling hours",
+   "prediction": "Awkward. A 3-day 10:00-21:00 IST schedule needs 3 separate campaigns (one absolute window each, max 7 days ahead, 15-min steps, one time zone). Unanswered or busy contacts are not retried; contacts still pending at latestAt are dropped. Total clicks >= 3x a single-campaign setup.",
+   "holds_if": "no recurring daily window AND no per-contact retry setting found in the UI",
+   "basis": "VAP-46, VAP-47",
+   "confidence": 0.85
+  },
+  {
+   "id": "VAP-P06",
+   "task": "voicemail + transfer",
+   "prediction": "Voicemail detection and the transfer tool both configure in < 20 min. On Indian mobiles (which rarely have voicemail), operator announcements ('switched off', 'not reachable', 'busy', in Hindi/English) are misclassified or held open until the silence timeout on >= 30% of such calls. Warm transfer to a +91 number works only over the international Twilio leg, adding about INR 4.7/min for the second leg.",
+   "holds_if": "misclassification or hold-open >= 30% on >= 6 network-announcement calls",
+   "basis": "VAP-43, docs voicemail-and-call-screening",
+   "confidence": 0.55
+  },
+  {
+   "id": "VAP-P07",
+   "task": "find a failed call and its reason",
+   "prediction": "Succeeds in <= 5 min via call logs filtered by ended reason. The reason is an engineering code (e.g. customer-did-not-answer, twilio-failed-to-connect-call, call.in-progress.error-vapifault-*) with no business interpretation or suggested fix, unless Call Health or Monitoring is enabled.",
+   "holds_if": "found in <= 5 min AND reason shown only as a code",
+   "basis": "VAP-13",
+   "confidence": 0.7
+  },
+  {
+   "id": "VAP-P08",
+   "task": "export results",
+   "prediction": "Call export to CSV (selected columns) or JSON succeeds in <= 5 min. Campaign-level outcomes (per-contact status plus structured outputs in one sheet) need either the API (/v2/campaign/:id/contacts plus /call) or a join done by the buyer.",
+   "holds_if": "export works AND no single campaign-results export with structured outputs exists",
+   "basis": "VAP-10, VAP-03",
+   "confidence": 0.6
+  },
+  {
+   "id": "VAP-P09",
+   "task": "handset reply gap on Indian PSTN (our spec, best-effort tuned)",
+   "prediction": "Handset-side clean-turn reply gap p50 is 2.4-3.4 s (point 2.9 s) and p90 >= 4.0 s on calls from Vapi (US-West orchestration, Twilio international leg) to an Indian mobile. Tuned best case p50 >= 1.8 s. Cut-in at the 2.4 s elderly pause on >= 1 of 2 calls; collisions >= 15% of caller turns.",
+   "holds_if": "p50 >= 2.4 s over >= 30 clean turns",
+   "basis": "l4b demo p50 2.32 s from US-East (CMP-02); VAP-20 (us-west-2 orchestration), VAP-43 (international leg); ~0.25 s extra RTT India-US West per exchange (inference)",
+   "confidence": 0.65
+  },
+  {
+   "id": "VAP-P10",
+   "task": "invoice per minute",
+   "prediction": "Real billed cost of an Indian outbound connected minute (Vapi invoice + Twilio invoice) is INR 12-18 at FX 95, with the Vapi hosting fee >= 30% of the total.",
+   "holds_if": "INR 12-18 and hosting share >= 30%",
+   "basis": "VAP-35, VAP-36",
+   "confidence": 0.75
+  }
+ ]
+}

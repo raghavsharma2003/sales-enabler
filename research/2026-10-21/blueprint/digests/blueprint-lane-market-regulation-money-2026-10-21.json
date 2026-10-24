@@ -1,0 +1,291 @@
+{
+ "key_facts": [
+  {
+   "fact": "Service calls need no explicit consent (inferred consent for the contract), are not blocked by DND once FULLY BLOCK migrates to BLOCK PROMO (about 2026-11-03), and have no TRAI calling band; promotional calls need 140xx, 10:00-21:00, DND scrub and CRF-registered consent for DND numbers (CRF upload piloted with 11 banks only).",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/regulation-segment/report.md section 2 (RS-03/04/07/10/12/13/15); TCCCPR 3rd Amendment memo paras 37 and 39"
+  },
+  {
+   "fact": "Every AI call is A2P; all senders must pre-declare A2P use and CLI ranges to the operator on DLT from about 2026-11-17/18 on every series; undeclared A2P calls are UCC. TRAI rejected every AI/human-assisted carve-out. No Indian vendor documents this and 0 of 8 vendors ship an export.",
+   "grade": "observed",
+   "evidence": "regulation-segment/report.md RS-08/26; research/2026-10-17/lanes/r2-untouched-raw/findings.md section 1.1; teardown/SYNTHESIS.md section 3 (A2P row)"
+  },
+  {
+   "fact": "140xx, 1600xx and 1601xx cannot be flagged as Suspected UCC by operator AI or app-tagged and are exempt from the A2P termination charge (up to INR 0.05/min); declared 10-digit numbers get none of this. Telcos asked for INR 0.50/min on all commercial calls and INR 0.05 per attempt.",
+   "grade": "observed",
+   "evidence": "r2-untouched-raw/findings.md section 1.2-1.3 (reg 21A proviso, reg 34A, reg 35A); RS-09"
+  },
+  {
+   "fact": "1600xx is mandatory and exclusive for service/transactional calls by RBI, SEBI, IRDAI and PFRDA entities (IRDAI from 2026-02-15, irrespective of consent); 1601xx for utilities and logistics (migration about 2026-11-08); everyone else uses declared 10-digit numbers. TRAI said small BFSI players may later be exempted from mandatory 1600 (no direction found).",
+   "grade": "observed",
+   "evidence": "research/2026-10-17/lanes/l1-regulation/report.md claims 9-10; SYNTHESIS-v2.md section 3.1 (REG-20); r2-untouched-raw/findings.md section 1.3"
+  },
+  {
+   "fact": "1600 provisioning takes about 7-14 business days via Plivo (telemarketer registered in Mumbai or Karnataka) or Vobiz; no per-minute price is published anywhere; whether audio can be streamed to a third-party AI on 1600 is unconfirmed (kill criterion KC5 at-risk).",
+   "grade": "unknown",
+   "evidence": "research/2026-10-17/SYNTHESIS-v2.md sections 2 and 3.1 (REG-22..25)"
+  },
+  {
+   "fact": "IRDAI layer: persuading a renewal is solicitation at medium confidence, so only certified humans with approved scripts may solicit; IMFs may not use telemarketers; intermediary records including call records stay in India at least 10 years; the safe call is inform, confirm, hand off, with VP as software on the intermediary's own 1600 number.",
+   "grade": "inferred",
+   "evidence": "SYNTHESIS-v2.md section 3.2-3.4 (REG-26..31); desk reading of primary text, needs counsel (KC8)"
+  },
+  {
+   "fact": "IRDAI's 2026-09-23 consultation proposes commission caps (health renewal 5%, old-vehicle motor OD 10% and TP 2.5%, life renewal 2-3%); comments due 2026-10-25. Under the caps value per save falls to 0.33-0.49x and the car fee window against a working desk nearly closes.",
+   "grade": "observed",
+   "evidence": "SYNTHESIS-v2.md section 2 KC9 and section 4.1 (REN-24, REN-25); model output in lanes/l2-economics/round2"
+  },
+  {
+   "fact": "RBI recovery conduct rules (RBI/2026-27/230) from 2027-01-01: contact 08:00-19:00, call time and count logs, two-way recordings kept 6 months with notice, grievance officer on every recovery communication, IIBF-certified agents, explicit TCCCPR compliance. Whether pre-due reminders and a vendor-run AI fall under it is a counsel question.",
+   "grade": "observed",
+   "evidence": "regulation-segment/report.md section 2.9 (RS-36/37/38, read in primary); inference on 100A/100Y marked inferred there"
+  },
+  {
+   "fact": "DPDP Rules gazetted 2025-11-13: Rule 4 (consent managers) about 2026-11-13, core obligations about 2027-05-13; Rule 3 notice, Rule 6 one-year logs and processor-contract safeguards; no general localisation; s.7(a) covers calling a customer about what she bought; bought lists lose their basis about 2027-05-13; penalties up to INR 250 Cr.",
+   "grade": "observed",
+   "evidence": "regulation-segment/report.md section 2.7 (RS-27..32); l1-regulation/report.md claims 15-17"
+  },
+  {
+   "fact": "No TRAI rule requires an AI to disclose itself to the callee, but a deceptive call is UCC and RBI lists misleading statements as harsh practices; the IT Rules 2026 synthetic-audio disclosure duty may or may not reach a B2B platform (secondary only). No incumbent makes disclosure non-removable; Sarvam's EMI persona claimed to be human in 6 of 6 asked calls on its public demo.",
+   "grade": "observed",
+   "evidence": "RS-33/34/35; teardown/SYNTHESIS.md section 3; walkthroughs/SYNTHESIS.md section 5; SYNTHESIS-v2.md section 6 (CMP-07, measured on a vendor demo)"
+  },
+  {
+   "fact": "CNAP starts 2026-11-01 on 4G-and-above; business connections can show a verified preferred name (registered trademark or GST trade name); whether SIP/PRI 1600 calls show a name is unstated.",
+   "grade": "observed",
+   "evidence": "r2-untouched-raw/findings.md section 4.2 (DoT circular dated 2026-10-13)"
+  },
+  {
+   "fact": "Enforcement lands on telecom resources, not fines: first proven violation bars all resources at all operators for 15 days, repeat brings one-year disconnection and blacklisting; Q1 FY27 137,053 resources barred, 46,786 disconnected, 263 senders blacklisted; about 75% of April 2026 disconnections were SIP/PRI lines. A CPaaS lending CLIs is treated as the sender.",
+   "grade": "observed",
+   "evidence": "regulation-segment/report.md RS-39/43; l1-regulation/report.md claims 11-13"
+  },
+  {
+   "fact": "Post-sale first is the recommended order: due-date reminders (renewal, pre-due EMI, service appointment), then onboarding and application follow-up; consented inbound-lead follow-up in wave 2; no cold outbound, surveys or default-stage collections in v1. Confidence high on the regulatory asymmetry, medium on the job choice pending buyer interviews. Counterweight: 140-series volume is about 11x 1600 volume (13.16bn vs 1.15bn calls in Q1 FY27).",
+   "grade": "inferred",
+   "evidence": "regulation-segment/report.md sections 0 and 4; teardown/SYNTHESIS.md section 2; decision.2026-10-20.regulation-segment-postsale-first"
+  },
+  {
+   "fact": "Insurance renewals through intermediaries is the only robust segment on the frozen scorecard (3.85; ties real estate when post-sales share is set to 0) but the pool is small: INR 94 Cr triangulated, INR 107 Cr at the price card (58 Cr excluding big platforms). Venture-scale stages: other BFSI 1600 service calls INR 166 Cr, non-BFSI post-sale INR 1,980 Cr (weakest evidence); S0-S3 cumulative INR 2,316 Cr (p10-p90 1,089-6,484).",
+   "grade": "inferred",
+   "evidence": "lanes/l3-segments/report.md sections 1, 4, 5; SYNTHESIS-v2.md sections 1.2 and 7 (SEG-12); scorecard is measured (Apna crawl n=3,855, classifier 49/60), sizing is Monte Carlo on assumptions with no verifier"
+  },
+  {
+   "fact": "Insurance renewal calling is contested at the job: at least 10 Indian offers, insurers and aggregators automate in-house at about 80% contribution margin, and funded specialists Desible (INR 32 Cr), Navana (INR 40 Cr, claims 100M+ BFSI minutes) and Gnani (claims 12M+ renewals) target it; none can be trialled. 'Thin competition' remains rejected.",
+   "grade": "vendor-claimed",
+   "evidence": "SYNTHESIS-v2.md section 6 (CMP-13/14/17); radar/report.md RAD-42/43/49; context node rejected.2026-10-17.thin-competition"
+  },
+  {
+   "fact": "Indian self-serve list prices: Sarvam INR 3.50 PAYG down to 3.00 on 60 s agent pulses plus INR 0.40/min telephony (all-in 3.4-3.9 whole-minute, 4.4-7.4 on 30-90 s calls); Ringg INR 6 all-in; Bolna USD 0.06 with 30 s pulses (about INR 5.7-6.1 all-in PAYG); Gupshup 'from INR 3.50' (telephony inclusion unknown); SquadStack INR 2-5 per live minute (vendor statement); Caller.digital INR 10.15 itemised.",
+   "grade": "observed",
+   "evidence": "teardown/synthesis/economics.csv; lanes/l2-economics/data/vendor-and-telephony-prices.csv; walkthroughs/SYNTHESIS.md sections 2.15 and 6 (Bolna pricing table seen in screenshot); all-in figures computed from rate cards, no invoice read"
+  },
+  {
+   "fact": "Global platforms cost INR 8-37 per Indian connected minute: ElevenLabs 8.2-8.9 via Exotel/Plivo (15.8-16.5 in burst), Retell 8.3-13.6 on a BYO trunk (22-37 on Retell numbers), Vapi 12.5-17.0, Synthflow 15.2-25.6 (enterprise from USD 30k a year). Defaults raise cost silently (Retell burst +USD 0.10/min, ElevenLabs bursting and a 2.4x-cost default LLM); 0 of 5 API-tested vendors offer a spend cap by API key.",
+   "grade": "inferred",
+   "evidence": "teardown/SYNTHESIS.md section 6; research/2026-10-20/account-phase/SYNTHESIS.md section 5 (billing mechanics from API read-back); walkthroughs/SYNTHESIS.md section 3"
+  },
+  {
+   "fact": "Pulse length matters as much as rate for Indian reminder calls (mostly under 90 s): Sarvam's INR 3.50 becomes INR 7.40 per minute on a 30 s call; Sarvam and Exotel bill 60 s pulses, Bolna 30 s, Plivo 30 s.",
+   "grade": "observed",
+   "evidence": "teardown/SYNTHESIS.md section 6 (TS-19); research/2026-10-20/account-phase/SYNTHESIS.md section 5"
+  },
+  {
+   "fact": "Telephony costs: Plivo INR 0.38/min on 30 s pulses (number INR 200/month), Sarvam/Vobiz INR 0.40, Tata Smartflo about INR 0.22 at full FUP, Twilio INR 4.7-6.6 (not viable), Exotel INR 0.80-1.00 on 60 s pulses. 1600 per-minute price is unpublished; INR 0.60-0.80 sensitivity cuts Base margin from 49% to 35% at 3 minutes.",
+   "grade": "observed",
+   "evidence": "lanes/l2-economics/data/vendor-and-telephony-prices.csv; research/2026-10-18/SYNTHESIS.md section 1 (1600 columns are sensitivities, not quotes)"
+  },
+  {
+   "fact": "Cheapest stack measured end to end (C6g: VAD-gated gemini-3.5-transcribe-live + gpt-oss-120b on Groq + Azure neural voice) costs INR 0.94 AI-only (MC 0.91-1.22) and about INR 1.44 all-in per minute at 3-minute calls: 28% gross margin at INR 2, 14% with a realistic persona and memory mix. Single pass, 30 turns; STT is 41% of cost and its gating is unverified; customer audio leaves India.",
+   "grade": "measured",
+   "evidence": "research/2026-10-18/SYNTHESIS.md sections 2.1 and 8; model research/2026-10-18/model/pricing_model.py seed 20261019 n=20,000; latency/cost runs from Central India VM"
+  },
+  {
+   "fact": "INR 2 per minute at 40-60% margin is not reached by any stack measured end to end; allowed AI cost at INR 2 ex-GST is INR 0.34-0.74. Candidate paths are desk-priced only: Inworld all-in INR 0.53 (about 250k min/month, Hindi quality unverified), self-host IndicConformer plus Veena INR 0.43-0.51 (from about 2.5M min/month, vendor-claim throughput), D-lite INR 1.19 (from about 1.6M min/month). Managed Azure floors at INR 2.31 at 50M min/month.",
+   "grade": "inferred",
+   "evidence": "research/2026-10-18/SYNTHESIS.md sections 0, 1, 4; research/2026-10-17/lanes/CORRECTIONS-round2.md section 2"
+  },
+  {
+   "fact": "Gemini 3.1/3.8 Live is not viable on cost: paid meter INR 2.47-3.34 at 1 minute, 4.2-5.7 at 3 minutes, 6.4-12.7 at 10 minutes (every turn re-bills the audio context, no caching); 3.8 talked over the caller on 42% of turns; no India region; 3.1 shuts down 2026-11-17. Meera's 'about INR 1.3 a minute' was a code-constant estimate, not a measurement.",
+   "grade": "measured",
+   "evidence": "research/2026-10-18/SYNTHESIS.md sections 0, 2.1, 6 (g5 paid meter, n=1-2 calls per cell); rejected.2026-10-19.gemini-live-at-rs2; rejected.2026-10-19.maya-1p3"
+  },
+  {
+   "fact": "The Base tier (INR 2.99 ex-GST, 43% margin) assumes a stock Azure neural voice, but round-1 human ratings put Azure-voice stacks at 1.5-4.5 of 10 against 7.0 for Gemini 3.1 Live; the tiers must be re-priced after the default stack is chosen. Computed Gemini-TTS cascade (G-E) COGS is INR 1.47 now and 1.84 after the 2027-01-01 Gemini TTS price doubling, so about INR 2.45 and 3.07 for 40% margin.",
+   "grade": "inferred",
+   "evidence": "context/DIRECTION.md (open.2026-10-20.reprice-tiers, round-1 results); research/2026-10-18/SYNTHESIS.md sections 2.1 and 5; price-for-40% is our arithmetic on the cited COGS"
+  },
+  {
+   "fact": "Per-minute pricing at INR 6-8 loses money at launch for a managed per-renewal insurance service (gross margin -47% to +1%; all-in INR 7.9-8.8 per AI minute once VP-borne escalation, WhatsApp and 1600 carriage are added); per-renewal pricing (INR 50 car, 15 health, 15 life, 20 two-wheeler, INR 15k monthly minimum, 10% unbilled holdout) gives 66.5%/45.3%/33%/12.7% launch margin. The finding assumes a managed service; under self-serve the buyer staffs escalation.",
+   "grade": "inferred",
+   "evidence": "research/2026-10-17/SYNTHESIS-v2.md section 4 (REN-06..13); lanes/l2-economics/round2/findings.md; rejected.2026-10-17.per-minute-launch"
+  },
+  {
+   "fact": "Managed Azure COGS is INR 5.88 per minute at 100k min/month (p10-p90 5.00-6.96) and 3.23 at 1M; managed never reaches INR 2 (floor 2.31 at 50M); forecast managed-stack end-2027 P50 is INR 2.98 with LLM prices flat (1.89 only in the optimistic cut process).",
+   "grade": "inferred",
+   "evidence": "research/2026-10-17/lanes/CORRECTIONS-round2.md sections 2 and 6 (Monte Carlo n=20,000); different scope from the 2026-10-18 cascade COGS"
+  },
+  {
+   "fact": "Human telecaller cost is INR 6-9 per connected minute (pay median INR 17-20k a month, n=1,234 and 3,811 Apna postings; government seat bids INR 36.7k-47.3k a seat-month). Whether AI beats the buyer's own desk depends on due renewals per telecaller (unmeasured) and AI-human persuasion parity (assumed 0.5-1.05).",
+   "grade": "measured",
+   "evidence": "lanes/l3-segments/report.md E28; r2-untouched-raw/findings.md section 2.2; COR section 2; SYNTHESIS-v2.md section 4.2 (REN-15)"
+  },
+  {
+   "fact": "Proposed tiers (2026-10-19): Base INR 2.99 (3.53 incl GST), Plus INR 3.99 (learned memory 2-8k tokens plus post-call pass), Premium INR 6.49 plus INR 3.5 lakh/month per dedicated voice; all below every verified Indian list price. Premium depends on Custom Neural Voice approval (unverified) and gpt-4.1-mini, which retires 2027-04-14.",
+   "grade": "inferred",
+   "evidence": "research/2026-10-18/SYNTHESIS.md section 5; research/2026-10-18/model/results/tiers.csv; decision.2026-10-19.tier-base/plus/premium (status proposed)"
+  },
+  {
+   "fact": "Distribution evidence favours sales-led channels: Bolna self-serve is about INR 4,900 per customer-month (75% of revenue self-serve, about 1,050 customers) while sales-led vendors sit at INR 26k-2.4 lakh; pilots run 2-8 weeks and BFSI production 8-12+ weeks; RBI e-mandate caps AFA-free recurring debit at INR 15,000 (INR 1 lakh for insurance premiums), so larger tickets need invoice and NEFT billing. CPaaS vendors (Exotel, Ozonetel, Gupshup, MyOperator, TTBS) sell their own bots, so they are infrastructure and competitors rather than resellers.",
+   "grade": "inferred",
+   "evidence": "lanes/l4c-incumbents-distribution/report.md sections 1 and 3c; channels.csv; Bolna ARPA is computed from a TechCrunch claim"
+  },
+  {
+   "fact": "Competitor compliance posture: 0 of 6 dashboards put consent, DND or DLT on the campaign form; 0 of 8 vendors ship category-aware windows, an in-call promotion fence, A2P export or a consent ledger; Bolna and Exotel publish a wrong 9-21 window; Exotel says voice needs no DLT (contradicted by primary text). Compliance is only 1.3% of 459 coded Indian complaints, so it is a must-be floor not the wedge.",
+   "grade": "observed",
+   "evidence": "walkthroughs/SYNTHESIS.md section 1; teardown/SYNTHESIS.md sections 2.2 and 3; regulation-segment/report.md RS-16/17/45"
+  },
+  {
+   "fact": "Indian complaint mix (459 coded Indian voice/telephony items): support 114, billing 107, account/UI 99, reliability 71; on 111 low-star incumbent reviews support is 68%, billing/refund 27%, implementation delay 23%. Support, billing and onboarding, not features, drive dissatisfaction.",
+   "grade": "measured",
+   "evidence": "r2-untouched-raw/findings.md section 3 (spot-check 29/40 exact, about 37/40 primary code right); l4c-incumbents-distribution/report.md M2 (n=111)"
+  },
+  {
+   "fact": "Competitors moving into VP's lane: ElevenLabs has an unreleased outbound campaigns product and a Memory (Alpha) tab; SquadStack has gated self-serve and a second brand; Gupshup launched self-serve with owned Indian numbers on 2026-09-04; Tata/TTBS sells outcome-priced Commotion; LeadSquared, Sell.Do and Salesforce (Agentforce Voice in Hindi, 2026-05-19) bundle voice. Seven Indian voice-AI funding rounds in 2026-04..10.",
+   "grade": "vendor-claimed",
+   "evidence": "teardown/SYNTHESIS.md section 4; radar/report.md RAD-01/02/41/49; l4c report section 3a"
+  },
+  {
+   "fact": "No buyer interview result exists in the repo, no call has crossed an Indian phone line, no vendor invoice has been read, and AI-versus-human outcome parity is assumed. Reply gap and Hinglish turn-taking (W3, W4) are unproven for VP: all stacks cut in on 15-42% of turns and every stack took the elderly caller's 2.4 s pause.",
+   "grade": "unknown",
+   "evidence": "context/DIRECTION.md; research/2026-10-18/SYNTHESIS.md section 10; research/2026-10-20/teardown/SYNTHESIS.md section 9; data/discovery/ absent"
+  },
+  {
+   "fact": "Vendor terms bar competitive evaluation or analysis at 5 of 6 vendors read (Retell, Sarvam, ElevenLabs prohibit even plain use; Bolna and Exotel bar building a competing product; Vapi is the exception); the owner overrode terms for the teardown and several vendors train on submitted content by default.",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/terms/terms.md verdict matrix and point 6; directive.2026-10-20.terms-override"
+  }
+ ],
+ "requirements": [
+  {
+   "id": "mrm-01",
+   "theme": "compliance",
+   "requirement": "Per-call category (service, transactional, promotional) set on every campaign and enforced in-call by a code gate that blocks promotion, solicitation, discounts and alternative plans; never an instruction to the model.",
+   "priority": "must",
+   "quote": "research/2026-10-20/teardown/regulation-segment/report.md RS-01/02, M1"
+  },
+  {
+   "id": "mrm-02",
+   "theme": "compliance",
+   "requirement": "AI disclosure, business name and purpose are non-removable on every creation path including templates and copilot output; disclose once, lightly; never deny being an AI.",
+   "priority": "must",
+   "quote": "walkthroughs/SYNTHESIS.md section 5; owner req-47"
+  },
+  {
+   "id": "mrm-03",
+   "theme": "telephony",
+   "requirement": "Number step states series (140, 1600, 1601, declared 10-digit), KYC documents, time and price before any credential; numbers held in the tenant's name (bring-your-own-carrier); Plivo primary rail.",
+   "priority": "must",
+   "quote": "l1-regulation/report.md section 1; walkthroughs/SYNTHESIS.md section 2.12"
+  },
+  {
+   "id": "mrm-04",
+   "theme": "compliance",
+   "requirement": "A2P CLI-range declaration export per tenant and series, ready before 2026-11-18, with number-health monitoring against recipient diversity, short calls and incoming ratio.",
+   "priority": "must",
+   "quote": "RS-08/09; teardown/SYNTHESIS.md section 3"
+  },
+  {
+   "id": "mrm-05",
+   "theme": "compliance",
+   "requirement": "Window engine keyed by category x sector x recipient request in the recipient's local time (promotional 10-21, RBI 08-19, humane service default); never 00:00-23:59.",
+   "priority": "must",
+   "quote": "RS-15/36"
+  },
+  {
+   "id": "mrm-06",
+   "theme": "compliance",
+   "requirement": "One tenant-wide suppression list honoured on batch, campaign, API and single call; in-call opt-out captured by default; attempt caps; opt-out carried across campaigns.",
+   "priority": "must",
+   "quote": "WT section 5 item 18"
+  },
+  {
+   "id": "mrm-07",
+   "theme": "compliance",
+   "requirement": "Consent and inquiry ledger with 7-day, 3-month and contract expiry, evidence export within the operator's 3-business-day verification clock; CRF export when opened to non-banks.",
+   "priority": "strong",
+   "quote": "RS-12/13; wave 2"
+  },
+  {
+   "id": "mrm-08",
+   "theme": "data",
+   "requirement": "DPDP pack: recording announcement, one-sentence purpose, Rule 3 notice link after the call, India-region storage by default, retention chosen at onboarding, PII redaction (Aadhaar, PAN, bank, card) on by default, processor contract and audit trail.",
+   "priority": "must",
+   "quote": "RS-27..32"
+  },
+  {
+   "id": "mrm-09",
+   "theme": "sector",
+   "requirement": "Sector presets over one post-sale core: IRDAI (inform, confirm, hand off; certified-human routing; 10-year India records), RBI (08-19 window, logs, 6-month recordings), utilities/logistics (1601), general (declared numbers).",
+   "priority": "strong",
+   "quote": "RS section 5; SYNTHESIS-v2.md section 3"
+  },
+  {
+   "fact_note": "",
+   "id": "mrm-10",
+   "theme": "trust",
+   "requirement": "Anti-scam trust design on renewal calls: no payment on the call, payment only on the insurer's domain or autopay, verifiable callback on the published number, attempt caps, no refund/bonus/fund-value framing.",
+   "priority": "must",
+   "quote": "r2-untouched-raw/findings.md section 4.1"
+  },
+  {
+   "id": "mrm-11",
+   "theme": "learning",
+   "requirement": "No cross-tenant pooled learning or training on WhatsApp data; memory per tenant and per contact, consented, viewable, editable, deletable.",
+   "priority": "must",
+   "quote": "L1 claim 23; rejected.2026-10-17.cross-tenant-pooling"
+  },
+  {
+   "id": "mrm-12",
+   "theme": "pricing",
+   "requirement": "INR with GST, pulse at most 30 s and stated, one fee line, per-campaign cost estimate before launch, spend caps by workspace and API key, burst opt-in, A2P and WhatsApp cost lines; wallet for small tickets, invoice/NEFT/annual prepay above about INR 15k a month.",
+   "priority": "must",
+   "quote": "WT section 2.15; L4C section 1; RBI e-mandate framework"
+  },
+  {
+   "id": "mrm-13",
+   "theme": "pricing",
+   "requirement": "Stack picker shows India-measured p50/p90 (n and date), INR per minute, supported Indian languages and a Hinglish sample on every row, plus an all-in INR headline including telephony, pulse and turn wait.",
+   "priority": "must",
+   "quote": "decision.2026-10-21.wt-synthesis-stack-picker-all-in"
+  },
+  {
+   "id": "mrm-14",
+   "theme": "pricing",
+   "requirement": "Re-price Base, Plus and Premium after the default voice is chosen; decide the pricing unit (minute, outcome or hybrid) before the blueprint fixes it; INR 2 stays a scale-stage COGS target.",
+   "priority": "must",
+   "quote": "open.2026-10-20.reprice-tiers; SY2 section 4.4"
+  },
+  {
+   "id": "mrm-15",
+   "theme": "architecture",
+   "requirement": "India call path and India storage by default; residency as a contract term for BFSI; keep a self-hosted open-model option for the insurer step (LIC-type bars on foreign-hosted APIs).",
+   "priority": "strong",
+   "quote": "R2R section 2.1; TS section 5"
+  },
+  {
+   "id": "mrm-16",
+   "theme": "measurement",
+   "requirement": "Honest attribution: unbilled 10% holdout, report lift per line only once powered, label learning claims by evidence; LLM outcome extraction at 95% or better on 200 hand-labelled calls before any learning loop.",
+   "priority": "strong",
+   "quote": "SY2 sections 4.2 and 8.1"
+  },
+  {
+   "id": "mrm-17",
+   "theme": "distribution",
+   "requirement": "Start with named-list, founder-led design partners (insurance preset) over CPaaS bring-your-own-bot rails; treat CPaaS, CRM and carriers as infrastructure and rivals; build CRM connectors only after two paying customers ask.",
+   "priority": "strong",
+   "quote": "L4C section 6"
+  }
+ ]
+}

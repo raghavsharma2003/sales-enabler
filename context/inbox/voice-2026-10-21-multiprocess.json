@@ -1,0 +1,58 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Voice runtime across 4 worker processes on the 4-vCPU sandbox: 60 and 90 concurrent phone calls stay under the single-process knee; 90 calls (22-23 per worker) shows lag p99 8.3 ms and 0.16% late frames, against 12.8 ms at 25 calls in one process. Calls-per-host scales with processes",
+   "n": 625100,
+   "method": "product/voice/bench/audio_bench.py --calls 60 90 --seconds 120 --workers 4, Python 3.13, Silero VAD, coding sandbox with 4 vCPU (the load generator shares the cores), 2026-10-21. The harness and fake providers are as in measure.2026-10-21.voice-audio-capacity-sandbox. Runtime: python -m vpvoice.launch with 4 workers, cap 30 each. Tickets go through the launcher front (least-loaded placement). Media goes straight to each worker's port, as nginx would route /w/<i>/; nginx's own cost is not measured. n = outbound frames judged: 156,991 + 234,636 + 233,473 for the front-media run. N=60: placed 15/15/15/15; cpu 176% summed (44-45% per worker, 2.9%/call); RSS 889 MB; loop lag p50/p99/max 0.8/5.4/50.3 ms; 76 frames >20 ms late (0.05%); overhead p50/p99 176/201 ms. N=90: placed 22/23/23/22; cpu 240% (58-62% per worker); 1,182 MB; lag 0.9/8.3/726.6; 368 late (0.16%); overhead 177/368; generator lag p99 2.9 ms. N=90 with media through the front: lag 1.0/9.7/65.6; 154 late (0.07%); overhead 178/215; front process cpu 33%. The 726 ms max is one stall, n=1 per configuration, and it did not recur; cause not isolated. Not measured: the deploy host, real providers, nginx in the path, more than 4 workers.",
+   "path": "product/voice/bench/results/audio-2026-10-21-sandbox.txt",
+   "value": "90 calls on 4 vCPU at 22-23 per process: lag p99 8.3 ms, 0.16% late frames; a Python media hop through the front costs ~0.37% of a core per call"
+  },
+  {
+   "id": "decision.2026-10-21.voice-admission-and-processes",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "The voice runtime caps each process at VP_MAX_CALLS_PER_PROCESS (default 20). Past the cap it refuses tickets at intake with 503 at_capacity, Retry-After and placed:false, before any record, sink or event. A host runs one worker per core (python -m vpvoice.launch). A front places tickets least-loaded, overflows on at_capacity and routes call routes to their owner. Media is routed to workers by the /w/<i>/ prefix (nginx or ingress in production), not SO_REUSEPORT",
+   "rationale": "The audio path is CPU-bound in one Python core per process, with the knee between 25 and 35 calls (measure.2026-10-21.voice-audio-capacity-sandbox). 20 leaves headroom for real providers. SO_REUSEPORT spreads connections at random, but a call's ticket, media socket and carrier webhooks must reach the same process, and idempotency is per process. A refusal before anything is created is safe to resend, so the dialer can treat it as not placed rather than as a failed attempt.",
+   "reverse_if": "the deploy-host bench puts the per-process knee well away from 25 (move the default cap); or VAD batching or a native audio path lifts per-process capacity enough that one process per host suffices; or the ingress cannot route by path prefix (then switch to per-worker ports or a front that proxies media, at ~0.37% of a core per call)"
+  },
+  {
+   "id": "open.2026-10-21.voice-calls-per-host",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "Calls per deploy host. On the sandbox, 4 worker processes carry 90 calls at lag p99 8.3 ms, so it scales with processes (measure.2026-10-21.voice-audio-multiprocess-sandbox). Inference until measured there: about 20-25 per vCPU at the default cap. Unbuilt levers, by expected gain: batch Silero VAD across a process's calls into one onnx run (~24% of CPU today); mu-law by lookup table and a cheaper 8<->16 kHz resampler (~22%); run the VAD only every second window while the caller is silent",
+   "closes_when": "audio_bench.py --workers on the deploy host, with nginx or the ingress in the media path and real providers, gives calls per host"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "to": "measure.2026-10-21.voice-audio-capacity-sandbox",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-21.voice-admission-and-processes",
+   "to": "measure.2026-10-21.voice-audio-capacity-sandbox",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-21.voice-admission-and-processes",
+   "to": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-21.voice-calls-per-host",
+   "to": "measure.2026-10-21.voice-audio-multiprocess-sandbox",
+   "relation": "informed-by"
+  }
+ ],
+ "events": []
+}

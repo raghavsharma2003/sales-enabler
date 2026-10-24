@@ -1,0 +1,8 @@
+Pre-registered 2026-10-24T00:42Z, before the round 4 DEV run (tree 8e3440ae6e4c21e6433294c63a2c8548da6a889a).
+Reference DEV numbers: round 3 (research/2026-10-23/benches-r3/analysis-dev-gpt-4.1-mini.json, the bfa7ee7 contract,
+tree cd94b63, the same 42 DEV ids of splits.json, which is byte-identical in round 4): gpt-4.1-mini outcome 38/42,
+moments 36/36, commitments 11/11. Round 3's DEV misses: wrong_person -> null x2, complaint -> null x1,
+opt_out -> callback x1.
+Stop rule (the integrator's, 2026-10-24): if gpt-4.1-mini DEV outcome is <= 30/42, stop the analysis runs and report
+instead of spending on TEST. Kept from round 3's rule: also stop if moment recall or commitment recall on DEV falls
+more than 4 below round 3's DEV mini (moments < 32/36, commitments < 7/11).

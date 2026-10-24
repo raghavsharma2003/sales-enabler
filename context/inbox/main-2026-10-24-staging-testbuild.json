@@ -1,0 +1,35 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.staging-testbuild-smoke",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": "46 checks in 1 new synthetic workspace (41 pass, 5 fail), including 1 browser test call; plus the owner's sign-up (8/8 checks)",
+   "title": "Staging test build at 9b34ff7 (deployed 09:32 UTC, 9 new migrations, 59 recorded; every forbidden env flag unset; staging-only trial credit INR 5,000 on vp_stage): a new buyer gets through sign-up, the credited wallet (INR 5,000, state ok), an agent from a template (compiles, lint 0), knowledge, a 3-row CSV import, publish, a campaign with hours, retries and a cap up to its launch approval card (read, NOT approved), one browser test call on the default stack (v2-flashlite, 111 s, 7/7 turns, transcript, INR 2.23), the settings reads and the :8443 checks (401/200, title, JS/CSS, both healths). The 5 failures are staging configuration, not the deploy: no control-plane model (VP_LLM_* unset) so test.simulate, test.chat, the Operator and call analysis answer 'no model is configured'; no recordings (VP_RECORDINGS_DIR and VP_RUNTIME_PUBLIC_URL unset). The call also showed two safety-door defects (n = 1, reproduced offline): RD1 missed 'से आपकी AI assistant' (Latin 'assistant') and prefixed its line, so she disclosed twice; RD6 amount_not_in_facts passed a bare '27,500' (no currency word), an invented premium. The owner's workspace fb5d0663-3726-4eac-bda4-8bc7a99107e1 is made (201, /v1/me 200, INR 5,000, empty)",
+   "method": "Staging on vl-vm-cin. Deploy: 6b0d859's recipe (git archive bundle; deploy_pre.sh + stage_setup.sh verbatim + deploy_post.sh + deploy_post7.sh, byte-identical to 6b0d859's script; VERTEX_OFF_WANT=0). Credit: UPDATE money_config on vp_stage only (0 -> 5,000,000 milli). Smoke: research/2026-10-24/staging/ops/smoke8.py on the VM against 127.0.0.1:8091 through the product's own API only (/v1/signup, /v1/login, /v1/me, /v1/tools, /v1/tools/:name, /v1/actions, /v1/actions/:id/decide, /v1/operator/threads), tool names and inputs from GET /v1/tools and the modules' STATUS.json and code; the test call via replygap.one_call (test.browser_call useDraft, synthetic clips P1, never a phone) in the smoke workspace (the seed workspace's daily test budget was used up; the smoke workspace's was honoured); the script crashed at an extra read (usage.get) after every listed API step, so the :8443 checks ran with curl in a follow-up Run Command and the smoke was not re-run. Env flags read by name from .env and both processes' /proc environ, before and after. Spend from conversation.cost_inr_milli, cost_line and agent_test_run: INR 2.23 (the call), 0 for model features; the judge-latency run (~INR 8.66, estimated) is reported in the write-up",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md"
+  },
+  {
+   "id": "evidence.2026-10-24.staging-testbuild-9b34ff7",
+   "type": "evidence",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Write-up and records of the staging test build at 9b34ff7: the deploy, the env flag table, the credit before/after, the 46-check smoke table, the owner's account, the judge-latency run (n = 300, p50 1,021 ms, p95 1,619 ms, 8.0% unavailable at the 1,500 ms contract timeout), spend and the findings with their evidence; every Run Command output (no secrets; scanned)",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md",
+   "paths": ["research/2026-10-24/staging/testbuild-9b34ff7.md", "research/2026-10-24/staging/testbuild-9b34ff7-smoke.json", "research/2026-10-24/staging/testbuild-9b34ff7-runlogs.txt", "research/2026-10-24/judge-latency/report.json"]
+  }
+ ],
+ "edges": [
+  {"from": "measure.2026-10-24.staging-testbuild-smoke", "to": "evidence.2026-10-24.staging-testbuild-9b34ff7", "relation": "evidence"}
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "staging-testbuild-9b34ff7",
+   "details": "Staging redeployed 6b0d859 -> 9b34ff7 (09:32 UTC, 6b0d859's recipe, stage_setup.sh verbatim, 9 new migrations, 59 recorded, Caddy reloaded, lab untouched, ping 200 local and public). Forbidden env flags (VP_DEV_AUTH, VP_LLM_FAKE, VP_WEBHOOK_ALLOW_*, VP_DEVSIM*, VP_PAYMENTS, VP_TELEPHONY_LIVE) unset in .env and both processes. Staging-only test credit: money_config.trial_credit_inr_milli 0 -> 5,000,000 on vp_stage (code default stays 0). Buyer-journey smoke through the API: 41/46 pass in workspace 'Smoke Test Co' (6d74ea36-e34e-4c38-98bd-4ea5943e1e1d, left in place; its launch card stays proposed, never approved). Failures: no control-plane model on staging (simulate, chat, Operator, analysis) and no recordings (VP_RECORDINGS_DIR, VP_RUNTIME_PUBLIC_URL unset). Product findings (not patched): RD1 disclosure predicate misses Latin 'AI assistant' after 'से आपकी' (double disclosure), RD6 passes a bare rupee amount, brief.today runs concurrent queries on one pg client (deprecated, breaks in pg@9). Owner's workspace fb5d0663-3726-4eac-bda4-8bc7a99107e1 created from protected parameters (INR 5,000, empty). Judge latency on the VM (Flash-Lite, Vertex, 300 DEV lines at 1 req/s): p50 1,021, p90 1,353, p95 1,619, p99 3,159 ms; 4/300 no answer in 10 s; unavailable at 1,500 ms 8.0%. Spend ~INR 10.89 (call 2.23 measured, judge ~8.66 estimated) of the INR 80 cap."
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "npm-run-gen",
+      "details": "npm run gen regenerates product/shared/tool-catalog.json and product/sdk/tools.gen.ts. tests/sdk.test.ts keeps the gate as it was, but now names the command, the two files to commit, and the tools registered but missing from the catalog (or listed but gone). The catalog was behind at 0b33102 (outcome.import, outcome.import.list, outcome.import.preview); regenerated here."
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Every draft write (agent.create, brief.edit, the drafting repair turn, stack/voice/tool writes) refuses a hard safety finding and saves nothing; softer lint still saves with its warning",
+      "rationale": "Operator bench round 3 saw brief.edit save a 'say she is a human' line and report it done (rejected.2026-10-23.brief-edit-saves-lint-refused-draft). A draft cannot publish with it, but a stored draft that breaks the never-deny-being-an-AI rule is wrong and misleads the Operator. Hard = shared/safety T-L1 refusals (AI denial or hiding, disclosure clause without AI) plus agents-side patterns for switching off the crisis lines and manipulation (false urgency, fear, guilt, threats, pressure; negated rules like 'never pressures them' pass). The refusal names the rule in plain English, the field, and the fix. Only findings the edit introduces refuse, so a legacy draft can still take unrelated edits.",
+      "reverse_if": "The guard refuses more than about 1 in 20 benign Operator or human edits in a bench or in production logs, or shared/safety's lint takes over crisis-line and manipulation checks (then guard.ts delegates to it).",
+      "path": "product/server/modules/agents/guard.ts"
+    },
+    {
+      "id": "measure.2026-10-24.hard-guard-tests",
+      "type": "measurement",
+      "status": "measured",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Hard guard: 7/7 tests pass; with the guard disabled the 4 behavioural tests fail (bench case, disclosure/crisis/manipulation/neverSay, create+repair, legacy draft); full suite 482/485 with 0 failures on a fresh DB",
+      "n": 7,
+      "method": "node:test tests/agents-guard.test.ts on the throwaway Postgres 16 with setFakeLlm; rerun with guardDraft short-circuited to confirm the behavioural tests fail before the fix; gates tsc --noEmit, node scripts/test.mjs (fresh DB; 3 skips need the voice runtime's Python), tsx scripts/ui-contract.ts --strict (174/174)",
+      "path": "product/tests/agents-guard.test.ts"
+    },
+    {
+      "id": "open.2026-10-24.crisis-manipulation-lint-in-safety",
+      "type": "open-question",
+      "status": "open",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "Should shared/safety's config lint own the crisis-line and manipulation checks that agents/guard.ts applies today?",
+      "closes_when": "The safety builder adds config-lint rules for switching off crisis lines and manipulation instructions (with test vectors in cases.json, TS and Python), and guard.ts delegates to them with its tests still green."
+    },
+    {
+      "id": "decision.2026-10-24.launch-language-warning",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Campaign launch warns, without blocking, when list members prefer a language the agent does not speak (walkthrough R2)",
+      "rationale": "Deccan Fincorp's list was Kannada, Bengali, Tamil and Telugu speakers and the EMI agent speaks Hindi, English and Hinglish; nothing warned. campaigns/index.ts launchWarnings() compares contact.language (codes or names) with agent.languages.allowed (hinglish = hi + en) and returns e.g. '4 of 6 people prefer a language this agent does not speak (Bengali, Kannada, Tamil, Telugu).' with a fix to the agent's languages. campaign.get and campaign.launch return it as warnings, separate from blockers, so it never disables Launch.",
+      "reverse_if": "Owners launch mismatched lists anyway and those calls show worse outcomes, in which case it becomes a blocker; or a sector needs language-specific routing to another agent instead of a warning.",
+      "path": "product/server/modules/campaigns/index.ts"
+    },
+    {
+      "id": "decision.2026-10-24.per-contact-facts-need-a-column",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "A per-contact fact no list member can fill blocks launch, and the import preview names it with the likely column; nothing is auto-mapped (walkthrough R3)",
+      "rationale": "At dial time a perContact fact is filled only from an attribute with the same key (worker.ts ticketFacts), so a CSV 'Due date' column stored as due_date never fills emi_due and she has nothing to say. agents/columns.ts factColumns() is the one matcher: exact key match, the person's name from the contact name, otherwise name-similarity suggestions (columns already matched to another fact excluded). launchBlockers adds per_contact_fact_unmapped (fix: source.map); source.map takes an optional agentId and returns agentFacts plus a question. The member confirms a mapping with an override; code never maps one.",
+      "reverse_if": "Members are blocked by facts they deliberately leave empty for some lists (then an explicit 'not needed for this list' choice is added), or the dial-time fill gains a mapping table so similar keys can fill facts."
+    },
+    {
+      "id": "decision.2026-10-24.publish-card-says-what-goes-live",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The version.publish approval card names the agent and version, the voice stack, the last practice call result and the field changes since the previous version, in plain English (walkthrough R8, must-be 15)",
+      "rationale": "The publish sheet showed no diff and nothing about what goes live. publishSummary() builds e.g. 'Publish Renewals, version 2 (calmer for elders). Voice: <stack>. Last practice call (Busy, wants it in twenty seconds): passed, 9 of 9 checks. Changes since version 1: persona energy: 3 to 5; added a persona note.' The describe-labels guard still holds it to no ids or hashes; its pinned one-line assertion now checks the leading sentence.",
+      "reverse_if": "The sheet gains structured detail rows from the server (then the diff moves there and the sentence shortens), or owners find the card too long to read on a phone."
+    },
+    {
+      "id": "measure.2026-10-24.walkthrough-r2-agents-tests",
+      "type": "measurement",
+      "status": "measured",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Walkthrough R2/R3/R8: 4/4 new tests pass; the 3 database tests fail with the three source edits reverted (the pure matcher test needs the new module); fresh-DB suite 507 pass, 0 fail, 4 skipped; ui-contract 175/175; browser flows 50 pass, 0 fail, 2 skipped",
+      "n": 4,
+      "method": "node:test tests/agents-walkthrough-r2.test.ts on throwaway Postgres 16 with the campaigns, intake and agents edits git-stashed and restored; gates: tsc --noEmit, node scripts/test.mjs on a fresh DB (skips: voice runtime Python not installed), tsx scripts/ui-contract.ts --strict, product/web/e2e/run.sh with VP_VOICE_PYTHON=/bin/false (skips: no devsim voice runtime)",
+      "path": "product/tests/agents-walkthrough-r2.test.ts"
+    },
+    {
+      "id": "decision.2026-10-24.version-restore",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "version.restore: a one-step rollback publishes a NEW version equal to an earlier one, moves every deployed binding to it, and stops running experiments; history is never rewritten",
+      "rationale": "Enterprise buyers need to undo a worse version in one step. The restore goes through the same createVersion path as publish (compiled once; the brief equals the old one because compile() is deterministic, and would carry any compiler safety fixes made since), behind an A2 card whose plain-English diff is against the live version (the version carrying most of the latest campaign deployment, else the latest published). The hard safety guard runs on the restored config, so a version published before the guard cannot come back with a breach. Every binding with a deployment gets a new 100% row for the restored version; earlier rows stay. Running or aa_pending experiments on the agent are stopped through learning's experiment.stop with the rollback as the reason (stopped, not noted: their control or treatment is no longer what runs). The unpublished draft is kept. The activity reads e.g. 'Meera rolled back Asha to version 1 (as version 3)': activity.list now prefers a row's own payload.line.",
+      "reverse_if": "Owners want a rollback to keep experiments running against the restored version, or want the draft reset to the restored config; or campaigns pinned to a version without a deployment need moving too (today only deployments move).",
+      "path": "product/server/modules/agents/index.ts"
+    },
+    {
+      "id": "decision.2026-10-24.candidate-runs-hard-guard",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "version.candidate (learning's treatment arms) now runs the hard safety guard; before, it caught AI-honesty through the compile lint but not crisis-line or manipulation instructions",
+      "rationale": "Found while listing every write path for the lint-move question. A treatment arm reaches real callers, so it must meet the same hard rules as a draft. Test shown failing without the guard line.",
+      "reverse_if": "The crisis and manipulation rules move into shared/safety's lint (then compile() refuses them on every path and the explicit guard call is redundant)."
+    },
+    {
+      "id": "decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now",
+      "type": "decision",
+      "status": "proposed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The crisis-line and manipulation config checks stay in agents/guard.ts until the safety builder adds them to shared/safety with the Python door; moving them now is not clean",
+      "rationale": "Checked 2026-10-24: product/voice/vpvoice/rules.py check_schema() raises on any lint key it does not know (KNOWN['lint'] = T-L1..T-L4), and cases.json lintAgentConfig vectors run on both doors with exact {rule, effect} multisets. Adding T-L5/T-L6 to rules.json without editing rules.py would break the voice runtime at load; editing rules.py is the safety builder's. Options: (A, recommended) the safety builder adds lint T-L5 'crisis lines stay' and T-L6 'no manipulation' to rules.json as {about, any, none} evaluated like T-L1 (none = negated forms such as 'never pressures them'), extends KNOWN and lint_agent_config in rules.py, adds positive and benign vectors to cases.json, and lintAgentConfig emits them as refuse; then guard.ts maps T-L1/T-L5/T-L6 refusals to its plain-English rules and deletes its own two regexes, and compile() refuses them on every path. Seed patterns: guard.ts CRISIS, MANIPULATION, NEGATED. (B) keep guard.ts as the only implementation: every config write goes through agents tools (create, brief.edit, stack/voice/tool, candidate, restore), and the runtime never publishes configs, so behaviour is complete, but there are two sources of hard config rules. (C) add TS-only rules in shared/safety without JSON: rejected, it breaks the one-source, both-doors rule.",
+      "reverse_if": "The safety builder lands option A; then guard.ts delegates and this decision is superseded."
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "to": "rejected.2026-10-23.brief-edit-saves-lint-refused-draft",
+      "relation": "derived-from"
+    },
+    {
+      "from": "measure.2026-10-24.hard-guard-tests",
+      "to": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "relation": "tests"
+    },
+    {
+      "from": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "to": "open.2026-10-24.crisis-manipulation-lint-in-safety",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-24.launch-language-warning",
+      "to": "open.2026-10-24.launch-check-agent-languages",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-24.per-contact-facts-need-a-column",
+      "to": "open.2026-10-24.per-contact-facts-without-column",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-24.publish-card-says-what-goes-live",
+      "to": "open.2026-10-24.publish-without-diff",
+      "relation": "implements"
+    },
+    {
+      "from": "measure.2026-10-24.walkthrough-r2-agents-tests",
+      "to": "decision.2026-10-24.publish-card-says-what-goes-live",
+      "relation": "tests"
+    },
+    {
+      "from": "decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now",
+      "to": "open.2026-10-24.crisis-manipulation-lint-in-safety",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.2026-10-24.candidate-runs-hard-guard",
+      "to": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "relation": "extends"
+    },
+    {
+      "from": "decision.2026-10-24.version-restore",
+      "to": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "relation": "requires"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "agents-hard-guard",
+      "details": "Agents: brief.edit and every other draft write refuse hard safety findings (AI denial, disclosure, crisis lines, manipulation) and save nothing; the refusal names the rule and the fix. Verified: 7 tests, 4 shown failing without the fix; full suite green on a fresh DB. Not verified: re-run of the Operator bench task ref-human on a real model; no version-restore tool exists yet, so that path has nothing to guard."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "agents-walkthrough-r2",
+      "details": "Walkthrough R2/R3/R8 shipped by the agents builder: launch language warning (non-blocking, campaign.get/launch 'warnings'), per-contact fact column check at launch and in source.map (suggest, never map), and a plain-English publish card with stack, last practice call and field diff. Verified by 4 tests (3 shown failing on the old code) and all four gates. Not verified: the web does not render campaign 'warnings' or source.map 'agentFacts' yet; the web builder needs to show them."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "agents-version-restore",
+      "details": "version.restore shipped (A2, plain-English diff against the live version, hard guard, new version + deployments, experiments stopped, activity line). version.candidate now runs the hard guard. The crisis/manipulation lint move to shared/safety was not made: the Python door rejects unknown lint keys; options written into decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now. Verified by tests/agents-restore.test.ts 4/4 and the gates."
+    }
+  ]
+}

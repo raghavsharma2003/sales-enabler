@@ -1,0 +1,4 @@
+config,responses_with_usage,computed_usd_from_tokens_x_list_price,openrouter_reported_usd,ratio_reported_over_computed
+C3_az_or_azhd,102,0.021721,0.021721,1.0
+C6_gtl_or_azneural,105,0.021639,0.021639,1.0
+C6_gtl_or_azneural+gatedSTT,48,0.009791,0.009791,1.0

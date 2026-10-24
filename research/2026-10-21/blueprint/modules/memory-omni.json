@@ -1,0 +1,469 @@
+{
+ "id": "memory-omni",
+ "screens": [
+  {
+   "name": "Contact (person view)",
+   "purpose": "One place to see who the person is, what she knows about them and why, what is still open, and to edit or forget any of it.",
+   "layout": "Desktop:\n- identity bar across the top;\n- left column: 'She knows', open commitments, the consent and suppression ledger;\n- centre: the cross-channel timeline;\n- right rail: the Facts table and 'Next call preview'.\nThe Talk to VP panel docks on the right and knows the contact.\nPhone: identity bar, then tabs Knows / Timeline / Facts / Privacy.",
+   "elements": [
+    "Identity bar: 'Sunita Verma · Motor policy MTR-48213 · Renewal due 05 Nov · ₹12,400 (policy system, updated 2 h ago)'.",
+    "Identifier chips: 'Phone •••• 4210 · tenant CSV · identity confirmed on call 14 Oct', 'WhatsApp linked', 'Policy no. · system'.",
+    "Identity-bar actions: Call now (passes the one dial gate), Forget…, Export (audited, watermarked).",
+    "Consent and suppression chips: 'Service calls: contract basis s.7(a)', 'Memory: on · service purpose', 'WhatsApp opt-in 12 Oct', 'Not suppressed'.",
+    "'She knows' card: PreferenceView chips, each with a source icon, the quote on hover, a play button and Undo for 7 days.",
+    "'She knows' chips: 'Bhasha: Hindi — \"mujhse Hindi mein baat kijiye\" ▶ 0:42 · 14 Oct', 'Aap', 'Dheere (unhurried preset)', 'Shaam 6 ke baad', 'Link WhatsApp pe', 'Naam: Sunita ji'.",
+    "Open commitments: 'Sunita: renewal pay by 05 Nov · amount from policy system ₹12,400 · payment link opened 15 Oct 19:12 (leading indicator)' and 'Company: callback Thu after 6 pm · FollowUp scheduled'.",
+    "Heard: 'Price concern · 14 Oct ▶'.",
+    "Heard: 'Worried it might be a scam call · 14 Oct ▶'. Note: 'she leads with your published callback number and never asks for payment on the call'.",
+    "Timeline, grouped by day, filter chips Calls · WhatsApp · SMS · Email · App · Payments · System.",
+    "Timeline rows: 'Call 14 Oct 18:22 · 2m41s · promise_to_pay ▶', 'WhatsApp renewal link sent · opened', 'SMS notice delivered (Rule 3)', 'Imported from Renewals_Nov.xlsx row 214 · receipt R-118'.",
+    "Facts table columns: type, key, value, quote, source, authority, purpose, expires, status.",
+    "Amber conflict row: 'Caller said premium \"9 hazaar\" · system says ₹12,400 · she speaks the system value · Review'.",
+    "Next call preview: 'Renewal reminder · memory brief 412 / 1,200 bytes · ≈ ₹0.02 this call'.",
+    "Next call preview lists included and excluded chips with reasons, e.g. 'objection.price: included', 'stated_fact.salary_day: not on your remembered list'."
+   ],
+   "states": [
+    "New contact: 'Abhi tak koi baat nahi hui. The first call will use: name, policy, due date.'",
+    "Memory off for this purpose: grey chips and 'Memory is off for Renewal reminders · turn on (≈ ₹0.05 per call)'.",
+    "Suppressed: red band 'Do not call · she said \"dobara call mat karna\" on 14 Oct ▶ · only Compliance can lift this'.",
+    "Shared number: amber band 'This number is shared by 2 people · personal memory unlocks after identity is confirmed in the call'.",
+    "Tombstoned: only the tombstone receipt; no personal data rendered.",
+    "Stale record data: 'Due date from policy system is 3 days old, max age 24 h · calls paused for this contact'.",
+    "Loading: a skeleton that names what is loading.",
+    "Viewer role: PII masked, with who can see it.",
+    "Failed: the cause plus Retry."
+   ],
+   "beats": "Retell's contact is a phone number, a DNC flag and one rewritten memory text. Synthflow lists summaries inside a memory group. ElevenLabs has no contact at all. None of them:\n- shows the person's own words or plays the moment;\n- separates what the person said from what the system says;\n- shows authority or purpose;\n- previews exactly what the next call will know and cost."
+  },
+  {
+   "name": "Memory review inbox",
+   "purpose": "One-tap review of the facts that are risky to get wrong (commitments, corrections, amounts, avoid-topics, custom keys) before any call uses them.",
+   "layout": "Desktop:\n- left: a list grouped by call, newest first, with type filters;\n- right: detail with the audio clip, the quote highlighted inside a three-turn transcript excerpt, the proposed key and value, conflicts, and actions;\n- top strip: counts, plus the earned-autonomy meter per key.\nPhone: a card stack. Tap to play; swipe to approve or reject.",
+   "elements": [
+    "Top strip: '14 to review · 6 commitments · 3 corrections · 5 stated facts · oldest 2 days'.",
+    "Card header: 'Ravi Kumar · Call 21 Oct 11:04 · Lending pre-due'.",
+    "Card quote: '15 tareekh tak EMI daal dunga' ▶ 1:12.",
+    "Card proposal: commitment.customer.pay_by = 15 Nov; amount = from the EMI schedule, ₹8,250. Actions: Approve · Edit · Reject · Keep as feedback.",
+    "Refusal-guard card: '\"Follow-up ki zaroorat nahi\" cannot become a callback. Saved as feedback. Record it as an opt-out instead?'",
+    "Minimisation note: 'Salary day was mentioned: not on your remembered list · add key?'",
+    "Earned-autonomy meter: 'commitment.customer.pay_by · 97 of 100 approved unedited · eligible for auto-apply · needs Owner OK'.",
+    "Bulk action: 'Approve 4 similar (same key, quote verified)'.",
+    "Keyboard: A approve, E edit, R reject, Space play."
+   ],
+   "states": [
+    "Empty: 'Sab clear. Next batch after today's calls.'",
+    "Expired unreviewed: '3 proposals expired after 14 days: not used in any call.'",
+    "Conflict: the system value and the caller's value side by side.",
+    "Audio past retention: 'Recording deleted under the 90-day policy; quote and transcript kept until day 180.'",
+    "Autonomy revoked: 'Auto-apply paused for pay_by: the audit refuted 3 of 60 (5%).'",
+    "Viewer role: read-only, PII masked."
+   ],
+   "beats": "Retell rewrites memory with no human review. SquadStack's extraction points have no review screen in its bundles. ElevenLabs Architect proposes agent edits, not facts about a person. No vendor:\n- plays the exact moment;\n- turns refusals into opt-outs deterministically;\n- earns autonomy per key from measured review accuracy."
+  },
+  {
+   "name": "What she remembers (memory policy per agent purpose)",
+   "purpose": "Decide in plain words what she may remember, how each item is applied, how long it is kept and what it costs. Set it by chat or on the page; nothing publishes from a click.",
+   "layout": "- Header: the memory toggle and its cost.\n- Three columns of key chips: Instant / Auto with undo / Needs review.\n- Below: a custom key editor (up to 20), the retention table, purpose binding and the locked never-stored list.\n- Right: a sample-brief preview on a synthetic contact, with a byte meter and the MEM-SIM result.\n- Talk to VP is docked.",
+   "elements": [
+    "Toggle: 'Memory for Renewal reminders: On · ≈ ₹0.05 per connected call (₹0.02/min) · included in Plus'.",
+    "Instant: 'Opt-out (calls, WhatsApp, SMS)', 'Forget my data'.",
+    "Auto with undo: 'Language', 'Script', 'Aap/Tum', 'Name to use', 'Pace', 'Preferred time', 'Channel', 'Objections heard'.",
+    "Needs review: 'Promise to pay', 'Callback request', 'Corrections', 'Avoid topic', plus custom keys.",
+    "Custom key editor rows: 'Vehicle sold? (yes/no)', 'Prefers branch visit (yes/no)', each with a type and a synthetic example quote.",
+    "Retention: 'Preferences 12 months after last said · Commitments 30 days after due · Objections 90 days · Transcripts 180 days · Recordings 90 days'.",
+    "Locked never-stored list, each item with a one-line why: 'What she said herself', 'Mood or personality scores', 'Age, religion, caste or income guesses', 'Accent guessed from the number', 'OTP, card, Aadhaar, PAN'.",
+    "Chat example: 'yaad rakhna kisko shaam ko call karna pasand hai'. Reply card: 'Preferred time is already remembered (auto with undo). Nothing to change.'",
+    "Preview: 'Brief for synthetic contact: 438 / 1,200 bytes'.",
+    "Test result: 'MEM-SIM: recall 197/200 (98.5%) · ignored 3/200 · leaks 0 · refusal breaches 0 ✓'.",
+    "Unsaved-changes marker; Publish opens a diff card for approval."
+   ],
+   "states": [
+    "Off: explains what changes and what still works ('opt-outs are always honoured').",
+    "Not on plan: 'Memory is in Plus', with the INR price.",
+    "Over budget: 'Brief would be 1,380 bytes, over the 1,200 cap: lower 2 keys or remove one.' Publish is blocked and the section is named.",
+    "Simulation failing: 'Publish blocked: recall 91%, below 95% · see 18 failing journeys'.",
+    "Live adherence alarm: 'Language ignored on 7 of 112 calls this week (6%): investigate'."
+   ],
+   "beats": "Retell offers two toggles and a per-run price. ElevenLabs offers minimal/balanced/maximum plus retention days, behind a 403 gate. SquadStack claims 20 extraction points without tiers. VP adds:\n- risk tiers per key and a purpose binding;\n- retention per class and a locked never-stored list;\n- a live byte-and-rupee preview;\n- a simulation gate before publish."
+  },
+  {
+   "name": "Your data (sources hub)",
+   "purpose": "See every source of truth: what VP takes from it, who wins a conflict, how fresh each source is, and what was ignored by design.",
+   "layout": "- A grid of source cards with health dots.\n- A receipts table.\n- An authority matrix.\n- An 'Ignored by design' panel.\n- Add a source from a drop zone or by chat.\nPhone: a card list, with the matrix collapsed.",
+   "elements": [
+    "'Renewals_Nov.xlsx · 1,240 rows · 1,219 ready · 12 rejected · 9 suppressed · receipt R-118 · 21 Oct 10:02'.",
+    "'Google Sheet \"Due list\" · syncs hourly · last 10:00 · +14 new · 3 changed'.",
+    "'LeadSquared · connected · 3,412 contacts · write-back on · healthy'.",
+    "'Razorpay · payment events · 212 paid since upload (won't be called)'.",
+    "'Policy system (SFTP nightly) · authority 100 · last 02:00'.",
+    "'WhatsApp Business · 38 conversations this week · 24 h window only'.",
+    "'Website · 23 pages → 41 approved knowledge facts (company brain)'.",
+    "Authority matrix: 'Due date: Policy system > CRM > Upload'; 'Language: Customer said > CRM field > Upload'.",
+    "Ignored by design: 'Aadhaar column found in Renewals_Nov.xlsx: not imported (not needed for renewal reminders)'."
+   ],
+   "states": [
+    "Connector error: 'LeadSquared token expired 20 Oct · Reconnect · 14 write-backs waiting; unknown results are not retried automatically.'",
+    "Stale: 'Policy system last synced 3 days ago, max age 24 h: due dates marked stale; 86 calls paused.'",
+    "Never connected: 'Connect your CRM. Tell us which one: we build the connectors two paying customers need.'",
+    "Syncing: progress and estimated time.",
+    "Empty: one action, 'Drop a file or talk to VP'."
+   ],
+   "beats": "Retell lists CRM integrations without authority or freshness. SquadStack's lead API needs an IP whitelist and has no public docs. ElevenLabs imports a CSV per batch. No vendor shows who wins a conflict, how stale a value is, or what was deliberately not taken."
+  },
+  {
+   "name": "Fire an agent on any data (Talk to VP flow)",
+   "purpose": "Turn any dropped data into a launch-ready audience in minutes. VP's agents do the work; the client answers at most three questions.",
+   "layout": "A full-height Talk to VP thread. Each step is a live card that deep-links to the real object (receipt, audience, campaign draft). Phone-first.",
+   "elements": [
+    "User drops 'Nov_renewals.xlsx' and says 'isko fire karo'.",
+    "Card 1, classification: 'Ye customers ki list hai (people data) · 1,240 rows · company knowledge mein nahi jayegi'.",
+    "Card 2, mapping: Name, Mobile, Policy No, Expiry, Premium and Language mapped. One question: 'Expiry mein do formats hain (DD/MM aur MM/DD). DD/MM maan loon?' [Haan] [Nahi].",
+    "Card 3, clean result: '37 numbers theek kiye · 12 reject (reasons) · 9 opted-out suppressed · 3 matched erased people (blocked) · 212 already paid per Razorpay'.",
+    "Card 4, memory: '418 people have remembered preferences (language, time); she will use them'.",
+    "Card 5, fire: 'Renewal reminder (service call) · 1,007 people · 10:00–19:00 their time · cost range · Open launch card →'."
+   ],
+   "states": [
+    "Mixed file: 'Found a customer table on page 3 of the brochure: kept out of the company brain. Import it as contacts?'",
+    "Unparseable: reason and fix ('Password-protected file: export it as CSV').",
+    "Promotional job without consent: rows held as HELD_PROMO_NO_CONSENT, with a reason.",
+    "Large file: progress with an estimated time.",
+    "Connector needed: 'This looks like a LeadSquared export. Connect LeadSquared for live sync?'"
+   ],
+   "beats": "ElevenLabs shows a CSV contract. Retell accepts a 50 MB upload. Relay mapped 4 columns by AI in about 4.2 s. None of them:\n- classifies the input as people, knowledge or events;\n- checks payment freshness;\n- carries tombstones and memory into the audience;\n- asks only the questions that change the call."
+  },
+  {
+   "name": "Privacy and forget (Compliance centre)",
+   "purpose": "Run DPDP requests and retention with proof, so forget follows the person everywhere and nothing comes back on the next import.",
+   "layout": "- Left: the request queue.\n- Centre: the request detail, with the intent evidence and a per-surface execution checklist.\n- Right: the retention dashboard and the tombstone counter.\nPhone: queue, then detail.",
+   "elements": [
+    "Request: 'Ravi Kumar asked on call 21 Oct 11:06: \"mera saara data delete kar do\" ▶ · verified human intent (delete word + object word) · scope: Erase me'.",
+    "Checklist: 'Facts 12 ✓ · Transcripts 4 ✓ · Recordings 3 ✓ · WhatsApp 2 ✓ · Cached briefs ✓ · LeadSquared delete: confirmed ✓ · Tombstone ✓ · Suppression ✓ (he asked) · SMS receipt ✓'.",
+    "Completion: 'completed in 3 h 12 m (SLO 72 h)'.",
+    "Retention: 'Recordings older than 90 days purged nightly: 1,204 this week'.",
+    "Tombstones: '37 · 3 re-import rows blocked in Renewals_Nov.xlsx'."
+   ],
+   "states": [
+    "Legal hold: 'Policy call records retained under the sector rule (counsel); memory erased.'",
+    "Unverified request: 'Asked on WhatsApp from an unlinked number · verify by OTP before executing.'",
+    "Surface failed or unknown: 'CRM delete result unknown · not retried automatically · task created.'",
+    "Operator-initiated forget: a 7-day undo window. Person-requested erasure: no undo."
+   ],
+   "beats": "ElevenLabs offers a zero-retention mode and retention days. Retell offers retention of 1-730 days. Nobody executes a person-level forget across channels and the CRM, with tombstones that stop resurrection and a receipt to the person."
+  },
+  {
+   "name": "Company brain",
+   "purpose": "What she knows about the company, approved span by span and kept apart from customer data.",
+   "layout": "- A sources list.\n- Proposals with highlighted spans and Approve buttons.\n- Approved knowledge cards.\n- An Offering data table for prices and dates.\n- Gaps found in calls.",
+   "elements": [
+    "Proposal: 'acmeinsure.in/motor-renewal: \"NCB 20% tak carry hota hai\" → NCB carries over on renewal · span ✓ · Approve'.",
+    "Offering data: 'Premium: comes from the policy system per customer, never typed here'.",
+    "Gap: '12 callers asked \"grace period kitna hai?\" · no approved answer · she said she would check and created a FollowUp · Add answer'.",
+    "Banner: 'No customer data is stored here'."
+   ],
+   "states": [
+    "Personal data detected: excluded, with the page number named.",
+    "Stale source: 'Website changed since approval: 3 facts need a re-check.'",
+    "Empty: 'Paste your website or drop a brochure.'"
+   ],
+   "beats": "Retell and ElevenLabs index pages and files for retrieval with no span-level human approval and no personal-data fence. Relay's evidence-span intake had the right idea and is carried forward as a concept."
+  },
+  {
+   "name": "My Data (person-facing, v2)",
+   "purpose": "Let the person who was called see what a business remembers about them and erase it. This answers DPDP rights and the fear of scam calls.",
+   "layout": "A tenant-branded mobile page, reached from the Rule 3 notice link. OTP to the number on file. Hindi/English toggle. One list and two buttons.",
+   "elements": [
+    "Heading: 'Acme Insurance aapke baare mein ye yaad rakhta hai'.",
+    "List: 'Bhasha: Hindi', 'Call ka samay: shaam 6 ke baad', 'Renewal ka vaada: 5 Nov tak'.",
+    "Buttons: 'Bhool jaiye' (forget memory), 'Mujhe call mat kijiye' (opt-out).",
+    "The tenant's grievance contact.",
+    "Footer: 'AI assistant ki madad se. Recording 90 din tak rakhi jaati hai.'"
+   ],
+   "states": [
+    "OTP failed or expired.",
+    "Nothing remembered: 'Kuch yaad nahi rakha gaya.'",
+    "Request done: a receipt with the time."
+   ],
+   "beats": "No vendor gives the person who was called any view of, or control over, what is remembered. DPDP core duties start around 2027-05-13."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Cross-call memory model",
+   "best_competitor": "Retell",
+   "their_best": "One model-rewritten brief per phone number, 2,000 characters or less. The update prompt keeps only what changes behaviour, drops resolved items, guesses no sentiment and treats the transcript as data. Read ON, save OFF.",
+   "vp_better_how": "A ledger of typed facts. Each fact carries the caller's exact quote, span, audio offset, purpose, basis and expiry. The brief is compiled per call from approved facts, so nothing drifts, and every item can be played, edited or forgotten.",
+   "evidence": "[O] research/2026-10-20/account-phase/retell/report.md l.84; evidence.2026-10-20.retell-v2-memory-learning; rejected.2026-10-20.raw-fact-memory"
+  },
+  {
+   "dimension": "Memory cost and its visibility",
+   "best_competitor": "Retell",
+   "their_best": "Price at the toggle: save to memory costs USD 0.005 per run (INR 0.475 at FX 95).",
+   "vp_better_how": "Computed at about INR 0.06-0.15 per connected 3-minute call, because extraction rides the existing analysis pass. The INR price is shown at the toggle, and a next-call preview shows bytes and rupees per contact. To be confirmed on real meters.",
+   "evidence": "[O] research/2026-10-21/walkthroughs/retell/report.md defaults ('Save conversation to memory OFF ($0.005 per run)'); [C] data/blueprint/memory-omni-defaults.json cost_inr_per_3min_connected_call_C"
+  },
+  {
+   "dimension": "Cross-channel memory",
+   "best_competitor": "Synthflow",
+   "their_best": "Memory Groups summarise each interaction and share it across voice, SMS and WhatsApp agents.",
+   "vp_better_how": "One contact id across channels, with exact-match linking and shared-number detection. Unverified senders are feedback-only. Every channel episode passes the same quote, consent and refusal gates. WhatsApp data stays tenant-exclusive (Meta s.4.7).",
+   "evidence": "[O] data/teardown/synthflow/docs-md/memory.md ('Cross-channel memory is matched by phone number'); docs/learning-automation-v7.md l.26"
+  },
+  {
+   "dimension": "What gets extracted",
+   "best_competitor": "SquadStack (claimed)",
+   "their_best": "Up to 20 plain-language extraction points, Refresh or Rolling History modes, and pass-through or AI-summarised briefing.",
+   "vp_better_how": "Typed default keys plus up to 20 custom keys. Each key has a risk tier, retention and purpose. There is a locked never-stored list (no sentiment), and no sentence-shaped 'suggested opening line', which would be recited. It is shipped, not marketed: SquadStack's code shows intra-call memory only.",
+   "evidence": "[V] data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_introducing-persistent-memory.txt l.104-125; [O] evidence.2026-10-20.squadstack-v2-learning-memory"
+  },
+  {
+   "dimension": "Identity keying",
+   "best_competitor": "Retell",
+   "their_best": "A first-class contact object, keyed by phone, with a DNC flag and custom fields.",
+   "vp_better_how": "A contact id with typed identifiers and four verification levels. Exact match only. Shared family numbers stay separate people, and personal memory waits for identity confirmation in the call. ElevenLabs keys to a browser fingerprint; Synthflow keys to the phone.",
+   "evidence": "[O] research/2026-10-20/account-phase/retell/report.md; evidence.2026-10-20.elevenlabs-v2-memory-loop (FingerprintJS user_id); data/blueprint/campaigns-module-defaults.json dedupe"
+  },
+  {
+   "dimension": "Indian number hygiene on contacts",
+   "best_competitor": "Retell",
+   "their_best": "Contact create with exact-string duplicate refusal.",
+   "vp_better_how": "India-default E.164 with cross-format dedupe via the shared normaliser. VP never guesses a foreign country. Pass bar: 48 of 50 messy rows right in under 5 minutes (W2).",
+   "evidence": "[M] measure.2026-10-20.acct-retell-contact-number-handling (n=6: +1 misparse, duplicates across formats)"
+  },
+  {
+   "dimension": "Personalisation injection",
+   "best_competitor": "ElevenLabs",
+   "their_best": "A pre-call initiation webhook returning dynamic variables and overrides, plus a mid-call contextual_update event.",
+   "vp_better_how": "Prefetch at attempt claim, hidden in the ring. Preferences applied as configuration (medium, STT hint, voice, turn preset) rather than prompt text. A purpose-matched 1,200-byte brief with a throwing budget. Memory is injected mid-call only after identity is confirmed on a shared number.",
+   "evidence": "[O] research/2026-10-20/account-phase/elevenlabs/report.md s.4; data/blueprint/voice-module-defaults.json brief_schema"
+  },
+  {
+   "dimension": "Preference adherence",
+   "best_competitor": "Retell (no vendor measures it)",
+   "their_best": "An update prompt that keeps behaviour-changing items.",
+   "vp_better_how": "Adherence is measured per turn in code: language ID, address lexicon, pace, window, channel. MEM-SIM (200 contacts x 3 calls) gates publish, and a live 48-pair handset test runs before sale. Kill criterion: more than 1 in 20 ignored.",
+   "evidence": "[M] docs/harvest/hp-handoffs.md l.36 (stored Hindi, replied English); decision.2026-10-19.tier-plus"
+  },
+  {
+   "dimension": "Memory governance: view, edit, forget",
+   "best_competitor": "ElevenLabs",
+   "their_best": "A retention_days knob, a zero-retention mode and minimal/balanced/maximum memory scale.",
+   "vp_better_how": "A per-fact view with play-from-here. Edits are stored as new rows. Forget follows the person across facts, episodes, recordings, channels and a CRM delete, then writes a tombstone and sends a receipt. A person-facing My Data page arrives in v2.",
+   "evidence": "[O] evidence.2026-10-20.acct-elevenlabs-memory-gated; [M in source product] asset.hp-gurukul-early.forget-follows-the-person-erasure (39/39 live)"
+  },
+  {
+   "dimension": "Company knowledge",
+   "best_competitor": "Retell",
+   "their_best": "A knowledge base fed by web pages, files, Drive, OneDrive and Notion.",
+   "vp_better_how": "Evidence-span proposals with human approval. Prices and dates stay in Offering data. Personal records found in documents are excluded. The brain is never mixed with contact memory.",
+   "evidence": "[O] research/2026-10-21/walkthroughs/retell/report.md; asset.se-audit.source-ingestion-with-exact-quote-review; docs/harvest/SYNTHESIS.md §1.6"
+  },
+  {
+   "dimension": "Data intake, authority and freshness",
+   "best_competitor": "ElevenLabs (CSV contract) / SquadStack (lead API, failed-rows file)",
+   "their_best": "A CSV contract shown before upload, with per-row overrides; a lead-ingestion API.",
+   "vp_better_how": "Every field carries authority and a max age. Systems of record win on money; the person wins on preferences. Freshness is checked at dial time (OUTCOME_ALREADY_MET), so already-paid people are never reminded. Data the purpose doesn't need is ignored by design.",
+   "evidence": "[O] research/2026-10-20/teardown/elevenlabs/claims.json EL-05; squadstack claims SQS-13/15; docs/integration-contracts.md l.21"
+  },
+  {
+   "dimension": "India residency and DPDP for memory",
+   "best_competitor": "SquadStack",
+   "their_best": "Mumbai origins; SOC 2 and ISO 27001 listed.",
+   "vp_better_how": "India-region memory, recordings and embeddings. Purpose and basis per fact. Retention classes. A Rule 3 notice that says what is remembered. VP acts as processor, with a DPA and an audit trail. SquadStack gives no DPDP notice to the people it calls and uses US subprocessors.",
+   "evidence": "[O] research/2026-10-20/teardown/squadstack/claims.json SQS-50/51/52; research/2026-10-20/teardown/regulation-segment/report.md RS-27..32"
+  },
+  {
+   "dimension": "Learning from groups of users",
+   "best_competitor": "Synthflow (memory shared across agents in a group)",
+   "their_best": "Agents in one Memory Group share each contact's summaries.",
+   "vp_better_how": "Tenant cohort counts with k of 20 or more feed best-time priors inside legal windows. Cross-tenant priors come only in v3, as consented counts from 10 or more tenants under contract, never from WhatsApp data, because pooling gave wrong winners to 48-55% of dissimilar tenants.",
+   "evidence": "[C] rejected.2026-10-17.cross-tenant-pooling; research/2026-10-17/lanes/l6-self-learning/report.md s.4.7"
+  },
+  {
+   "dimension": "Speed impact of memory",
+   "best_competitor": "None measured (ElevenLabs runs its pre-call webhook during call setup)",
+   "their_best": "Pre-call webhook personalisation.",
+   "vp_better_how": "Prefetch during the ring and an opener rendered during the ring. The brief rides a prefix that is cached after turn 1. Gate: memory adds 50 ms or less to p50 and keeps p50 at 1.2 s or less, measured in an India A/B. The effect of prompt size is not yet measured.",
+   "evidence": "[M] research/2026-10-17/lanes/l8-azure-bench/round2/results/llm_india.csv (cached 1,280-1,550 of about 1,650 tokens, n=33 per model); docs/harvest/hp-main.md l.216-217 (DB 40 ms, embed 305 ms p50)"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "Storage recall across repeat calls",
+   "target": "95% or more (kill criterion)",
+   "how": "MEM-SIM: 200 synthetic contacts x 3 calls with hidden keys. Code checks that each stored value equals its key. Runs on every memory-enabled publish and every release."
+  },
+  {
+   "metric": "Stored preferences ignored",
+   "target": "1 in 20 or fewer (kill criterion)",
+   "how": "Measured in code, per turn, on live calls with an active preference:\n- language ID per turn;\n- aap/tum lexicon in her turns;\n- words per turn against the pace preset;\n- dial time inside the stated window;\n- follow-up channel.\nReported weekly per tenant with a Wilson interval. Before sale, a live test of 48 call pairs on Indian handsets."
+  },
+  {
+   "metric": "Reply-gap impact of memory",
+   "target": "p50 delta 50 ms or less; absolute p50 1.2 s or less (kill criterion)",
+   "how": "India-hosted A/B, memory on vs off, on the default stack, 30 or more clean turns per arm. Then per-turn telemetry in production, split by memory_loaded."
+  },
+  {
+   "metric": "Pre-call memory hook latency and misses",
+   "target": "p95 800 ms or less; memory not loaded in 0.5% of calls or fewer",
+   "how": "Run manifest fields memory_hook_ms and memory=not_loaded(reason)."
+  },
+  {
+   "metric": "Extraction precision",
+   "target": "95% or more approved unedited, per key; entailment-audit refutation 2% or less",
+   "how": "Operator review outcomes are the verified key. A nightly 5% sample is checked by a second model family."
+  },
+  {
+   "metric": "Quote provenance",
+   "target": "100% of stored facts carry an exact caller quote with episode and span; 0 violations",
+   "how": "Invariant re-checked in the commit transaction; a CI test injects assistant-origin and mutated quotes."
+  },
+  {
+   "metric": "Never-stored leakage",
+   "target": "0 rows of agent claims, brief facts, mood or personality scores, inferred demographics or ID numbers",
+   "how": "MEM-SIM leak personas plus a weekly audit of 200 random facts."
+  },
+  {
+   "metric": "Refusal guard",
+   "target": "100% of positives caught; 0 negative controls matched",
+   "how": "A 60+ item Hindi, Hinglish and English set in Latin and Devanagari, run in CI; production counts follow-ups blocked by the guard."
+  },
+  {
+   "metric": "Opt-out honoured",
+   "target": "0 dials after an opt-out on any path",
+   "how": "Join opt-out facts and suppression timestamps to the dial-path log."
+  },
+  {
+   "metric": "Forget execution",
+   "target": "forget_memory within 24 h, erase_me within 72 h, on 100% of surfaces; 0 resurrections",
+   "how": "Per-surface receipts. A re-import test of 50 tombstoned rows runs every release."
+  },
+  {
+   "metric": "Identity safety",
+   "target": "0 false merges; 0 personal-memory loads on shared numbers before identity is confirmed",
+   "how": "The messy-50 set (W2) plus MEM-SIM shared-number personas; run-manifest audit in production."
+  },
+  {
+   "metric": "Freshness at dial time",
+   "target": "0 dials to contacts already paid or renewed, when a payment or policy connector is live",
+   "how": "Precheck OUTCOME_ALREADY_MET log joined to payment events, within the connector's delivery latency."
+  },
+  {
+   "metric": "Memory cost",
+   "target": "INR 0.15 or less per connected 3-minute call",
+   "how": "Metered cost lines (extraction share, brief tokens, audit), shown at the toggle."
+  },
+  {
+   "metric": "Review burden",
+   "target": "10 or fewer review items per 100 calls; median 5 s per item",
+   "how": "Review inbox events; unreviewed-expiry count."
+  },
+  {
+   "metric": "Import correctness (shared with campaigns)",
+   "target": "48 of 50 messy rows right in under 5 minutes",
+   "how": "Task T2 on the synthetic messy-50 file (W2)."
+  },
+  {
+   "metric": "Memory effect on outcomes",
+   "target": "Reported only when powered; otherwise labelled 'observed, not causal'",
+   "how": "10% memory-off holdout. Example: early hang-up on call 2 falling from 15% to 10% needs 686 connected calls per arm [C, L6]."
+  }
+ ],
+ "phases": [
+  {
+   "phase": "v1 (launch): know the person from data, honour opt-out and forget",
+   "scope": [
+    "Contact, Identifier and Attribute with DataAuthorityClaim (authority and max age), exact-match identity and shared-number detection.",
+    "Source and Receipt objects. CSV, XLSX and Google Sheets intake, using the shared normaliser and API push.",
+    "Payment and policy or loan feeds for the first design partners; the first partner's CRM (others under the two-customer rule).",
+    "Company brain from the website and documents, with evidence spans, human approval and a personal-data fence (req-30).",
+    "Opt-out facts written to suppression instantly; forget requests (verified human intent) with tombstones; retention classes; India region.",
+    "Contact timeline of calls and follow-ups; per-contact language from a CSV column; {{memory.*}} slots visible but disabled.",
+    "Precheck codes OUTCOME_ALREADY_MET and ATTRIBUTE_STALE handed to campaigns.",
+    "Evidence: Retell's misparse [M]; suppression must hold across campaigns (rejected.harvest.07); DPDP duties start with the first recording; req-28/29/30."
+   ]
+  },
+  {
+   "phase": "Late v1, Plus tier (proposed; owner decision 6): preference memory",
+   "scope": [
+    "Extraction from calls of language, script, aap/tum, name to use, pace, preferred time, channel and heard objections, applied automatically with a 7-day undo.",
+    "MemoryBrief with prefs plus a last-interaction line, 1,200-byte cap, throwing budget; preferences applied as configuration.",
+    "MEM-SIM publish gate: recall 95% or more, ignored 1 in 20 or fewer, 0 leaks.",
+    "Live adherence test before sale: 48 call pairs on Indian handsets, passing with 0 language misses and 2 or fewer misses in total.",
+    "India A/B latency gate: p50 delta 50 ms or less.",
+    "Cost shown at the toggle; 'What she remembers' settings; 'She knows' chips with play-from-here.",
+    "Evidence: Retell already ships memory (parity); ElevenLabs Memory Alpha could reach GA within 1-2 quarters; memory needs one call to prove (L6 s.1 [C]).",
+    "Slips to v2 if the default stack is not chosen or the latency A/B fails."
+   ]
+  },
+  {
+   "phase": "v2: she remembers the relationship",
+   "scope": [
+    "The full Fact ledger: commitments, corrections, stated facts, avoid-topics and up to 20 custom keys, with the memory review inbox and earned autonomy per key.",
+    "WhatsApp (24 h window), DLT SMS and email episodes under the same gates; unverified senders are feedback-only.",
+    "App and web events with a registered purpose; one recent event per call.",
+    "Semantic plus keyword recall (RRF) on an India-region embedding model.",
+    "Inbound memory by exact CLI match; identity-confirmed mid-call injection on shared numbers.",
+    "Person-facing My Data page reached from the Rule 3 link.",
+    "Tenant cohort counts with k of 20 or more (req-33); opt-in dialect style (req-10).",
+    "Courtesy thread, only after a listener panel passes it.",
+    "Evidence: the owner orders memory before self-learning (req-32 before req-34); spine v2 exit bars (recall 95%, 1 in 20, p50 1.2 s)."
+   ]
+  },
+  {
+   "phase": "v3: learns at scale, still per tenant",
+   "scope": [
+    "Consented cross-tenant segment priors, delivered through the learning module: counts only, 10 or more opted-in tenants, a contract clause, never WhatsApp data.",
+    "Compile-policy learning (which keys, order, budget) by the learning module; facts are never learned.",
+    "Dialler-history and past-call priors for best time and line hazard, counts only.",
+    "More CRMs under the two-paying-customers rule; regional-language lexicons for the refusal and forget guards.",
+    "A mid-call memory lookup tool, only if its latency is measured and acceptable; a 2,400-byte Premium brief cap, only if the A/B allows it.",
+    "Evidence: pooling conditions (rejected.2026-10-17.cross-tenant-pooling, l6 s.3.4) and volume thresholds."
+   ]
+  }
+ ],
+ "beyond": [
+  "Play-from-here memory. Every remembered thing links to the second of audio where the person said it, with the exact quote. No vendor stores provenance per remembered item.",
+  "Authority by subject. The person is the authority on their own preferences; systems of record are the authority on money, dates and identifiers. A conflict becomes a card, never a silent overwrite, and she speaks only system numbers, which matters because fake renewal scams use real policy data.",
+  "Preferences enforced as configuration and measured per turn in code. Language, pace and register set the medium, STT hint, voice and turn preset; they are not lines in a prompt. This fixes the inherited 'stored Hindi, replied English' failure.",
+  "Earned autonomy per fact key. A risky key moves to auto-apply only after at least 100 operator reviews at 95% or more, with Owner approval, and is revoked automatically by the entailment audit or the undo rate.",
+  "Freshness at dial time. Payment and policy status is checked at precheck, so people who already paid are never reminded; the launch card shows how many were skipped.",
+  "Next-call preview. Before a call, the client sees exactly what she will know (the compiled brief), its bytes against the cap and its INR cost.",
+  "Shared-number safety for Indian family phones. Separate people on one number stay separate, and personal memory unlocks only after identity is confirmed in the call.",
+  "Memory tested before publish. MEM-SIM (200 synthetic contacts x 3 calls, hidden keys, checks in code) gates any memory-enabled agent; a live adherence monitor runs in production.",
+  "The person called can see and erase what a business remembers about them, through a tenant-branded My Data page behind an OTP, linked from the Rule 3 notice.",
+  "Data diet. The Data steward shows which columns it deliberately ignored and why ('Aadhaar column: not imported, not needed for this purpose').",
+  "Memory-poisoning fence. Values are typed and length-capped, and instruction-shaped text is rejected, so a caller cannot plant instructions for the next call.",
+  "Bilingual deterministic guards. The refusal guard and the forget-intent detector work in Hindi, Hinglish and English, in Latin and Devanagari, with negative controls ('abhi mat karo, shaam ko karna' becomes a time preference, not an opt-out).",
+  "Purpose-matched compile. Memory from a service call can never personalise a promotional call without separate consent, which enforces DPDP purpose limitation and the TRAI category fence in code."
+ ],
+ "risks": [
+  "A wrongly extracted commitment ('you promised to pay on the 5th') becomes harassment on a lending or collections call. Mitigation: commitments are review-tier, amounts are never taken from speech, and earned autonomy is revoked by the audit; collections purposes default to review-only.",
+  "Relational recall reads as creepy or manipulative and raises hang-ups. Mitigation: the courtesy thread is off by default and gated by a listener panel; sensitive life events are excluded; objections are only acknowledged, never re-pitched; the no-manipulation predicate sits at the reply door.",
+  "Memory poisoning: a caller plants instruction-like text as a 'stated fact' that the next call reads. Mitigation: typed values, a 60-character cap, an instruction lint, and a delimited data block that the compile treats as data.",
+  "Family-phone disclosure: the wrong person on a shared number hears another person's commitments. Mitigation: shared-number detection, and identity confirmation before personal memory loads.",
+  "Review fatigue: operators never review, so commitments go unused. Mitigation: batched one-tap review, a 14-day expiry, earned autonomy, and a review-burden metric of 10 or fewer items per 100 calls.",
+  "Unmeasured latency effect: the effect of prompt size on first-token time is not in our data. Mitigation: an India A/B gate before Plus ships; prefetch and opener rendering happen during the ring.",
+  "The inherited adherence failure repeats on the chosen stack (a conflicting default outranks the preference). Mitigation: preferences applied as configuration, the MEM-SIM gate, the live 48-pair handset test, and a production adherence monitor.",
+  "ASR errors become 'quotes': a fluent-fabricating transcript would make a wrong fact look provenanced. Mitigation: the transcript of record comes only from ASR finals (rejected.harvest.10); play-from-here lets humans hear the real audio; review tier for risky keys.",
+  "DPDP purpose scope is uncertain: whether personalising the next service call sits inside s.7(a) is a counsel question, as is the conflict between IRDAI 10-year retention and storage limitation.",
+  "Tombstone legality: keeping hashed identifiers of erased people to stop resurrection is standard for suppression lists but needs counsel confirmation.",
+  "Timing: ElevenLabs memory (Alpha tab, 403 gate) and its hidden campaigns product may reach GA within 1-2 quarters, and SquadStack self-serve is 'a flag flip'. Basic memory will be parity; VP's edge must be trust, adherence and speed.",
+  "Connector scope creep: CRM integrations are expensive and fail often (17% of incumbent complaints, n=111). Mitigation: the two-paying-customers rule and honest health states (rejected.harvest.16).",
+  "India-region embedding availability: the semantic leg needs an embedding model hosted in India; if none qualifies, recall stays keyword-only, below the 0/27 adversarial bar.",
+  "WhatsApp terms: Meta s.4.7 bars using WhatsApp data to improve AI except for one business's exclusive model, so any cross-tenant use of WhatsApp-derived data is a contract breach. Mitigation: WhatsApp episodes are excluded from all aggregates."
+ ],
+ "open_questions": [
+  "Owner: does preference memory ship in late v1 as the Plus tier, or wait for v2? It depends on the default-stack choice and the latency A/B passing.",
+  "Does adding a 120-400 token memory brief measurably raise first-token time on the chosen brain from India? Not measured: every India bench row has the same prompt size. Needs an on/off A/B with 30 or more clean turns per arm.",
+  "Is 1,200 bytes the right MemoryBrief cap, or should Premium allow 2,400? This sets the voice module's MEMORY_BRIEF slot.",
+  "Counsel: does personalising the next service call from memory of earlier service calls in the same relationship fall within DPDP s.7(a), or does it need separate consent?",
+  "Counsel: how do IRDAI's 10-year call-record retention and DPDP storage limitation combine when a person asks to be erased, and may hashed tombstones be kept indefinitely?",
+  "Do Hinglish service-call recipients find recall ('pichli baar aapne 5 tareekh bola tha') helpful or creepy? A listener-panel arm is needed before the courtesy thread and before commitment recall on collections.",
+  "What is LLM extraction accuracy against CRM ground truth on real calls? Never measured; it decides how fast earned autonomy can be reached.",
+  "Which CRM do the first design partners use? That chooses the one v1 connector.",
+  "Should observed language (from per-turn language ID, not an explicit request) auto-apply after two agreeing calls, or always wait for an explicit statement?",
+  "Is an India-hosted embedding model available at acceptable latency and price for the semantic recall leg?",
+  "My Data page: which sender header and DLT template does the OTP use (the tenant's), and who bears its cost?",
+  "Should the payment 'link opened' signal pause the next reminder attempt for a grace period, which is kinder but may delay outcomes? This needs a powered test, which the learning module owns."
+ ]
+}

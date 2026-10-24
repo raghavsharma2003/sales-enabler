@@ -1,0 +1,176 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench round 2 on gpt-4.1-mini (Azure regional South India), tree 251b56f, after the six fixes: 26/48 (54.2%, Wilson 95% CI 40.3-67.4), 46/48 tasks reached the model (0 schema HTTP 400s; 2 Azure content-filter 400s on injection tasks), 26/46 of those passed (56.5%, CI 42.2-69.8). Against round 1 strict (12/48): 16 gained, 2 lost, exact McNemar p = 0.0013. 3 of the 26 passes come only from the new clarification detector (23/48 under r1 grading). csv 0/3, template 0/6. Rs 23.19, Rs 0.48 per task",
+   "n": 48,
+   "method": "product/scripts/operator-bench.ts, all 48 tasks, once, through the round 1 harness (research/2026-10-23/benches/harness; azure-guard.mjs byte-identical) with paths changed: private tmpfs Postgres, fresh migrated DB, at most 1 request a second and under the 50k TPM quota (0 retries on 429). Every purpose on one deployment via VP_LLM_DEFAULT_*. Grading per 12a271e (model error = fail; reached-the-model reported apart; clarifications without '?' count). Spend from the harness fetch ledger at prices.ts list rates (Rs 95/$).",
+   "path": "research/2026-10-23/benches-r2/operator-gpt-4.1-mini.md"
+  },
+  {
+   "id": "measure.2026-10-23.operator-bench-r2-gpt-4.1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Operator bench round 2 on gpt-4.1 (Azure GlobalStandard), tree 251b56f: 28/48 (58.3%, Wilson 95% CI 44.3-71.2), 28/46 of tasks that reached the model (60.9%, CI 46.5-73.6). Against round 1 strict (18/48): 14 gained, 4 lost, McNemar p = 0.031. Against gpt-4.1-mini r2: 5 vs 3 discordant, p = 0.73 (no measurable difference). agent 6/6, template 1/6, csv 0/3, campaign 1/5. Rs 92.64, Rs 1.93 per task",
+   "n": 48,
+   "method": "Same as measure.2026-10-23.operator-bench-r2-gpt-4.1-mini, on deployment gpt-4.1-2025-04-14 (240k TPM pacing). One run; run-to-run variance not measured. operator_find_tools used 0 times in 96 tasks across both models.",
+   "path": "research/2026-10-23/benches-r2/operator-gpt-4.1.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench TEST split (42 calls), new contract (8a4a508), gpt-4.1-mini: outcome 38/42 (90.5%, Wilson 95% CI 77.9-96.2) vs 35/42 on the same ids in round 1 (McNemar p = 0.55); commitments 10/10 vs 3/10 (p = 0.016); moment recall 33/36; reason code 42/42; grounded quotes 104/104; cross-call themes 3/3. All 4 outcome misses are outcomes where the key is null (crisis, language mismatch). Rs 0.044 per model-analysed call",
+   "n": 42,
+   "method": "product/scripts/analysis-bench.ts --split test, once, crisis judge off, through the round 1 harness. Real signed ingest and post-call analysis; code scores stored analysis against hand-written keys. Round 1 comparison uses round 1's items restricted to the same 42 TEST ids (cases and keys unchanged since 0e9b9ee). A second mini pass (the tiered run's first passes) disagreed with this run on 4 of 34 shared non-escalated calls at temperature 0, so differences of 4 or fewer are within run-to-run noise.",
+   "path": "research/2026-10-23/benches-r2/analysis-gpt-4.1-mini.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-r2-gpt-4.1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench TEST split, new contract, gpt-4.1: outcome 36/42 (85.7%, Wilson 95% CI 72.2-93.3), down from 42/42 on the same ids with the old contract (0 gained, 6 lost, McNemar p = 0.031): it now gives needs_human on all 3 crisis calls and not_interested/needs_human on all 3 language-mismatch calls, where the key is null. Moments 36/36, every moment found 42/42, reason 42/42, grounded 140/140. Rs 0.253 per call (5.8x mini)",
+   "n": 42,
+   "method": "Same as measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini, on deployment gpt-4.1-2025-04-14. Moment precision not measured (11 off-key moments proposed).",
+   "path": "research/2026-10-23/benches-r2/analysis-gpt-4.1.md"
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-r2-tiered",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Analysis bench TEST split, tiered (gpt-4.1-mini first, gpt-4.1 on escalation, threshold 0.6): outcome 34/42 (81.0%, Wilson 95% CI 66.7-90.0), below mini alone (38/42; 4 vs 0 discordant, McNemar p = 0.125) and gpt-4.1 alone (36/42, p = 0.5). Escalated 5/39 (12.8%, CI 5.6-26.7), all for 'no outcome'; gpt-4.1 turned 4 correct nulls (3 early hang-ups saying only 'Kaun?', 1 crisis) into needs_human and fixed none. Effective cost Rs 0.070 per model-analysed call (Rs 0.044 + 12.8% x Rs 0.20)",
+   "n": 42,
+   "method": "analysis-bench.ts --split test --model <gpt-4.1-mini> --escalate-model <gpt-4.1> --threshold 0.6, once, same harness with both deployments priced. Cost from the bench's per-call cost lines priced per model (the bench's single-rate INR does not apply to two models; insight request excluded).",
+   "path": "research/2026-10-23/benches-r2/analysis-tiered.md"
+  },
+  {
+   "id": "rejected.2026-10-23.upload-newlines-folded-by-redact",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Passing Operator uploads through cleanIncoming/redact as the text the model and the import see: redact returns the digit-folded text, whose whitespace fold turns every newline into a space, so every uploaded CSV arrives as one line and imports 0 rows (csv 0/3 on both models)",
+   "tried": "product/server/modules/operator/loop.ts:178 runs each upload through cleanIncoming (operator/secrets.ts:45) -> redact (product/shared/safety/index.ts:406), which starts from foldForDigits (index.ts:103: .replace(n.space, ' ')) and builds its output from that folded text (index.ts:424), not from the original with masks spliced in.",
+   "broke": "Probe: cleanIncoming('name,phone,city\\nAarav...,Pune\\nDiya...,Pune') returns a single line. In csv-pune gpt-4.1 passed the flattened text to source.upload; the import mapped a header 'city Aarav Synthetic...' and committed 0 rows. Operator chat text is flattened the same way. Unmeasured before round 2 because round 1's schema 400 blocked every csv task."
+  },
+  {
+   "id": "rejected.2026-10-23.analysis-outcome-null-only-rule",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "The 8a4a508 outcome rule ('complaining, asking for a human ... each decides it'; 'null only when no PERSON line bears on the question') moved analysis errors from false nulls to false outcomes: crisis -> needs_human, language mismatch -> wrong_person / not_interested / needs_human. gpt-4.1 lost 6/42 against the old contract (p = 0.031)",
+   "tried": "product/server/modules/calls/analysis.ts:45-46 in analysisPrompt, measured once on the TEST split for gpt-4.1-mini, gpt-4.1 and tiered.",
+   "broke": "Every round 2 outcome miss on all three designs is a non-null outcome where the key is null: crisis (all three designs), language_mismatch (mini, gpt-4.1), early_hangup after escalation (tiered). Mini still gained net (35 -> 38/42, p = 0.55) because it no longer returns null on complaint, wrong-person and opt-out calls; the commitment rule is a clear gain (mini 3/10 -> 10/10, p = 0.016) and is not part of this rejection. TEST has now been seen once with this contract; a rewrite must be tuned on DEV (the same templates exist there)."
+  },
+  {
+   "id": "rejected.2026-10-23.tiered-escalate-on-no-outcome",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Escalating tiered analysis to the stronger model whenever the first pass finds no outcome on a call where the person spoke: it re-reads exactly the calls whose null is correct and made 4 right answers wrong, 0 wrong answers right (n = 5 escalations of 39)",
+   "tried": "product/server/modules/calls/analysis.ts:299 (cv.def_id && callerSpoke && !first.outcomeGuess -> 'no outcome'), threshold 0.6, mini first and gpt-4.1 second, TEST split.",
+   "broke": "Escalated: crisis.education, crisis.realestate, early_hangup x3 (the person said only 'Kaun?', reason END_EARLY_HANGUP decided by code). gpt-4.1 returned needs_human on 4 of them. Mini's real errors are confident non-null outcomes, which never escalate. Tiered outcome 34/42 vs mini alone 38/42. Candidate fix (not tested): escalate only on refinable reason codes and on low confidence, never on a null for a code-decided END_* call."
+  },
+  {
+   "id": "rejected.2026-10-23.call-search-free-text-outcome",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "call.search takes outcome as free text and returns a page without a count: both models filter reason codes as outcomes, get 0 rows and answer 'no calls'; 'how many' questions get 'at least one' or a guess",
+   "tried": "product/server/modules/calls/tools.ts:159 outcome: opt(str({ max: 80 })); the result is {calls, next} with no total (tools.ts:181); no filter for goal reached. brief.today counts no calls.",
+   "broke": "Diagnostic re-run with tool arguments recorded: q-goal on both models called call_search {outcome: 'CONV_GOAL_DONE'} -> 0 rows -> 'no calls' (key 7); q-hangups on mini {outcome: 'END_EARLY_HANGUP'} -> 'no calls' (key 8); on gpt-4.1 {reasonCode: 'END_EARLY_HANGUP', limit: 1} -> 'at least one'. q-total on mini read brief.today and answered 'no calls' (a number no tool returned). Insight 1/4 and 2/4."
+  },
+  {
+   "id": "rejected.2026-10-23.exclusive-args-checked-only-at-run",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Tool arguments that are mutually exclusive or shaped, declared as independent optionals and checked only inside run(), with refusals that do not name the valid choices: both models send both, invent template slugs and guess brief fields, then ask the client instead of retrying",
+   "tried": "agent.create: templateId and description both optional, 'not both' at product/server/modules/agents/index.ts:299; 'no template X' at :303 lists no ids. audience.create: 'filter or contactIds, not both' at intake/audiences.ts:89. brief.edit summary (agents/index.ts:338) names none of the brief's fields.",
+   "broke": "tpl-name and tpl-nodiscount fail on both models (invented clinic_appointment_confirmation, broadband_win_back; both args sent); multi-audience-campaign fails on both; edit-fact (facts[5].label; the fields are value, shareable), edit-hindi (voice.set or stack.set for a language), edit-duration ('no tool to set a call duration limit') fail on both; agent-cod, agent-webinar fail on mini. Template category 0/6 (mini) and 1/6 (gpt-4.1)."
+  },
+  {
+   "id": "open.2026-10-23.operator-page-context-not-sent",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "The Operator never shows the model which page (or which campaign / agent) the member is on: inp.page only picks tools (operator/loop.ts:214), and the bench sends '/campaigns' and '/agents' with no id. Both models ask 'which campaign / agent?' even when the workspace has exactly one",
+   "closes_when": "The page path (with the entity id when there is one) reaches the model, the bench sends entity paths for 'this campaign / this agent' tasks (operator-bench-tasks.ts:185-193 and the stack-which, multi-deploy tasks), and camp-estimate, camp-window, camp-rename, stack-which and multi-deploy are re-measured on both models."
+  },
+  {
+   "id": "open.2026-10-23.azure-content-filter-on-injected-data",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Azure's content filter returns HTTP 400 ('content management policy') for inj-csv-topup and inj-suppress on both models, so the Operator's handling of injected data is unmeasured on Azure, and the client sees 'The assistant's brain did not answer' (operator/loop.ts:277) with the legitimate part of the request lost",
+   "closes_when": "The Operator recognises a content-filter refusal and tells the client which upload was flagged (keeping the rest of the request where possible), and the injection tasks are measured on a model/deployment whose filter lets the request through, or the filter's behaviour is accepted as the product's answer in a decision node."
+  },
+  {
+   "id": "open.2026-10-23.analysis-default-design",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Inference: on TEST, gpt-4.1-mini single (Rs 0.044 per bench call, about Rs 0.073 for a 3-minute call by ANALYSIS-COST.md) is the best default: outcome 38/42 vs gpt-4.1 36/42 (p = 0.5) at 1/5.8 the cost, and tiered as built is worse than mini (34/42). gpt-4.1's only measured edge is objection moments (10/10 vs 7/10)",
+   "closes_when": "The outcome rule (analysis.ts:45-46) is rewritten on DEV so crisis, language mismatch and early hang-up give null, the escalation trigger excludes code-decided calls, and mini, gpt-4.1 and tiered are re-run on TEST (ideally twice each, for variance); then a decision node records the default with a reverse_if."
+  }
+ ],
+ "edges": [
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini", "to": "component.2026-10-21.operator-module", "relation": "tests"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1", "to": "component.2026-10-21.operator-module", "relation": "tests"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini", "to": "component.2026-10-23.operator-bench", "relation": "derived-from"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1", "to": "component.2026-10-23.operator-bench", "relation": "derived-from"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini", "to": "measure.2026-10-23.operator-bench-gpt-4.1-mini", "relation": "extends"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1", "to": "measure.2026-10-23.operator-bench-gpt-4.1", "relation": "extends"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini", "to": "open.2026-10-23.operator-bench-rerun-after-schema-fix", "relation": "informs"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1", "to": "open.2026-10-23.operator-bench-rerun-after-schema-fix", "relation": "informs"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1", "to": "open.2026-10-23.operator-real-model-pass-rate", "relation": "informs"},
+  {"from": "measure.2026-10-23.operator-bench-r2-gpt-4.1-mini", "to": "open.2026-10-23.operator-real-model-pass-rate", "relation": "informs"},
+  {"from": "rejected.2026-10-23.call-search-free-text-outcome", "to": "open.2026-10-23.q-goal-key-vs-goal-semantics", "relation": "informs"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini", "to": "component.product.calls-module", "relation": "tests"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1", "to": "component.product.calls-module", "relation": "tests"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-tiered", "to": "component.product.calls-module", "relation": "tests"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini", "to": "component.product.analysis-bench", "relation": "derived-from"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1", "to": "component.product.analysis-bench", "relation": "derived-from"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-tiered", "to": "component.product.analysis-bench", "relation": "derived-from"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini", "to": "measure.2026-10-23.analysis-bench-gpt-4.1-mini", "relation": "extends"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1", "to": "measure.2026-10-23.analysis-bench-gpt-4.1", "relation": "extends"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini", "to": "open-question.2026-10-23.analysis-quality-on-a-real-model", "relation": "informs"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1", "to": "decision.2026-10-23.analysis-contract-shapes-conv-codes", "relation": "challenges"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-gpt-4.1-mini", "to": "decision.2026-10-23.analysis-contract-shapes-conv-codes", "relation": "supports"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-tiered", "to": "decision.2026-10-23.analysis-model-per-workspace-tiered", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.upload-newlines-folded-by-redact", "to": "component.2026-10-21.operator-module", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.upload-newlines-folded-by-redact", "to": "component.2026-10-21.safety-module", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.analysis-outcome-null-only-rule", "to": "decision.2026-10-23.analysis-contract-shapes-conv-codes", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.tiered-escalate-on-no-outcome", "to": "decision.2026-10-23.analysis-model-per-workspace-tiered", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.call-search-free-text-outcome", "to": "component.product.calls-module", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.exclusive-args-checked-only-at-run", "to": "component.2026-10-21.agents-module", "relation": "challenges"},
+  {"from": "rejected.2026-10-23.exclusive-args-checked-only-at-run", "to": "component.2026-10-21.intake-module", "relation": "challenges"},
+  {"from": "open.2026-10-23.operator-page-context-not-sent", "to": "component.2026-10-21.operator-module", "relation": "challenges"},
+  {"from": "open.2026-10-23.operator-page-context-not-sent", "to": "component.2026-10-23.operator-bench", "relation": "challenges"},
+  {"from": "open.2026-10-23.azure-content-filter-on-injected-data", "to": "component.2026-10-21.operator-module", "relation": "challenges"},
+  {"from": "open.2026-10-23.analysis-default-design", "to": "decision.2026-10-23.analysis-model-per-workspace-tiered", "relation": "informs"},
+  {"from": "measure.2026-10-23.analysis-bench-r2-tiered", "to": "open.2026-10-23.analysis-default-design", "relation": "informs"}
+ ],
+ "events": [
+  {"date": "2026-10-23", "event": "benches-r2-run-on-azure", "details": "Round 2 after the fix commits (2707b8e, 52a394d, 25a48c7, 177f6ac, 75504d1, 12a271e, 8a4a508): Operator bench all 48 tasks and analysis bench TEST split (42 calls + 16-call cross slice) on gpt-4.1-mini and gpt-4.1, plus tiered analysis, tree 251b56f, sequential, at most 1 request a second, round 1 harness with paths changed. Rs 135.37 at list prices (cap Rs 400), 0 schema 400s, 4 content-filter 400s, 40 retries on 429 (another tenant on the shared mini deployment; no request lost). Diagnostic re-runs of 3 insight tasks per model recorded tool arguments. Results in research/2026-10-23/benches-r2/. open.2026-10-23.operator-bench-rerun-after-schema-fix can close except for its 'ideally 2+ runs' clause; open.2026-10-23.q-goal-key-vs-goal-semantics can close (tool call captured: reason code filtered as an outcome)."}
+ ]
+}

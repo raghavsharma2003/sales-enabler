@@ -1,0 +1,62 @@
+{
+ "nodes": [
+  {
+   "id": "risk.2026-10-24.vm-unattended-upgrade-restarts",
+   "type": "risk",
+   "status": "mitigated",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Ubuntu's unattended upgrades on the lab VM (vl-vm-cin) restart services mid-run: at 06:25 UTC on 2026-10-24 one zlib1g update made needrestart (package default, mode 'i', no terminal) restart PostgreSQL, the voice lab and the staging runtime, and the staging control plane crashed on the dropped DB connection. A package's own maintainer script can still restart its own service (a postgresql-16 update restarts PostgreSQL)",
+   "mitigation": "Set and verified 2026-10-24 06:57 UTC (vps7-hygiene, research/2026-10-24/staging/ops/vm_hygiene.sh): /etc/needrestart/conf.d/90-vp-list-only.conf sets $nrconf{restart} = 'l' (list, never restart; effective mode i -> l, needrestart -b -r l restarted nothing), and /etc/apt/apt.conf.d/52vp-no-auto-reboot sets Unattended-Upgrade::Automatic-Reboot \"false\" (apt-config dump). Security updates keep installing: 20auto-upgrades and 50unattended-upgrades are untouched, the timers stay enabled, and the allowed origins still include noble-security. For the residual risk: every staging run prints each unit's start time and restart count before and after (run7.tmpl.sh), and apt-daily-upgrade fires from 06:00 UTC plus a random delay of up to 60 min, so long runs avoid that hour.",
+   "path": "research/2026-10-24/staging/remeasure-6b0d859.md"
+  },
+  {
+   "id": "decision.2026-10-24.lab-vm-needrestart-list-only",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "On the lab VM, needrestart only lists the services an upgrade left on an old library and never restarts them; the VM never reboots automatically; security updates keep installing unattended. Services are restarted by the job that owns them",
+   "rationale": "A restart in the middle of a measurement run corrupts the run (06:25 UTC 2026-10-24: PostgreSQL, the voice lab and both staging units restarted during a judge eval). Turning updates off would leave the public lab and staging hosts unpatched; list-only keeps the patches and moves the restart to a time a person or job picks.",
+   "reverse_if": "needrestart -b shows a security-relevant service left on an old library for more than a day because no job restarted it, or the owner wants unattended restarts back (for example once the lab VM is retired and staging moves to managed hosting)."
+  },
+  {
+   "id": "risk.2026-10-24.control-plane-exits-on-postgres-restart",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The control plane exits when PostgreSQL restarts: product/server/db.ts makes new pg.Pool(...) with no pool.on('error') handler, so an idle client's 'terminating connection due to administrator command' became an unhandled 'error' event and the process exited 1 (staging 06:25:48 UTC 2026-10-24; systemd's Restart=always brought it back at 06:25:52). In production, a DB failover or restart would drop in-flight requests the same way",
+   "mitigation": "Add a pool 'error' handler in product/server/db.ts (log it; the pool replaces the client on the next checkout), plus a test that kills an idle connection and checks the server keeps serving. Until then, the hosting must restart the process (staging: Restart=always, RestartSec=3).",
+   "path": "research/2026-10-24/staging/remeasure-6b0d859.md"
+  },
+  {
+   "id": "open.2026-10-24.staging-remeasure-6b0d859",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Staging is at 6b0d859 (deployed 07:02 UTC, 10 migrations, smoke and lab health passed), but the remeasure on real models did not run: the product's daily test budget for the seed workspace was used up for the IST day of 24 Oct (INR 150.18 over 59 test calls; a call needs spent + INR 50 <= INR 200) until 18:30 UTC. The kit is ready: drive7.sh; its analysis reproduces e9fdde3's tables exactly, and its barge driver was dry-run on devsim (mechanics only)",
+   "closes_when": "research/2026-10-24/staging/ops/drive7.sh runs after 18:30 UTC from the session that holds the scratchpad keys, and remeasure-6b0d859.md reports, at 6b0d859 against e9fdde3: reply gap p50 / p90 with at least 20 replies per stack and its stage breakdown; barge-in stop time and missed barge-ins with n; false stops on nods with n; the opening checks (one disclosure, the name, no guidance, the brand); and the runtime's speculation and pre-warm state",
+   "path": "research/2026-10-24/staging/remeasure-6b0d859.md"
+  }
+ ],
+ "edges": [
+  {"from": "decision.2026-10-24.lab-vm-needrestart-list-only", "to": "risk.2026-10-24.vm-unattended-upgrade-restarts", "relation": "derived-from"},
+  {"from": "risk.2026-10-24.vm-unattended-upgrade-restarts", "to": "decision.2026-10-23.private-staging-on-lab-vm", "relation": "challenges"},
+  {"from": "risk.2026-10-24.control-plane-exits-on-postgres-restart", "to": "risk.2026-10-24.vm-unattended-upgrade-restarts", "relation": "informed-by"},
+  {"from": "open.2026-10-24.staging-remeasure-6b0d859", "to": "decision.2026-10-24.voice-barge-from-audio", "relation": "tests"},
+  {"from": "open.2026-10-24.staging-remeasure-6b0d859", "to": "decision.2026-10-24.voice-speculation-off-by-default", "relation": "tests"},
+  {"from": "open.2026-10-24.staging-remeasure-6b0d859", "to": "decision.2026-10-24.latency-flags-provider-aware", "relation": "tests"},
+  {"from": "open.2026-10-24.staging-remeasure-6b0d859", "to": "open.2026-10-23.voice-barge-long-ms-on-staging", "relation": "informs"},
+  {"from": "open.2026-10-24.staging-remeasure-6b0d859", "to": "open.2026-10-23.voice-barge-in-speed", "relation": "informs"},
+  {"from": "open.2026-10-24.staging-remeasure-6b0d859", "to": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3", "relation": "extends"}
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "staging-6b0d859-deployed-remeasure-blocked-by-test-budget",
+   "details": "VM hygiene (06:57 UTC): needrestart list-only and Unattended-Upgrade::Automatic-Reboot false on vl-vm-cin, verified (effective mode i -> l; apt-config; needrestart -b -r l restarted nothing); security updates unchanged. Staging redeployed 680c5e6 -> 6b0d859 (07:02 UTC, stage_setup.sh verbatim, 10 new migrations, 50 in the tree, node_modules kept, smoke 401/200, every stack available but sarvam-india, lab untouched; health re-checked 07:27). Defaults: barge-in from audio on (200/400/900 ms), speculation off everywhere, pre-warm only to unpaced providers. The remeasure (reply gap, barge-in, openings, keep rate) did not run: the product's daily test budget had INR 150.18 spent over 59 calls on the IST day of 24 Oct, so no call can start until 18:30 UTC. The kit is ready (research/2026-10-24/staging/ops/drive7.sh, ~INR 73 planned, job cap INR 120). Found: the control plane's pg pool has no error handler and exits on a PostgreSQL restart. Spend INR 0."
+  }
+ ]
+}

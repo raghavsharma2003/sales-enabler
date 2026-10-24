@@ -1,0 +1,49 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-21.gate-own-tombstone-hash",
+   "type": "rejection",
+   "title": "The dial gate hashed numbers its own way (sha256 / HMAC keyed by workspace id) while intake writes tombstones as HMAC with a secret per-workspace salt, so G3 never matched an erased person and G4 missed post-erasure suppressions that keep only a hash.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop (integration of intake + campaigns)",
+   "broke": "An erased person (DPDP) could pass G3/G4 on any path that creates or reaches a contact without intake's import check. Caught by reading intake's needs_from_others before any real call; a cross-module test now proves the fix (it fails on the old gate).",
+   "path": "product/server/identity.ts"
+  },
+  {
+   "id": "decision.2026-10-21.one-number-fingerprint",
+   "type": "decision",
+   "title": "Number fingerprints for erased people live in the kernel (server/identity.ts: HMAC-SHA256 with the per-workspace salt in intake_salt); every module that writes or checks a tombstone or a hash-only suppression uses it.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop",
+   "rationale": "Safety-critical matching must have one definition; two modules each hashing their own way is how the erasure gap happened.",
+   "reverse_if": "The salt has to rotate (then identity.ts must check every live salt) or a regulator asks for a different pseudonymisation scheme.",
+   "path": "product/server/identity.ts"
+  },
+  {
+   "id": "decision.2026-10-21.a3-for-members",
+   "type": "decision",
+   "title": "A3 verbs (pause, stop, suppress after opt-out, end a runaway call, stop at cap, pause a flagged number, revert to last good) run at once for any member whose role may call them, not only for VP itself; attempt.retry_per_ladder, which re-dials someone, still gives a member a card.",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "main loop (raised by the campaigns builder)",
+   "rationale": "A person who wants things safer should never wait for an approval tap; the closed A3 list is defined by lowering risk, which holds whoever asks.",
+   "reverse_if": "Owners report a member pausing or stopping campaigns as sabotage or by mistake often enough that a confirm step is wanted, or a verb on the list turns out to raise risk in some flow."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-21.one-number-fingerprint",
+   "to": "rejected.2026-10-21.gate-own-tombstone-hash",
+   "relation": "derived-from"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-21",
+   "event": "backend-integrated",
+   "details": "All 10 backend modules wired (safety, workspace, intake, money, agents, campaigns, calls, memory, learning, operator): 161 tools, 79/80 blueprint tools, 4 jobs; 234/234 tests twice on Postgres 16. Fixed in integration: erasure fingerprint mismatch between intake and the dial gate. Not yet verified: web UI, voice runtime against the control plane, real providers."
+  }
+ ]
+}

@@ -1,0 +1,204 @@
+{
+ "window": [
+  "2026-04-20",
+  "2026-10-20"
+ ],
+ "build_posts": {
+  "n_total": 17,
+  "n_in_window": 17,
+  "items": [
+   {
+    "file": "site/html/build__exotel-mcp-your-ai-can-now-make-phone-calls__.txt",
+    "date": "2026-05-18"
+   },
+   {
+    "file": "site/html/build__i-gave-claude-a-phone__.txt",
+    "date": "2026-05-19"
+   },
+   {
+    "file": "site/html/build__ip-allowlisting-was-slowing-us-down-credential-auth-for-sip-trunking-is-live__.txt",
+    "date": "2026-05-24"
+   },
+   {
+    "file": "site/html/build__framework-or-service-we-shipped-both-heres-when-to-use-which__.txt",
+    "date": "2026-05-24"
+   },
+   {
+    "file": "site/html/build__one-api-call-your-ai-bot-is-on-the-phone__.txt",
+    "date": "2026-05-24"
+   },
+   {
+    "file": "site/html/build__set-up-a-voice-agent-for-your-phone-number-in-an-afternoon__.txt",
+    "date": "2026-05-25"
+   },
+   {
+    "file": "site/html/build__ecc-6-10-dashboards-reporting-integrations__.txt",
+    "date": "2026-08-11"
+   },
+   {
+    "file": "site/html/build__ecc-patch-4-13-56-secure-recording-toolbar-stats__.txt",
+    "date": "2026-08-18"
+   },
+   {
+    "file": "site/html/build__how-exotels-ai-developer-works__.txt",
+    "date": "2026-08-18"
+   },
+   {
+    "file": "site/html/build__understanding-every-conversation-smart-assignment-ai-insights-cqa__.txt",
+    "date": "2026-08-19"
+   },
+   {
+    "file": "site/html/build__crms-are-quietly-killing-the-embedded-phone-widget__.txt",
+    "date": "2026-08-30"
+   },
+   {
+    "file": "site/html/build__agentstream-integration-paths-connect-voice-ai-flow-exoml__.txt",
+    "date": "2026-09-08"
+   },
+   {
+    "file": "site/html/build__voice-ai-phone-calls-latency-and-audio__.txt",
+    "date": "2026-09-08"
+   },
+   {
+    "file": "site/html/build__why-we-built-clearstream__.txt",
+    "date": "2026-09-08"
+   },
+   {
+    "file": "site/html/build__sip-native-vs-websocket-voice-ai-bots-exotel-agentstream__.txt",
+    "date": "2026-09-08"
+   },
+   {
+    "file": "site/html/build__whats-new-in-voicebot-it-keeps-running-when-a-model-goes-down-a-b-test-bot-versions-control-bot-nudges-and-more__.txt",
+    "date": "2026-09-10"
+   },
+   {
+    "file": "site/html/build__strengthening-security-risk-mitigation-and-measures__.txt",
+    "date": "2026-09-25"
+   }
+  ]
+ },
+ "docs_pages_created": {
+  "other": {
+   "n": 827,
+   "n_in_window": 75
+  },
+  "ai-assist": {
+   "n": 11,
+   "n_in_window": 3
+  },
+  "exotel-agentstream": {
+   "n": 36,
+   "n_in_window": 9
+  },
+  "conversation-intelligence": {
+   "n": 9,
+   "n_in_window": 1
+  },
+  "intelligent-voice-agents": {
+   "n": 11,
+   "n_in_window": 2
+  },
+  "harmony": {
+   "n": 12,
+   "n_in_window": 0
+  },
+  "mcp-server": {
+   "n": 8,
+   "n_in_window": 7
+  }
+ },
+ "developer_changelog_latest_heading": "Feb 16, 2026 \u2014 Developer Documentation Upgrade",
+ "npm": {
+  "_exotel-npm-dev_webrtc-core-sdk": {
+   "releases_total": 36,
+   "releases_in_window": 4,
+   "last": "2026-10-16"
+  },
+  "_exotel-npm-dev_exotel-ip-calling-crm-websdk": {
+   "releases_total": 1,
+   "releases_in_window": 0,
+   "last": "2026-10-16"
+  },
+  "create-exotel-omni-app": {
+   "releases_total": 38,
+   "releases_in_window": 3,
+   "last": "2026-09-12"
+  },
+  "_exotel-npm-dev_webrtc-client-sdk": {
+   "releases_total": 45,
+   "releases_in_window": 5,
+   "last": "2026-10-16"
+  },
+  "_exotel-npm-dev_signal-design-system": {
+   "releases_total": 40,
+   "releases_in_window": 30,
+   "last": "2026-10-06"
+  },
+  "_exotel-npm-dev_exotel-ai-assist": {
+   "releases_total": 49,
+   "releases_in_window": 33,
+   "last": "2026-10-12"
+  }
+ },
+ "status_history": [
+  {
+   "month": "2026-October",
+   "unplanned": 0,
+   "maintenance": 1
+  },
+  {
+   "month": "2026-September",
+   "unplanned": 0,
+   "maintenance": 13
+  },
+  {
+   "month": "2026-August",
+   "unplanned": 0,
+   "maintenance": 14
+  },
+  {
+   "month": "2026-July",
+   "unplanned": 0,
+   "maintenance": 14
+  },
+  {
+   "month": "2026-June",
+   "unplanned": 5,
+   "maintenance": 0
+  },
+  {
+   "month": "2026-May",
+   "unplanned": 0,
+   "maintenance": 0
+  },
+  {
+   "month": "2026-April",
+   "unplanned": 0,
+   "maintenance": 0
+  },
+  {
+   "month": "2026-March",
+   "unplanned": 0,
+   "maintenance": 0
+  },
+  {
+   "month": "2026-February",
+   "unplanned": 0,
+   "maintenance": 0
+  }
+ ],
+ "status_components_total": 52,
+ "status_components_voice_ai": [],
+ "status_non_operational": [
+  {
+   "name": "Contact Center \u2014 On-Prem (ECC 4.x)",
+   "status": "major_outage",
+   "since": "2026-06-25T05:05:51.099Z"
+  },
+  {
+   "name": "App16",
+   "status": "major_outage",
+   "since": "2026-09-17T15:53:20.068Z"
+  }
+ ]
+}

@@ -1,0 +1,9 @@
+config,exchanges,used_prompt_at_exchange1,prompt_growth_per_exchange,llm_requests_waste_factor,cached_share,prompt_tokens_per_exchange_billed,completion_tokens_per_exchange_billed,tts_chars_per_exchange_billed,agent_audio_s_per_exchange,caller_audio_s_per_exchange,reply_latency_s_mean,exchange_s,exchanges_per_min_battery,agent_talk_share_battery,chars_per_agent_s,stt_gated_sent_s_per_exchange,openrouter_reported_usd_per_exchange,cancelled_streams_prompt_imputed
+C1_az_az41_azneural,60,1727,51.3,1.842,0.94,3602,28.6,109.7,10.94,4.09,0.995,16.02,3.74,0.683,10.03,,,50
+C2_az_az41_azhd,60,1725,52.7,1.841,0.948,3607,30.4,118.7,6.91,4.09,1.098,12.09,4.96,0.571,17.18,,,49
+C3_az_or_azhd,60,1771,70.0,1.823,0.82,3804,85.2,163.3,9.33,4.09,1.033,14.45,4.15,0.646,17.51,,0.0002921,33
+C6_gtl_or_azneural,60,1773,64.8,1.864,0.831,3847,76.5,141.9,13.85,4.09,1.113,19.05,3.15,0.727,10.24,,0.0002881,34
+C7_az_gm_azneural,60,1794,36.2,1.796,0.0,3518,20.4,78.7,8.33,4.09,1.485,13.9,4.32,0.599,9.45,,,50
+C8_gtl_gm_azneural,60,1788,37.3,1.78,0.0,3483,22.6,80.8,8.73,4.09,1.654,14.47,4.15,0.603,9.25,,,46
+C1_az_az41_azneural+gatedSTT,30,1721,51.0,1.837,0.944,3588,31.8,112.9,10.99,4.09,0.915,15.99,3.75,0.687,10.27,4.85,,23
+C6_gtl_or_azneural+gatedSTT,30,1920,40.3,1.793,0.851,3768,66.7,124.4,12.88,4.09,1.157,18.12,3.31,0.711,9.66,4.85,0.0002573,19

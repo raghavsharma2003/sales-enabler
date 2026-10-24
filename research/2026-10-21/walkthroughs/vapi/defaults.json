@@ -1,0 +1,344 @@
+[
+ {
+  "setting": "Welcome form required fields",
+  "default": "1 required (full name); 2 optional questions, nothing preselected",
+  "range": "referral 8 tiles; goal Personal / Small business / Enterprise",
+  "evidence": "01-welcome-dialog.png"
+ },
+ {
+  "setting": "Agent-builder type",
+  "default": "none selected; prompt placeholder 'Build an appointment booking agent'",
+  "range": "Inbound, Outbound, Support or free text",
+  "evidence": "02-agent-builder-landing.png"
+ },
+ {
+  "setting": "Model Preset",
+  "default": "Balanced",
+  "range": "High Intelligence, Ultra Fast, Cost Saver",
+  "evidence": "33-riley-assistant.png"
+ },
+ {
+  "setting": "Headline cost",
+  "default": "~$0.09/min (displayed)",
+  "range": "n/a",
+  "evidence": "33-riley-assistant.png"
+ },
+ {
+  "setting": "Headline latency",
+  "default": "~1,530 ms (displayed; = 410+690+430)",
+  "range": "n/a",
+  "evidence": "33-riley-assistant.png"
+ },
+ {
+  "setting": "Transcriber model",
+  "default": "STT RT v5 (Soniox) 410 ms, 1.8% WER, $0.004/min",
+  "range": "40 rows",
+  "evidence": "53-transcriber-model-dropdown.txt"
+ },
+ {
+  "setting": "Transcriber languages",
+  "default": "English (chip)",
+  "range": "57 languages + Automatic; Select All",
+  "evidence": "80-transcriber-languages.png"
+ },
+ {
+  "setting": "Intelligent Turn-Taking",
+  "default": "Off",
+  "range": "toggle",
+  "evidence": "50-edit-Transcriber.png"
+ },
+ {
+  "setting": "End-of-Turn Wait",
+  "default": "1.5 s",
+  "range": "0 to 3 s",
+  "evidence": "50-edit-Transcriber.png"
+ },
+ {
+  "setting": "Keywords",
+  "default": "empty",
+  "range": "free terms",
+  "evidence": "50-edit-Transcriber.png"
+ },
+ {
+  "setting": "Background Denoising",
+  "default": "appears Off (clipped)",
+  "range": "toggle",
+  "evidence": "53-transcriber-model-dropdown.png"
+ },
+ {
+  "setting": "LLM",
+  "default": "GPT-4.1 (OpenAI) 690 ms, $0.020/min, Intelligence 20",
+  "range": "about 92 rows",
+  "evidence": "52-model-dropdown.txt"
+ },
+ {
+  "setting": "Temperature",
+  "default": "0.5",
+  "range": "Precise to Creative (API 0-2)",
+  "evidence": "52-model-advanced.png"
+ },
+ {
+  "setting": "Max Tokens",
+  "default": "250",
+  "range": "numeric (API 50-10,000)",
+  "evidence": "52-model-advanced.png"
+ },
+ {
+  "setting": "Fast Turns",
+  "default": "0",
+  "range": "numeric",
+  "evidence": "52-model-advanced.txt"
+ },
+ {
+  "setting": "Tool strict compatibility",
+  "default": "Off",
+  "range": "Off + options",
+  "evidence": "52-model-advanced.txt"
+ },
+ {
+  "setting": "Prompt cache retention",
+  "default": "not captured",
+  "range": "In memory / 24 hours",
+  "evidence": "52-model-advanced.txt"
+ },
+ {
+  "setting": "Priority processing",
+  "default": "not captured",
+  "range": "on = 1.75x token price",
+  "evidence": "52-model-advanced.txt"
+ },
+ {
+  "setting": "Voice model",
+  "default": "Vapi Voices - Version 2 (430 ms, $0.02/min, Humanness 92)",
+  "range": "45 rows",
+  "evidence": "51-voice-model-dropdown.txt"
+ },
+ {
+  "setting": "Voice",
+  "default": "Elliot (Natural, Male, Young, American, Calm)",
+  "range": "library of 12 Vapi voices",
+  "evidence": "50-edit-Voice.png"
+ },
+ {
+  "setting": "Voice primary language",
+  "default": "Automatic",
+  "range": "not captured",
+  "evidence": "50-edit-Voice.png"
+ },
+ {
+  "setting": "Voice speed",
+  "default": "about 1.1 (last digit clipped)",
+  "range": "Slower to Faster",
+  "evidence": "50-edit-Voice.png"
+ },
+ {
+  "setting": "Background Sound",
+  "default": "Default (phone calls office, web calls off)",
+  "range": "Off, Office, Default, Custom",
+  "evidence": "50-edit-Voice.png"
+ },
+ {
+  "setting": "System prompt mode",
+  "default": "Code",
+  "range": "Visual, Code, Normal text",
+  "evidence": "54-assistant-tab-fulltext.txt"
+ },
+ {
+  "setting": "Prompt token counter",
+  "default": "1,890 tokens (later capture ~1,690)",
+  "range": "n/a",
+  "evidence": "33-riley-assistant.txt"
+ },
+ {
+  "setting": "First message mode",
+  "default": "Assistant speaks first",
+  "range": "Assistant speaks first, Assistant waits for user, Model generated",
+  "evidence": "55-first-message-modes.png"
+ },
+ {
+  "setting": "Attached tools / files",
+  "default": "none",
+  "range": "15 tool types; Select Files",
+  "evidence": "34-builder-Tools.png"
+ },
+ {
+  "setting": "Structured outputs / scorecard / monitors",
+  "default": "none",
+  "range": "Add Field, New, Add Monitor",
+  "evidence": "34-builder-Analysis.txt"
+ },
+ {
+  "setting": "Fallback voices / transcriber",
+  "default": "none",
+  "range": "Add",
+  "evidence": "34-builder-Advanced.png"
+ },
+ {
+  "setting": "Recording Consent Plan",
+  "default": "gated, Enterprise only",
+  "range": "no control",
+  "evidence": "34-builder-Advanced.png"
+ },
+ {
+  "setting": "Webhook server timeout",
+  "default": "value not captured",
+  "range": "1 to 300 s",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Webhook authorization",
+  "default": "No authentication",
+  "range": "custom credential",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Wait Seconds (start speaking)",
+  "default": "not captured (API 0.4)",
+  "range": "0 to 5 s",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Smart Endpointing",
+  "default": "not captured",
+  "range": "Off, LiveKit (English only)",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Punctuation / no punctuation / number waits",
+  "default": "not captured (API 0.1 / 1.5 / 0.4)",
+  "range": "0 to 3 s each",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Number of Words / Voice Seconds / Back Off Seconds",
+  "default": "not captured",
+  "range": "0-10 / 0-0.5 s / 0-10 s",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Voicemail Detection Provider",
+  "default": "Off",
+  "range": "Vapi, Google, OpenAI, Twilio (help text)",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Silence Timeout",
+  "default": "not captured",
+  "range": "5 to 3600 s",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Maximum Duration",
+  "default": "not captured (API 600 s)",
+  "range": "10 to 43,200 s",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Keypad Input",
+  "default": "not captured",
+  "range": "timeout 0-10 s; delimiter # or *",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Audio Recording Format",
+  "default": "WAV",
+  "range": "not captured",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Client messages",
+  "default": "conversation-update, function-call, hang + 10 more",
+  "range": "multi-select",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Server messages",
+  "default": "conversation-update, end-of-call-report, function-call + 8 more",
+  "range": "multi-select",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Idle messages",
+  "default": "none selected",
+  "range": "max 1-10; timeout 5-60 s",
+  "evidence": "34-builder-Advanced.txt"
+ },
+ {
+  "setting": "Create Assistant templates",
+  "default": "none chosen",
+  "range": "Customer Support, Lead Qualification, Appointment Scheduler, Info Collector",
+  "evidence": "81-create-assistant-options.png"
+ },
+ {
+  "setting": "Transfer Call tool description",
+  "default": "empty, 0/1000; name auto-filled transfer_call_tool; published at creation",
+  "range": "destinations Phone Number or SIP",
+  "evidence": "57-transfer-call-tool-form.png"
+ },
+ {
+  "setting": "Twilio import SMS Enabled",
+  "default": "On",
+  "range": "toggle",
+  "evidence": "06b-create-phone-dialog-twilio.png"
+ },
+ {
+  "setting": "BYO SIP Allow non-E164",
+  "default": "unchecked (E.164 validation on)",
+  "range": "checkbox",
+  "evidence": "06g-byo-sip.png"
+ },
+ {
+  "setting": "Free Vapi number quota",
+  "default": "0 of 1 used; US area codes; inbound only",
+  "range": "1 per subscription",
+  "evidence": "06c-free-vapi-number.png"
+ },
+ {
+  "setting": "Campaign Max Concurrency",
+  "default": "4 / 4 (plan cap)",
+  "range": "slider to plan limit",
+  "evidence": "83-campaign-create.png"
+ },
+ {
+  "setting": "Campaign caller",
+  "default": "Assistant (none selected); phone number none",
+  "range": "Assistant or Squad",
+  "evidence": "83-campaign-create.png"
+ },
+ {
+  "setting": "Logs time range",
+  "default": "Last 7 days; 25 rows per page",
+  "range": "presets and rows per page",
+  "evidence": "20-logs.txt"
+ },
+ {
+  "setting": "Metrics / Boards range",
+  "default": "Last 30 Days, grouped by Days, All Assistants; auto-refresh Off",
+  "range": "selects",
+  "evidence": "60-boards.png"
+ },
+ {
+  "setting": "Calls Impacted window",
+  "default": "1h",
+  "range": "1h, 24h, 7d",
+  "evidence": "71-mon-issues.png"
+ },
+ {
+  "setting": "Org Channel",
+  "default": "Daily",
+  "range": "Daily, Weekly",
+  "evidence": "65-organizations.png"
+ },
+ {
+  "setting": "Public API key restrictions",
+  "default": "Origins all domains; Assistants all; Transient Assistants allowed",
+  "range": "restrict origins/assistants",
+  "evidence": "62-api-keys.png"
+ },
+ {
+  "setting": "Plan state",
+  "default": "No package; $5 credits; 4 concurrent calls; 1 concurrent simulation; 200 req/min; 14 days history; 0/1 Vapi numbers; 1/2 orgs",
+  "range": "packages Core, Pro, Premier",
+  "evidence": "24-billing.txt"
+ }
+]

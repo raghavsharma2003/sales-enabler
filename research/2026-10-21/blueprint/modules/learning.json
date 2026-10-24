@@ -1,0 +1,472 @@
+{
+ "id": "learning",
+ "screens": [
+  {
+   "name": "Learning inbox",
+   "purpose": "One place where everything VP found and drafted waits for a one-tap decision, ranked by value, each with the number of calls its claim needs. At most 3 new cards a day so the manager is never flooded; a fast-lane card always jumps the queue.",
+   "layout": "Desktop: left rail (Insights > Learning selected); a top strip of agent level badges; a centre column of ranked cards; the docked 'Talk to VP' panel on the right, aware of this page. Phone: badges collapse into one chip row, cards go full width, and approval buttons stick to the bottom of an opened card.",
+   "elements": [
+    "Header: 'Learning inbox · 3 new today · 1 urgent', with filter chips All / Urgent / Turn-taking / Lines / Knowledge gaps / Expiring",
+    "Agent badges: 'Renewal reminder (Hindi) · L2 Proving · 1,140 calls in 28 days' and 'Pre-due EMI · L1 Finding · 312 calls'",
+    "Pinned fast-lane card with an amber-red edge: 'Line 2 pe 11 mein se 10 log call kaat rahe hain (normal 1 in 12) · VP ne pacing 25% kar di · Undo' [Review fix]",
+    "Proposal card. Title: 'Line 4: amount comes before the benefit'. Chips: 'Hazard 2.1x normal · 95% interval 1.5-2.9x · 640 callers reached'; 'Change: 1 middle slot, Hindi + English'; 'Simulated: 18 callers x 3 seeds, left at this moment 9 -> 2 (noise +/-2)'; 'Gates 10/10'; 'To prove: ~1,180 calls · ~12 days at your volume'; 'Adds about INR 310 a month in minutes'. Buttons: [Approve and test] [Edit] [Reject] [Ask VP]",
+    "Turn-taking card: 'Slow speakers: she starts talking in their pauses on 31% of turns' -> 'Patient timing for slow callers' · 'To prove: ~100 calls per side (~4 days)'",
+    "Knowledge-gap card: '14 callers ne grace period poocha; uske paas fact nahi tha. Add karein?' [Add fact]",
+    "Expiry card: 'v12 was proved 60 days ago. Re-confirm with 10% of calls for 9 days?'",
+    "'Why am I seeing this?' link: rank = calls affected a week x expected effect x confidence",
+    "Footer: 'Showing 3 of 7 · the rest wait so you are not flooded · Show all'"
+   ],
+   "states": [
+    "L0 empty: 'Abhi sun rahi hai: 41 of 100 calls. Pehli report 100 calls ke baad. Fast lane is on from call 1.'",
+    "Nothing new: 'Nothing new. Watching 9 moments on 2 scripts, last check 12 s ago.' It never says 'all good'.",
+    "Drafting: a skeleton card reading 'Simulating 18 callers... seed 2 of 3'",
+    "Budget used: 'Today's INR 200 test budget is used. Next proposal at 09:00 tomorrow, or raise the budget.'",
+    "Blocked by a gate: 'Not sent: the draft added a number (INR 1,299) that is not in your facts.'",
+    "Approved: the card collapses into 'Testing: 0 of 1,184 calls'"
+   ],
+   "beats": "Retell Conductor shows a diff and a test pass rate, but no calls-to-prove, no gates and no ranking (RET-03, RET-58). Vapi Monitoring lists issues without a fix priced in calls (VAP-61). ElevenLabs merge proposals carry no statistics (EL-53). No competitor caps the inbox or pins a catastrophic line."
+  },
+  {
+   "name": "Proposal review",
+   "purpose": "Show exactly what would change, why VP thinks it helps, what is provably untouched, and how it will be proved, so the approver decides on intent while code carries safety.",
+   "layout": "Three panes on desktop, stacked on phone. Left, Problem: a ribbon snippet, 3 clips with play-from-here and the triage result. Centre, Change: a side-by-side diff in shapes for each language variant, with locked sections shown greyed and padlocked. Right, Evidence: the contrasts table, the simulation call player, the gates checklist, the proof plan and the cost. Approval bar sticks to the bottom.",
+   "elements": [
+    "Problem: 'Line 4 (amount) · 12.4% leave vs 5.9% normal · 95% interval 9.8-15.3% · 640 reached · content issue (no TTS error, reply gap 1.1 s)'",
+    "Diff, Hindi variant: before 'amount, then due date, then benefit' -> after 'renewal benefit in one breath, then amount and date from your facts'. Shapes only, no quotable lines.",
+    "Locked strip: 'Disclosure · crisis lines 14416/112 · prices and dates · consent · identity · category fence: unchanged (diff 0 bytes)'",
+    "Contrasts (18 callers x 3 seeds): 'words per turn 24 -> 19'; 'question endings 31% -> 14%'; 'left at this moment 9/54 -> 2/54 (reference-vs-reference spread +/-2)'; 'disclosure delivered 54/54 -> 54/54'; 'Hindi hold 100% -> 100%'; 'first token +12 ms p50'",
+    "Evidence ids: 'obs-0412, obs-0419'. Shared premise probed: 'amount-before-benefit alone 8/54 -> 3/54'",
+    "Gates list: compile, lint L1-L7, budget, locked diff, provenance (0 new numbers), manipulation lint, promotion fence, latency, language variants, regression suite incl. multi-call memory",
+    "Proof plan: 'Primary: leaving at line 4 · MDE 10% -> 5% · 592 calls per side · ~12 days · guardrails: opt-outs, complaints, CLI early hang-up, minutes per agenda-done call, cut-ins'",
+    "Cost: 'Simulation INR 140 spent · adds ~INR 310 a month in minutes · expires 60 days after promotion'",
+    "Bar: [Approve and test] hold 1.2 s, [Edit], [Reject: why?], [Ask VP]"
+   ],
+   "states": [
+    "Composing: 'Comparing 2 drafts... invariant candidate done, domain candidate 2 of 3 seeds'",
+    "Ready",
+    "Blocked: a red gate row with the reason and a fix link ('add the late-fee amount to Offering facts')",
+    "Stale: 'Your Offering changed after this draft. Re-simulate?'",
+    "Approved: 'Experiment registered 10:14 · hash 7c2e...'",
+    "Rejected: 'Saved as a lesson: amount-first is your house style'"
+   ],
+   "beats": "Only VP shows a locked-section diff computed on the resolved config, a provenance gate and a manipulation lint. Retell's diff carries only a pass rate. Vapi's Bypass mode can publish without this review (VAP-61). SquadStack's locked sections are claimed with no screen (SQS-64/65)."
+  },
+  {
+   "name": "Where callers leave",
+   "purpose": "The owner's call-100 view: every moment of the script with how many people left there, against normal, with an interval. The fast lane and the slow lane both start here.",
+   "layout": "Top: agent and version selector, level badge, and segment chips (All, Irritated, Worried, Hindi, English, Pune). Main: the script as a vertical sequence of moments (shape labels), each with a horizontal hazard bar, a reference tick and an interval whisker, plus n reached. Right: detail for the selected moment. Bottom: a funnel strip.",
+   "elements": [
+    "Moment row: '1 · Name check + light AI line · 13.1% leave (normal 15%) · n 1,140 · ok'",
+    "Moment row: '2 · Useful first: renewal benefit · 6.1% (normal 8%) · n 991 · ok'",
+    "Flagged row (amber): '4 · Amount and due date · 12.4% · 95% 9.8-15.3% · 2.1x normal · flagged' [See proposal]",
+    "Segment chip result: 'Irritated callers: 21% leave at moment 4 (n 140) · observed, not causal'",
+    "Under-powered note: 'Pune: n 38. Need ~460 more calls to see a 2x line.'",
+    "Moment detail: hazard history by day, 3 clips with play-from-here, triage 'content', and links to an open proposal or test",
+    "Funnel strip: '1,140 connected -> 991 past the opening -> 640 reached moment 4 -> 512 agenda done -> 188 renewal paid (verified)'"
+   ],
+   "states": [
+    "L0: 'Not enough calls yet: 41 of 100. Fast lane is watching from call 1.'",
+    "Normal",
+    "Slow-lane flag (amber)",
+    "Fast lane (red): banner 'Pacing at 25% while you decide · Undo'",
+    "Auto-reverted: 'Switched back to v7 at 14:02. v8 line 2 lost 10 of 11.'",
+    "No clause timing on this line: 'Hang-up timing isn't available from this carrier. Using transcripts instead, which need 2-5x more calls.'"
+   ],
+   "beats": "No competitor shows a per-line hang-up hazard with an interval. Vapi, Retell and ElevenLabs show end reasons per call; SquadStack claims drop-off mining with no screen (SQS-64/65). Bolna emits the signals but has no loop (bolna-check)."
+  },
+  {
+   "name": "Fast-lane alarm (phone)",
+   "purpose": "Handle the owner's 90-of-100 case from a phone in under a minute: see what broke, what VP already did to limit damage, and approve the fix.",
+   "layout": "A push notification opens a full-screen card. Top: a red-amber status band. Middle: what VP already did (with undo), two 10-second clips, the proposed change in two shape lines, and the simulation result. Bottom: a large hold-to-approve button, with 'Pause script' and 'Call me' (VP Operator by voice) as secondary actions.",
+   "elements": [
+    "Push: 'VP: Line 2 pe 10/11 log call kaat rahe hain. Maine pacing 25% kar di. Fix ready.'",
+    "Status band: 'Renewal reminder · line 2 · 10 of 11 left · normal 1 in 12'",
+    "Already done: 'Pacing 25% (fewer customers hear it) · Undo'",
+    "Cause: 'Amount comes before the benefit (VP's reading of 10 calls)' · 'Not an engineering fault: audio fine, reply gap 0.9 s'",
+    "Change: 'Renewal benefit first, then amount and date from your facts'",
+    "Simulation: '18 simulated callers: 9 -> 1 left at this moment · locked parts unchanged · no new numbers'",
+    "After approval: 'Shows fixed (before/after) once about 30 callers pass this line'",
+    "Button: 'Hold to approve v8'"
+   ],
+   "states": [
+    "Engineering cause: 'Not a script problem: the voice returned silence on this line in 9 of 10 calls. Issue raised; switch voice stack?' (needs approval)",
+    "Auto-reverted: 'Back on v7, which ran 1,020 calls without this. Undo?'",
+    "Approved: 'v8 live · 6 callers passed line 2 · 0 left'",
+    "Resolved: 'No longer catastrophic: 1 of 31 left'",
+    "Declined: 'Kept v8 at 25% pacing. Remind me in 1 hour?'"
+   ],
+   "beats": "No competitor has a catastrophic-line alarm. Retell Conductor and ElevenLabs Architect wait for a person to start an investigation (RET-58, EL-03), and Bland Tornado fixes with no approval (L6V item 7). VP flags a 90% line at median call 13-15 with 0 of 4,000 false flags on a healthy script [C], and limits damage before asking."
+  },
+  {
+   "name": "Experiments",
+   "purpose": "Every running and finished test, with its power, its A/A status and an honest verdict, plus a plain 'under-powered' state when the calls aren't there.",
+   "layout": "Header KPI row (shadow A/A health, tests running, decided this quarter). Below it, a list of experiment rows, each with a power meter bar filling toward n, an ETA, guardrail dots and a state chip. Filters on the right: Running, Under-powered, Decided, Stale.",
+   "elements": [
+    "KPI: 'Shadow A/A: 4.7% false winners over 1,000 re-shuffles (limit 6.5%) · healthy'",
+    "Row: 'Opening: benefit-first vs name-first · early hang-up <10 s · 812 / 1,372 calls · ~6 days left · guardrails ●●●●● · Running: verdict hidden until 1,372'",
+    "Row: 'Patient timing for slow callers · cut-ins · 214 / 200 per side · Decided: 24% -> 11%, 95% interval 6-20 points · [Promote]'",
+    "Row: 'Objection pack: abhi paise nahi hain · Under-powered: ~640 more calls at your volume (~19 days). Options: simulate only / test a bigger change / wait'",
+    "Row: 'v12 line 4 · Stale since 12 Dec (drift) · [Re-confirm]'",
+    "Explainer link: 'Why we hide the winner until the end' -> 'Checking every day makes 52-62% of no-difference tests look like winners.'"
+   ],
+   "states": [
+    "None yet: an L0/L1 explanation of what unlocks at which volume",
+    "A/A not ready: 'Shadow A/A needs 1,372 calls on this metric before a test can start: 620 so far'",
+    "Running",
+    "Stopped by guardrail: 'Stopped 11:40: opt-outs 3 vs 0 in control · v13 now at 0% · Undo needs approval'",
+    "Decided: promote or discard",
+    "Inconclusive: 'No detectable effect at 1,372 calls; kept v11; lesson saved'",
+    "Stale"
+   ],
+   "beats": "SquadStack's significance flag is claimed only (SQS-65). Retell, Vapi, ElevenLabs and Bland ship splits with no power, A/A or expiry (RET-08, L6V item 7). Hiding the verdict until the horizon removes the daily-peeking trap that gives 52-62% false winners."
+  },
+  {
+   "name": "Experiment detail",
+   "purpose": "The pre-registration and the read-out in plain words, so the result can be trusted and audited later.",
+   "layout": "Top: a plain-language hypothesis. Left: a locked pre-registration card. Centre: the power meter, per-arm calls by day and the live guardrail panel. After the horizon: an effect chart with the interval against the MDE line. Bottom: the decision card.",
+   "elements": [
+    "Hypothesis: 'Pehle renewal ka fayda bolne se pehle 10 second mein kam log katenge'",
+    "Pre-registration (locked, 'registered 3 Nov 10:14, can't be edited', hash 7c2e...): 'Primary: early hang-up <10 s · MDE 15% -> 10% · alpha 0.05 · power 0.8 · 686 per side · unit: customer (a person always hears the same version) · 7-28 days · expires 60 days after promotion'",
+    "Guardrails live: 'opt-outs 2 vs 3 ✓ · complaints 0 vs 0 ✓ · disclosure 100% vs 100% ✓ · CLI early hang-up within M08 ✓ · minutes per agenda-done call +1.2% ✓ · empty ASR ✓ · cut-ins ✓ · reply gap p90 1.9 s ✓'",
+    "Safety ramp note: 'First 50 calls at 20% (guardrails only, not counted)'",
+    "Result (illustrative): '15.2% -> 10.4%, difference 4.8 points, 95% interval 1.1-8.5 · 1,372 calls'",
+    "Decision card: '[Promote v9] makes it the default · expires 2 Feb'"
+   ],
+   "states": [
+    "Registered",
+    "Safety ramp",
+    "Running",
+    "Stopped by guardrail",
+    "Decided: promote, discard or inconclusive",
+    "Expired / stale with re-confirm"
+   ],
+   "beats": "No vendor exposes a pre-registration, a unit of randomisation or a guardrail auto-stop. VP's sticky per-customer arms also keep the relationship continuous, which none of them address."
+  },
+  {
+   "name": "How she changed for you",
+   "purpose": "The honest story of improvement over time (req-27): every change, who approved it, what it did with an interval, including the ones that did nothing or were rolled back.",
+   "layout": "A vertical timeline grouped into month chapters. Each node shows the change summary, the approver, a label chip and the effect. A side panel holds small multiples by version (early hang-up, agenda done, outcome rate, cut-ins) with n. A footer note explains why the numbers aren't added up.",
+   "elements": [
+    "Header: 'Woh aapke liye kaise badli · Renewal reminder (Hindi)'",
+    "Node: 'v14 · 2 Dec · Patient timing for slow callers · Proved: cut-ins 24% -> 11% (interval 6-20 pts) · approved by Neha'",
+    "Node: 'v12 · 18 Nov · Line 4: benefit before amount · Proved: leaving at line 4 10.2% -> 5.9% (1.8-6.7) · expires 17 Jan'",
+    "Node: 'v9 · 6 Nov · Opening variant · No detectable effect at 1,372 calls · kept v8'",
+    "Node: 'v8 · 3 Nov · Fast lane: line 2 fixed (before/after, not randomised) · 10/11 -> 2/31'",
+    "Node: 'v7 -> v8 auto-revert · 2 Nov 14:02 · undone by you 14:05'",
+    "Footer: 'We don't add these up. A since-you-started number appears only with a holdout.'"
+   ],
+   "states": [
+    "Empty: 'No changes yet. v1 since 1 Nov, 340 calls.'",
+    "With holdout (v3): a cumulative band chart vs the frozen baseline",
+    "Stale entries greyed with 'unconfirmed since'",
+    "Filtered by label: Proved / Fixed / Simulated only / No effect / Rolled back"
+   ],
+   "beats": "Nobody ships this. Retell offers per-version filters (RET-08); Synthflow, Exotel and SquadStack market continuous improvement without showing it (SYN-81, Exotel node, SQS-74)."
+  },
+  {
+   "name": "What VP may change",
+   "purpose": "Learning settings: the lock map that shows what is never touched and what can be learned, plus the autonomy policies, budgets, tier and the consent for shared aggregates.",
+   "layout": "Left: the brief sections as a vertical lock map, with locked sections padlocked and learnable slots toggleable. Right: policy cards for auto-revert, throttle, inbox cap, test budget, approvers, tier, invariant lessons and shared counts. Per-agent level badges sit at the top.",
+   "elements": [
+    "Locked forever: 'AI disclosure · crisis lines 14416 / 112 · prices, amounts and dates · consent and opt-out · identity · category fence · rules that must fire last'",
+    "Learnable toggles: 'Opening shape · Middle slots · Turn timing · Hindi backchannel list · Objection packs · Best time (inside your 10:00-19:00 window) · Memory brief order'",
+    "Policy: 'Auto-revert on catastrophic regression: ON · Slow a broken script to 25% while you decide: ON'",
+    "Policy: 'New cards per day: 3 · Test budget: INR 200/day · Approvers: Builder, Operator'",
+    "Tier card: 'Plus: inbox, experiments, timeline, library · Premium adds bandits (needs 1,000+ calls/day on one script; you: 140/day)'",
+    "Shared playbook: 'Use VP's shared lessons: ON (no personal data) · Share anonymised counts: OFF (needs contract clause)'"
+   ],
+   "states": [
+    "Base tier: Plus features shown in place with their tier, never hidden",
+    "Premium eligible / not eligible with the reason",
+    "Shared counts pending counsel",
+    "Role without permission: controls read-only with 'Ask an Owner'"
+   ],
+   "beats": "SquadStack's locked sections are claimed with no screen (SQS-64/65). VP makes the lock map visible and enforces it in code, and no competitor offers autonomy policies with undo."
+  },
+  {
+   "name": "Lessons",
+   "purpose": "The tenant's memory of what was proved, ruled out or only simulated, so VP never re-proposes what this tenant's data already rejected; plus VP's shared, personal-data-free playbook with support counts.",
+   "layout": "A searchable list with tabs: Proved, Ruled out, Simulated only, Shared playbook. Each lesson card shows situation, change, evidence, scope, status and expiry, with links to the experiment and calls.",
+   "elements": [
+    "Ruled out: 'Formal sir/madam opener: no effect at 1,372 calls (Nov) · won't be proposed again unless evidence changes'",
+    "Proved: 'Benefit before amount on renewals (Hindi + English) · expires 17 Jan'",
+    "Simulated only: 'Callback offer for busy callers in turn 1 · 18 sim callers · not tested live yet'",
+    "Shared playbook: 'Busy caller in the first turn -> one-line value + callback offer · simulated 6 personas x 3 seeds · supported by 4 tenants' counts (opted in)'"
+   ],
+   "states": [
+    "Empty",
+    "Expired lesson greyed",
+    "A lesson contradicted by a newer test is marked 'superseded' with a link"
+   ],
+   "beats": "No vendor keeps a lesson library. harness2 shows libraries matter (removing it costs 1.8-3.1 points [V]), but it has no human gate. VP's library also protects clients from re-trying failed ideas."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Finding where calls fail",
+   "best_competitor": "Vapi (Monitoring)",
+   "their_best": "Issues with severity, MTTR, calls impacted and categories including Compliance; free default monitors",
+   "vp_better_how": "A per-moment hang-up hazard from clause timestamps, with an interval and n, cut by caller state. Engineering-vs-content triage. A health strip that never says 'all good' with nothing watched.",
+   "evidence": "research/2026-10-20/teardown/vapi/claims.json VAP-61; wt-vapi-37 (walkthroughs/vapi); L6 s.4.8; data/blueprint/intelligence-module.json"
+  },
+  {
+   "dimension": "Speed on a catastrophic line (owner's 90-of-100)",
+   "best_competitor": "Retell (Conductor)",
+   "their_best": "Turns failed calls into simulation tests and proposes diffs once a person asks",
+   "vp_better_how": "Flagged in code at median call 13-15 for a 90% line, with 0 of 4,000 healthy runs flagged [C]. The card reaches the phone within 15 minutes. Regressions auto-revert and other scripts throttle to 25% (A3, undo) while the client decides.",
+   "evidence": "research/2026-10-20/teardown/retell/claims.json RET-03, RET-58; data/blueprint/learning-module-defaults.json fast_lane"
+  },
+  {
+   "dimension": "Drafting fixes",
+   "best_competitor": "Retell (Conductor)",
+   "their_best": "Per-setting diffs a human accepts, tested by simulation; the vendor says it runs 70% of its own simulation testing",
+   "vp_better_how": "Propose-probe-compose with an invariant and a domain candidate. Contrasts are measured in code over repeated seeds against a measured noise floor. A shared-assumption probe runs before merging. The library is checked first so rejected ideas are not re-proposed.",
+   "evidence": "RET-03/RET-58; LMO s.4 (harness2, arXiv 2610.14224); L6 L11"
+  },
+  {
+   "dimension": "Pre-live simulation",
+   "best_competitor": "ElevenLabs (tests) / Vapi (simulations)",
+   "their_best": "Persona simulations with success conditions and repeat runs; latency expectations per turn",
+   "vp_better_how": "Personas carry hidden keys and code scores the outcome; a model never grades its own work. Six Hinglish base personas include the elderly caller with a 2.4 s pause. Synthetic personas are derived from real failure patterns, and multi-call memory tests cover a promise, call-2 language and a call-3 opt-out.",
+   "evidence": "elevenlabs dossier (account report s.1, velocity.json); vapi AP-17; L6 L10; docs/harvest/hp-handoffs.md l.36"
+  },
+  {
+   "dimension": "Locked parts and approval",
+   "best_competitor": "SquadStack Lift (claimed) / ElevenLabs merge proposals",
+   "their_best": "Compliance, pricing and identity sections locked; one human-reviewed edit at a time; branch then merge",
+   "vp_better_how": "Locks are enforced as an empty diff on the resolved config, alongside a provenance gate (no new numbers) and a manipulation lint. Approval is a hold-to-confirm bound to the args hash. There is never a bypass mode.",
+   "evidence": "SQS-64 (V), SQS-65 (no screen, O); EL-03; VAP-61 (Bypass approvals); L6V item 7 (Bland Tornado)"
+  },
+  {
+   "dimension": "Experiment statistics",
+   "best_competitor": "SquadStack Optimize (claimed)",
+   "their_best": "80/20 or 70/30 splits with a significance flag",
+   "vp_better_how": "Pre-registration, a power meter with an ETA, and shadow plus permutation A/A per tenant. Fixed horizon with the verdict hidden until the end. Always-valid tests guard against harm only. Randomisation is per customer and sticky.",
+   "evidence": "SQS-65; RET-08; L6V item 4 (52-62% false winners at K=2); L6 L03, L04"
+  },
+  {
+   "dimension": "Rollout safety",
+   "best_competitor": "SquadStack Lift (claimed)",
+   "their_best": "Staged slice, then a quarter, half, all",
+   "vp_better_how": "A 20% safety ramp plus ten auto-stop guardrails, including early hang-up per 10-digit CLI under TRAI reg 21A, crisis handling, disclosure and the Goodhart minutes alarm.",
+   "evidence": "SQS-64; L6 L35; data/blueprint/intelligence-module.json M08"
+  },
+  {
+   "dimension": "Winner lifetime",
+   "best_competitor": "None documents expiry",
+   "their_best": "Winners promoted by hand and kept forever",
+   "vp_better_how": "Expiry at 60 days, drift alarms mark winners stale, and a re-confirm card offers a 10% holdback.",
+   "evidence": "L6 s.4.6 (plain Thompson kept the old winner in 56% of runs; discounted 98.5% right)"
+  },
+  {
+   "dimension": "Showing improvement over time (req-27)",
+   "best_competitor": "Retell",
+   "their_best": "Filter analytics by agent version",
+   "vp_better_how": "A timeline with labels (proved, fixed before/after, simulated only, no effect, rolled back) and intervals. Point estimates are never summed; a cumulative number appears only with a holdout.",
+   "evidence": "RET-08; SYN-81 (marketing outruns docs); evidence.2026-10-20.exotel-memory-marketing-gap"
+  },
+  {
+   "dimension": "Learning from groups (req-33)",
+   "best_competitor": "SquadStack (claimed pooled corpus)",
+   "their_best": "Claims learning across 400 million+ interactions",
+   "vp_better_how": "Within-tenant cohorts, plus invariant lessons with support counts drawn from simulations and consented aggregates. Segment priors come only at 10+ opted-in tenants under contract, never as pooled transcripts.",
+   "evidence": "L6 s.4.7 (wrong winner for 48-55% of dissimilar tenants); rejected.2026-10-17.cross-tenant-pooling; L6 L33, L34"
+  },
+  {
+   "dimension": "Autonomy",
+   "best_competitor": "Bland (Tornado) / Vapi (Composer Bypass)",
+   "their_best": "An autonomous test-fix loop; publishing without pausing for approval",
+   "vp_better_how": "Autonomy only for risk-lowering actions (revert, throttle, stop). Bandits only at 1,000+ calls a day with held-out read-outs, under outcome or seat pricing.",
+   "evidence": "L6V item 7; VAP-61; L6 s.4.3"
+  },
+  {
+   "dimension": "Turn-taking tuning",
+   "best_competitor": "Retell",
+   "their_best": "Per-node responsiveness, interruption and STT overrides",
+   "vp_better_how": "Measured cut-in tests on millisecond parameters (70-163 calls per arm [C]) with a reply-gap non-inferiority guardrail, Hindi lexicons and per-contact pace presets.",
+   "evidence": "retell dossier RAP-18; learning-module-defaults.json turn_taking; open.2026-10-19.turn-taking"
+  },
+  {
+   "dimension": "Cost of the loop",
+   "best_competitor": "ElevenLabs (Architect)",
+   "their_best": "Free through October 2026",
+   "vp_better_how": "Shadow A/A and experiments add no calls. Simulation runs about INR 100-200 a cycle [I] inside a visible INR 200 a day budget, with the cost shown on each card. Retell AI QA is USD 0.10/min and Conductor credits USD 0.20.",
+   "evidence": "EL-03; RET-03, RET-58; data/blueprint/workspace-tool-registry.json risk_classes.test"
+  },
+  {
+   "dimension": "Honest claims",
+   "best_competitor": "None",
+   "their_best": "Marketing ahead of docs at Synthflow, SquadStack, Exotel",
+   "vp_better_how": "A copy linter in Operator replies, the brief and cards, plus a level badge. 'Learns on its own' is blocked below L4.",
+   "evidence": "SYN-81; SQS-74; research/2026-10-20/teardown/SYNTHESIS.md l.364; L6 s.10.4"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "A/A false-winner rate per tenant and metric (shadow labels + permutation)",
+   "target": "5% or less; never above 6.5% at 1,000 permutations",
+   "how": "The Learner runs the production procedure nightly on shadow labels and 1,000 contact re-randomisations over 90 days"
+  },
+  {
+   "metric": "Gate escapes",
+   "target": "0 locked-section diffs, 0 new numbers or identifiers, 0 recitable lines reaching a published version",
+   "how": "Post-publish audit of the resolved config against the previous version, plus a red-team set of 50 adversarial proposals each release"
+  },
+  {
+   "metric": "Fast-lane detection",
+   "target": "90% lines flagged by call 20 in 95%+ of runs; 60% lines by call 50 in 99%+ [C]; healthy scripts flagged 0.1% or less by call 300 (2% or less if the reference curve is 2x wrong)",
+   "how": "Synthetic call streams before launch; live, the share of fast-lane flags humans confirm as real"
+  },
+  {
+   "metric": "Fast-lane card latency",
+   "target": "15 min p90 from flag to card; approved version live at the next call boundary (60 s p90)",
+   "how": "Event timestamps flag -> card -> tap -> first call on the new version"
+  },
+  {
+   "metric": "Promoted changes that hold",
+   "target": "80%+ inside their original interval at the 60-day re-confirm [I]",
+   "how": "Re-confirm holdbacks and drift alarms"
+  },
+  {
+   "metric": "Simulation-to-live agreement",
+   "target": "Measured on the first 10 decided tests; target 70%+ same direction [I]",
+   "how": "Compare the sign of each simulated contrast with the live test result"
+  },
+  {
+   "metric": "Proposal usefulness",
+   "target": "50%+ of cards approved; 10% or less of approved changes stopped by a guardrail",
+   "how": "Card and experiment outcomes"
+  },
+  {
+   "metric": "Time to first proved change",
+   "target": "50%+ of L2 tenants have one proved change within 30 days [I]",
+   "how": "Cohort of tenants by date of reaching L2"
+  },
+  {
+   "metric": "Guardrail stop latency",
+   "target": "Variant at 0% within one call boundary of a breach; 0 promotions with a breached guardrail",
+   "how": "Guardrail events vs allocation changes"
+  },
+  {
+   "metric": "Honest claims",
+   "target": "0 banned phrases shipped; 100% of effects shown with n and interval",
+   "how": "Claim linter logs on Operator replies, briefs and cards; UI audit"
+  },
+  {
+   "metric": "Expiry coverage",
+   "target": "100% of promoted winners carry an expiry; a re-confirm card within 7 days of expiry",
+   "how": "Experiment records"
+  },
+  {
+   "metric": "Client comprehension",
+   "target": "4 of 5 managers explain what a card changes and how many calls it needs in under 60 s",
+   "how": "Moderated 5-user test on the inbox and proposal screens"
+  },
+  {
+   "metric": "Learning cost",
+   "target": "Simulation spend INR 200 or less per proposal cycle p90; 0 production 429s caused by simulations",
+   "how": "Cost lines tagged 'test'; quota logs (rejected.harvest.14)"
+  },
+  {
+   "metric": "TRAI reg 21A safety",
+   "target": "0 CLI flags or bars caused by experiments",
+   "how": "Monitor M08 events joined to experiment allocation"
+  },
+  {
+   "metric": "Outcome lift at L3+",
+   "target": "At least one test per quarter with a positive outcome interval for L3 tenants [I]",
+   "how": "Pre-registered outcome tests on code-earned outcomes"
+  }
+ ],
+ "phases": [
+  {
+   "phase": "v1: learning-ready",
+   "scope": [
+    "Clause-aligned hang-up capture (moment id = slot + clause + shape hash) on every call",
+    "Moment ribbon 'Where callers leave' with intervals and the L0/L1 badge",
+    "Fast lane: sequential rule (k>=10, P(h>3x ref)>=0.99), engineering-vs-content triage, auto-revert on regression (A3, policy default on), 25% throttle (A3, undo)",
+    "Coach proposal with text simulations (6 base + failure personas x 3 seeds) and all throwing gates (compile, lint L1-L7, budget, locked diff, provenance, manipulation lint, latency)",
+    "Phone fast-lane alarm card with hold-to-approve",
+    "Version timeline listing changes without effect claims; 'fixed (before/after)' label",
+    "Shadow A/A labels recorded silently so A/A is ready at v2",
+    "Exit: fast lane validated on synthetic call streams; 0 gate escapes on a 50-proposal red-team set; harmonise intelligence monitor M10"
+   ]
+  },
+  {
+   "phase": "v2: she gets better, provably (Plus)",
+   "scope": [
+    "Learning inbox (3 cards a day, ranked) with full propose-probe-compose and tenant library-first",
+    "Experiments with pre-registration, contact-sticky arms, safety ramp, power meter and 'under-powered: N more calls'",
+    "Shadow and permutation A/A gate per metric",
+    "Guardrail auto-stop (opt-outs, complaints, disclosure, crisis, R3/R6, CLI reg 21A, Goodhart minutes, empty ASR, cut-ins, reply gap)",
+    "Tests: turn-taking numbers and Hindi lexicons, opening, moment fixes, objection packs, tool guidance, best time within window, memory compile policy",
+    "Knowledge-gap cards that ask the client for facts",
+    "Expiry, drift alarms and re-confirm cards",
+    "'How she changed for you' timeline with intervals; lessons screen",
+    "Exit: A/A false winners 5% or less on 3 design partners; one proved change per L2 partner; sim-to-live agreement measured"
+   ]
+  },
+  {
+   "phase": "v3: at volume (Premium)",
+   "scope": [
+    "Discounted Thompson (gamma 0.97) for 1,000+ connected a day on one script, 10% held-out read-out, outcome or seat pricing",
+    "Guarded auto-ramp",
+    "Opt-in 5% holdout for an honest since-you-started number",
+    "Leading-indicator (surrogate) validation per tenant",
+    "Segment priors from consented aggregate counts (10+ tenants, ~3,000+ calls a day, small tau, contract clause, counsel cleared)",
+    "Invariant-lessons library fed by opted-in aggregates",
+    "Register and voice changes per segment via blind listener panels only",
+    "Exit: per-tenant lift with intervals; no guardrail breach; no reg 21A flags from exploration"
+   ]
+  }
+ ],
+ "beyond": [
+  "Per-moment hang-up hazard with an interval, computed in code from TTS clause timestamps and carrier hang-up time, with no LLM in the label",
+  "A fast lane that flags a 90%-hang-up line at median call 13-15, with 0 of 4,000 healthy runs flagged [C]; auto-revert of regressions and a contact-saving 25% throttle while the client decides",
+  "'Calls to prove' with an ETA at the client's own volume on every proposal, before approval",
+  "Shadow A/A on every tenant at zero call cost, plus permutation A/A on the tenant's own data; it also exposes broken outcome writers",
+  "Locked sections enforced as an empty diff on the resolved config, a provenance gate (a learned line cannot add a number) and a manipulation lint",
+  "Simulated callers with hidden keys scored in code, a measured simulation noise floor, Hinglish personas incl. the 2.4 s elderly pause, and multi-call memory tests",
+  "harness2 propose-probe-compose adapted to calls, with a shared-assumption probe and a human gate",
+  "Verdict hidden until the pre-registered horizon, so watching the meter cannot manufacture winners",
+  "Winners expire at 60 days and drift alarms mark them stale",
+  "A 'how she changed for you' timeline that shows null and rolled-back changes and never sums point estimates",
+  "A tenant library that refuses to re-propose what this tenant's data already rejected",
+  "Regulation-aware exploration that stops on 10-digit CLIs when the TRAI reg 21A guard fires",
+  "Knowledge-gap cards that ask the client for the missing fact instead of letting a model invent one",
+  "Kept-commitment outcomes (payment received, booking attended) so pressure tactics lose",
+  "Customer-sticky experiment arms so a person never meets two versions of her mid-relationship",
+  "Learning from groups through personal-data-free invariant lessons with support counts, not pooled transcripts",
+  "A copy linter that stops VP's own Operator from over-claiming learning"
+ ],
+ "risks": [
+  "Real line-level effects may be mostly below 5% relative (TTS vendor choice moved intro hang-ups only 2.4 points over ~99,400 calls [V]), so few slow-lane changes will ever prove. Mitigation: dense metrics, an honest 'under-powered' state, the fast lane for big failures (L6 s.9)",
+  "The reference hazard curve and the cut-in ICC are assumed, not measured. Fast-lane thresholds and power numbers may shift; one anonymised dialler export and VP's own per-turn data would settle them (L6 s.10.2)",
+  "Clause-aligned hang-up timing may be unavailable on some carriers or BYO paths; the transcript fallback needs 2-5x more calls (L6 s.9)",
+  "Simulation validity is unknown: harness2 is untested on dialogue, contrasts share model bias, and failure-derived personas can overfit. The sim-to-live agreement metric must be measured before sims are trusted",
+  "Rubber-stamp approvals: managers may tap without reading. Safety therefore lives in the gates, not in the human; the inbox cap limits fatigue",
+  "Goodhart under per-minute pricing: moment fixes raise minutes. The proposed minutes credit costs margin; the owner must choose",
+  "Novelty effects: a new line starts strong and decays (falsely declared in 82% of Thompson runs, L6 s.4.6). Mitigated by a 7-day minimum and expiry, not eliminated",
+  "TRAI reg 21A exposure if exploration raises short calls on 10-digit CLIs. Mitigated by the M08 stop and by preferring 1600/140 series for service calls; counsel question open",
+  "Clients may not wire outcomes, leaving only proxies and making outcome tests impossible. Outcome wiring must be part of onboarding",
+  "LLM outcome-extraction accuracy is unmeasured; at 90% accuracy it inflates required calls 1.8-2.4x, at 80% 3.6-5.5x (L6 L09, L6V item 8)",
+  "Competitors are closing in: ElevenLabs announced proactive proposals and automations (EL-53); Vapi's 'Improve the assistant' Composer flow is flag-gated (VAP-06); Retell Conductor gains autonomy; SquadStack self-serve could open. The statistics layer is copyable within quarters",
+  "Statistics vocabulary may confuse clients. Plain-word copy and the comprehension test are the guard",
+  "Permutation A/A cannot see arm-dependent writer bugs; only live shadow labels can, so both must run",
+  "The fast lane could over-alert for tenants whose audience is far harsher than the default curve (1.3% by call 300 at a 2x-wrong curve [C]) until the tenant's own curve exists"
+ ],
+ "open_questions": [
+  "What are real hazard curves and line-level effect sizes on Indian AI calls? Close with one anonymised dialler export from an interviewee (L6 owner action 2)",
+  "What is the per-call ICC of cut-ins? Close with VP's own battery and design-partner turn data",
+  "Is clause-level hang-up timing available end to end on Plivo, Exotel and Vobiz BYO paths? Close with live test T4",
+  "How often do simulated contrasts agree in direction with live tests? Close with the first 10 decided tests",
+  "How accurate is LLM outcome extraction against CRM ground truth per tenant?",
+  "Pricing unit (owner): per connected second for self-serve vs outcome or seat for Premium, and whether to adopt the minutes credit for approved changes that raise minutes without gain",
+  "Counsel: can a processor reuse aggregate per-variant counts across fiduciaries under DPDP s.8(2)? Does exploration on 10-digit CLIs create reg 21A exposure? Must the DPDP Rule 3 notice mention that calls are improved by testing?",
+  "Should auto-revert on catastrophic regression default to on, and who may approve learning cards by default (Builder, Operator, or a second approver above a volume)?",
+  "Do buyers want to see experiments, or want VP to manage them for them (L6 s.9 kill condition)? Ask in the 10-15 interviews",
+  "Will clients accept a 5% holdout on an older version for an honest cumulative number?",
+  "Recalibrate the fast-lane thresholds (k>=10, 3x, 0.99), the 7-28 day test window and the 60-day expiry on design-partner data",
+  "Should the Base tier include the fast lane (proposed yes) and at what Plus and Premium prices (owner decision after the default stack is chosen)?"
+ ]
+}

@@ -1,0 +1,232 @@
+{
+ "nodes": [
+  {
+   "id": "component.product.analysis-bench",
+   "type": "component",
+   "status": "tested",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Analysis-quality bench: 84 synthetic keyed calls (12 templates x 6 industries, plus Tamil-, Bengali- and Marathi-English) and a 36-call cross-call slice with 3 planted objection themes, scored by code with Wilson 95% intervals",
+   "path": "product/scripts/analysis-bench.ts"
+  },
+  {
+   "id": "decision.2026-10-23.bench-scored-by-code-against-keys",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Analytics quality is measured by a bench whose keys are hand-written per template and whose scoring is code only, through the real path (signed ingest, then post-call analysis or insight). Reason-code accuracy is split into model-refined calls and calls decided by code",
+   "rationale": "Inherited law: a model never grades. Splitting the reason code stops code-decided calls (no answer, opt-out, crisis) from inflating the model's number.",
+   "reverse_if": "A human review of real calls finds the template keys miss how people actually talk; then add keyed real (consented, de-identified) transcripts beside the synthetic ones."
+  },
+  {
+   "id": "measure.2026-10-23.floor-opt-out-recall-regional",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The deterministic caller-signal floor (shared/safety callerSignals) catches 6 of 9 opt-outs in the bench. It misses all 3 regional phrasings (Tamil-, Bengali- and Marathi-English 'do not call me again, remove my number')",
+   "n": 9,
+   "method": "analysis bench (fake oracle, so the result is independent of any model): callerSignals(text).optOut over the caller lines of the 9 opt-out keyed calls",
+   "path": "product/scripts/analysis-bench.ts"
+  },
+  {
+   "id": "risk.2026-10-23.regional-opt-out-missed-live",
+   "type": "risk",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "A Tamil-, Bengali- or Marathi-English caller's 'do not call me again' is not caught by the live floor, so the runtime may emit no opt_out moment. Suppression then depends on post-call analysis catching it",
+   "mitigation": "Safety module: add regional opt-out phrasings to the floor lexicon (cases.json), with the bench's 3 lines as cases; the post-call analysis opt_out moment remains the second check."
+  },
+  {
+   "id": "open-question.2026-10-23.analysis-quality-on-a-real-model",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "How accurate are per-call analysis and cross-call insight on a real model? The bench has only run with the scripted oracle (CI)",
+   "closes_when": "The integrator runs `node --import tsx product/scripts/analysis-bench.ts` with VP_LLM_ANALYSIS_* set (1 request a second, token cap) and files the analysis-bench.json numbers as measure.* nodes."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-contract-shapes-conv-codes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The analysis contract is written as shapes: the model may name CONV_* codes only, null outcome only when no PERSON line bears on the question, every agreeing PERSON line is a commitment, and the outcome carries a confidence",
+   "rationale": "The real-model bench showed three miss classes. Mini gave null outcomes on wrong-person, complaint and opt-out calls; found 7 of 21 commitments; and named END_HANDED_OFF, an engine code, on 2 complaint calls. The changes are class-level, from the template pattern of the misses, not tuned item by item. A mutation test proves the CONV_* guard is what stops an engine code.",
+   "reverse_if": "The TEST split on a real model shows no gain over the old contract on outcome and commitment recall, or a loss elsewhere."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "type": "decision",
+   "status": "proposed",
+   "source": "inferred",
+   "date": "2026-10-23",
+   "title": "The analysis model is chosen per workspace from a curated list: single, or tiered (a cheaper first pass that escalates failed, outcome-less or low-confidence calls to a stronger model). No default model is chosen in code",
+   "rationale": "Computed for a 3-minute call: mini about ₹0.073, GPT-4.1 about ₹0.38, against a ₹0.17 budget. Tiered costs ₹0.073 plus e x ₹0.38, so it stays under budget while the escalation rate e is below 26%. The bench's no-outcome rate for mini was 16.7%.",
+   "reverse_if": "The TEST split shows tiered accuracy significantly below GPT-4.1-only, or a real-traffic escalation rate of 26% or more."
+  },
+  {
+   "id": "measure.2026-10-23.analysis-bench-real-models",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Analysis bench on real models (integrator's run, older contract): outcome 70/84 (mini) vs 84/84 (GPT-4.1); moment recall 57/72 vs 67/72; quotes grounded 230/230 and 277/277; cross-call themes 3/3 on both; ₹0.048 vs ₹0.263 per call",
+   "n": 84,
+   "method": "product/scripts/analysis-bench.ts at 1 request a second on Azure models; scored by code against hand-written keys",
+   "path": "research/2026-10-23/benches"
+  },
+  {
+   "id": "decision.2026-10-23.activity-subject-ids-only",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Every audited tool run records its subject as {type, id} only (from its input, or for a create from what its result made). activity.list resolves the name at read time inside the workspace, and a contact without a name shows as 'a contact', never a number",
+   "rationale": "Closes open.2026-10-21.activity-row-subject (walkthrough S4). Storing ids, not names, keeps the hash-chained audit free of personal data and lets a renamed or deleted thing read correctly. A guard test makes every new *Id argument either a subject key or an explicitly internal id.",
+   "reverse_if": "The activity ledger must show the name as it was at the time of the change (for example for a compliance export); then store a name snapshot beside the id, with redaction."
+  },
+  {
+   "id": "decision.2026-10-23.one-goal-definition",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Goal reached, defined once (calls/goal.ts): a call's best outcome (verified, then manager, then AI guess) is one of its own definition's goal values. The funnel and insight use that predicate, and the reason code follows it: CONV_GOAL_DONE exactly when the goal is reached, wherever the goal is knowable. Engine-decided codes are never rewritten",
+   "rationale": "Closes open.2026-10-23.q-goal-key-vs-goal-semantics. Before, the model's CONV_GOAL_DONE could contradict the outcome (goal done on a 'not now' call), and a later verified payment did not move the reason. The funnel read the campaign's definition while insight read the outcome's. Grade travels beside the answer: the funnel shows goals by grade, and learning still requires a trusted grade (conversation.outcome).",
+   "reverse_if": "The owner wants 'agenda completed' (the conversation went to plan) shown separately from 'goal reached' (the business result); then add a separate agenda-done signal instead of overloading the reason code."
+  },
+  {
+   "id": "decision.2026-10-23.judge-event-opt-out-label",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The runtime 'judge' event carries the judge's opt-out verdicts as label 'opt_out' (raised or shadow, with a confidence; no kind, no reason), beside the crisis ones (label absent means crisis). One contract, product/shared/judge-event.json, is read by calls' ingest validator and by vpvoice/judge_event.py. calls stores the label (call_judge_event.label, migration 0605), counts it apart (analysis.opt_out_judge; crisis_judge now counts crisis rows only), and call.get returns plain-English judgeMarks that the call page shows. Shadow stays log-only: only the 'moment' opt_out of a raise suppresses",
+   "rationale": "Closes open.2026-10-23.judge-event-opt-out-fields. Before, a shadow opt-out verdict was only a runtime log line, so the shadow trial could not be measured or shown. 'raised' means this verdict acted (the moment was sent). A raise-mode verdict that did not act (a crisis in progress, an opt-out already signalled) is sent as outcome 'shadow' with mode 'raise', so the page never claims an action that did not happen. An outage is reported once, as crisis, because one model call reads both labels. A post-call opt-out verdict is counted only, never acted on after the call.",
+   "reverse_if": "The owner wants a post-call opt-out raise to suppress the contact (today only the live raise does), or the judge gains a label whose outage must be reported separately."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-no-decision-codes",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "No outcome is recorded on a call whose reason is END_CRISIS, END_EARLY_HANGUP or CONV_LANGUAGE_MISMATCH, whatever the model guessed (calls/analysis.ts NO_DECISION; the guess shows as outcomeUnclear 'not recorded: ...'). The prompt's outcome rule is rewritten: decided only when the PERSON takes a stance; null when they could not follow the language, hung up before the question, or spoke of distress (distress is not a request for a human)",
+   "rationale": "Answers rejected.2026-10-23.analysis-outcome-null-only-rule: every round-2 outcome miss on all three designs was a non-null outcome on these call types. The code guard makes them right regardless of model; the prompt rewrite keeps the commitment and complaint gains of 8a4a508 (those lines are unchanged). The prompt rewrite is NOT measured on a real model (no keys in the sandbox): it was written from the DEV templates only, TEST not consulted again.",
+   "reverse_if": "A real deployment shows calls where the person decided before a crisis or a language switch and that decision is needed (then keep the guess for crisis calls as needs-review instead of dropping it)."
+  },
+  {
+   "id": "decision.2026-10-23.tiered-skips-engine-decided",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "Tiered analysis never escalates a call whose reason the engine decided (any code outside REFINABLE: END_CRISIS, END_OPTED_OUT, END_EARLY_HANGUP, END_HANDED_OFF, CONN_*, ...), including when the first pass failed; analysis.tier.why says so. END_HUNG_UP_MID and CONV_INCOMPLETE, which the engine leaves open, may still escalate",
+   "rationale": "Answers rejected.2026-10-23.tiered-escalate-on-no-outcome: tiered escalated exactly the calls where no outcome is correct and turned 4 right answers wrong.",
+   "reverse_if": "A failed first pass on engine-decided calls leaves too many calls unanalysed (then retry the same model instead of escalating)."
+  },
+  {
+   "id": "decision.2026-10-23.analysis-default-mini-in-code",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "The product default analysis setting is single, gpt-4.1-mini, when the deployment's curated list (VP_ANALYSIS_MODELS) has it; VP_ANALYSIS_DEFAULT_MODEL renames it; otherwise the deployment's VP_LLM_ANALYSIS_MODEL. A workspace that set tiered without a first model also starts on it",
+   "rationale": "Implements decision.2026-10-23.analysis-default-mini-single.",
+   "reverse_if": "That decision is reversed."
+  },
+  {
+   "id": "decision.2026-10-23.call-search-outcome-validated",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-23",
+   "title": "call.search: outcome must be one of the workspace's defined outcome values (the campaign's when campaignId is given); any other value is refused with the valid values listed, and a reason code passed as outcome is named as one ('pass it as reasonCode'). reasonCode is a separate enum filter. The result carries total, the count of every match regardless of page",
+   "rationale": "Answers rejected.2026-10-23.call-search-free-text-outcome: both models passed a reason code as the outcome, got 0 rows and answered 'no calls'. The values differ per workspace, so they cannot be a static enum in the tool schema; the refusal carries them instead.",
+   "reverse_if": "The operator's tool schemas become per-workspace; then put the values in the schema as an enum."
+  }
+ ],
+ "edges": [
+  {
+   "from": "component.product.analysis-bench",
+   "to": "decision.2026-10-23.bench-scored-by-code-against-keys",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-23.floor-opt-out-recall-regional",
+   "to": "risk.2026-10-23.regional-opt-out-missed-live",
+   "relation": "evidences"
+  },
+  {
+   "from": "measure.2026-10-23.analysis-bench-real-models",
+   "to": "decision.2026-10-23.analysis-model-per-workspace-tiered",
+   "relation": "evidences"
+  },
+  {
+   "from": "decision.2026-10-23.one-goal-definition",
+   "to": "open.2026-10-23.q-goal-key-vs-goal-semantics",
+   "relation": "resolves"
+  },
+  {
+   "from": "decision.2026-10-23.judge-event-opt-out-label",
+   "to": "open.2026-10-23.judge-event-opt-out-fields",
+   "relation": "resolves"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-no-decision-codes",
+   "to": "rejected.2026-10-23.analysis-outcome-null-only-rule",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-23.tiered-skips-engine-decided",
+   "to": "rejected.2026-10-23.tiered-escalate-on-no-outcome",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-23.call-search-outcome-validated",
+   "to": "rejected.2026-10-23.call-search-free-text-outcome",
+   "relation": "answers"
+  },
+  {
+   "from": "decision.2026-10-23.analysis-default-mini-in-code",
+   "to": "decision.2026-10-23.analysis-default-mini-single",
+   "relation": "implements"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "analysis-bench-built",
+   "details": "Built the analysis-quality bench (product/scripts/analysis-bench.ts, cases in product/scripts/analysis-bench/cases.ts) and its CI test (product/tests/calls-bench.test.ts, 3 tests: set integrity, oracle smoke, and a wrong model scoring low). With the oracle over all 84 calls, every model-driven field is 100% (as expected for an oracle), the grounding check drops each planted invented quote (210/288 kept), and cross-call recall is 3/3. One model-independent finding: the floor's opt-out recall is 6/9, missing all regional phrasings. Gates: tsc clean, ui-contract 0 missing, full suite 403/403 on a fresh database. Not run: a real model."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "analysis-contract-and-tiering",
+   "details": "Calls changes:\n- The bench is split DEV/TEST, 42/42, stratified so every template and language is on both sides.\n- The analysis contract is rewritten as shapes. Engine codes are refused from the model (mutation-checked). Outcome null is allowed only when no PERSON line bears on the question. Commitments are every agreeing PERSON line. The outcome carries a confidence.\n- Per-workspace single or tiered analysis model (migration 0604, analysis.settings.get / analysis.model.set). Escalation on a failed pass, no outcome, or low confidence; a cost line per pass.\n- The bench's cross-call slice is seeded as the product writes calls (turns, outcome rows, end reason), so goals come from graded outcomes.\n- Cost model in product/server/modules/calls/ANALYSIS-COST.md.\nVerified: 6 tier tests, 4 bench tests; full suite 418/418 on a fresh database.\nNot verified: the new contract on a real model (no keys in this sandbox); the integrator runs TEST."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "walkthrough-s4-s5-s7",
+   "details": "Three walkthrough fixes. S4: every activity row names its subject (kernel subject.ts, registry audit payload, workspace activity.list, web activitySentence), with a guard test over all registered tools. S5: contact.dnd_refresh returns source {id, label, standIn, registerConnected}, and the UI says who answered and that a stand-in is not the national register. S7: the dev server uses a canned sample analysis, marked 'Sample analysis (dev only)' and grounded by the real checks, which refuses to load with NODE_ENV=production (tested by spawning both files). Verified: full suite 439/439 on a fresh database; tsc clean for server and web; ui-contract 0 missing."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "one-goal-definition",
+   "details": "calls/goal.ts: GOAL_SQL, GOAL_GRADE_SQL, GOAL_KNOWN_SQL and syncGoalReason. Analysis, refreshOutcome (and so outcome.label, outcome.record_verified and the analysis outcome), the funnel and insight all use it. tests/calls-goal.test.ts (3) failed on the old code and pass now. Calls, e2e and learning: 77 pass."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "judge-event-opt-out-label",
+   "details": "Gates on a fresh database: node scripts/test.mjs 454/454 pass (VP_VOICE_PYTHON set, so the cross-process live tests ran); ui-contract --strict 173/173; tsc server and web clean; voice python -m unittest OK (test_judge 36, incl. 3 new). The runtime fixture gained opt_out_raised and opt_out_shadow calls; its live batches pass calls' real validator via node. This run also covers the full gates owed for a9c44d5 (one goal definition). Not verified: a real-model judge on a real call (no keys in the sandbox)."
+  },
+  {
+   "date": "2026-10-23",
+   "event": "analysis-round2-fixes",
+   "details": "tests/calls-analysis-rules.test.ts (4 tests) failed 4/4 on the code before (stash run) and pass now. Gates on a fresh database: node scripts/test.mjs 458/458 (VP_VOICE_PYTHON set); ui-contract --strict 173/173; tsc server and web clean. analysis-bench --fake --split dev runs 42/42 (plumbing only: the fake oracle is not a measurement). Not verified: the rewritten prompt on any real model. Ask: run DEV before TEST on the VM."
+  }
+ ]
+}

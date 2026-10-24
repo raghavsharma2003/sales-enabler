@@ -1,0 +1,69 @@
+{
+ "args": {
+  "model": "gemini-3.8-live",
+  "api": "v1alpha",
+  "minutes": 3.0,
+  "script": "P1",
+  "compression": "off",
+  "vad": "server",
+  "thinking": "budget0",
+  "voice": "Despina",
+  "lang": "hi-IN",
+  "affective": false,
+  "proactive": true,
+  "stream_end": false,
+  "audio_dir": "/home/user/sales-enabler/research/2026-10-18/lanes/g2-gemini-live-measured/harness/audio_phone16k",
+  "persona": "/home/user/sales-enabler/research/2026-10-18/lanes/g2-gemini-live-measured/harness/persona.txt",
+  "gap_ms": 500,
+  "gap_jitter_ms": 400,
+  "reply_timeout": 10.0,
+  "seed": 31,
+  "save_audio": true,
+  "out": "/tmp/claude-0/-home-user/5e2837be-8576-5279-a870-65aba61ebd82/scratchpad/research-raw-1018/g2-gemini-live-measured/runs_z",
+  "tag": "us_g38_3m_server_P1_tb0"
+ },
+ "wall_start_utc": "2026-10-18T19:12:32Z",
+ "host": "vm",
+ "setup": {
+  "model": "models/gemini-3.8-live",
+  "generationConfig": {
+   "responseModalities": [
+    "AUDIO"
+   ],
+   "speechConfig": {
+    "voiceConfig": {
+     "prebuiltVoiceConfig": {
+      "voiceName": "Despina"
+     }
+    },
+    "languageCode": "hi-IN"
+   },
+   "thinkingConfig": {
+    "thinkingBudget": 0
+   }
+  },
+  "systemInstruction": "<persona 2955 chars>",
+  "inputAudioTranscription": {},
+  "outputAudioTranscription": {},
+  "sessionResumption": {},
+  "proactivity": {
+   "proactiveAudio": true
+  }
+ },
+ "call_s": 176.745,
+ "n_frames": 8790,
+ "n_clip_frames": 2575,
+ "caller_speech_s": 51.5,
+ "agent_audio_s": 87.14,
+ "connections": [
+  {
+   "t": 6.862600002932595e-05,
+   "ws_open_ms": 523.002298999927,
+   "setup_ms": 335.13670100001036,
+   "resumed": false,
+   "first_frame_t": 0.8612747980000495
+  }
+ ],
+ "errors": [],
+ "n_turns": 16
+}

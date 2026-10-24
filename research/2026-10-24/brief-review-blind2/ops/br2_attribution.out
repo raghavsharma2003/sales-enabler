@@ -1,0 +1,50 @@
+{
+ "rows": 160,
+ "spy_records": 160,
+ "rows_without_spy_record": 0,
+ "replay_mismatches": 0,
+ "floor_findings_on_template_fields": 0,
+ "rows_with_a_counted_template_field_finding": {
+  "flag": 0,
+  "pass": 0
+ },
+ "judge_as_scored": {
+  "recall": 60,
+  "fp": 10
+ },
+ "judge_item_field_only": {
+  "recall": 60,
+  "fp": 10
+ },
+ "combined_as_scored": {
+  "recall": 60,
+  "fp": 13
+ },
+ "combined_item_field_only": {
+  "recall": 60,
+  "fp": 13
+ },
+ "counted_only_because_of_a_template_field": {
+  "flag": [],
+  "pass": []
+ },
+ "raw_model_findings": {
+  "all": 78,
+  "on_template_fields_any_confidence": 0,
+  "rows_with_one": 0
+ },
+ "dropped_by_the_honest_affirmation_filter": {
+  "flag": [],
+  "pass": [
+   "heldout-brief-review-2.pass.27",
+   "heldout-brief-review-2.pass.30",
+   "heldout-brief-review-2.pass.33",
+   "heldout-brief-review-2.pass.34",
+   "heldout-brief-review-2.pass.36",
+   "heldout-brief-review-2.pass.38",
+   "heldout-brief-review-2.pass.39",
+   "heldout-brief-review-2.pass.40"
+  ]
+ },
+ "template_paths_counted": []
+}

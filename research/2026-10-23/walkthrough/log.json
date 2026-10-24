@@ -1,0 +1,961 @@
+[
+ {
+  "persona": "bank",
+  "step": "01-signup-page",
+  "ms": 494,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "bank",
+  "step": "02-signup-submitted",
+  "ms": 1364,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "03-today-empty",
+  "ms": 208,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "04-assistant-describe",
+  "ms": 6292,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "05-start-templates",
+  "ms": 1231,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "06-template-chosen",
+  "ms": 360,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "07-agent-created",
+  "ms": 1074,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a"
+ },
+ {
+  "persona": "bank",
+  "step": "08-agent-persona",
+  "ms": 879,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=persona"
+ },
+ {
+  "persona": "bank",
+  "step": "09-agent-job",
+  "ms": 1050,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=job"
+ },
+ {
+  "persona": "bank",
+  "step": "10-agent-rules",
+  "ms": 848,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=rules"
+ },
+ {
+  "persona": "bank",
+  "step": "11-agent-tools",
+  "ms": 817,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=tools"
+ },
+ {
+  "persona": "bank",
+  "step": "12-agent-voice",
+  "ms": 1496,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=voice"
+ },
+ {
+  "persona": "bank",
+  "step": "13-agent-versions",
+  "ms": 788,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=versions"
+ },
+ {
+  "persona": "bank",
+  "step": "14-test-panel",
+  "ms": 1143,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a"
+ },
+ {
+  "persona": "bank",
+  "step": "15-practice-callers-run",
+  "ms": 1065,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a"
+ },
+ {
+  "persona": "bank",
+  "step": "16-browser-call",
+  "ms": 4269,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?test=1"
+ },
+ {
+  "persona": "bank",
+  "step": "17-browser-call-ended",
+  "ms": 1753,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?test=1"
+ },
+ {
+  "persona": "bank",
+  "step": "18-publish-sheet",
+  "ms": 1119,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a"
+ },
+ {
+  "persona": "bank",
+  "step": "19-published",
+  "ms": 3591,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a"
+ },
+ {
+  "persona": "bank",
+  "step": "20-import-empty",
+  "ms": 922,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "bank",
+  "step": "21-import-pasted",
+  "ms": 258,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "bank",
+  "step": "22-import-saved",
+  "ms": 127,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "bank",
+  "step": "23-contacts-list",
+  "ms": 948,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "bank",
+  "step": "24-contact-page",
+  "ms": 30162,
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "url": "/contacts"
+ },
+ {
+  "persona": "bank",
+  "step": "25-audiences",
+  "ms": 907,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "bank",
+  "step": "26-campaign-new",
+  "ms": 988,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "bank",
+  "step": "27-campaign-filled",
+  "ms": 205,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "bank",
+  "step": "28-campaign-draft",
+  "ms": 240,
+  "error": null,
+  "url": "/campaigns/dae1cb93-7510-4c31-89f2-e69e20a84379"
+ },
+ {
+  "persona": "bank",
+  "step": "29-campaign-estimate",
+  "ms": 1644,
+  "error": null,
+  "url": "/campaigns/dae1cb93-7510-4c31-89f2-e69e20a84379"
+ },
+ {
+  "persona": "bank",
+  "step": "30-numbers",
+  "ms": 927,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "bank",
+  "step": "31-today-after",
+  "ms": 1133,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "32-activity",
+  "ms": 943,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "bank",
+  "step": "m-today",
+  "ms": 1363,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "bank",
+  "step": "m-agent",
+  "ms": 1356,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a"
+ },
+ {
+  "persona": "bank",
+  "step": "m-agent-voice",
+  "ms": 1575,
+  "error": null,
+  "url": "/agents/1ab031a3-bc05-45c0-b79a-4c03fa10fc4a?tab=voice"
+ },
+ {
+  "persona": "bank",
+  "step": "m-import",
+  "ms": 1294,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "bank",
+  "step": "m-contacts",
+  "ms": 1296,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "bank",
+  "step": "m-campaigns",
+  "ms": 1261,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "bank",
+  "step": "m-numbers",
+  "ms": 1303,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "d2c",
+  "step": "01-signup-page",
+  "ms": 193,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "d2c",
+  "step": "02-signup-submitted",
+  "ms": 1037,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "03-today-empty",
+  "ms": 170,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "04-assistant-describe",
+  "ms": 6215,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "05-start-templates",
+  "ms": 1109,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "06-template-chosen",
+  "ms": 318,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "07-agent-created",
+  "ms": 1067,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784"
+ },
+ {
+  "persona": "d2c",
+  "step": "08-agent-persona",
+  "ms": 885,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=persona"
+ },
+ {
+  "persona": "d2c",
+  "step": "09-agent-job",
+  "ms": 918,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=job"
+ },
+ {
+  "persona": "d2c",
+  "step": "10-agent-rules",
+  "ms": 839,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=rules"
+ },
+ {
+  "persona": "d2c",
+  "step": "11-agent-tools",
+  "ms": 840,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=tools"
+ },
+ {
+  "persona": "d2c",
+  "step": "12-agent-voice",
+  "ms": 1359,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=voice"
+ },
+ {
+  "persona": "d2c",
+  "step": "13-agent-versions",
+  "ms": 790,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=versions"
+ },
+ {
+  "persona": "d2c",
+  "step": "14-test-panel",
+  "ms": 1055,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784"
+ },
+ {
+  "persona": "d2c",
+  "step": "15-practice-callers-run",
+  "ms": 506,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784"
+ },
+ {
+  "persona": "d2c",
+  "step": "16-browser-call",
+  "ms": 4114,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?test=1"
+ },
+ {
+  "persona": "d2c",
+  "step": "17-browser-call-ended",
+  "ms": 1685,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?test=1"
+ },
+ {
+  "persona": "d2c",
+  "step": "18-publish-sheet",
+  "ms": 1095,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784"
+ },
+ {
+  "persona": "d2c",
+  "step": "19-published",
+  "ms": 3583,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784"
+ },
+ {
+  "persona": "d2c",
+  "step": "20-import-empty",
+  "ms": 919,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c",
+  "step": "21-import-pasted",
+  "ms": 245,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c",
+  "step": "22-import-saved",
+  "ms": 133,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "d2c",
+  "step": "23-contacts-list",
+  "ms": 950,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "d2c",
+  "step": "24-contact-page",
+  "ms": 30158,
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "url": "/contacts"
+ },
+ {
+  "persona": "d2c",
+  "step": "25-audiences",
+  "ms": 887,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "d2c",
+  "step": "26-campaign-new",
+  "ms": 965,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "d2c",
+  "step": "27-campaign-filled",
+  "ms": 217,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "d2c",
+  "step": "28-campaign-draft",
+  "ms": 250,
+  "error": null,
+  "url": "/campaigns/70e72806-27c1-4a8b-86b8-fa89e6a12109"
+ },
+ {
+  "persona": "d2c",
+  "step": "29-campaign-estimate",
+  "ms": 1631,
+  "error": null,
+  "url": "/campaigns/70e72806-27c1-4a8b-86b8-fa89e6a12109"
+ },
+ {
+  "persona": "d2c",
+  "step": "30-numbers",
+  "ms": 944,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "d2c",
+  "step": "31-today-after",
+  "ms": 1119,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "32-activity",
+  "ms": 942,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-today",
+  "ms": 1349,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-agent",
+  "ms": 1361,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-agent-voice",
+  "ms": 1577,
+  "error": null,
+  "url": "/agents/bb009f21-b208-49c9-8197-236cb08bb784?tab=voice"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-import",
+  "ms": 1281,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-contacts",
+  "ms": 1298,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-campaigns",
+  "ms": 1265,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "d2c",
+  "step": "m-numbers",
+  "ms": 1304,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "hospital",
+  "step": "01-signup-page",
+  "ms": 152,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "hospital",
+  "step": "02-signup-submitted",
+  "ms": 1046,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "03-today-empty",
+  "ms": 132,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "04-assistant-describe",
+  "ms": 6184,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "05-start-templates",
+  "ms": 1067,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "06-template-chosen",
+  "ms": 284,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "07-agent-created",
+  "ms": 1032,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0"
+ },
+ {
+  "persona": "hospital",
+  "step": "08-agent-persona",
+  "ms": 845,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=persona"
+ },
+ {
+  "persona": "hospital",
+  "step": "09-agent-job",
+  "ms": 921,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=job"
+ },
+ {
+  "persona": "hospital",
+  "step": "10-agent-rules",
+  "ms": 848,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=rules"
+ },
+ {
+  "persona": "hospital",
+  "step": "11-agent-tools",
+  "ms": 847,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=tools"
+ },
+ {
+  "persona": "hospital",
+  "step": "12-agent-voice",
+  "ms": 1516,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=voice"
+ },
+ {
+  "persona": "hospital",
+  "step": "13-agent-versions",
+  "ms": 820,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=versions"
+ },
+ {
+  "persona": "hospital",
+  "step": "14-test-panel",
+  "ms": 1088,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0"
+ },
+ {
+  "persona": "hospital",
+  "step": "15-practice-callers-run",
+  "ms": 543,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0"
+ },
+ {
+  "persona": "hospital",
+  "step": "16-browser-call",
+  "ms": 4092,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?test=1"
+ },
+ {
+  "persona": "hospital",
+  "step": "17-browser-call-ended",
+  "ms": 1714,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?test=1"
+ },
+ {
+  "persona": "hospital",
+  "step": "18-publish-sheet",
+  "ms": 1059,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0"
+ },
+ {
+  "persona": "hospital",
+  "step": "19-published",
+  "ms": 3618,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0"
+ },
+ {
+  "persona": "hospital",
+  "step": "20-import-empty",
+  "ms": 901,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "hospital",
+  "step": "21-import-pasted",
+  "ms": 255,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "hospital",
+  "step": "22-import-saved",
+  "ms": 132,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "hospital",
+  "step": "23-contacts-list",
+  "ms": 938,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "hospital",
+  "step": "24-contact-page",
+  "ms": 30146,
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "url": "/contacts"
+ },
+ {
+  "persona": "hospital",
+  "step": "25-audiences",
+  "ms": 904,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "hospital",
+  "step": "26-campaign-new",
+  "ms": 488,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "hospital",
+  "step": "27-campaign-filled",
+  "ms": 206,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "hospital",
+  "step": "28-campaign-draft",
+  "ms": 247,
+  "error": null,
+  "url": "/campaigns/ba38831b-1a3f-4b27-b731-96c6579dae23"
+ },
+ {
+  "persona": "hospital",
+  "step": "29-campaign-estimate",
+  "ms": 1636,
+  "error": null,
+  "url": "/campaigns/ba38831b-1a3f-4b27-b731-96c6579dae23"
+ },
+ {
+  "persona": "hospital",
+  "step": "30-numbers",
+  "ms": 933,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "hospital",
+  "step": "31-today-after",
+  "ms": 1137,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "32-activity",
+  "ms": 942,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-today",
+  "ms": 1360,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-agent",
+  "ms": 1348,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-agent-voice",
+  "ms": 1572,
+  "error": null,
+  "url": "/agents/428a6d3e-a3c8-4cd2-8241-0821de9a89b0?tab=voice"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-import",
+  "ms": 1291,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-contacts",
+  "ms": 1290,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-campaigns",
+  "ms": 1265,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "hospital",
+  "step": "m-numbers",
+  "ms": 1297,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "review",
+  "step": "01-calls",
+  "ms": 1345,
+  "error": null,
+  "url": "/calls"
+ },
+ {
+  "persona": "review",
+  "step": "02-call",
+  "ms": 1340,
+  "error": null,
+  "url": "/calls/d863a59c-f97b-4749-b974-ec1250cf4f2a"
+ },
+ {
+  "persona": "review",
+  "step": "03-call-opt-out",
+  "ms": 1344,
+  "error": null,
+  "url": "/calls/286196ba-1f96-40b1-ad1b-a9f95d5e3323"
+ },
+ {
+  "persona": "review",
+  "step": "04-insights",
+  "ms": 1441,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review",
+  "step": "05-settings-team",
+  "ms": 1295,
+  "error": null,
+  "url": "/settings/team"
+ },
+ {
+  "persona": "review",
+  "step": "06-settings-keys",
+  "ms": 1312,
+  "error": null,
+  "url": "/settings/keys"
+ },
+ {
+  "persona": "review",
+  "step": "07-settings-brand",
+  "ms": 1321,
+  "error": null,
+  "url": "/settings/brand"
+ },
+ {
+  "persona": "review",
+  "step": "08-settings-knowledge",
+  "ms": 1318,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "review",
+  "step": "09-settings-billing",
+  "ms": 1328,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "review",
+  "step": "10-settings-compliance",
+  "ms": 1380,
+  "error": null,
+  "url": "/settings/compliance"
+ },
+ {
+  "persona": "review",
+  "step": "11-settings-privacy",
+  "ms": 1312,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "review",
+  "step": "12-settings-assistant",
+  "ms": 1314,
+  "error": null,
+  "url": "/settings/operator"
+ },
+ {
+  "persona": "review",
+  "step": "13-settings-integrations",
+  "ms": 1333,
+  "error": null,
+  "url": "/settings/integrations"
+ },
+ {
+  "persona": "review",
+  "step": "14-settings-activity",
+  "ms": 1370,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "review",
+  "step": "m-calls",
+  "ms": 0,
+  "error": null,
+  "url": "/calls"
+ },
+ {
+  "persona": "review",
+  "step": "m-call",
+  "ms": 0,
+  "error": null,
+  "url": "/calls/d863a59c-f97b-4749-b974-ec1250cf4f2a"
+ },
+ {
+  "persona": "review",
+  "step": "m-insights",
+  "ms": 0,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review",
+  "step": "m-settings-team",
+  "ms": 0,
+  "error": null,
+  "url": "/settings/team"
+ },
+ {
+  "persona": "review",
+  "step": "m-settings-activity",
+  "ms": 0,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "review",
+  "step": "m-today",
+  "ms": 0,
+  "error": null,
+  "url": "/"
+ }
+]

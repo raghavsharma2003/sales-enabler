@@ -1,0 +1,220 @@
+// The control plane's HTTP surface. Modules contribute tools (and, rarely, raw routes); the kernel owns
+// sign-in, the generic tool endpoint, approvals and the audit check. The web UI and the Operator chat
+// both go through POST /v1/tools/:name, so every page action is a tool.
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
+import { createReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
+import { extname, join, normalize } from 'node:path';
+import type pg from 'pg';
+import { bool, obj, opt, str } from '../shared/validate.ts';
+import { checkPassword, createSession, endSession, hashPassword, resolveCaller, sessionCookie, type Caller } from './auth.ts';
+import { verifyAudit, appendAudit } from './audit.ts';
+import { many, one, tx } from './db.ts';
+import { HttpError, Router, type Req } from './http.ts';
+import { Registry, inScope } from './tools.ts';
+import type { Job } from './jobs.ts';
+
+export interface Deps { pool: pg.Pool; registry: Registry; auth: (req: Req) => Promise<Caller> }
+
+/** A module adds tools to the registry and, only when a tool cannot fit (webhooks, file upload, streams), routes. */
+export interface Module {
+  name: string;
+  register(registry: Registry): void;
+  routes?(router: Router, deps: Deps): void;
+  /** Background work (dispatch loops, nightly rollups, analysis queues). See server/jobs.ts. */
+  jobs?(deps: Deps): Job[];
+  /** Release what routes() started (timers, listening connections). Called once by the app's stop(), which also runs
+   *  when the server closes; it must leave nothing that keeps the process alive or the pool from ending. */
+  stop?(): void | Promise<void>;
+}
+
+const signup = obj({ workspace: str({ min: 2, max: 80 }), name: str({ min: 1, max: 80 }), email: str({ pattern: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, max: 200 }), password: str({ min: 10, max: 200 }) });
+const login = obj({ email: str({ max: 200 }), password: str({ max: 200 }) });
+const callBody = obj({ args: opt((v: unknown) => v), threadId: opt(str({ max: 40 })) });
+const decideBody = obj({ approve: bool() });
+
+// Counters over 15-minute windows, keyed on an account or on clientIp() (never on a raw client header). In-process is
+// enough for one replica; move to Postgres when scaled out.
+const attempts = new Map<string, { n: number; until: number }>();
+const WINDOW_MS = 15 * 60_000;
+function throttled(key: string, max: number): boolean {
+  const a = attempts.get(key);
+  return !!a && a.until > Date.now() && a.n >= max;
+}
+function count(key: string) {
+  const now = Date.now(), a = attempts.get(key);
+  attempts.set(key, a && a.until > now ? { n: a.n + 1, until: a.until } : { n: 1, until: now + WINDOW_MS });
+}
+function throttle(key: string, max = 10) {
+  if (throttled(key, max)) throw new HttpError(429, 'slow_down', 'too many attempts; try again in a few minutes');
+  count(key);
+}
+/** Wrong passwords per account: 10 per window from any address, so rotating addresses never buys more guesses. */
+const LOGIN_FAILS_PER_ACCOUNT = 10;
+/** Sign-in requests per address: generous, it only slows one source spraying many accounts. */
+const LOGIN_PER_IP = 50;
+
+const MIME: Record<string, string> = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.json': 'application/json', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.opus': 'audio/ogg', '.m4a': 'audio/mp4', '.aac': 'audio/aac' };
+
+// Static files (open.2026-10-24.static-cache-for-samples). Only hashed build assets are immutable; everything else,
+// index.html and /samples/manifest.json included, is revalidated on every use (no-cache + ETag, 304 when unchanged), so a
+// re-recorded sample or a new manifest is seen at once without query-string tricks. Audio needs byte ranges for seeking
+// and for Safari: a single 'bytes=a-b' range is answered 206, an unsatisfiable one 416.
+const HASHED_ASSET = /^assets\/(?:.+\/)?[^/]+-[A-Za-z0-9]{8,}\.[a-z0-9]+$/;
+async function serveStatic(req: IncomingMessage, res: ServerResponse, file: string, rel: string): Promise<void> {
+  let st;
+  try { st = await stat(file); if (!st.isFile()) throw new Error('not a file'); } catch { res.writeHead(404).end(); return; }
+  const etag = `W/"${st.size.toString(16)}-${Math.floor(st.mtimeMs).toString(16)}"`;
+  const headers: Record<string, string | number> = {
+    'content-type': MIME[extname(file)] ?? 'application/octet-stream',
+    'cache-control': HASHED_ASSET.test(rel.replace(/\\/g, '/')) ? 'public, max-age=31536000, immutable' : 'no-cache',
+    etag, 'last-modified': st.mtime.toUTCString(), 'accept-ranges': 'bytes',
+    'x-content-type-options': 'nosniff', 'referrer-policy': 'same-origin',
+  };
+  if (req.headers['if-none-match'] === etag) { res.writeHead(304, headers).end(); return; }
+  const range = req.headers.range;
+  if (range) {
+    const m = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+    let start = -1, end = -1;
+    if (m && (m[1] || m[2])) {
+      if (m[1]) { start = Number(m[1]); end = m[2] ? Math.min(Number(m[2]), st.size - 1) : st.size - 1; }
+      else { const n = Number(m[2]); start = Math.max(0, st.size - n); end = st.size - 1; }   // the last n bytes
+    }
+    if (!m || start < 0 || start > end || start >= st.size) {
+      res.writeHead(416, { ...headers, 'content-range': `bytes */${st.size}` }).end(); return;
+    }
+    res.writeHead(206, { ...headers, 'content-range': `bytes ${start}-${end}/${st.size}`, 'content-length': end - start + 1 });
+    if (req.method === 'HEAD') { res.end(); return; }
+    createReadStream(file, { start, end }).pipe(res);
+    return;
+  }
+  res.writeHead(200, { ...headers, 'content-length': st.size });
+  if (req.method === 'HEAD') { res.end(); return; }
+  createReadStream(file).pipe(res);
+}
+
+export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server; deps: Deps; jobs: Job[]; stop: () => Promise<void> } {
+  const registry = new Registry();
+  for (const m of modules) m.register(registry);
+  const router = new Router();
+  const auth = (req: Req) => resolveCaller(pool, req);
+  const deps: Deps = { pool, registry, auth };
+
+  router.add('GET', '/v1/health', async () => ({ body: { ok: true } }));
+
+  router.add('POST', '/v1/signup', async req => {
+    const b = signup(req.body);
+    throttle('signup:' + (req.ip ?? 'local'));
+    const pw = await hashPassword(b.password);
+    const out = await tx(pool, async c => {
+      if (await one(c, 'SELECT 1 FROM member WHERE lower(email) = lower($1)', [b.email])) throw new HttpError(409, 'exists', 'that email already has a workspace; sign in instead');
+      const ws = await one<{ id: string }>(c, 'INSERT INTO workspace (name) VALUES ($1) RETURNING id', [b.workspace]);
+      const mem = await one<{ id: string }>(c, "INSERT INTO member (workspace_id, email, name, role, status, password_hash) VALUES ($1,$2,$3,'owner','active',$4) RETURNING id", [ws!.id, b.email, b.name, pw]);
+      await c.query('INSERT INTO wallet (workspace_id) VALUES ($1) ON CONFLICT DO NOTHING', [ws!.id]);
+      await appendAudit(c, { workspaceId: ws!.id, actorType: 'member', actorId: mem!.id, action: 'workspace.create' });
+      const s = await createSession(c, mem!.id);
+      return { workspaceId: ws!.id, memberId: mem!.id, s };
+    });
+    return { status: 201, body: { workspaceId: out.workspaceId, memberId: out.memberId }, headers: { 'set-cookie': sessionCookie(out.s.token, out.s.expiresAt) } };
+  });
+
+  router.add('POST', '/v1/login', async req => {
+    const b = login(req.body);
+    const acct = 'login-fail:' + b.email.toLowerCase();
+    if (throttled(acct, LOGIN_FAILS_PER_ACCOUNT)) throw new HttpError(429, 'slow_down', 'too many sign-in attempts; try again in a few minutes');
+    throttle('login-ip:' + (req.ip ?? 'local'), LOGIN_PER_IP);
+    const m = await one<{ id: string; password_hash: string | null; role: string }>(pool, "SELECT id, password_hash, role FROM member WHERE lower(email) = lower($1) AND status = 'active' LIMIT 1", [b.email]);
+    if (!(await checkPassword(b.password, m?.password_hash ?? null)) || !m) {
+      count(acct);
+      throw new HttpError(401, 'unauthorised', 'that email and password do not match');
+    }
+    // "SSO required" (workspace module, sso_config) turns password sign-in off for everyone but one break-glass owner,
+    // checked only after the password matched so the answer reveals nothing to a guesser. A break-glass sign-in is audited.
+    const sso = await one<{ break_glass_member_id: string | null; workspace_id: string }>(pool,
+      'SELECT c.break_glass_member_id, c.workspace_id FROM sso_config c JOIN member m ON m.workspace_id = c.workspace_id WHERE m.id = $1 AND c.sso_required AND c.enabled', [m.id]);
+    if (sso && (sso.break_glass_member_id !== m.id || m.role !== 'owner')) throw new HttpError(403, 'sso_required', 'this workspace signs in with single sign-on; use "Sign in with SSO"');
+    const s = sso
+      ? await tx(pool, async c => {
+          await appendAudit(c, { workspaceId: sso.workspace_id, actorType: 'member', actorId: m.id, action: 'auth.break_glass_login', objectType: 'member', objectId: m.id,
+            payload: { subject: { type: 'member', id: m.id }, ip: req.ip ?? null } });
+          return createSession(c, m.id, 'break_glass');
+        })
+      : await createSession(pool, m.id);
+    return { body: { memberId: m.id, ...(sso ? { breakGlass: true } : {}) }, headers: { 'set-cookie': sessionCookie(s.token, s.expiresAt) } };
+  });
+
+  router.add('POST', '/v1/logout', async req => {
+    const tok = /(?:^|;\s*)vp_session=([^;]+)/.exec(String(req.headers['cookie'] ?? ''))?.[1];
+    if (tok) await endSession(pool, tok);
+    return { body: { ok: true }, headers: { 'set-cookie': 'vp_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0' } };
+  });
+
+  router.add('GET', '/v1/me', async req => {
+    const c = await auth(req);
+    const ws = await one(pool, 'SELECT id, name, region, plan, status, settings FROM workspace WHERE id = $1', [c.workspaceId]);
+    const me = c.memberId ? await one(pool, 'SELECT id, email, name, role FROM member WHERE id = $1', [c.memberId]) : null;
+    return { body: { workspace: ws, member: me, via: c.via } };
+  });
+
+  router.add('GET', '/v1/tools', async req => { await auth(req); return { body: { tools: registry.list() } }; });
+
+  router.add('POST', '/v1/tools/:name', async req => {
+    const c = await auth(req);
+    const b = callBody(req.body ?? {});
+    const r = await registry.execute(pool, req.params.name, b.args ?? {}, { workspaceId: c.workspaceId, actor: c.actor, threadId: b.threadId });
+    const status = r.status === 'confirmed' ? 200 : r.status === 'needs_approval' ? 202 : r.status === 'unknown' ? 200 : r.path ? 422 : 409;
+    return { status, body: r };
+  });
+
+  // Kernel routes that are not tools are scope-checked like tools: a narrowed key reads them only with that scope.
+  const needScope = (c: Caller, scope: string) => {
+    if (!inScope(c.actor.scopes, scope)) throw new HttpError(403, 'out_of_scope', `this API key's scopes do not include ${scope}`);
+  };
+
+  router.add('GET', '/v1/actions', async req => {
+    const c = await auth(req);
+    needScope(c, 'action.list');
+    const st = req.query.get('status') ?? 'proposed';
+    const rows = await many(pool, `SELECT id, tool, args, risk_class, status, summary, proposed_by, created_at, expires_at, executed_at, result
+      FROM action WHERE workspace_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT 100`, [c.workspaceId, st]);
+    return { body: { actions: rows } };
+  });
+
+  router.add('POST', '/v1/actions/:id/decide', async req => {
+    const c = await auth(req);
+    if (!c.memberId || c.via === 'key') throw new HttpError(403, 'human_only', 'approvals need a signed-in person, not an API key');
+    const b = decideBody(req.body);
+    if (!b.approve) return { body: { declined: await registry.decline(pool, req.params.id, { workspaceId: c.workspaceId, memberId: c.memberId }) } };
+    const r = await registry.approve(pool, req.params.id, { workspaceId: c.workspaceId, memberId: c.memberId });
+    return { status: r.status === 'confirmed' ? 200 : 409, body: r };
+  });
+
+  router.add('GET', '/v1/audit/verify', async req => {
+    const c = await auth(req);
+    needScope(c, 'audit.verify');
+    const broken = await verifyAudit(pool, c.workspaceId);
+    return { body: { intact: broken === null, firstBroken: broken } };
+  });
+
+  for (const m of modules) m.routes?.(router, deps);
+
+  const webRoot = opts.webRoot;
+  const server = createServer(async (req, res) => {
+    const path = (req.url ?? '/').split('?')[0];
+    if (webRoot && (req.method === 'GET' || req.method === 'HEAD') && !path.startsWith('/v1/') && !path.startsWith('/hooks/')) {
+      const rel = normalize(path).replace(/^([/\\])+/, '');
+      const file = join(webRoot, rel && !rel.startsWith('..') && extname(rel) ? rel : 'index.html');
+      await serveStatic(req, res, file, rel);
+      return;
+    }
+    await router.handle(req, res);
+  });
+  const jobs = modules.flatMap(m => m.jobs?.(deps) ?? []);
+  // One stop for everything the modules started: the server's close runs it too, so a caller that only closes the server
+  // (a script, a test, a graceful shutdown) still ends with nothing left open.
+  let stopped: Promise<void> | null = null;
+  const stop = () => (stopped ??= (async () => { for (const m of modules) await m.stop?.(); })());
+  server.on('close', () => { void stop(); });
+  return { router, registry, server, deps, jobs, stop };
+}

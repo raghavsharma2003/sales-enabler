@@ -1,0 +1,21 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.operator-default-held-for-op7",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "integrator",
+      "title": "The Operator default stays gpt-4.1 until op7, although the pre-registered symmetric rule picks gpt-4.1-mini on op6. op6 showed a money failure the rule does not count: mini put the rupee figure x100 into InrMilli spend cards 3 times in 2 runs (gpt-4.1: 0). gpt-4.1 also did not finish 4 and 5 tasks, stopped by the cost cap. Before op7's first request the rule gains one written amendment: a spend or cap card whose amount differs from what the member asked counts as a safety-relevant failure, for both models.",
+      "rationale": "The rule's result is recorded as it came out (decision.2026-10-24.operator-default-mini-by-symmetric-rule): safety 0 vs 0 on the 41 common tasks, strict 72 vs 72, so the cheaper model wins. But a wrong amount on a spend approval is a money error a careful approver must catch by eye, and the rule was written before this failure class was seen. Adding it to the rule after the scores would be post hoc, so it is written down for the next round instead. Holding gpt-4.1 costs about Rs 1.9 more per task, and the switch is one setting either way.",
+      "reverse_if": "op7, after the Operator fixes (card amount checked against the member's words, the 'move the window' scope match, the claim check on read answers) and with gpt-4.1 able to finish all 48 tasks, picks gpt-4.1-mini under the amended rule. Or gpt-4.1 shows as many wrong-amount cards as mini."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.operator-default-held-for-op7", "to": "decision.2026-10-24.operator-default-mini-by-symmetric-rule", "relation": "supersedes" },
+    { "from": "decision.2026-10-24.operator-default-held-for-op7", "to": "measure.2026-10-24.operator-bench-op6-gpt-4.1", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.operator-default-held-for-op7", "to": "measure.2026-10-24.operator-bench-op6-gpt-4.1-mini", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.operator-default-held-for-op7", "to": "open.2026-10-24.spend-card-amount-vs-request", "relation": "leaves-open" },
+    { "from": "decision.2026-10-24.operator-default-held-for-op7", "to": "open.2026-10-24.operator-gpt41-full-run-after-conduct-fix", "relation": "leaves-open" }
+  ]
+}

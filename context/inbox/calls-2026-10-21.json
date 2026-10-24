@@ -1,0 +1,185 @@
+{
+  "nodes": [
+    {
+      "id": "component.product.calls-module",
+      "type": "component",
+      "status": "tested",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Calls module: signed idempotent runtime ingest, settle at real cost, quote-checked post-call analysis, outcome grades, judge calibration, monitors and issues, campaign funnel, test calls and live control",
+      "path": "product/server/modules/calls/"
+    },
+    {
+      "id": "decision.2026-10-21.calls-signature-over-compact-json",
+      "type": "decision",
+      "status": "superseded",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "The runtime hook checks x-vp-signature over the compact JSON serialisation of the parsed body, because the kernel router hands modules a parsed body, not the raw bytes",
+      "rationale": "Modules may not edit the kernel. JSON.stringify of the parsed body equals the raw body whenever the sender signs compact JSON (the kernel's own HttpRuntime does). A whitespace-only change to the body then still verifies, which is harmless: it parses to the same events.",
+      "reverse_if": "The kernel exposes the raw request body to module routes; then verify over the raw bytes and drop the serialisation rule for the Python runtime."
+    },
+    {
+      "id": "decision.2026-10-21.calls-quotes-single-line-substring",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "An analysis quote counts only if it is an exact substring (3+ characters, trimmed) of one stored transcript line. A point, moment or outcome guess whose quote fails is dropped with it, and the drops are counted per call",
+      "rationale": "Blueprint rule 3: quotes are spans, checked in code before display. Requiring one line rules out stitching across turns. Every claim in the call summary is built from points whose quotes passed.",
+      "reverse_if": "Owners find too many true claims dropped because of transcript normalisation (for example matras or romanisation), measured on labelled calls; then match on a normalised form and still cite the original span."
+    },
+    {
+      "id": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "Code sets the reason code from the engine's end reason. The analysis model may replace it only for a normally ended call (CONV_INCOMPLETE, or END_HUNG_UP_MID at 10 s or more), and only with a conversation-stage code from the fixed 34-code catalogue",
+      "rationale": "Code first, model second. A model never overrides what the engine knows, such as no answer, max cost, a crisis hand-off or an early hang-up.",
+      "reverse_if": "The blueprint's companion catalogue (data/blueprint/intelligence-module.json, not in the repo) lands with different codes or stages; then replace taxonomy.ts with it."
+    },
+    {
+      "id": "open-question.2026-10-21.calls-reason-catalogue-source",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "The blueprint cites a companion data file with 34 reason codes and 20 default monitors (data/blueprint/intelligence-module.json), but no such file is in the repo. The calls module ships its own 34 codes and 6 default monitors",
+      "closes_when": "The companion JSON is committed and taxonomy.ts and DEFAULT_MONITORS are reconciled with it."
+    },
+    {
+      "id": "risk.2026-10-21.calls-analysis-cost-unpriced",
+      "type": "risk",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Analysis cost lines record tokens with inr_milli 0 (priced:false), because nothing in the control plane holds a rate. Cost per call understates analysis spend until the money module prices it",
+      "mitigation": "The money module rates component 'analysis' token lines, or llm.ts returns a price."
+    },
+    {
+      "id": "decision.2026-10-21.calls-untrusted-guess-never-counts",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inferred",
+      "date": "2026-10-21",
+      "title": "conversation.outcome (what learning and funnels count) takes verified, then manager, then an AI guess only when its judge's latest calibration is trusted. Untrusted guesses stay visible with their grade",
+      "rationale": "Blueprint F4: until a label is trusted it cannot feed experiments, the north star or a winner. Learning reads conversation.outcome.",
+      "reverse_if": "The owner decides untrusted guesses may feed experiments with a stated penalty (calls-needed inflation), or learning starts reading outcome grades itself."
+    },
+    {
+      "id": "decision.2026-10-21.calls-hmac-over-raw-bytes",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "The runtime hook verifies the HMAC over the exact raw request bytes (Router rawBody), before parsing",
+      "rationale": "The kernel now gives routes the raw body. Verifying the exact bytes removes the compact-JSON serialisation rule, and a whitespace-only change now fails (tested).",
+      "reverse_if": "Never, short of a protocol change to a signed canonical form."
+    },
+    {
+      "id": "decision.2026-10-21.calls-outcome-judge-edits-are-draft",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "outcome.define and judge.edit are risk 'draft' (owner, builder, operator; A1, audited, versioned), matching the tool registry, not 'policy'",
+      "rationale": "The tool registry sets the risk class and puts both at draft: defining success is everyday work. Each judge edit is a new pinned version that starts uncalibrated, and an AI guess counts only once its judge is trusted, so a careless edit cannot inflate results. Blueprint F3 described an A2 card for outcome definitions; the registry is the later source.",
+      "reverse_if": "A sector pack or regulator needs sign-off on what counts as a sale or a resolution, or owners report outcome definitions changed without their knowledge; then raise both tools to policy, or add a workspace setting that does."
+    },
+    {
+      "id": "decision.2026-10-21.calls-outcome-evidence-is-the-callers",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "An outcome guess counts only if its quote is in a caller line of the stored transcript (by line index). If the only match is the agent's own words, the outcome is 'unclear' and not recorded",
+      "rationale": "Review M6: the agent saying 'aap kal payment kar denge' while the person said 'Abhi nahi' was recorded as will_pay. An outcome is what the person said or did, so evidence must come from the person, as memory already requires.",
+      "reverse_if": "An outcome definition is about the agent's own action (e.g. 'disclosure given'); then let that definition name the speaker its evidence must come from."
+    },
+    {
+      "id": "decision.2026-10-21.calls-crisis-judge-shadow-counts-nothing",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Post-call crisis judge in calls: a raise hit is an RD3 'flagged' call_safety_event (counts as a safety event); a shadow hit lives only in analysis.judge_shadow and changes no event, flag, safety_violation, monitor or experiment",
+      "rationale": "Keeps the shadow semantics of decision.2026-10-21.judge-raise-only-contract. learning and the safety_event_rate monitor read safety events, so a shadow row there would change outcomes. Calls loops over caller lines with safety's judgeCallerCrisis rather than judgeTranscriptCrisis, so it also sees judge_unavailable and the usage of every call, hit or not.",
+      "reverse_if": "The owner moves the judge to raise in production (set VP_SAFETY_JUDGE_MODE=raise; the code path already exists), or safety extends judgeTranscriptCrisis to return unavailable counts and per-call usage; then call that instead of the local loop."
+    },
+    {
+      "id": "decision.2026-10-21.runtime-judge-event-counts-nothing",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "RuntimeEvent 'judge' (caller_crisis: mode shadow|raise, outcome raised|shadow|unavailable, kind, confidence, reason, latencyMs; never text) is stored in call_judge_event for analysis only. A live raise is two records: the 'safety' RD3 event (handling, flag, violation) and the 'judge' event (the judge's record)",
+      "rationale": "The live runtime needs the same 'shadow counts nothing' rule as post-call analysis. Ingest writes no flag and no call_safety_event for a judge event. analysis.crisis_judge sums the runtime and post-call counts. It is not analysis.judge, which learning reads as the outcome judge.",
+      "reverse_if": "The owner wants judge-unavailable outages to open an issue; then add a monitor on call_judge_event (outages only, never shadow hits)."
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.product.calls-module",
+      "to": "decision.2026-10-21.calls-signature-over-compact-json",
+      "relation": "implements"
+    },
+    {
+      "from": "component.product.calls-module",
+      "to": "decision.2026-10-21.calls-quotes-single-line-substring",
+      "relation": "implements"
+    },
+    {
+      "from": "component.product.calls-module",
+      "to": "decision.2026-10-21.calls-model-refines-only-unknown-reasons",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-21.calls-hmac-over-raw-bytes",
+      "to": "decision.2026-10-21.calls-signature-over-compact-json",
+      "relation": "supersedes"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-21",
+      "event": "calls-module-built",
+      "details": "Calls module built (product/server/modules/calls, migration 0601). Verified: tsc clean; 12/12 node:test cases pass against a throwaway Postgres 16 with synthetic data and a fake LLM and runtime. The cases cover signature, staleness, tamper and unknown-conversation rejection; idempotent replay; cost before call.ended; settle at real cost; release on no answer; dropped quotes; test-call exclusion; tenancy; opt-out A3; outcome grades; calibration; funnel; monitors; and live control. Not verified: a real voice runtime or Python signer, a real analysis model, load, and the sibling contacts tool's real input shape."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-wired-to-memory-learning",
+      "details": "Calls now restamps agent_version_id from the run manifest, marks test calls in run_manifest.test, calls memory.extract and experiment.check after non-test calls, exposes analysis.safety_violation and analysis.judge, raises forget_request from a verified caller quote, counts AI guesses only from trusted judges, adds CONV_COMPLAINT and a 60 s analysis sweep job. Verified: tsc clean, 14/14 calls tests against stubbed sibling tools. Not verified against the real memory and learning modules."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-retries-and-shared-db",
+      "details": "Calls now calls attempt.retry_per_ladder (A3) after each non-final campaign outcome, after analysis so callbacks are known. The test sweep is scoped to its own workspace; it had flaked when all suites shared one database. Verified: calls 15/15, and the whole product suite 242/242 twice on one shared database at concurrency 4. Not verified: the callback time (not extracted yet) and the real campaigns ladder end to end."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-e2e-fixes",
+      "details": "Fixed two e2e findings. F5: the funnel no longer counts a call as connected or talked until it reports call.ended (a live or silent dispatch is dialled only). F7: call.get reads one query at a time on its transaction client, which removes pg's deprecation warning. Verified: calls 15/15 with no deprecation warning; the full suite on one shared database passed 261/261 on one run and 260 with 1 failure on the other (learning's own 'hazard stop' fixture test, which imports no calls code)."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-draft-test-call-fix",
+      "details": "Fixed a cross-module bug the web builder found against the real server: test.browser_call with useDraft read agent.draft as {agent, brief}, but agents stores a bare AgentConfig and compiles only at publish, so every draft test call was refused. It now compiles through agents' brief.compile via the registry and files the call under the draft hash. The test now builds the agent with agents' own agent.create, stack.set and brief.edit. Verified: calls+agents+e2e 62/62; full suite 276/276 twice on one shared database."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-m6-fixed",
+      "details": "Fixed review M6: outcome evidence must be a caller line, checked by index. Agent-only evidence gives analysis.outcomeUnclear with the reason, writes no outcome row and counts as a dropped quote. The review test moved into calls.test.ts as a normal test, without the todo. Verified: calls+review+e2e 44 pass and 0 fail (10 todos, none of them calls'); full suite 324 pass, 0 fail, 8 todos, twice on one shared database."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-crisis-judge-wired",
+      "details": "Calls analysis now runs the post-call caller-crisis judge with a 5 s timeout per line. Raise hits give RD3 flagged safety events; shadow hits go to analysis.judge_shadow only; judge_unavailable and judge_calls are recorded; a cost line with purpose safety_judge is written whenever the judge was called. Verified: calls 21/21 (shadow, raise, no keys, judge throws, floor line never sent); full suite 353/353 twice on one fresh shared database. Not verified: a real judge model."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "calls-live-tools-cross-process",
+      "details": "Verified calls' live tools across two real processes against the voice runtime's dev server (cc20956). The test covers: a sim call placed through HttpRuntime; controls refused before the call is joined; listen refused on sim; a whisper approved (A2) and accepted; a person's take-over with a join and socket, then their hang-up; and the runtime's signed batches ingested (handed_off, END_HANDED_OFF, human_joined, a whisper moment without text, a takeover moment, the hand_off row). n=4 runs, all green, about 5 s each. Full suite 372/372 with the runtime's Python, 371 plus 1 skipped without it. Not verified: listen audio on a real call."
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-23.optout-dev-tuning",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Opt-out DEV set (code-mixed), door before -> after tuning: opt-outs caught 59/150 -> 150/150, benign look-alikes flagged 10/110 -> 0/110. In-sample by construction",
+   "n": 260,
+   "method": "A separate agent, blind to rules.json and every other set, wrote 150 opt-out requests (16 each Tamil-, Telugu-, Bengali-, Marathi-, Gujarati-, Kannada-, Malayalam-English; 20 Hinglish, 6 Hindi, 12 English; direct and indirect, polite and angry, some buried in long utterances) and 110 hard look-alikes (deferrals, 'don't cut the call', 'call my other number', 'don't call my wife's number, call mine', DND questions). Scored with callerSignals(text).optOut before and after tuning; the rules were tuned on these lines only.",
+   "path": "product/shared/safety/sets/optout-dev.json",
+   "detail": {
+    "before": {
+     "caught": "59/150 (39.3%, CI 31.9-47.3); every regional language 5-7/16",
+     "benign_flagged": "10/110 (8 were 'DND is on my phone, how did you call?' questions)"
+    },
+    "after": {
+     "caught": "150/150 (CI 97.5-100)",
+     "benign_flagged": "0/110 (CI 0-3.4)"
+    },
+    "commit": "87ebb00"
+   }
+  },
+  {
+   "id": "measure.2026-10-23.optout-blind",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Opt-out BLIND set, scored once at commit 87ebb00 after tuning on DEV only: opt-outs caught 92/160 (57.5%, Wilson 95% CI 49.8-64.9); benign look-alikes flagged 9/140 (6.4%, CI 3.4-11.8)",
+   "n": 300,
+   "method": "A separate agent, blind to rules.json, every earlier set and optout-dev, wrote 160 opt-out requests (18 each Tamil-, Telugu-, Bengali-, Marathi-, Gujarati-, Kannada-, Malayalam-English; 20 Hinglish, 6 Hindi, 8 English; direct, indirect, polite, angry, sarcastic, buried) and 140 hard look-alikes. Scored exactly once with callerSignals(text).optOut at 87ebb00. Wilson 95% intervals. Kept in product/shared/safety/sets/heldout-optout.json, out of cases.json, so it is never tuned on.",
+   "path": "product/shared/safety/sets/heldout-optout.json",
+   "detail": {
+    "caught_by_language": {
+     "ta-en": "8/18 (44.4%, CI 24.6-66.3)",
+     "te-en": "9/18 (50.0%, CI 29.0-71.0)",
+     "bn-en": "13/18 (72.2%, CI 49.1-87.5)",
+     "mr-en": "10/18 (55.6%)",
+     "gu-en": "10/18 (55.6%)",
+     "kn-en": "9/18 (50.0%)",
+     "ml-en": "8/18 (44.4%)",
+     "hinglish": "15/20 (75.0%, CI 53.1-88.8)",
+     "hi-deva": "4/6",
+     "en": "6/8"
+    },
+    "missed_classes": "conditional threats ('if you call again I will complain to TRAI / consumer court / police', 'last warning'); 'no call should come from your company'; polite negative imperatives on verbs DEV did not use ('phone panna vendaam', 'kaluhisabedi', 'call cheyyalle'); sarcasm ('wow, so dedicated, now remove my number'); requests buried in long rambles",
+    "benign_flagged": "8 of 9 are one redirect class absent from DEV ('don't call my father, he is unwell, call me instead', in every language); 1 is 'what is DND and does it stop your calls'. Logged, not tuned (the set is spent).",
+    "reading": "As with crisis talk (blind set 7), DEV-tuned patterns reach 100% on DEV and about 58% on fresh phrasings. Opt-out is a hard legal line (TCCCPR), so a missed opt-out means calling someone who said stop."
+   }
+  },
+  {
+   "id": "open.2026-10-23.optout-judge",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "Should opt-out get the same raise-only model judge as crisis (judge.json judges.caller_opt_out, default shadow), given that the regex floor reaches 57.5% on fresh code-mixed phrasings and a miss is a TCCCPR breach?",
+   "closes_when": "The owner decides; if yes, a judge measured with judge-eval on sets/heldout-optout.json plus a fresh blind set reaches >= 97% opt-out recall at <= 3% look-alike false positives within the turn budget. Until then, post-call analysis (which reads opt_out moments from the transcript) is the second net."
+  },
+  {
+   "id": "component.2026-10-23.optout-e2e-test",
+   "type": "component",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "End-to-end opt-out test across processes and modules: voice runtime (devsim) -> signed hook -> calls ingest -> intake contact.suppress_after_opt_out. It proves the agent confirms, the call ends with end_reason opt_out, call_opt_out is applied, a workspace in_call suppression and a consent withdrawal exist, and that the same check FAILS when the suppression tool is missing (the opt-out stays pending)",
+   "path": "product/tests/safety-optout-e2e.test.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-23.optout-blind",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.optout-dev-tuning",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-23.optout-blind",
+   "to": "open.2026-10-23.optout-judge",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.optout-blind",
+   "to": "rejected.2026-10-23.dev-tuned-patterns-for-code-mixed-recall",
+   "relation": "supports"
+  },
+  {
+   "from": "component.2026-10-23.optout-e2e-test",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-optout-recall",
+   "details": "Opt-out DEV 59/150 -> 150/150 caught, 10/110 -> 0/110 flagged (87ebb00). BLIND opt-out scored once: 92/160 caught (CI 49.8-64.9), 9/140 flagged. End-to-end opt-out test (runtime devsim + calls + intake) passes and fails without the suppression tool. Gates: tsc clean, safety/review tests 32/32, product/voice unittest OK, Python door 0 disagreements."
+  }
+ ]
+}

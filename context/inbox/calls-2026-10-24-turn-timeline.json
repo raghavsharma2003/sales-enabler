@@ -1,0 +1,32 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.call-page-turn-timeline",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The call page as the review instrument (integrator item 1, on voice's CallTrace from a8e5853). shared/call-trace.ts reads conversation.trace turn by turn, the same code on the server and in the browser: each transcript turn's reply gap, ASR confidence and TTS, and what went wrong on it. Causes: reply_gap (gap over 1,500 ms, or more than twice the call's median once 3 gaps exist), asr_low (caller confidence under 0.6), door_held (a reply-door verdict on her line), cut_off (she was interrupted), and from trace events error, fallback and tool_failed, each placed on the turn under way. The page shows a 'Turn by turn' card under the transcript: a gap bar per reply, the marked turns with their causes in plain words, and each row seeks the call to its turn. call.explain returns the same causes as turnCauses [{kind, turn, atMs, text, evidence, fix}] for the Operator's 'what went wrong on that call'. fix is null for now: no stored marker says what to fix (no RD rule means 'fact not in approved data'; a plain 'I don't know' carries none), so none is guessed.",
+   "rationale": "directive.2026-10-24.calling-first-build-all: the owner reviews long staging calls; the integrator and the Operator point at where they went wrong.",
+   "reverse_if": "The owner's reviews show the thresholds mark ordinary turns (then raise SLOW_GAP_MS or LOW_ASR from measured staging calls) or miss turns the owner flags (then add the missing signal to voice's trace).",
+   "evidence": [
+    "product/tests/calls-trace-review.test.ts: causes per turn from a synthetic trace; call.explain's turnCauses equal the reading of call.get's trace",
+    "product/web/e2e/flows.test.mjs 'Call page: the turn-by-turn timeline...': the marked lines equal call.explain's turnCauses, one row per turn, selecting a turn moves the call to it"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.call-page-turn-timeline",
+   "to": "decision.2026-10-24.staff-review-export",
+   "relation": "informed-by"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "turn-timeline",
+   "details": "Timeline and turnCauses built. Full suite on a fresh DB 834/834 (browser flows 83/83). Seams answered: Operator (trace fields and turnCauses), intake (paidSinceImport wired into G4 as already_paid for campaign, api and retry attempts once intake pushes it). Voice's tests/call-trace.test.ts was briefly overwritten locally by mistake and restored from git before commit; mine is tests/calls-trace-review.test.ts."
+  }
+ ]
+}

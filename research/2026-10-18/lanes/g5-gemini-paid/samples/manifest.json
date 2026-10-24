@@ -1,0 +1,82 @@
+[
+ {
+  "file": "sample_in_g31_elderly_stereo-caller-L_agent-R.mp3",
+  "model": "gemini-3.1-flash-live-preview",
+  "tier": "paid",
+  "script": "PAUSE",
+  "vantage": "centralindia-vm",
+  "call_s": 177.908,
+  "bytes": 1086309,
+  "note": "synthetic caller (Azure neural TTS, phone-band) on the left channel, Gemini Live agent on the right, timeline as a real-time player would play it; fictional insurer persona"
+ },
+ {
+  "file": "sample_in_g31_worried_stereo-caller-L_agent-R.mp3",
+  "model": "gemini-3.1-flash-live-preview",
+  "tier": "paid",
+  "script": "W",
+  "vantage": "centralindia-vm",
+  "call_s": 187.997,
+  "bytes": 1146789,
+  "note": "synthetic caller (Azure neural TTS, phone-band) on the left channel, Gemini Live agent on the right, timeline as a real-time player would play it; fictional insurer persona"
+ },
+ {
+  "file": "sample_in_g38_elderly_stereo-caller-L_agent-R.mp3",
+  "model": "gemini-3.8-live",
+  "tier": "paid",
+  "script": "PAUSE",
+  "vantage": "centralindia-vm",
+  "call_s": 186.596,
+  "bytes": 1138365,
+  "note": "synthetic caller (Azure neural TTS, phone-band) on the left channel, Gemini Live agent on the right, timeline as a real-time player would play it; fictional insurer persona"
+ },
+ {
+  "file": "sample_in_g38_worried_stereo-caller-L_agent-R.mp3",
+  "model": "gemini-3.8-live",
+  "tier": "paid",
+  "script": "W",
+  "vantage": "centralindia-vm",
+  "call_s": 177.956,
+  "bytes": 1086525,
+  "note": "synthetic caller (Azure neural TTS, phone-band) on the left channel, Gemini Live agent on the right, timeline as a real-time player would play it; fictional insurer persona"
+ },
+ {
+  "file": "tts_gemini-3.8-flash-lite-tts_l00.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 74973
+ },
+ {
+  "file": "tts_gemini-3.8-flash-lite-tts_l01.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 52653
+ },
+ {
+  "file": "tts_gemini-3.8-flash-lite-tts_l02.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 62733
+ },
+ {
+  "file": "tts_gemini-3.8-flash-lite-tts_l03.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 43293
+ },
+ {
+  "file": "tts_gemini-3.8-flash-tts_l00.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 76845
+ },
+ {
+  "file": "tts_gemini-3.8-flash-tts_l01.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 53373
+ },
+ {
+  "file": "tts_gemini-3.8-flash-tts_l02.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 77565
+ },
+ {
+  "file": "tts_gemini-3.8-flash-tts_l03.mp3",
+  "kind": "gemini tts line, voice Despina, paid key, India VM",
+  "bytes": 50781
+ }
+]

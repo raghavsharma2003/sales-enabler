@@ -1,0 +1,7 @@
+set,seg_timeout_ms,n,missing_final,first_partial_p50_ms,final_after_speech_end_p50_ms,final_after_speech_end_p90_ms,minus_rtt_p50_ms,rtt_ms
+kathbath,300,20,1,1779,694,786,442,252
+kathbath,default,20,0,1776,1077,1210,825,252
+mucs_hien,300,10,5,1508,793,803,541,252
+mucs_hien,default,10,3,1466,1184,1203,932,252
+nptel_en,300,10,1,1697,787,1088,534,252
+nptel_en,default,10,0,1635,1188,1430,936,252

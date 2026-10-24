@@ -1,0 +1,422 @@
+{
+ "seed": 20261017,
+ "n": 20000,
+ "holdout": 0.1,
+ "inputs": {
+  "lines": {
+   "2W_motor": {
+    "P": [
+     714,
+     1500,
+     3000
+    ],
+    "c": [
+     0.08,
+     0.15,
+     0.25
+    ],
+    "b0": [
+     0.3,
+     0.45,
+     0.6
+    ],
+    "s_pre": [
+     0.1,
+     0.25,
+     0.4
+    ],
+    "covH": [
+     0.1,
+     0.3,
+     0.6
+    ],
+    "persH": [
+     0.1,
+     0.25,
+     0.4
+    ],
+    "m_rpc": [
+     1.0,
+     1.6,
+     2.5
+    ],
+    "r_future": [
+     0.4,
+     0.55,
+     0.7
+    ],
+    "trough": [
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "4W_motor": {
+    "P": [
+     5000,
+     11000,
+     25000
+    ],
+    "c": [
+     0.1,
+     0.18,
+     0.28
+    ],
+    "b0": [
+     0.45,
+     0.6,
+     0.75
+    ],
+    "s_pre": [
+     0.1,
+     0.2,
+     0.35
+    ],
+    "covH": [
+     0.5,
+     0.8,
+     1.0
+    ],
+    "persH": [
+     0.1,
+     0.25,
+     0.4
+    ],
+    "m_rpc": [
+     1.5,
+     2.5,
+     4.0
+    ],
+    "r_future": [
+     0.5,
+     0.65,
+     0.8
+    ],
+    "trough": [
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "health": {
+    "P": [
+     9000,
+     17000,
+     30000
+    ],
+    "c": [
+     0.1,
+     0.15,
+     0.2
+    ],
+    "b0": [
+     0.75,
+     0.84,
+     0.92
+    ],
+    "s_pre": [
+     0.15,
+     0.3,
+     0.45
+    ],
+    "covH": [
+     0.5,
+     0.8,
+     1.0
+    ],
+    "persH": [
+     0.08,
+     0.2,
+     0.35
+    ],
+    "m_rpc": [
+     1.2,
+     2.0,
+     3.0
+    ],
+    "r_future": [
+     0.8,
+     0.87,
+     0.92
+    ],
+    "trough": [
+     0.85,
+     0.92,
+     0.97
+    ]
+   },
+   "life_yr2plus": {
+    "P": [
+     15000,
+     30000,
+     75000
+    ],
+    "c": [
+     0.03,
+     0.05,
+     0.075
+    ],
+    "b0": [
+     0.7,
+     0.8,
+     0.9
+    ],
+    "s_pre": [
+     0.15,
+     0.3,
+     0.45
+    ],
+    "covH": [
+     0.5,
+     0.8,
+     1.0
+    ],
+    "persH": [
+     0.08,
+     0.2,
+     0.35
+    ],
+    "m_rpc": [
+     1.5,
+     2.5,
+     3.5
+    ],
+    "r_future": [
+     0.85,
+     0.9,
+     0.95
+    ],
+    "trough": [
+     0.55,
+     0.7,
+     0.85
+    ]
+   }
+  },
+  "common": {
+   "p_ans": [
+    0.3,
+    0.42,
+    0.55
+   ],
+   "q_rpc": [
+    0.75,
+    0.88,
+    0.95
+   ],
+   "r_max": [
+    0.75,
+    0.88,
+    0.95
+   ],
+   "f1600": [
+    0.7,
+    0.9,
+    1.05
+   ],
+   "parity": [
+    0.5,
+    0.8,
+    1.05
+   ],
+   "m_nr": [
+    0.2,
+    0.4,
+    0.8
+   ],
+   "short": [
+    0.4,
+    0.6,
+    0.8
+   ],
+   "wa": [
+    1.0,
+    2.0,
+    3.0
+   ],
+   "c_att": [
+    0.0,
+    0.03,
+    0.15
+   ],
+   "esc": [
+    0.05,
+    0.12,
+    0.25
+   ],
+   "m_esc": [
+    2.0,
+    3.5,
+    6.0
+   ],
+   "h": [
+    5.5,
+    6.3,
+    9.0
+   ],
+   "h_desk": [
+    6.0,
+    7.5,
+    11.0
+   ],
+   "m_follow": [
+    1.0,
+    2.0,
+    4.0
+   ],
+   "seat_cost": [
+    20000,
+    28000,
+    40000
+   ],
+   "due_per_seat": [
+    800,
+    1500,
+    3000
+   ],
+   "add1600": [
+    0.0,
+    0.1,
+    0.4
+   ]
+  },
+  "cogs_p10_p90": {
+   "launch_100k": [
+    5.0,
+    6.96
+   ],
+   "scale_1M": [
+    2.67,
+    3.51
+   ]
+  },
+  "k_ai": [
+   [
+    3,
+    4,
+    5,
+    6
+   ],
+   [
+    0.2,
+    0.4,
+    0.25,
+    0.15
+   ]
+  ],
+  "k_h": [
+   [
+    1,
+    2,
+    3
+   ],
+   [
+    0.3,
+    0.5,
+    0.2
+   ]
+  ]
+ },
+ "recommended": {
+  "2W_motor": {
+   "recommended_fee_per_renewal": 20,
+   "row": {
+    "line": "2W_motor",
+    "scheme": "per_renewal_collected",
+    "fee_inr": 20,
+    "vp_revenue_per_1000_due_p50": 9444,
+    "buyer_net_vs_nocall_per_1000_due_p50": 7234,
+    "p_buyer_gains_vs_nocall": 0.861,
+    "p_buyer_gains_vs_human_desk": 0.77,
+    "p_buyer_gains_vs_human_desk_seat_method": 0.936,
+    "fee_as_share_of_commission_gain_p50": 0.563,
+    "yield_inr_per_ai_minute_p50": 9.68,
+    "vp_gm_p50_launch_100k": 0.127,
+    "p_gm_ge_40_launch_100k": 0.074,
+    "vp_gm_p50_scale_1M": 0.424,
+    "p_gm_ge_40_scale_1M": 0.564
+   }
+  },
+  "4W_motor": {
+   "recommended_fee_per_renewal": 50,
+   "row": {
+    "line": "4W_motor",
+    "scheme": "per_renewal_collected",
+    "fee_inr": 50,
+    "vp_revenue_per_1000_due_p50": 29488,
+    "buyer_net_vs_nocall_per_1000_due_p50": 79729,
+    "p_buyer_gains_vs_nocall": 0.989,
+    "p_buyer_gains_vs_human_desk": 0.604,
+    "p_buyer_gains_vs_human_desk_seat_method": 0.691,
+    "fee_as_share_of_commission_gain_p50": 0.269,
+    "yield_inr_per_ai_minute_p50": 23.48,
+    "vp_gm_p50_launch_100k": 0.665,
+    "p_gm_ge_40_launch_100k": 0.991,
+    "vp_gm_p50_scale_1M": 0.785,
+    "p_gm_ge_40_scale_1M": 1.0
+   }
+  },
+  "health": {
+   "recommended_fee_per_renewal": 15,
+   "row": {
+    "line": "health",
+    "scheme": "per_renewal_collected",
+    "fee_inr": 15,
+    "vp_revenue_per_1000_due_p50": 11550,
+    "buyer_net_vs_nocall_per_1000_due_p50": 30711,
+    "p_buyer_gains_vs_nocall": 0.992,
+    "p_buyer_gains_vs_human_desk": 0.638,
+    "p_buyer_gains_vs_human_desk_seat_method": 0.893,
+    "fee_as_share_of_commission_gain_p50": 0.273,
+    "yield_inr_per_ai_minute_p50": 16.14,
+    "vp_gm_p50_launch_100k": 0.453,
+    "p_gm_ge_40_launch_100k": 0.649,
+    "vp_gm_p50_scale_1M": 0.631,
+    "p_gm_ge_40_scale_1M": 0.979
+   }
+  },
+  "life_yr2plus": {
+   "recommended_fee_per_renewal": 15,
+   "row": {
+    "line": "life_yr2plus",
+    "scheme": "per_renewal_collected",
+    "fee_inr": 15,
+    "vp_revenue_per_1000_due_p50": 11105,
+    "buyer_net_vs_nocall_per_1000_due_p50": 25346,
+    "p_buyer_gains_vs_nocall": 0.979,
+    "p_buyer_gains_vs_human_desk": 0.632,
+    "p_buyer_gains_vs_human_desk_seat_method": 0.894,
+    "fee_as_share_of_commission_gain_p50": 0.305,
+    "yield_inr_per_ai_minute_p50": 12.41,
+    "vp_gm_p50_launch_100k": 0.33,
+    "p_gm_ge_40_launch_100k": 0.327,
+    "vp_gm_p50_scale_1M": 0.561,
+    "p_gm_ge_40_scale_1M": 0.911
+   }
+  }
+ },
+ "kc1_due_per_month_for_3_seat_desk": {
+  "2W_motor": {
+   "talk_method": 58834,
+   "seat_method": 16014
+  },
+  "4W_motor": {
+   "talk_method": 19399,
+   "seat_method": 6803
+  },
+  "health": {
+   "talk_method": 34069,
+   "seat_method": 6790
+  },
+  "life_yr2plus": {
+   "talk_method": 27192,
+   "seat_method": 6766
+  }
+ },
+ "kc3_breakeven_baseline_mode_case": {
+  "2W_motor": 0.628,
+  "4W_motor": 0.956,
+  "health": 0.968,
+  "life_yr2plus": 0.934
+ }
+}

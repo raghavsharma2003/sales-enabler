@@ -1,0 +1,30 @@
+layer,option,inr_per_min,stt,llm,tts
+STT,"Azure real-time PAYG, full stream",1.583,,,
+STT,"Azure real-time PAYG, VAD-gated (caller 40% x 1.25)",0.792,,,
+STT,"Azure real-time 100K-h commitment, full stream",0.633,,,
+STT,"Azure real-time 100K-h commitment, VAD-gated",0.317,,,
+STT,"gemini-3.5-transcribe-live, full stream (+final text)",0.644,,,
+STT,"gemini-3.5-transcribe-live, VAD-gated (+final text)",0.395,,,
+STT,"gemini-3.5-transcribe-live, full stream, text at published $0.004/min",0.879,,,
+LLM,gpt-oss-120b on Groq via OpenRouter (C6 usage),0.186,,,
+LLM,gpt-4.1-mini South India Standard (C1 usage),0.252,,,
+LLM,"gemini-3.5-flash-lite, no cache hits as measured (C7 usage)",0.535,,,
+LLM,"gemini-3.5-flash-lite, if 90% of prompt were cache hits (C7 usage)",0.121,,,
+TTS,Azure neural PAYG ($15/1M chars),0.428,,,
+TTS,Azure neural 2000M-char commitment ($7.50/1M),0.214,,,
+TTS,Azure DragonHD PAYG ($22/1M chars),0.627,,,
+TTS,gemini-3.8-flash-lite-tts to 2026-12-31 ($6/1M audio tok),0.349,,,
+TTS,gemini-3.8-flash-lite-tts from 2027-01-01 ($12/1M),0.699,,,
+TTS,gemini-3.8-flash-tts to 2026-12-31 ($9/1M),0.521,,,
+TTS,gemini-3.8-flash-tts from 2027-01-01 ($18/1M),1.041,,,
+COMBO (computed),Measured-latency stack C6 at PAYG,1.258,"gemini-3.5-transcribe-live, full stream (+final text)",gpt-oss-120b on Groq via OpenRouter (C6 usage),Azure neural PAYG ($15/1M chars)
+COMBO (computed),C6 + VAD-gated STT,1.009,"gemini-3.5-transcribe-live, VAD-gated (+final text)",gpt-oss-120b on Groq via OpenRouter (C6 usage),Azure neural PAYG ($15/1M chars)
+COMBO (computed),C6 + VAD-gated STT + neural commitment,0.795,"gemini-3.5-transcribe-live, VAD-gated (+final text)",gpt-oss-120b on Groq via OpenRouter (C6 usage),Azure neural 2000M-char commitment ($7.50/1M)
+COMBO (computed),Azure STT commitment gated + gpt-oss + neural commitment,0.717,"Azure real-time 100K-h commitment, VAD-gated",gpt-oss-120b on Groq via OpenRouter (C6 usage),Azure neural 2000M-char commitment ($7.50/1M)
+COMBO (computed),"All-Gemini (transcribe-live + 3.5 flash-lite + 3.8 flash-lite TTS), 2026 prices",1.529,"gemini-3.5-transcribe-live, full stream (+final text)","gemini-3.5-flash-lite, no cache hits as measured (C7 usage)",gemini-3.8-flash-lite-tts to 2026-12-31 ($6/1M audio tok)
+COMBO (computed),"All-Gemini, VAD-gated STT, cache hits, 2026 prices",0.866,"gemini-3.5-transcribe-live, VAD-gated (+final text)","gemini-3.5-flash-lite, if 90% of prompt were cache hits (C7 usage)",gemini-3.8-flash-lite-tts to 2026-12-31 ($6/1M audio tok)
+COMBO (computed),"All-Gemini, VAD-gated STT, cache hits, 2027 TTS prices",1.215,"gemini-3.5-transcribe-live, VAD-gated (+final text)","gemini-3.5-flash-lite, if 90% of prompt were cache hits (C7 usage)",gemini-3.8-flash-lite-tts from 2027-01-01 ($12/1M)
+COMBO (computed),"All-Gemini with 3.8 flash TTS, 2026 prices",1.7,"gemini-3.5-transcribe-live, full stream (+final text)","gemini-3.5-flash-lite, no cache hits as measured (C7 usage)",gemini-3.8-flash-tts to 2026-12-31 ($9/1M)
+COMBO (computed),Mixed: Azure STT PAYG + gpt-oss + Gemini flash-lite TTS,2.119,"Azure real-time PAYG, full stream",gpt-oss-120b on Groq via OpenRouter (C6 usage),gemini-3.8-flash-lite-tts to 2026-12-31 ($6/1M audio tok)
+COMBO (computed),Round-2 India baseline (C1) at PAYG,2.262,"Azure real-time PAYG, full stream",gpt-4.1-mini South India Standard (C1 usage),Azure neural PAYG ($15/1M chars)
+COMBO (computed),Expressive Azure: C1 with DragonHD,2.462,"Azure real-time PAYG, full stream",gpt-4.1-mini South India Standard (C1 usage),Azure DragonHD PAYG ($22/1M chars)

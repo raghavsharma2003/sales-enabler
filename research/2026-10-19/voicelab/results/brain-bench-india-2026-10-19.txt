@@ -1,0 +1,59 @@
+brain                      n  ttft p50    p90 clause p50 total p50  usd/turn errs
+gpt-oss-120b@groq          6       483    758        489       539   0.00019 0
+gpt-oss-120b               6      1466   1572       1466      1683   0.00022 0
+gpt-4.1-mini-in            6       641    650        641       696   0.00028 0
+gpt-4.1                    6      1765   1848       1765      1832   0.00259 0
+gpt-chat-latest          0  errors: ['400 {\n  "error": {\n    "message": "Unsupported value: \'temperature\' does not support 0.6 with this model. Only the default (1) value is supported.",\n    "type": "invalid_request_error",\n    "param": "temperature",\n    "code": "unsupported_value"\n  }\n}', '400 {\n  "error": {\n    "message": "Unsupported value: \'temperature\' does not support 0.6 with this model. Only the default (1) value is supported.",\n    "type": "invalid_request_error",\n    "param": "temperature",\n    "code": "unsupported_value"\n  }\n}']
+kimi-k2.6                  6      1629   1737       1629      1911   0.00102 0
+llama-4-maverick           6      1060   1083       1061      1125   0.00031 0
+mistral-medium-3.5         6      1508   1654       1508      1557   0.00028 0
+gemini-3.8-flash           5      2577   4566       2577      2591   0.00103 1
+gemini-3.5-flash-lite      6       826    968        890       972   0.00043 0
+gemini-3.6-flash           6      1496   1858       1575      1719   0.00097 0
+gemini-3.1-flash-lite      6      2843   4495       2891      2980   0.00033 0
+{
+"gpt-oss-120b@groq": [
+"मैं Riya हूँ, Suraksha Health Insurance की AI assistant. आपकी Suraksha Family Health Plus policy का renewal 2 November को है, क्या इस बारे में कुछ पूछना चाहेंगे",
+"मैं समझ रही हूँ कि आप premium के बारे में जानना चाहते हैं। इस साल का premium **18,450** रुपये है। पिछले साल का premium **16,900** था, और इस बार थोड़ा बढ़ा है क्",
+"समझ रही हूँ, बढ़ी हुई प्रीमियम से चिंता होना स्वाभाविक है। इस साल का premium 18,450 रुपये है। पिछले साल 16,900 रुपये था, और वृद्धि का कारण आपके सबसे बड़े परिवार"
+],
+"gpt-oss-120b": [
+"मैं Riya हूँ, Suraksha Health Insurance की AI assistant. आपका Suraksha Family Health Plus policy 2 November को renew होना है। क्या हम आगे की details discuss कर ",
+"समझ रही हूँ, आप premium के बारे में पूछ रहे हैं। इस साल का premium **18,450 रुपये** है। पिछले साल 16,900 था, इसलिए थोड़ा बढ़ा है। क्या आप अभी renewal link भेजवा",
+"समझ रहा हूँ, यह थोड़ा चौंका देने वाला लग सकता है। इस साल का premium 18,450 रुपये है। बढ़ोतरी का कारण सबसे बड़े परिवार सदस्य की उम्र का अगला बैंड में चलना है। सा"
+],
+"gpt-4.1-mini-in": [
+"जी, मैं Riya हूँ, Suraksha Health की AI assistant. आपकी Suraksha Family Health Plus policy renewal के लिए call किया है. आपकी policy में आप, आपके spouse और एक बच",
+"जी नहीं, इस साल का premium 18,450 रुपए है, पिछले साल 16,900 था. बढ़ोतरी इसलिए हुई क्योंकि परिवार के सबसे बड़े सदस्य की age band बदल गई है.",
+"समझ सकती हूँ, premium थोड़ा बढ़ा है क्योंकि सबसे बड़े सदस्य की age band बदल गई है। आपकी policy का renewal 2 November को है। क्या मैं renewal link भेज दूँ या adv"
+],
+"gpt-4.1": [
+"धन्यवाद, मैं Riya बोल रही हूँ, Suraksha Health की AI assistant. आपकी Suraksha Family Health Plus policy का renewal due है. आपको details बताऊँ?",
+"अच्छा, सुनकर थोड़ा confusion लग रहा है। इस साल का premium 18,450 rupees है। पिछले साल 16,900 rupees था। increase इसलिए हुआ है क्योंकि eldest member next age ban",
+"समझ सकती हूँ, थोड़ा surprise हुआ होगा. इस साल premium 18,450 रुपये है क्योंकि आपके policy में जो सबसे बड़े member हैं, उनकी age next age band में चली गई है. इसल"
+],
+"gpt-chat-latest": [
+"",
+"",
+""
+],
+"kimi-k2.6": [
+"धन्यवाद। मैं Riya, Suraksha Health की AI assistant बोल रही हूँ। आपकी Family Health Plus policy का renewal 2 November को due है, इसलिए call किया था।",
+"Actually last year 16,900 था, और इस साल 18,450 रुपये है. Increase इसलिए है क्योंकि मेंबर की age band change हुई है.",
+"समझ सकती हूँ, premium बढ़ना unexpected लगता है. \n\nआपकी policy का premium इस साल 18,450 रुपये है, पिछले साल 16,900 था. ये increase इसलिए हुआ है क्योंकि family मे"
+],
+"llama-4-maverick": [
+"मैं Riya हूँ, Suraksha Health Insurance से, आपकी health insurance policy के renewal के बारे में बात करने के लिए call किया है।",
+"पिछले साल का प्रीमियम 16,900 रुपये था, और इस बार renewal के लिए 18,450 रुपये का प्रीमियम है।",
+"आपको लगता है premium कम होना चाहिए था, पर इस बार eldest member के अगले age band में जाने से थोड़ा बढ़ गया है, आपकी policy का premium 18,450 रुपये है इस बार।"
+],
+"mistral-medium-3.5": [
+"मैं Riya, Suraksha Health की AI assistant. आपकी Family Health Plus policy 2 November को renew होनी है, इसीलिए call किया है.",
+"अरे, last year का premium 16,900 रुपये था। इस बार 18,450 रुपये है, क्योंकि सबसे बड़े member की age band बदल गई है।",
+"हाँ, समझती हूँ, premium बढ़ना परेशान कर सकता है। इस बार 18,450 रुपये है, पिछले साल 16,900 था। असल में, सबसे बड़े सदस्य की age band बदल गई है इसीलिए बढ़ा है। लेक"
+],
+"gemini-3.8-flash": [
+"",
+"नहीं, पिछले साल आपका premium 16,900 rupees था, और इस बार 18,450 rupees है। eldest member के next age band में जाने की वजह से यह थोड़ा बढ़ा है।",
+"मैं समझ सकती हूँ, premium बढ़ता हुआ देखकर थोड़ा अजीब लगना naturally जायज़ है। इस साल आपके परिवार के सबसे बड़े member का age band बदल गया है, इसलिए premium 18,45"
+],

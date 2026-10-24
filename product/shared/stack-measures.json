@@ -1,0 +1,17 @@
+{
+  "about": "Measured speed and turn-taking per curated stack, from staging calls on our own voice engine (India VM, browser test calls through the control plane with the synthetic Hinglish sim caller). shared/stack-gate.ts reads this file against the gate thresholds; shared/stacks.ts shows the reply gap from it. Replace an entry with each new staging run; a stack or a number not listed here is 'not measured', never zero. cutInRate is the share of caller turns she started speaking over; it has not been measured per stack yet (only on the turn bench).",
+  "stacks": {
+    "v2-flashlite": {
+      "replyGapP50Ms": { "value": 3201, "p90Ms": 3277, "n": 22, "calls": 4, "date": "2026-10-24", "source": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3 (shipped latency defaults; research/2026-10-24/staging/reply-gap.md)" },
+      "cutInRate": null
+    },
+    "v2-mai": {
+      "replyGapP50Ms": { "value": 2658, "p90Ms": 3987, "n": 23, "calls": 4, "date": "2026-10-24", "source": "measure.2026-10-24.product-reply-gap-v2-mai-e9fdde3 (shipped latency defaults; research/2026-10-24/staging/reply-gap.md)" },
+      "cutInRate": null
+    },
+    "v2-54mini": {
+      "replyGapP50Ms": { "value": 2128, "p90Ms": 2543, "n": 24, "calls": 4, "date": "2026-10-24", "source": "measure.2026-10-24.product-reply-gap-v2-54mini-e9fdde3 (shipped latency defaults; research/2026-10-24/staging/reply-gap.md)" },
+      "cutInRate": null
+    }
+  }
+}

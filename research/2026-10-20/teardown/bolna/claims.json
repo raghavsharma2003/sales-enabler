@@ -1,0 +1,716 @@
+[
+ {
+  "id": "BOL-01",
+  "dimension": "surface",
+  "claim": "Bolna offers six ways to build an agent: Agent Studio Auto Build from a description (June 2026), the 7-tab agent builder, graph agents with a visual editor (May-June 2026), workflows (beta), the REST API, and the CLI/MCP server.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms.txt",
+   "https://www.bolna.ai/docs/get-started/choose-how-to-build.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-02",
+  "dimension": "surface",
+  "claim": "Chat-driven setup already ships: Auto Build (brief to agent in 5-8 min, vendor claim), \"edit your prompt by chatting with AI\" (2026-09-09), Ask Bolna dashboard assistant (answers about agents/calls/batches, writes prompts), MCP server listed as a Claude connector (2026-10-09), 20 Bolna Skills for coding assistants.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/changelog/entries.csv",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (# Ask Bolna, line ~6724; # Auto Build ~2172)",
+   "data/teardown/bolna/platform-chunks/assets (/assistants/ask-bolna/* routes)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-03",
+  "dimension": "surface",
+  "claim": "Outbound campaign surface is three overlapping objects: batches (CSV + schedule + auto-retry up to 3 with intervals), workflow campaigns (entries, start/pause/resume/abort, report) and workflows (multi-step sequences incl. a WhatsApp node via AiSensy, beta).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs__llms_api-reference.txt",
+   "data/teardown/bolna/platform-chunks/assets (rpc/workflow-campaigns, /whatsapp/campaigns, aisensy_whatsapp.recipient)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-04",
+  "dimension": "surface",
+  "claim": "There is no native CRM or contact object: no contacts/leads entity in the API, no native CRM connector; data reaches CRMs through webhooks, Zapier, Make, n8n (community node), viaSocket and Google Sheets. Confirms l4a parity crm_integrations=partial.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs__llms_api-reference.txt",
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv (crm_integrations)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-05",
+  "dimension": "surface",
+  "claim": "Team roles are only Admin and Member, and organisations/roles are an Enterprise feature; there is no white-label/rebrand page, only sub-accounts with usage and a shared concurrency pool (agency model). Confirms l4a white_label=partial.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~18173-18250 Managing your organization)",
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv (white_label)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-06",
+  "dimension": "surface",
+  "claim": "Post-call layer: executions with cost, transcript, recording, raw logs, progression and audio insights; extractions with categories, confidence and reasoning (Apr 2026); dispositions with a test API; conversation rating and feedback tags; async CSV reports (May 2026); webhooks per status with filters and custom headers.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets (/executions/{id}/progression, /audio-insights, /executions/feedback/rating-tags, /reports/jobs)",
+   "data/teardown/bolna/web/changelog/entries.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-07",
+  "dimension": "surface",
+  "claim": "Telephony surface: Bolna-hosted numbers (search/buy/move; India via Vobiz and Plivo behind a compliance application and Vobiz KYC), BYO Twilio/Plivo/Exotel/Vobiz accounts, new SIP trunks (2026-10-15) plus deprecated Asterisk-based legacy trunks, Truecaller business-caller verification.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt",
+   "data/teardown/bolna/platform-chunks/assets (vobiz-kyc chunk, /phone-numbers/truecaller-verification/request)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-08",
+  "dimension": "surface",
+  "claim": "Enterprise offering: India data residency, on-prem (Docker/Kubernetes, images api_server, ws_server, telephone_server, q_manager, q_worker, arq_worker), sub-accounts, AWS Marketplace listing (2026-09-02), forward-deployed engineers, VAPT A+ report on request.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_concepts_security.md",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~18030-18150 on-prem; ~17655 AWS Marketplace)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-09",
+  "dimension": "surface",
+  "claim": "Maturity markers in docs: Workflows beta, CLI beta (July 2026), Single Prompt view beta and \"being A/B tested\", Web Call SDK v2 (July 2026), SIP trunks new (Oct 2026); legacy extraction features retired and Agent v1 API deprecated.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt",
+   "data/teardown/bolna/web/changelog/entries.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-10",
+  "dimension": "api",
+  "claim": "The REST API (api.bolna.ai, Bearer key) exposes agents (v2, versions, translations, stop), calls, executions (+raw logs), batches, knowledge bases, voices, dispositions, extraction categories, phone numbers, compliance applications, inbound links, SIP trunks (gateways, carrier IPs, numbers, pop), violations, workflows, workflow campaigns, workflow executions, user (custom LLM/TTS), providers and sub-accounts.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs__llms_api-reference.txt",
+   "data/teardown/bolna/web/www.bolna.ai_docs_AGENTS.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-11",
+  "dimension": "api",
+  "claim": "The published OpenAPI file referenced from llms.txt (/docs/api-reference/openapi.yml) returned 404 on www.bolna.ai and docs.bolna.ai on 2026-10-20; endpoint shapes were read from AGENTS.md and the per-endpoint docs instead.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_api-reference_openapi.yml",
+   "research/2026-10-20/teardown/bolna/manifest.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-12",
+  "dimension": "api",
+  "claim": "The data model is call-centric, not customer-centric: the core record is the execution (one call), there is no person/contact entity and no consent or do-not-call object; consent appears only as evidence uploaded against a provider violation report.",
+  "grade": "inferred",
+  "evidence": [
+   "from BOL-10 and BOL-47 (API index; violations strings in bundle)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-13",
+  "dimension": "api",
+  "claim": "Execution lifecycle: queued, initiated, ringing, in-progress, call-disconnected, then completed after post-call processing; terminal no-answer, busy, failed, canceled, stopped, error, balance-low; plus rescheduled for calls outside guardrail hours.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_concepts_call-flow.md",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (troubleshooting/calls-fail-or-drop-early)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-14",
+  "dimension": "api",
+  "claim": "API gotchas that cost integrators time: scheduled_at with a trailing Z returns HTTP 500; schedules round up to the next 10 minutes; /v2/agent returns 201 but /trunk writes 200; GET /batches/{id}/executions returns a bare array; webhooks carry no HMAC signature (source-IP allowlist only).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_AGENTS.md",
+   "data/teardown/bolna/web/www.bolna.ai_docs_concepts_security.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-15",
+  "dimension": "api",
+  "claim": "The hosted backend is Python FastAPI/Pydantic: 422 bodies are {detail:[{loc,msg,type}]} and unknown fields are rejected.",
+  "grade": "inferred",
+  "evidence": [
+   "from data/teardown/bolna/web/www.bolna.ai_docs_AGENTS.md (SIP trunks rule 9)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-16",
+  "dimension": "architecture",
+  "claim": "Full blind architecture inference set (35 statements with confidence) frozen before any code comparison.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/blind-inferences.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-17",
+  "dimension": "architecture",
+  "claim": "Production is on AWS: api.bolna.ai, ws.bolna.ai and ts.bolna.ai resolve to ALBs named bolna-{api,ws,ts}-prod-ingress-alb in ap-south-1 (Mumbai); us.ws.bolna.ai is an ALB in us-east-1; every resolved Bolna backend IP matches AWS ip-ranges (ap-south-1 or us-east-1).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/dns/doh-2026-10-20.txt",
+   "data/teardown/bolna/dns/doh2-2026-10-20.txt",
+   "data/teardown/bolna/dns/aws-match-2026-10-20.txt",
+   "data/teardown/bolna/dns/aws-match2-2026-10-20.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-18",
+  "dimension": "architecture",
+  "claim": "Docs say calls are processed in the US (AWS us-east-1) by default, yet the API and main websocket ingress are in Mumbai; which region processes a default Indian Vobiz call is unresolved.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_concepts_security.md",
+   "data/teardown/bolna/dns/doh-2026-10-20.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-19",
+  "dimension": "architecture",
+  "claim": "Web calls (dashboard test call and Web Call SDK v2) use SIP.js 0.21.x over WSS to FreeSWITCH, with a backend-minted single-use session (/web-call/freeswitch-session returning wss_url, SIP credentials and ICE servers) and X-Agent-Id/X-Run-Id SIP headers; v1 was a raw PCM16 websocket. No LiveKit, Daily or Twilio Voice SDK in the bundle.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets/import-agent-CVqQRuAy.js",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~3790, ~17171)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-20",
+  "dimension": "architecture",
+  "claim": "Legacy SIP trunking is an Asterisk PJSIP media server (sip.bolna.ai, one EC2 IP in ap-south-1); the new trunk edge (trunk.bolna.ai) is UDP/TCP only, PCMU/PCMA, RTP 30000-40000, refuses delayed-offer INVITEs (488) and non-allowlisted sources (403).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~26153-26175, ~34580)",
+   "data/teardown/bolna/dns/aws-match-2026-10-20.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-21",
+  "dimension": "architecture",
+  "claim": "The core orchestration is Bolna's own Python framework (not Pipecat/LiveKit/Vocode): no mention of those frameworks in 1.9 MB of docs or in 256 platform bundles; on-prem service names map to api/ws/telephone servers plus RabbitMQ queue manager/workers and arq (Redis) workers.",
+  "grade": "inferred",
+  "evidence": [
+   "from data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (on-prem guide) and data/teardown/bolna/platform-chunks/assets; see blind-inferences BI-01, BI-05"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-22",
+  "dimension": "architecture",
+  "claim": "LLM calls are routed through LiteLLM (docs: ten providers \"routed through LiteLLM\"; model strings like azure/gpt-4.1-mini).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~3702)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-23",
+  "dimension": "architecture",
+  "claim": "Turn-taking uses STT-provider endpointing (Deepgram endpointing ms) or provider-native end-of-turn (Deepgram Flux, AssemblyAI, Soniox) plus a fixed incremental delay; barge-in is transcript word-count based (default 2 words) with stopwords. No semantic turn-detection model is documented or referenced in the bundle.",
+  "grade": "inferred",
+  "evidence": [
+   "from data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~1288-1322 Engine tab) and the default agent object in data/teardown/bolna/platform-scripts/files"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-24",
+  "dimension": "architecture",
+  "claim": "Hangup, voicemail and language detection are extra LLM calls: the execution-log categoriser maps voicemail_check, hangup_check and language_detection to the llm category, and the bundle carries a \"determining if a conversation is complete\" prompt.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets (execution log categoriser)",
+   "data/teardown/bolna/platform-scripts/files (studio chunk)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-25",
+  "dimension": "architecture",
+  "claim": "Default stack for a new dashboard agent: Vobiz telephony, Deepgram nova-3 hi (16 kHz linear16, 200 ms endpointing), Azure OpenAI gpt-4.1-mini (max_tokens 250, temperature 0.2), ElevenLabs eleven_turbo_v2_5 voice \"Tripti\" with caching, ambient office noise, call_terminate 300 s.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-scripts/files (default agent object, studio chunk)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-26",
+  "dimension": "architecture",
+  "claim": "The status page monitors exactly these upstreams: OpenAI, ElevenLabs, Azure, Deepgram, Cartesia, Sarvam, Plivo, Vobiz, which marks them as the production-critical providers.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/status.bolna.ai_"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-27",
+  "dimension": "architecture",
+  "claim": "Knowledge bases use LanceDB (default vector_store provider in the bundle), all-mpnet-base-v2 embeddings, an ONNX reranker and Unsiloed PDF parsing with LlamaParse fallback.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets (rag_config.vector_store.provider lancedb)",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~9433, ~9480-9492)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-28",
+  "dimension": "architecture",
+  "claim": "SaaS layer: Vite/React SPA on Vercel, Supabase Auth on auth.bolna.ai (CNAME to a supabase.co project) with GitHub/Google OAuth and hCaptcha, Stripe checkout, PostHog via a managed reverse proxy, Sentry, Intercom/Plain chat, Better Stack status, customer.io email, Metabase Cloud, self-hosted Grafana, Mintlify docs.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-scripts/manifest.json",
+   "data/teardown/bolna/dns/doh2-2026-10-20.txt",
+   "data/teardown/bolna/har/platform-login-2026-10-20.har"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-29",
+  "dimension": "architecture",
+  "claim": "Certificate transparency shows named stacks apollo, ares and topaz (each with api/ws/ts hosts), FreeSWITCH hosts fs/fs-dev/fs-staging (Sept-Oct 2026), webcall, annotate, inference-mumbai (wildcard, 2026-10-05) and deepgram.bolna.ai (2025-11-09).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/dns/certspotter-bolna.ai.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-30",
+  "dimension": "architecture",
+  "claim": "Bolna is moving toward self-hosted inference in Mumbai (inference-mumbai wildcard cert, no public A record) and has run or tested a self-hosted Deepgram endpoint.",
+  "grade": "inferred",
+  "evidence": [
+   "from data/teardown/bolna/dns/certspotter-bolna.ai.json and doh2-2026-10-20.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-31",
+  "dimension": "architecture",
+  "claim": "workflows.bolna.ai resolves publicly to private 172.32.x addresses, which leaks an internal load balancer into public DNS (hygiene, not an exploit).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/dns/doh2-2026-10-20.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-32",
+  "dimension": "architecture",
+  "claim": "The dashboard chat test opens wss://ws.bolna.ai/chat/v1/{agentId} with the auth token in the URL query string.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets (ea({path:`chat/v1`}))"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-33",
+  "dimension": "pricing",
+  "claim": "Pricing on 2026-10-20 is unchanged from the l4a 2026-10-17 live row: PAYG 6.00 cents/min (INR 5.52 as Bolna states it) for the bundled STT+LLM+TTS, top-ups $15-$3K down to 4.51 cents, Pilot $300/6,500 min (~4.6 cents) or $500/12,000 min (~4.2 cents), 25 concurrent, 30-second pulses, $5 free credit; telephony and platform fee extra.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_pricing",
+   "research/2026-10-17/lanes/l4a-competitors/pricing-history.json (bolna 2026-10-17 live)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-34",
+  "dimension": "pricing",
+  "claim": "AWS Marketplace tiers (new since 2026-09-02): Pilot $300/month for 6,000 min (~5 cents), Enterprise $900/month for 20,000 min (~4.5 cents), annual Enterprise up to 750,000 min at ~4 cents/min.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~17665-17676)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-35",
+  "dimension": "pricing",
+  "claim": "The platform fee is $0.02/min (FAQ); docs and the pricing page say it is added on top of the bundled rate, but the l4a row read it as a BYOK-only fee. Whether it applies on the bundled plan is unresolved until an invoice is seen.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~19072)",
+   "data/teardown/bolna/web/www.bolna.ai_pricing",
+   "research/2026-10-17/lanes/l4a-competitors/pricing-history.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-36",
+  "dimension": "pricing",
+  "claim": "All-in INR/min for an Indian outbound call at FX 95: about INR 6.1 (PAYG, platform fee included in bundle) to INR 8.0 (PAYG + $0.02 fee + ~INR 0.43 telephony); best top-up INR 4.7-6.6; Pilot INR 4.4-6.3; AWS annual INR 4.2-6.1. Extends ledger ECO-15 (Bolna ~6-7).",
+  "grade": "inferred",
+  "evidence": [
+   "from BOL-33..BOL-35 + research/2026-10-18/model/results/inputs.csv (tel_inr_min 0.43)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-37",
+  "dimension": "pricing",
+  "claim": "Reconstructed COGS of the default stack per connected minute: Deepgram nova-3 INR 0.55-0.87, gpt-4.1-mini INR 0.38-0.89 (cached vs uncached on the VP g3 workload), ElevenLabs Turbo INR 0.67-1.34 (list to ~50% discount), telephony INR 0.38-0.48, infra INR 0.05-0.2: total about INR 2.0-3.8 (mid ~2.8).",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-18/lanes/g4-market-selfhost/prices.csv",
+   "research/2026-10-18/model/results/inputs.csv",
+   "default stack BOL-25"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-38",
+  "dimension": "pricing",
+  "claim": "Gross margin on the bundled voice component is about 46-72% at PAYG (INR 5.70 at FX 95), 22-60% at the Pilot rate and 18-58% at the AWS annual rate; a reported enterprise rate of INR 1.75-2/min (l4a, low confidence) would sit at or below the default-stack COGS, so it implies cheaper models or self-hosting.",
+  "grade": "inferred",
+  "evidence": [
+   "from BOL-37, BOL-33 and BOL-34"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-39",
+  "dimension": "velocity",
+  "claim": "Changelog cadence: 72 dated entries May-Oct 2026 (13, 10, 8, 14, 15, 12 per month to 20 Oct) vs 36 entries Nov 2025-Apr 2026; most new entries are provider/model additions and developer tooling (MCP, CLI, Skills, graph agents, SIP trunks), few touch campaign operations or India compliance (compliance-application API 2026-10-12).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/changelog/entries.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-40",
+  "dimension": "velocity",
+  "claim": "Status page, last 6 months (2026-04-20 to 2026-10-20): 18 incidents after de-duplication; 9 are upstream telephony (Plivo x3, Vobiz x2, carrier/connectivity x4), 3 model-provider (Sarvam latency, Nova-3 failures, speech processing), 2 latency, 2 queue/scheduling (incl. 2026-10-13 \"Some scheduled calls were not placed (India region)\"), 1 webhook delay.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/status-incidents-dedup.csv",
+   "data/teardown/bolna/web/status.bolna.ai_feed.rss"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-41",
+  "dimension": "velocity",
+  "claim": "From Nov 2024 to Feb 2026 the status feed shows 37 \"APIs/Docs/Dashboard is down\" incidents after 36-h merging (synthetic-monitor alerts), including 7 down/up alert pairs between 2026-02-04 and 02-19, and the old hosts api.bolna.dev/playground.bolna.dev until a Feb 2025 migration.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/status-incidents-dedup.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-42",
+  "dimension": "velocity",
+  "claim": "Team and traction claims: \"team of ~25\" in Bengaluru (Ashby posts Jul-Oct 2026) vs Inc42 headcount 51 in l4a company-financials; 1,050+ paying customers; llms.txt \"400,000+ calls monthly\" vs the Inc42 row \"200k calls/day\". The scale claims contradict each other.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/bolna/web/ashby-bolna.json",
+   "data/teardown/bolna/web/www.bolna.ai_llms.txt",
+   "research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-43",
+  "dimension": "velocity",
+  "claim": "Open roles (7) are GTM-heavy: enterprise BFSI sales (2026-10-15), enterprise lead, marketing x2, product growth, AI solutions engineer (prompting), conversation quality analyst intern (LLM-as-judge verification in Label Studio); no core engineering role is posted.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/ashby-bolna.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-44",
+  "dimension": "india",
+  "claim": "DLT and number series are left to the buyer: docs walk the buyer through registering as a Principal Entity on the Tata Teleservices DLT portal (INR 5,900) and point 140-series to Vobiz and 160-series to Plivo, which needs an RBI/SEBI certificate. Confirms ledger CMP-27.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~26226-26330)",
+   "research/2026-10-17/ledger.md (CMP-27)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-45",
+  "dimension": "india",
+  "claim": "Before any number purchase Bolna requires a compliance application with a CIN certificate (UI: \"only Private Limited Company supported\") and GST; Vobiz numbers need a separate KYC.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~11938-12010)",
+   "data/teardown/bolna/platform-chunks/assets (CIN string, \"KYC required for VoBiz numbers.\")"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-46",
+  "dimension": "india",
+  "claim": "No NCPR/DND scrubbing is offered: 0 docs hits for NCPR or scrub; the docs state the TRAI rule (\"no calls on DND registered numbers without consent\") as the buyer's duty. The security page claims \"do-not-call list integration\", but the docs show only an inbound caller blocklist, so marketing and docs disagree.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~27482, ~29811)",
+   "data/teardown/bolna/web/www.bolna.ai_docs_concepts_security.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-47",
+  "dimension": "india",
+  "claim": "Consent handling is reactive: when a telephony provider forwards a violation report, the customer is asked to \"upload proof of opt-in for this call\", with escalation to a final notice; admins triage via a violations list. There is no consent capture or ledger.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets (violation strings, /violations/submit, /admin/violations/*)",
+   "data/teardown/bolna/web/www.bolna.ai_docs__llms_api-reference.txt (Violations)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-48",
+  "dimension": "india",
+  "claim": "Calling windows: guardrails are OFF by default, per agent, whole-hour start/end in the recipient's timezone, outside-window calls become rescheduled, and bypass_call_guardrails skips the check (the dashboard warns that it will bypass the restriction). Docs give India as 9:00-21:00, while ledger CMP-27 cites a primary window of 10:00-21:00, so the regulation lane needs to settle it.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~27304-27420, ~27482)",
+   "data/teardown/bolna/platform-chunks/assets (bypass warning string)",
+   "research/2026-10-17/ledger.md (CMP-27)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-49",
+  "dimension": "india",
+  "claim": "India data residency is Enterprise-only and works only with Plivo telephony, Azure OpenAI as the LLM, a short list of STT/TTS providers and no BYOK keys; any own key silently routes the call through US servers.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_enterprise_indian-server-configuration.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-50",
+  "dimension": "india",
+  "claim": "DPDP: AWS Marketplace copy says the Enterprise tier \"includes SOC 2 Type II, ISO 27001, and DPDP compliance certifications\"; the security page tells buyers to email support for SOC 2/HIPAA/GDPR. No DPDP certification scheme exists to our knowledge, so the claim is unverified.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~17676)",
+   "data/teardown/bolna/web/www.bolna.ai_docs_concepts_security.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-51",
+  "dimension": "india",
+  "claim": "Truecaller business-caller verification can be requested per number (states pending/active/delisting), a pickup-rate lever most self-serve platforms do not expose.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets (/phone-numbers/truecaller-verification/*)",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~38203)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-52",
+  "dimension": "india",
+  "claim": "No call-recording disclosure or AI-disclosure setting is documented; disclosure is left to the prompt.",
+  "grade": "inferred",
+  "evidence": [
+   "from 0 hits for recording consent and 1 hit for disclos in data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-53",
+  "dimension": "failures",
+  "claim": "Buyer-side complaints on Trustpilot (4 reviews, all 1-star, TrustScore 2.6, re-read 2026-10-20) are all about support, refunds, a pilot refused after payment and demos never called back; none is about voice quality. Confirms l4a/r2 rows.",
+  "grade": "observed",
+  "evidence": [
+   "https://www.trustpilot.com/review/bolna.ai",
+   "research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-54",
+  "dimension": "failures",
+  "claim": "The top operational failure is upstream Indian telephony (9 of 18 incidents in 6 months). Calls ride a single provider per agent and the docs describe no automatic carrier failover.",
+  "grade": "inferred",
+  "evidence": [
+   "from BOL-40 and the per-provider queue docs in data/teardown/bolna/web/www.bolna.ai_docs_pricing_outbound-calling-concurrency.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-55",
+  "dimension": "failures",
+  "claim": "Developer-side complaints (125 Bolna GitHub issue titles coded in l4a, codes only, not re-opened in this blind lane): OTHER_QUESTION 35, TOOLS_INTEGRATION 25, RELIABILITY 15, TURN_TAKING 14, ASR 14, VOICE_TTS 13, TELEPHONY 10.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/complaint-taxonomy.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-56",
+  "dimension": "failures",
+  "claim": "A competitor-run blind test (Tough Tongue AI, n=150 India, Q2 2026, published 2026-07-08) scored Bolna lowest: perceived latency 1.5-2.0 s, Hindi turns answered in English, repeated context, \"identified as a machine within the first exchange\". The source is conflicted, so this is a hypothesis to test, not a finding.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "https://www.autointerviewai.com/blog/voice-ai-calling-comparison-blind-test-tough-tongue-vs-gnani-vs-bolna-2026",
+   "data/teardown/bolna/complaints/www.autointerviewai.com_blog_voice-ai-calling-comparison-blind-test-tough-tongue-vs-gnani-vs-bolna-2026"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-57",
+  "dimension": "failures",
+  "claim": "Vendor-documented failure modes (troubleshooting section): agent interrupts users, mishears words, call transfer failed, calls fail or drop early (failed/stopped = provider-side), choppy or one-way audio (buffer size, SIP/NAT), webhook not received.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~37713-38128)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-58",
+  "dimension": "failures",
+  "claim": "Reddit r/AIVoice_Agents (2026-02-02): a builder looked for \"an alternative to Bolna that works on Indian numbers\", citing price and limited configuration.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv",
+   "https://www.reddit.com/r/AIVoice_Agents/comments/1qtqcdc/"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-59",
+  "dimension": "failures",
+  "claim": "G2, Product Hunt and Reddit pages returned 403/429 to our fetcher on 2026-10-20 and were not bypassed, so review coverage is limited to Trustpilot, earlier-lane rows and search snippets.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/manifest.csv (complaints/* rows)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-60",
+  "dimension": "v2",
+  "claim": "There is no persistent cross-call memory and no contact entity; personalisation is per-call variables (CSV columns, user_data, context_data) and inbound caller lookup from API/CSV/Sheet. No marketing page claims memory, so marketing and docs agree here.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt",
+   "data/teardown/bolna/web/www.bolna.ai_llms.txt",
+   "data/teardown/bolna/platform-scripts/files (ingest_source_config)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-61",
+  "dimension": "v2",
+  "claim": "No customer-facing optimisation loop: no experiment or traffic-split feature for agents (docs suggest cloning an agent per model and comparing recordings); conversation ratings and feedback tags exist (Apr 2026) and an internal LLM-as-judge QA pipeline with human annotators is being built (job post 2026-08-18).",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (~14636, ~1957)",
+   "data/teardown/bolna/web/ashby-bolna.json",
+   "data/teardown/bolna/platform-chunks/assets (/executions/feedback/rating-tags)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-62",
+  "dimension": "v2",
+  "claim": "Bolna holds the raw material for a learning loop (ratings, extractions with confidence, LLM-judge grades, an annotation tool) but has not productised it; the gap for VP v2 is turning graded calls into prompt and policy changes per customer.",
+  "grade": "inferred",
+  "evidence": [
+   "from BOL-61"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-63",
+  "dimension": "method",
+  "claim": "REA (rea-agents 6.7.0) worked for list-browser-targets, inspect-web-page (with script sources), export-web-scripts and inspect-web-network-capture (HAR), but analyze-web-bundle hung until timeout twice (300 s with source maps; 200 s without, with NODE_USE_ENV_PROXY=1). Fallback: Playwright HAR plus REA export plus curl of lazy chunks named in the main bundle.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/rea/platform-login-analyze-web-bundle.err",
+   "data/teardown/bolna/rea/platform-login-inspect-scripts.json",
+   "data/teardown/bolna/rea/platform-export-web-scripts.json",
+   "data/teardown/bolna/rea/platform-login-har-inspect.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-64",
+  "dimension": "method",
+  "claim": "No source maps are served: none of the 256 platform bundles carries a sourceMappingURL; main-*.js.map returns the SPA HTML (200) and the marketing site map 404s. Architecture had to come from minified strings.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/platform-chunks/assets",
+   "data/teardown/bolna/platform-scripts/files"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-65",
+  "dimension": "method",
+  "claim": "No public web-call widget exists on bolna.ai: the homepage offers phone numbers (+91 22 and +91 80 DIDs) and recorded demos only, and dashboard web calls need a login behind hCaptcha. So no signalling capture was possible; the web-call stack was read from the public bundle instead.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/har/www-home-2026-10-20.har",
+   "data/teardown/bolna/web/www.bolna.ai_",
+   "data/teardown/bolna/har/platform-login.png"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BOL-66",
+  "dimension": "method",
+  "claim": "Blind protocol was partly contaminated by the lane inputs: four l4a parity.csv rows quote Bolna OSS code (voicemail, DTMF, language switching, memory). Affected inferences are flagged and excluded from the calibration score.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv",
+   "research/2026-10-20/teardown/bolna/blind-inferences.json (contamination_incident)"
+  ],
+  "date": "2026-10-20"
+ }
+]

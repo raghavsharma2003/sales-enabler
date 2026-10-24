@@ -1,0 +1,20 @@
+{
+  "about": "The one contract for the runtime's 'judge' event (shared/runtime-protocol.ts RuntimeEvent type 'judge'). It records what a model judge did on one caller turn, for analysis only. It never carries caller text, and it is never a safety signal: a real raise also arrives as its own event ('safety' RD3 for crisis, 'moment' opt_out for opt-out), and that event drives handling. Read by calls' ingest validator (TypeScript) and by the voice runtime's emitter (vpvoice/judge_event.py).",
+  "type": "judge",
+  "fields": ["seq", "type", "at", "judge", "label", "mode", "outcome", "kind", "confidence", "reason", "latencyMs"],
+  "values": {
+    "judge": ["caller_crisis"],
+    "label": ["crisis", "opt_out"],
+    "mode": ["shadow", "raise"],
+    "outcome": ["raised", "shadow", "unavailable"],
+    "kind": ["direct", "indirect"],
+    "reason": ["timeout", "error", "bad_output"]
+  },
+  "rules": {
+    "label_default": "crisis",
+    "unavailable": "label crisis or absent; reason required; no kind, no confidence. One model call reads both labels, so an outage is reported once.",
+    "crisis": "outcome raised or shadow: kind and confidence required, no reason",
+    "opt_out": "outcome raised or shadow only: confidence required; no kind, no reason",
+    "shadow": "log only: never a flag, a safety event, a suppression or a monitor input"
+  }
+}

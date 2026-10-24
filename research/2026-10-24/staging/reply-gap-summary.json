@@ -1,0 +1,411 @@
+{
+ "v2-flashlite@r1": {
+  "n": 22,
+  "calls": 4,
+  "p50": 3201,
+  "p90": 3277,
+  "min": 641,
+  "max": 3621,
+  "median_ci95": [
+   2977,
+   3260
+  ],
+  "replies_paced": 21,
+  "pacing_wait_max_ms": 713,
+  "p50_minus_pacing": 2608,
+  "p90_minus_pacing": 2730,
+  "speculative_replies": 2,
+  "stage_n": 22,
+  "stages_p50": {
+   "ears": 586,
+   "turn": 11,
+   "brain": 1588,
+   "sentence": 76,
+   "voice": 961,
+   "hold": -2020,
+   "out": 2020
+  },
+  "marks_p50_after_eos": {
+   "final": 586,
+   "brain_req": 604,
+   "brain_first": 2200,
+   "sentence": 2288,
+   "tts_req": 2289,
+   "tts_first": 3202,
+   "release": 1224,
+   "audio": 3202
+  },
+  "partial_lag": {
+   "n": 69,
+   "p50": 920,
+   "p90": 1172,
+   "min": 172,
+   "max": 1362
+  },
+  "inr_per_min": 1.26,
+  "cost_inr": 9.52,
+  "talk_s": 455,
+  "vertex_requests": {
+   "warm": 26,
+   "brain": 92,
+   "voice": 46
+  },
+  "brain_cancelled_before_headers": 61,
+  "pacer_wait_ms_by_who_waited_behind_whom": {
+   "brain behind warm": 4734,
+   "brain behind brain": 12225,
+   "voice behind brain": 1817,
+   "warm behind voice": 1004,
+   "brain behind voice": 845
+  },
+  "pacer_waits_n": {
+   "brain behind warm": 14,
+   "brain behind brain": 24,
+   "voice behind brain": 9,
+   "warm behind voice": 2,
+   "brain behind voice": 1
+  },
+  "errors": [],
+  "fatal": [],
+  "end_reasons": {
+   "agent_ended": 1,
+   "caller_hung_up": 3
+  },
+  "rt_timing_errors": 0,
+  "undelivered_events": 0
+ },
+ "v2-mai@r1": {
+  "n": 23,
+  "calls": 4,
+  "p50": 2658,
+  "p90": 3987,
+  "min": 1241,
+  "max": 15894,
+  "median_ci95": [
+   2500,
+   2832
+  ],
+  "replies_paced": 19,
+  "pacing_wait_max_ms": 1368,
+  "p50_minus_pacing": 2138,
+  "p90_minus_pacing": 3430,
+  "speculative_replies": 2,
+  "stage_n": 23,
+  "stages_p50": {
+   "ears": 595,
+   "turn": 16,
+   "brain": 1624,
+   "sentence": 111,
+   "voice": 456,
+   "hold": -1602,
+   "out": 1602
+  },
+  "marks_p50_after_eos": {
+   "final": 595,
+   "brain_req": 605,
+   "brain_first": 2200,
+   "sentence": 2349,
+   "tts_req": 2349,
+   "tts_first": 2808,
+   "release": 1231,
+   "audio": 2808
+  },
+  "partial_lag": {
+   "n": 70,
+   "p50": 900,
+   "p90": 1133,
+   "min": 152,
+   "max": 1374
+  },
+  "inr_per_min": 1.69,
+  "cost_inr": 13.85,
+  "talk_s": 493,
+  "vertex_requests": {
+   "brain": 96,
+   "warm": 24
+  },
+  "brain_cancelled_before_headers": 64,
+  "pacer_wait_ms_by_who_waited_behind_whom": {
+   "brain behind warm": 1875,
+   "brain behind brain": 14692
+  },
+  "pacer_waits_n": {
+   "brain behind warm": 10,
+   "brain behind brain": 28
+  },
+  "errors": [],
+  "fatal": [],
+  "end_reasons": {
+   "agent_ended": 1,
+   "caller_hung_up": 3
+  },
+  "rt_timing_errors": 0,
+  "undelivered_events": 0
+ },
+ "v2-54mini@r1": {
+  "n": 24,
+  "calls": 4,
+  "p50": 2128,
+  "p90": 2543,
+  "min": 487,
+  "max": 2829,
+  "median_ci95": [
+   1903,
+   2368
+  ],
+  "replies_paced": 0,
+  "pacing_wait_max_ms": 0,
+  "p50_minus_pacing": 2128,
+  "p90_minus_pacing": 2543,
+  "speculative_replies": 2,
+  "stage_n": 24,
+  "stages_p50": {
+   "ears": 578,
+   "turn": 20,
+   "brain": 886,
+   "sentence": 2,
+   "voice": 654,
+   "hold": -1117,
+   "out": 1117
+  },
+  "marks_p50_after_eos": {
+   "final": 578,
+   "brain_req": 594,
+   "brain_first": 1425,
+   "sentence": 1428,
+   "tts_req": 1428,
+   "tts_first": 2187,
+   "release": 1232,
+   "audio": 2187
+  },
+  "partial_lag": {
+   "n": 72,
+   "p50": 894,
+   "p90": 1233,
+   "min": 143,
+   "max": 1397
+  },
+  "inr_per_min": 1.56,
+  "cost_inr": 12.92,
+  "talk_s": 497,
+  "vertex_requests": {
+   "warm": 28,
+   "voice": 51
+  },
+  "brain_cancelled_before_headers": 0,
+  "pacer_wait_ms_by_who_waited_behind_whom": {
+   "warm behind voice": 454,
+   "voice behind warm": 251,
+   "voice behind voice": 349
+  },
+  "pacer_waits_n": {
+   "warm behind voice": 1,
+   "voice behind warm": 2,
+   "voice behind voice": 4
+  },
+  "errors": [],
+  "fatal": [],
+  "end_reasons": {
+   "caller_hung_up": 4
+  },
+  "rt_timing_errors": 0,
+  "undelivered_events": 0
+ },
+ "v2-flashlite@nf": {
+  "n": 23,
+  "calls": 4,
+  "p50": 2301,
+  "p90": 2810,
+  "min": 629,
+  "max": 2925,
+  "median_ci95": [
+   2199,
+   2501
+  ],
+  "replies_paced": 12,
+  "pacing_wait_max_ms": 304,
+  "p50_minus_pacing": 2185,
+  "p90_minus_pacing": 2810,
+  "speculative_replies": 0,
+  "stage_n": 23,
+  "stages_p50": {
+   "ears": 600,
+   "turn": 14,
+   "brain": 798,
+   "sentence": 88,
+   "voice": 803,
+   "hold": -1227,
+   "out": 1227
+  },
+  "marks_p50_after_eos": {
+   "final": 600,
+   "brain_req": 613,
+   "brain_first": 1415,
+   "sentence": 1524,
+   "tts_req": 1524,
+   "tts_first": 2301,
+   "release": 1226,
+   "audio": 2301
+  },
+  "partial_lag": {
+   "n": 68,
+   "p50": 879,
+   "p90": 1149,
+   "min": 109,
+   "max": 1363
+  },
+  "inr_per_min": 1.25,
+  "cost_inr": 9.07,
+  "talk_s": 435,
+  "vertex_requests": {
+   "warm": 4,
+   "brain": 60,
+   "voice": 46
+  },
+  "brain_cancelled_before_headers": 32,
+  "pacer_wait_ms_by_who_waited_behind_whom": {
+   "brain behind warm": 3855,
+   "voice behind brain": 2294,
+   "voice behind voice": 131
+  },
+  "pacer_waits_n": {
+   "brain behind warm": 4,
+   "voice behind brain": 14,
+   "voice behind voice": 1
+  },
+  "errors": [],
+  "fatal": [],
+  "end_reasons": {
+   "caller_hung_up": 3,
+   "agent_ended": 1
+  },
+  "rt_timing_errors": 0,
+  "undelivered_events": 0
+ },
+ "v2-mai@nf": {
+  "n": 22,
+  "calls": 4,
+  "p50": 2054,
+  "p90": 2413,
+  "min": 370,
+  "max": 2593,
+  "median_ci95": [
+   1852,
+   2185
+  ],
+  "replies_paced": 0,
+  "pacing_wait_max_ms": 0,
+  "p50_minus_pacing": 2054,
+  "p90_minus_pacing": 2413,
+  "speculative_replies": 0,
+  "stage_n": 22,
+  "stages_p50": {
+   "ears": 610,
+   "turn": 12,
+   "brain": 969,
+   "sentence": 100,
+   "voice": 386,
+   "hold": -936,
+   "out": 936
+  },
+  "marks_p50_after_eos": {
+   "final": 610,
+   "brain_req": 614,
+   "brain_first": 1582,
+   "sentence": 1658,
+   "tts_req": 1660,
+   "tts_first": 2075,
+   "release": 1226,
+   "audio": 2075
+  },
+  "partial_lag": {
+   "n": 69,
+   "p50": 937,
+   "p90": 1176,
+   "min": 189,
+   "max": 1393
+  },
+  "inr_per_min": 1.65,
+  "cost_inr": 12.87,
+  "talk_s": 467,
+  "vertex_requests": {
+   "brain": 61
+  },
+  "brain_cancelled_before_headers": 34,
+  "pacer_wait_ms_by_who_waited_behind_whom": {},
+  "pacer_waits_n": {},
+  "errors": [],
+  "fatal": [],
+  "end_reasons": {
+   "agent_ended": 1,
+   "caller_hung_up": 3
+  },
+  "rt_timing_errors": 0,
+  "undelivered_events": 0
+ },
+ "v2-54mini@nf": {
+  "n": 5,
+  "calls": 1,
+  "p50": 2257,
+  "p90": 2435,
+  "min": 841,
+  "max": 2467,
+  "median_ci95": [
+   841,
+   2467
+  ],
+  "replies_paced": 0,
+  "pacing_wait_max_ms": 0,
+  "p50_minus_pacing": 2257,
+  "p90_minus_pacing": 2435,
+  "speculative_replies": 0,
+  "stage_n": 5,
+  "stages_p50": {
+   "ears": 575,
+   "turn": 21,
+   "brain": 1096,
+   "sentence": 3,
+   "voice": 679,
+   "hold": -1223,
+   "out": 1223
+  },
+  "marks_p50_after_eos": {
+   "final": 575,
+   "brain_req": 606,
+   "brain_first": 1702,
+   "sentence": 1704,
+   "tts_req": 1704,
+   "tts_first": 2387,
+   "release": 1222,
+   "audio": 2387
+  },
+  "partial_lag": {
+   "n": 13,
+   "p50": 707,
+   "p90": 823,
+   "min": 612,
+   "max": 1022
+  },
+  "inr_per_min": 1.35,
+  "cost_inr": 2.42,
+  "talk_s": 108,
+  "vertex_requests": {
+   "warm": 1,
+   "voice": 12
+  },
+  "brain_cancelled_before_headers": 0,
+  "pacer_wait_ms_by_who_waited_behind_whom": {},
+  "pacer_waits_n": {},
+  "errors": [],
+  "fatal": [
+   "RuntimeError('test.browser_call: {\"status\": \"not_executed\", \"reason\": \"today\\'s test budget is used up; it resets at midnight IST\", \"argsHash\": \"d5c3b6da922ea45a8b65ddaa902c7aeeeed9e0f86f3735ee401bf06f94d2c585\"}')",
+   "RuntimeError('test.browser_call: {\"status\": \"not_executed\", \"reason\": \"today\\'s test budget is used up; it resets at midnight IST\", \"argsHash\": \"d5c3b6da922ea45a8b65ddaa902c7aeeeed9e0f86f3735ee401bf06f94d2c585\"}')",
+   "RuntimeError('test.browser_call: {\"status\": \"not_executed\", \"reason\": \"today\\'s test budget is used up; it resets at midnight IST\", \"argsHash\": \"d5c3b6da922ea45a8b65ddaa902c7aeeeed9e0f86f3735ee401bf06f94d2c585\"}')"
+  ],
+  "end_reasons": {
+   "caller_hung_up": 1
+  },
+  "rt_timing_errors": 0,
+  "undelivered_events": 0
+ }
+}

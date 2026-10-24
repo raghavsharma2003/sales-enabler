@@ -1,0 +1,6 @@
+# Runtime dependencies, pinned. Tested with Python 3.12/3.13.
+aiohttp==3.10.10
+numpy==2.5.3
+onnxruntime==1.20.1      # Silero VAD; without it (or the model file) the runtime falls back to an energy VAD
+cryptography==44.0.0     # only for the Vertex AI service-account token (VERTEX_SA_FILE)
+azure-cognitiveservices-speech==1.52.0   # Azure Speech ears (hi-IN, Central India); needs libssl3 + libasound2 on Linux

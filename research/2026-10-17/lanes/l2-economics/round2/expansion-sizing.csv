@@ -1,0 +1,11 @@
+stage,as_of,unit,p10,p50,p90
+S0 beachhead: intermediaries' renewal books (per renewal),2026-10,INR crore / yr,89,107,127
+S0 excluding the largest broker/PoSP platforms (in-house renewal ops),2026-10,INR crore / yr,46,58,73
+"S1 insurers' renewal desks ex-LIC (per renewal, insurer fees)",2026-10,INR crore / yr,36,51,72
+"S2 other BFSI 1600 service calls, mid-market (per minute)",2026-10,INR crore / yr,94,166,283
+"S3 rest of post-sales outside BFSI (l3, haircut)",2026-10,INR crore / yr,751,1980,6163
+S0+S1 at per-minute list prices (cross-check),2026-10,INR crore / yr,72,99,136
+LIC renewal book at per-minute prices (not serviceable; context),2026-10,INR crore / yr,80,111,153
+"All insurance renewal calling incl. LIC, per minute (ceiling)",2026-10,INR crore / yr,154,211,288
+Cumulative S0..S3 after the beachhead,2026-10,INR crore / yr,1089,2316,6484
+"l3 total SAM, all 19 segments (round 1, unhaircut)",2026-10,INR crore / yr,5127,9618,20524

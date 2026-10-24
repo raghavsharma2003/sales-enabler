@@ -1,0 +1,24 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-inbound-runtime",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Inbound calls, runtime half, on the contract calls landed in 55e6485 (CallTicket transport sip_inbound, inbound {who, noMarketing, calledNumber}, POST /hooks/telephony/inbound). The carrier's answer URL is a signed runtime path (/v1/media/sip/inbound/<trunk>/<hook>); the runtime relays {provider, callId, to, from} to the control plane signed with VP_TELEPHONY_WEBHOOK_SECRET, and answers the carrier with the <Stream> of the call the control plane started (join kind sip_inbound with url and token), or one spoken line and <Hangup/> on a refusal. A sip_inbound ticket is never dialled; it streams like an outbound Plivo leg (transfer, keys, hang-up use carrierCallId). She opens with the inbound kickoff, never listens first; an unknown caller has no name, so identity never verifies; noMarketing adds a no-selling row and holds the door to service rules",
+   "rationale": "Must-be audit brief 8 / item 5: nothing answered an inbound call. Agreed through the shared ticket fields calls named (no separate negotiation was needed: the fields they wrote are what the runtime reads).",
+   "reverse_if": "the carrier relay moves into the control plane (then the runtime only needs to accept sip_inbound tickets), or Plivo signs answer requests in a way we should verify (X-Plivo-Signature-V3) in addition to the signed path"
+  },
+  {
+   "id": "measure.2026-10-24.voice-inbound-and-silence-offline",
+   "type": "measurement", "status": "measured", "date": "2026-10-24", "source": "verified",
+   "title": "Offline on devsim: a fake carrier rings, the runtime relays to a fake control plane (signature verified), the sip_inbound ticket starts, the carrier is answered with the stream, connects like Plivo (start, mu-law media, stop), and she opens with the inbound kickoff and the AI disclosure; unknown caller: no name, identity unverified; suppressed caller: no-selling row and service door; refusal: a spoken line and <Hangup/>; a wrong answer path is refused. Silence hang-up (gap C): cascade and s2s each end politely at limits.maxSilenceS with the line in the agent's language (Hinglish in her script, Tamil for a Tamil agent), a caller who speaks keeps the call, no limit means no hang-up. Not verified: a live Plivo inbound call",
+   "n": 12,
+   "method": "product/voice/tests/test_inbound.py (5) and tests/test_silence.py (7), 2026-10-24",
+   "path": "product/voice/tests/test_inbound.py",
+   "value": "inbound end to end on devsim; silence on both paths"
+  }
+ ],
+ "edges": [
+  {"from": "decision.2026-10-24.voice-inbound-runtime", "to": "open.2026-10-24.inbound-runtime-and-carrier", "relation": "implements"}
+ ],
+ "events": []
+}

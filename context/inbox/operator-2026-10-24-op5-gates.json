@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "gates-after-6fd8da5",
+      "details": "Full suite on a fresh DB at 6fd8da5: 580/585, 1 fail, 4 skipped. The failure is not the Operator's: web/e2e flow 'Voice samples: a stack with a sample plays it with one label' expects the manifest that f744f3f shipped empty, but 680c5e6 filled product/web/public/samples/manifest.json with real clips; the flow's expectation needs updating by the web or voice builder. Also: shared/tool-catalog.json is stale after 83412d9 (languageRoutes); scripts/tool-catalog.ts regenerates it. Web tsc error in web/src/pages/insights.tsx (adoptedChange, 3c74348) predates the op5 change. Before the rebase onto 83412d9 the same suite was 573/577 with 0 fail."
+    }
+  ]
+}

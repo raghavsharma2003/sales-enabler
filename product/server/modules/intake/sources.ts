@@ -1,0 +1,524 @@
+// Sources and files: register a source, receive a file in parts, map its columns with a per-row preview,
+// commit it through the one write path, and accept signed webhook events from CRMs, forms and opt-ins.
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { canonicalJson } from '../../../shared/approval.ts';
+import { normaliseIndianPhone } from '../../../shared/phone.ts';
+import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
+import type { AgentConfig, Fact } from '../../../shared/agent-config.ts';
+import { appendAudit } from '../../audit.ts';
+import { many, one, tx, type Queryable } from '../../db.ts';
+import { HttpError, type Req, type Router } from '../../http.ts';
+import { inScope, tool, type Registry, type ToolCtx } from '../../tools.ts';
+import type { Deps } from '../../app.ts';
+import { DEFAULT_MAX_AGE_S, type Authority } from './authority.ts';
+import { detectDelimiter, parseDelimited, type Delimiter } from './csv.ts';
+import { attrKey, inferMapping, normLanguage, normTimezone, parseDate, truthy, typedValue, type ColumnMap, type Mapping } from './mapping.ts';
+import { applyRows, hashWith, workspaceSalt, type InRow, type SourceRef } from './store.ts';
+import { checkFirstMessage, checkVoice } from './overrides.ts';
+import { looksLikeXlsx, readXlsx, rowsToCsv, XlsxError } from './xlsx.ts';
+// Webhook secrets live in the workspace vault (sealed, purpose 'intake-hook'); rotation shows the new one once.
+import { open as openSecret, seal } from '../workspace/crypto.ts';
+import { holdForReveal } from '../workspace/common.ts';
+// The agents module's pure fact-to-column matcher (walkthrough round 2, R3): the same rule the dial-time fill uses.
+import { factColumns, missingFactsSentence, type FactColumn } from '../agents/columns.ts';
+
+export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+const MAX_CONVERTED_BYTES = 120 * 1024 * 1024;   // an .xlsx of at most 20 MB, read into delimited text
+const MAX_B64_CHARS = Math.ceil(MAX_FILE_BYTES / 3) * 4;
+const MAX_PART_CHARS = 950_000;                 // inline text in a tool call, under the tool endpoint's 1 MB body limit
+const HOOK_SKEW_S = 300;
+/** After a rotation the previous secret keeps working this long, so a sender can switch without dropping events. */
+export const HOOK_SECRET_OVERLAP_MS = 24 * 3600_000;
+const FILE_KINDS = ['csv', 'tsv', 'xlsx', 'sheet'] as const;
+const HOOK_KINDS = ['api_push', 'crm', 'form', 'whatsapp'] as const;
+type SourceKind = (typeof FILE_KINDS)[number] | (typeof HOOK_KINDS)[number];
+
+// The person is the authority on what they typed into a form or an opt-in; files are uploads; pushes are declared.
+const KIND_AUTHORITY: Record<SourceKind, Authority> = { csv: 'upload', tsv: 'upload', xlsx: 'upload', sheet: 'upload', api_push: 'crm', crm: 'crm', form: 'person', whatsapp: 'person' };
+
+const sha = (s: string) => createHash('sha256').update(s).digest('hex');
+
+interface SourceRow { id: string; workspace_id: string; kind: SourceKind; name: string; authority: Authority; max_age_s: number | null; status: string
+  hook_secret_ciphertext: string | null; hook_secret_prev_ciphertext: string | null; hook_secret_prev_until: Date | null }
+
+export function sourceRef(s: SourceRow): SourceRef {
+  return { id: s.id, authority: s.authority, maxAgeS: s.max_age_s ?? DEFAULT_MAX_AGE_S[s.authority], label: `${s.kind}:${s.id}`,
+    code: (FILE_KINDS as readonly string[]).includes(s.kind) ? 'upload' : s.kind };
+}
+
+async function createSource(q: Queryable, ws: string, i: { kind: SourceKind; name: string; authority?: Authority; maxAgeDays?: number }) {
+  const hook = (HOOK_KINDS as readonly string[]).includes(i.kind);
+  // Files are uploads and forms are the person; only pushes and CRMs may declare their own authority.
+  const authority = (i.kind === 'api_push' || i.kind === 'crm') && i.authority ? i.authority : KIND_AUTHORITY[i.kind];
+  const secret = hook ? randomBytes(32).toString('base64url') : null;
+  const s = await one<SourceRow>(q, `INSERT INTO intake_source (workspace_id, kind, name, authority, max_age_s, hook_secret_ciphertext)
+    VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [ws, i.kind, i.name, authority, i.maxAgeDays != null ? Math.round(i.maxAgeDays * 86400) : null, secret ? seal(ws, 'intake-hook', secret) : null]);
+  return { source: s!, secret };
+}
+
+async function getSource(q: Queryable, ws: string, id: string): Promise<SourceRow> {
+  const s = await one<SourceRow>(q, 'SELECT * FROM intake_source WHERE id = $1 AND workspace_id = $2', [id, ws]);
+  if (!s) throw new HttpError(404, 'not_found', 'no such source in this workspace');
+  return s;
+}
+
+/** Receive one part of a file. Parts arrive in order; re-sending the last part is a no-op. */
+/** What a conversion found: an Excel file read on the server, or a list pulled from a CRM. baseOverrides are mappings the
+ *  conversion knows for certain (a CRM id column is never a phone), applied under any the member gives. */
+export type Converted = ({ from: 'xlsx'; sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number; errorCells: number }
+  | { from: 'hubspot' | 'zoho_crm' | 'salesforce'; integrationId: string; listId: string; listName: string; records: number; unchangedSkipped: number; numberChanged: string[]; truncated: boolean;
+      /** CRM fields the connected user may not read (left out, not empty). */ unreadable?: string[];
+      /** Salesforce: the API calls this pull made against the org's budget (shown on the receipt). */
+      apiCalls?: { calls: number; budget: number; usedLast24h: number; orgUsed: number | null; orgLimit: number | null } })
+  & { fileBytes: number; fileSha256: string; baseOverrides?: Record<string, Partial<ColumnMap>> };
+const CRM_FROM = new Set(['hubspot', 'zoho_crm', 'salesforce']);
+
+export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean;
+  converted?: Converted }) {
+  if (Buffer.byteLength(p.text) > (p.converted ? MAX_CONVERTED_BYTES : MAX_FILE_BYTES)) throw new HttpError(413, 'too_large', p.converted ? 'this sheet holds more than Vyakti reads in one file; split it' : 'files are limited to 20 MB');
+  if (p.converted && (p.uploadId || !p.final)) throw new HttpError(422, 'whole_file', 'send an Excel file in one request (final=true), not in parts');
+  let up: { id: string; parts: number; bytes: number; last_part_sha: string | null; status: string; source_id: string | null } | null;
+  if (!p.uploadId) {
+    const kind: SourceKind = p.converted ? 'xlsx' : /\.tsv$/i.test(p.filename ?? '') || detectDelimiter(p.text) === '\t' ? 'tsv' : 'csv';
+    const src = p.sourceId ? await getSource(q, ws, p.sourceId) : (await createSource(q, ws, { kind, name: p.filename ?? 'upload' })).source;
+    const crmPull = !!p.converted && CRM_FROM.has(p.converted.from);
+    if (crmPull ? src.kind !== 'crm' : !(FILE_KINDS as readonly string[]).includes(src.kind)) throw new HttpError(409, 'wrong_source', crmPull ? 'a CRM pull goes to a CRM source' : 'that source takes webhook events, not files');
+    // bytes counts what was uploaded (the .xlsx itself when converted), which the 20 MB limit applies to.
+    up = await one(q, `INSERT INTO intake_upload (workspace_id, source_id, filename, content, bytes, parts, last_part_sha, converted)
+      VALUES ($1,$2,$3,$4,$5,1,$6,$7) RETURNING id, parts, bytes, last_part_sha, status, source_id`,
+      [ws, src.id, p.filename ?? null, p.text, p.converted?.fileBytes ?? Buffer.byteLength(p.text), sha(p.text), p.converted ? JSON.stringify(p.converted) : null]);
+  } else {
+    up = await one(q, 'SELECT id, parts, bytes, last_part_sha, status, source_id FROM intake_upload WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [p.uploadId, ws]);
+    if (!up) throw new HttpError(404, 'not_found', 'no such upload');
+    const part = p.part ?? up.parts + 1;
+    if (part === up.parts && up.last_part_sha === sha(p.text)) { /* a retry of the last part */ }
+    else {
+      if (up.status !== 'receiving') throw new HttpError(409, 'closed', 'this upload is already complete');
+      if (part !== up.parts + 1) throw new HttpError(409, 'out_of_order', `expected part ${up.parts + 1}, got part ${part}`);
+      const bytes = up.bytes + Buffer.byteLength(p.text);
+      if (bytes > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
+      up = await one(q, `UPDATE intake_upload SET content = content || $2, bytes = $3, parts = $4, last_part_sha = $5 WHERE id = $1
+        RETURNING id, parts, bytes, last_part_sha, status, source_id`, [up.id, p.text, bytes, part, sha(p.text)]);
+    }
+  }
+  if (up!.bytes > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
+  if (p.final && up!.status === 'receiving') {
+    const row = await one<{ content: string; filename: string | null }>(q, 'SELECT content, filename FROM intake_upload WHERE id = $1', [up!.id]);
+    const src = await getSource(q, ws, up!.source_id!);
+    const r = await one<{ id: string }>(q, "INSERT INTO source_receipt (workspace_id, kind, filename, summary) VALUES ($1,$2,$3,$4) RETURNING id",
+      [ws, src.kind, row!.filename, JSON.stringify({ state: 'received', sourceId: src.id })]);
+    const conv = await one<{ converted: { fileSha256?: string } | null }>(q, 'SELECT converted FROM intake_upload WHERE id = $1', [up!.id]);
+    await q.query("UPDATE intake_upload SET status = 'received', sha256 = $2, receipt_id = $3 WHERE id = $1", [up!.id, conv?.converted?.fileSha256 ?? sha(row!.content), r!.id]);
+    up!.status = 'received';
+  }
+  return { uploadId: up!.id, sourceId: up!.source_id, parts: up!.parts, bytes: up!.bytes, status: up!.status };
+}
+
+// ---- mapping and preview -------------------------------------------------------------------------
+
+const override = obj({ field: str({ oneOf: ['phone', 'name', 'first_name', 'last_name', 'language', 'timezone', 'consent', 'consent_at', 'opt_out', 'observed_at', 'voice', 'first_message', 'attribute', 'ignore'] }),
+  key: opt(str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u, desc: 'the attribute key to store: letters, digits or underscore in any script, 1-60 characters' })), type: opt(str({ oneOf: ['text', 'number', 'date', 'boolean'] })) });
+const overrides = opt(record(override, { maxKeys: 200 })) as Validator<Record<string, Partial<ColumnMap>> | undefined>;
+
+interface Table { rows: string[][]; delimiter: Delimiter; mapping: Mapping }
+
+function table(content: string, given?: Record<string, Partial<ColumnMap>>, base?: Record<string, Partial<ColumnMap>>): Table {
+  const delimiter = detectDelimiter(content);
+  const rows = parseDelimited(content, delimiter);
+  return { rows, delimiter, mapping: inferMapping(rows, { ...(base ?? {}), ...(given ?? {}) }) };
+}
+const baseOf = (u: { converted: Record<string, unknown> | null }) => (u.converted?.baseOverrides ?? undefined) as Record<string, Partial<ColumnMap>> | undefined;
+
+/** Turn one file row into the write path's shape, plus the cell-level notes the preview shows and the override cells the
+ *  agent's rules refused (counted on the receipt; the value is not stored). */
+function toInRow(cells: string[], rowNo: number, m: Mapping, now: Date): { row: InRow; notes: string[]; refused: { code: string; detail: string }[] } {
+  const attrs: Record<string, unknown> = {};
+  const notes: string[] = [];
+  const refused: { code: string; detail: string }[] = [];
+  let phone = '', first = '', last = '';
+  const consent: { granted?: boolean; at?: string } = {};
+  let optOut = false, observedAt: Date | undefined;
+  for (const c of m.columns) {
+    const v = (cells[c.column] ?? '').trim();
+    if (!v || c.field === 'ignore') continue;
+    switch (c.field) {
+      case 'phone': phone = v; break;
+      case 'name': attrs.name = v.slice(0, 200); break;
+      case 'first_name': first = v; break;
+      case 'last_name': last = v; break;
+      case 'language': { const l = normLanguage(v); if (l) attrs.language = l; else notes.push(`language "${v.slice(0, 20)}" not recognised`); break; }
+      case 'timezone': { const t = normTimezone(v); if (t) attrs.timezone = t; else notes.push('timezone not recognised; India time kept'); break; }
+      case 'consent': { const t = truthy(v); if (t !== null) consent.granted = t; else notes.push('consent value is not a yes or no'); break; }
+      case 'consent_at': consent.at = parseDate(v) ?? undefined; break;
+      case 'opt_out': optOut = truthy(v) === true || /^(dnd|dnc|do not call)$/i.test(v); break;
+      case 'observed_at': { const d = parseDate(v); if (d) { const t = new Date(d); if (t.getTime() <= now.getTime()) observedAt = t; } break; }
+      case 'voice': { const r = checkVoice(v); if (r.ok) attrs.voice = r.value; else { refused.push({ code: 'voice_refused', detail: r.why }); notes.push(`voice: ${r.why}`); } break; }
+      case 'first_message': { const r = checkFirstMessage(v); if (r.ok) attrs.first_message = r.value; else { refused.push({ code: 'first_message_refused', detail: r.why }); notes.push(`first message: ${r.why}`); } break; }
+      case 'attribute': attrs[c.key ?? attrKey(c.header)] = typedValue(v, c.type); break;
+    }
+  }
+  if (!attrs.name && (first || last)) attrs.name = `${first} ${last}`.trim().slice(0, 200);
+  if (first) attrs.first_name = first;
+  if (last) attrs.last_name = last;
+  return { row: { row: rowNo, phone, attrs, optOut, observedAt, consent: consent.granted !== undefined ? [{ granted: consent.granted, at: consent.at }] : undefined }, notes, refused };
+}
+
+function fileRows(t: Table, now: Date): { rows: InRow[]; notes: Map<number, string[]>; refused: { row: number; code: string; detail: string }[] } {
+  const start = t.mapping.hasHeader ? 1 : 0;
+  const rows: InRow[] = [], notes = new Map<number, string[]>(), refused: { row: number; code: string; detail: string }[] = [];
+  for (let i = start; i < t.rows.length; i++) {
+    const r = toInRow(t.rows[i], i + 1, t.mapping, now);
+    rows.push(r.row);
+    if (r.notes.length) notes.set(i + 1, r.notes);
+    for (const x of r.refused) refused.push({ row: i + 1, ...x });
+  }
+  return { rows, notes, refused };
+}
+
+async function loadUpload(q: Queryable, ws: string, id: string, lock = false) {
+  const u = await one<{ id: string; content: string; status: string; source_id: string; receipt_id: string | null; mapping: Mapping | null; sha256: string | null; filename: string | null; converted: Record<string, unknown> | null; test_member_id: string | null }>(q,
+    `SELECT id, content, status, source_id, receipt_id, mapping, sha256, filename, converted, test_member_id FROM intake_upload WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
+  if (!u) throw new Error('no such upload in this workspace');
+  if (u.status === 'receiving') throw new Error('this upload is still receiving parts; send the last part with final=true');
+  return u;
+}
+
+const mask = (e164: string) => e164.slice(0, 3) + '•••••' + e164.slice(-4);
+
+/** The uploadId field, described: models sent "upload:customers.csv" when it had no description (bench r3). */
+const UPLOAD_ID: Validator<string> = Object.assign((x: unknown, p?: string) => uuid()(x, p),
+  { schema: { ...(uuid().schema ?? {}), description: 'the uploadId (a UUID) that source.upload returned, or the one the assistant was given for a file attached in chat; never a file name' } });
+
+export function registerSourceTools(reg: Registry): void {
+  reg.register(tool(obj({
+    kind: str({ oneOf: [...FILE_KINDS, ...HOOK_KINDS] }),
+    name: str({ min: 1, max: 120 }),
+    authority: opt(str({ oneOf: ['system', 'crm', 'upload', 'agent', 'person'] })),
+    maxAgeDays: opt(num({ min: 0.01, max: 3650 })),
+    text: opt(str({ max: MAX_PART_CHARS })),
+    filename: opt(str({ max: 200 })),
+  }), {
+    name: 'source.upload', risk: 'draft',
+    summary: 'Register a source of people: a file (text inline, or parts via POST /v1/uploads/contacts) or a signed webhook for a CRM, form or opt-in',
+    // The webhook secret is shown once to the caller and never stored in action.result (A0 workspaces approve drafts).
+    redactResult: (out: Record<string, unknown>) => (out.secret ? { ...out, secret: '[shown once]' } : out),
+    run: async (ctx, i): Promise<Record<string, unknown>> => {
+      const { source, secret } = await createSource(ctx.q, ctx.workspaceId, { kind: i.kind as SourceKind, name: i.name, authority: i.authority as Authority | undefined, maxAgeDays: i.maxAgeDays });
+      const out: Record<string, unknown> = { sourceId: source.id, kind: source.kind, authority: source.authority };
+      if (secret) Object.assign(out, { hookUrl: `/hooks/contacts/${source.id}`, secret, signing: 'x-vp-timestamp: unix seconds; x-vp-signature: sha256=hex(HMAC-SHA256(secret, timestamp + "." + body))', shownOnce: true });
+      if (i.text !== undefined) {
+        if (!(FILE_KINDS as readonly string[]).includes(i.kind)) throw new Error('text goes to a file source (csv, tsv, sheet)');
+        Object.assign(out, await receivePart(ctx.q, ctx.workspaceId, { sourceId: source.id, filename: i.filename ?? i.name, text: i.text, final: true }));
+      }
+      return out;
+    },
+  }));
+
+  reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, previewRows: opt(num({ int: true, min: 1, max: 100 })),
+    agentId: opt(uuid()) }, 'Give agentId to check the columns against the facts that agent says from each person\'s record.'), {
+    name: 'source.map', risk: 'draft',
+    summary: 'Detect the columns of an uploaded file and preview what each row would do, with a reason for every row that will not be called',
+    run: async (ctx, i) => {
+      const u = await loadUpload(ctx.q, ctx.workspaceId, i.uploadId);
+      const t = table(u.content, i.overrides, baseOf(u));
+      const now = new Date();
+      const { rows, notes } = fileRows(t, now);
+      const phoneCol = t.mapping.columns.find(c => c.field === 'phone');
+      // Whole-file phone summary (in memory, no writes).
+      const reasons: Record<string, number> = {};
+      const seen = new Map<string, number>();
+      let ok = 0, dup = 0;
+      const e164s: (string | null)[] = rows.map(r => {
+        const p = normaliseIndianPhone(r.phone);
+        if (!p.ok) { reasons[p.reason] = (reasons[p.reason] ?? 0) + 1; return null; }
+        if (seen.has(p.e164)) dup++; else { seen.set(p.e164, r.row); ok++; }
+        return p.e164;
+      });
+      // Whole file: which valid numbers will not be callable after the save (each counted once, in this order): opted out in
+      // this file, already suppressed in the workspace, or erased for good (a tombstone blocks re-creation).
+      const all = [...seen.keys()], optedOut = new Set(rows.flatMap((r, k) => r.optOut && e164s[k] ? [e164s[k]!] : []));
+      const allSalt = await workspaceSalt(ctx.q, ctx.workspaceId);
+      const allHash = new Map(all.map(e => [hashWith(allSalt, e), e]));
+      const suppressedAll = new Set((await many<{ e164: string }>(ctx.q, `SELECT c.e164 FROM contact c JOIN suppression s ON s.workspace_id = c.workspace_id AND s.scope = 'workspace'
+        AND (s.contact_id = c.id OR s.e164 = c.e164) WHERE c.workspace_id = $1 AND c.e164 = ANY($2::text[])
+        UNION SELECT e164 FROM suppression WHERE workspace_id = $1 AND scope = 'workspace' AND e164 = ANY($2::text[])`, [ctx.workspaceId, all])).map(r => r.e164));
+      const tombAll = new Set((await many<{ e164_hash: string }>(ctx.q, 'SELECT e164_hash FROM tombstone WHERE workspace_id = $1 AND e164_hash = ANY($2::text[])', [ctx.workspaceId, [...allHash.keys()]])).map(r => allHash.get(r.e164_hash)!));
+      const notCallable = { optedOut: 0, suppressed: 0, tombstoned: 0 };
+      for (const e of all) { if (tombAll.has(e)) notCallable.tombstoned++; else if (optedOut.has(e)) notCallable.optedOut++; else if (suppressedAll.has(e)) notCallable.suppressed++; }
+      // Preview rows: look up existing, suppressed and tombstoned state for just these numbers.
+      const n = i.previewRows ?? 20;
+      const head = rows.slice(0, n);
+      const nums = [...new Set(e164s.slice(0, n).filter((e): e is string => !!e))];
+      const salt = await workspaceSalt(ctx.q, ctx.workspaceId);
+      const existing = new Set((await many<{ e164: string }>(ctx.q, 'SELECT e164 FROM contact WHERE workspace_id = $1 AND e164 = ANY($2::text[]) AND erased_at IS NULL', [ctx.workspaceId, nums])).map(r => r.e164));
+      const suppressed = new Set((await many<{ e164: string }>(ctx.q, `SELECT c.e164 FROM contact c JOIN suppression s ON s.workspace_id = c.workspace_id AND s.scope = 'workspace'
+        AND (s.contact_id = c.id OR s.e164 = c.e164) WHERE c.workspace_id = $1 AND c.e164 = ANY($2::text[])
+        UNION SELECT e164 FROM suppression WHERE workspace_id = $1 AND e164 = ANY($2::text[])`, [ctx.workspaceId, nums])).map(r => r.e164));
+      const hashes = new Map(nums.map(e => [hashWith(salt, e), e]));
+      const dead = new Set((await many<{ e164_hash: string }>(ctx.q, 'SELECT e164_hash FROM tombstone WHERE workspace_id = $1 AND e164_hash = ANY($2::text[])', [ctx.workspaceId, [...hashes.keys()]])).map(r => hashes.get(r.e164_hash)!));
+      const firstRow = new Map<string, number>();
+      const preview = head.map((r, k) => {
+        const e = e164s[k];
+        const p = normaliseIndianPhone(r.phone);
+        let verdict: string;
+        if (!e) verdict = p.ok ? 'ok' : p.reason;
+        else if (dead.has(e)) verdict = 'tombstoned';
+        else if (firstRow.has(e)) verdict = 'duplicate_in_file';
+        else verdict = existing.has(e) ? 'update' : 'new';
+        if (e && !firstRow.has(e)) firstRow.set(e, r.row);
+        const flags = [...(e && (suppressed.has(e) || r.optOut) ? ['suppressed'] : []), ...(r.consent?.length ? [r.consent[0].granted ? 'consent_yes' : 'consent_no'] : [])];
+        return { row: r.row, phone: e ? (ctx.actor.role === 'viewer' ? mask(e) : e) : null, verdict, flags, notes: notes.get(r.row) ?? [],
+          attributes: ctx.actor.role === 'viewer' ? Object.keys(r.attrs) : r.attrs };
+      });
+      const questions: string[] = [];
+      if (!phoneCol) questions.push('Which column has the phone number?');
+      if (t.mapping.columns.some(c => c.field === 'consent')) questions.push('What did people consent to (the purpose)? Consent is recorded only with a purpose.');
+      if (reasons.NON_INDIAN) questions.push(`${reasons.NON_INDIAN} numbers are outside India; they are kept but never auto-dialled. Is that right?`);
+      // Walkthrough round 2, R3: which of the agent's per-contact facts this file fills. Suggestions only; nothing is mapped
+      // until the member confirms it with an override (field 'attribute', key = the fact's key).
+      let agentFacts: { agent: string; facts: FactColumn[] } | undefined;
+      if (i.agentId) {
+        const ag = await one<{ name: string; draft: { facts?: Fact[]; category?: string } }>(ctx.q, 'SELECT name, draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
+        if (!ag) throw new ValidationError('agentId', 'no such agent in this workspace');
+        const cols = t.mapping.columns.filter(c => c.field === 'attribute' && c.key).map(c => ({ key: c.key!, header: c.header }));
+        agentFacts = { agent: ag.name, facts: factColumns({ facts: ag.draft.facts ?? [], category: (ag.draft.category ?? 'service') as AgentConfig['category'] }, cols) };
+        const missing = agentFacts.facts.filter(f => f.status === 'missing');
+        if (missing.length) questions.unshift(`${ag.name} says ${missingFactsSentence(missing)} from each person's record, and no column is matched to ${missing.length === 1 ? 'it' : 'them'}. Which column holds ${missing.length === 1 ? 'it' : 'each'}?`);
+      }
+      await ctx.q.query('UPDATE intake_upload SET mapping = $2 WHERE id = $1', [u.id, JSON.stringify(t.mapping)]);
+      return {
+        ...(agentFacts ? { agentFacts } : {}),
+        uploadId: u.id, delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, hasHeader: t.mapping.hasHeader, ...(u.converted ? { converted: u.converted } : {}),
+        // A few values per column for the mapping screen (an Excel file has no text in the browser). Viewers get none.
+        columns: t.mapping.columns.map(c => ctx.actor.role === 'viewer' || c.field === 'ignore' ? c : { ...c, samples: t.rows.slice(t.mapping.hasHeader ? 1 : 0)
+          .map(r => (r[c.column] ?? '').trim()).filter(Boolean).slice(0, 3).map(v => v.slice(0, 40)) }), ignoredByDesign: t.mapping.columns.filter(c => c.why === 'pii_by_design').map(c => c.header),
+        rowsTotal: rows.length, phones: { ok, duplicatesInFile: dup, rejected: reasons }, notCallable,
+        preview, questions: questions.slice(0, agentFacts ? 4 : 3),
+      };
+    },
+  }));
+
+  reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, consentPurpose: opt(str({ min: 2, max: 80 })), audienceName: opt(str({ min: 1, max: 120 })) }), {
+    name: 'source.commit', risk: 'draft',
+    summary: 'Import a mapped file: dedupe on the number, merge by authority and freshness, append consent, keep every suppression and tombstone',
+    run: (ctx, i) => commitUpload(ctx, i),
+  }));
+
+  reg.register(tool(obj({ limit: opt(num({ int: true, min: 1, max: 200 })) }), {
+    name: 'source.list', risk: 'read', summary: 'List the sources people come from, with their authority and last receipt',
+    run: async (ctx, i) => ({ sources: await many(ctx.q, `SELECT s.id, s.kind, s.name, s.authority, s.max_age_s, s.status, s.created_at, (s.hook_secret_ciphertext IS NOT NULL) AS signed_webhook,
+        CASE WHEN s.hook_secret_prev_until > now() THEN s.hook_secret_prev_until END AS previous_secret_until, s.hook_secret_rotated_at AS secret_rotated_at,
+        (SELECT max(r.created_at) FROM intake_upload u JOIN source_receipt r ON r.id = u.receipt_id WHERE u.source_id = s.id) AS last_receipt_at
+      FROM intake_source s WHERE s.workspace_id = $1 ORDER BY s.created_at DESC LIMIT $2`, [ctx.workspaceId, i.limit ?? 50]) }),
+  }));
+
+  reg.register(tool(obj({ sourceId: uuid() }), {
+    name: 'source.hook_secret.rotate', risk: 'policy', roles: ['owner', 'builder', 'operator', 'compliance'],
+    summary: 'Replace a webhook source\'s signing secret; the old one keeps working for 24 hours so the sender can switch',
+    describe: async (i, ctx) => `Replace the signing secret of the webhook source "${(await one<{ name: string }>(ctx.q, 'SELECT name FROM intake_source WHERE id = $1 AND workspace_id = $2', [i.sourceId, ctx.workspaceId]))?.name ?? 'this source'}". The new secret is shown once to whoever approves; the old one keeps working for ${HOOK_SECRET_OVERLAP_MS / 3600_000} hours, then stops.`,
+    version: async (ctx, i) => (await one<{ v: string }>(ctx.q, "SELECT coalesce(hook_secret_rotated_at::text, created_at::text) AS v FROM intake_source WHERE id = $1 AND workspace_id = $2", [i.sourceId, ctx.workspaceId]))?.v ?? null,
+    run: async (ctx, i) => {
+      const src = await one<SourceRow>(ctx.q, 'SELECT * FROM intake_source WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.sourceId, ctx.workspaceId]);
+      if (!src) throw new Error('no such source in this workspace');
+      if (!src.hook_secret_ciphertext) throw new Error('this source has no webhook, so it has no signing secret (files and CRM pulls are not signed webhooks)');
+      const secret = randomBytes(32).toString('base64url');
+      const r = await one<{ prev_until: Date }>(ctx.q, `UPDATE intake_source SET hook_secret_prev_ciphertext = hook_secret_ciphertext, hook_secret_ciphertext = $3,
+          hook_secret_prev_until = now() + ($4 || ' milliseconds')::interval, hook_secret_rotated_at = now() WHERE id = $1 AND workspace_id = $2 RETURNING hook_secret_prev_until AS prev_until`,
+        [i.sourceId, ctx.workspaceId, seal(ctx.workspaceId, 'intake-hook', secret), String(HOOK_SECRET_OVERLAP_MS)]);
+      // An approved action's result is stored, so the secret goes to a one-time reveal for the approver, never into the result.
+      const revealId = await holdForReveal(ctx, { secret, hookUrl: `/hooks/contacts/${src.id}`, signing: 'x-vp-timestamp: unix seconds; x-vp-signature: sha256=hex(HMAC-SHA256(secret, timestamp + "." + body))' }, 'webhook source signing secret');
+      return { sourceId: src.id, revealId, previousSecretWorksUntil: r!.prev_until };
+    },
+  }));
+
+  reg.register(tool(obj({ receiptId: uuid() }), {
+    name: 'source.receipt', risk: 'read', summary: 'Read an import receipt: counts and the reason for every row not imported or not callable',
+    run: async (ctx, i) => {
+      const r = await one(ctx.q, 'SELECT id, kind, filename, rows_total, rows_ok, summary, created_at FROM source_receipt WHERE id = $1 AND workspace_id = $2', [i.receiptId, ctx.workspaceId]);
+      if (!r) throw new Error('no such receipt in this workspace');
+      return r;
+    },
+  }));
+}
+
+/** Import an uploaded file or CRM pull through the one write path. Used by source.commit and by source.sync. */
+export async function commitUpload(ctx: ToolCtx, i: { uploadId: string; overrides?: Record<string, Partial<ColumnMap>>; mapping?: Mapping; consentPurpose?: string; audienceName?: string }) {
+      const u = await loadUpload(ctx.q, ctx.workspaceId, i.uploadId, true);
+      if (u.status === 'committed') throw new Error('this upload is already imported; its receipt has the result');
+      const t = table(u.content, undefined, baseOf(u));
+      if (i.mapping) t.mapping = i.mapping;                                        // a sync reuses the last import's mapping
+      else if (i.overrides || !u.mapping) t.mapping = inferMapping(t.rows, { ...(baseOf(u) ?? {}), ...(i.overrides ?? {}) });
+      else t.mapping = u.mapping;
+      if (!t.mapping.columns.some(c => c.field === 'phone')) throw new Error('no phone column found; map one with overrides');
+      const src = await getSource(ctx.q, ctx.workspaceId, u.source_id);
+      const started = Date.now();
+      const { rows, refused } = fileRows(t, new Date());
+      let audienceId: string | undefined;
+      if (i.audienceName) audienceId = (await one<{ id: string }>(ctx.q, "INSERT INTO audience (workspace_id, name, kind, definition, source_id) VALUES ($1,$2,'list',$3,$4) RETURNING id",
+        [ctx.workspaceId, i.audienceName, JSON.stringify({ fromUpload: u.id }), u.receipt_id]))!.id;
+      const res = await applyRows(ctx.q, ctx.workspaceId, rows, { source: sourceRef(src), receiptId: u.receipt_id, consentPurpose: i.consentPurpose, audienceId });
+      for (const r of refused) {
+        res.counts[r.code] = (res.counts[r.code] ?? 0) + 1;
+        if (res.issues.length < 1000) res.issues.push({ row: r.row, code: r.code as never, detail: r.detail });
+      }
+      const ms = Date.now() - started;
+      const rowsOk = res.counts.new + res.counts.updated + res.counts.unchanged;
+      const summary = { state: 'committed', sourceId: src.id, uploadId: u.id, fileSha256: u.sha256, mappingSha256: createHash('sha256').update(canonicalJson(t.mapping)).digest('hex'),
+        delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, ...(u.converted ? { converted: u.converted } : {}), counts: res.counts, issues: res.issues, ms, audienceId: audienceId ?? null };
+      await ctx.q.query('UPDATE source_receipt SET rows_total = $2, rows_ok = $3, summary = $4 WHERE id = $1 AND workspace_id = $5',
+        [u.receipt_id, rows.length, rowsOk, JSON.stringify(summary), ctx.workspaceId]);
+      await ctx.q.query("UPDATE intake_upload SET status = 'committed', committed_at = now(), mapping = $2 WHERE id = $1", [u.id, JSON.stringify(t.mapping)]);
+      if (u.converted && CRM_FROM.has(String(u.converted.from))) await rememberCrmRecords(ctx.q, ctx.workspaceId, src.id, t, i.consentPurpose);
+      // A sample pack with "Add me": the member's own phone, still verified now, becomes their test contact.
+      if (u.test_member_id) await ctx.q.query(`UPDATE contact c SET test_member_id = v.member_id FROM verified_test_phone v
+          WHERE c.workspace_id = $1 AND v.workspace_id = $1 AND v.member_id = $2 AND v.verified_at IS NOT NULL AND c.e164 = v.e164 AND c.erased_at IS NULL`, [ctx.workspaceId, u.test_member_id]);
+      return { receiptId: u.receipt_id, rowsTotal: rows.length, rowsOk, counts: res.counts, issues: res.issues.slice(0, 50), audienceId: audienceId ?? null, ms };
+}
+
+/** After a CRM pull is imported: one row per CRM record (its number as a hash), so the next sync skips unchanged records
+ *  and flags a record whose number changed. The consent purpose is kept so a sync records consent the same way. */
+async function rememberCrmRecords(q: Queryable, ws: string, sourceId: string, t: Table, consentPurpose?: string) {
+  const salt = await workspaceSalt(q, ws);
+  const head = t.rows[0] ?? [];
+  const phoneCol = t.mapping.columns.find(c => c.field === 'phone')?.column;
+  const updCol = head.indexOf('Updated at');
+  const ids: string[] = [], hashes: (string | null)[] = [], upd: (string | null)[] = [];
+  for (const r of t.rows.slice(1)) {
+    if (!r[0]) continue;
+    const p = phoneCol === undefined ? null : normaliseIndianPhone(r[phoneCol] ?? '');
+    ids.push(r[0]); hashes.push(p && p.ok ? hashWith(salt, p.e164) : null); upd.push(updCol >= 0 ? r[updCol] || null : null);
+  }
+  if (ids.length) await q.query(`INSERT INTO intake_crm_record (source_id, crm_id, workspace_id, e164_hash, crm_updated_at)
+      SELECT $1, t.id, $2, t.h, t.u FROM unnest($3::text[], $4::text[], $5::text[]) AS t(id, h, u)
+      ON CONFLICT (source_id, crm_id) DO UPDATE SET e164_hash = EXCLUDED.e164_hash, crm_updated_at = EXCLUDED.crm_updated_at, seen_at = now()`, [sourceId, ws, ids, hashes, upd]);
+  if (consentPurpose) await q.query("UPDATE intake_source SET crm = crm || jsonb_build_object('consentPurpose', $2::text) WHERE id = $1", [sourceId, consentPurpose]);
+}
+
+// ---- raw routes: file parts and signed webhooks -------------------------------------------------
+
+const partBody = obj({ text: opt(str({ max: MAX_FILE_BYTES })), base64: opt(str({ max: MAX_B64_CHARS + 4 })), filename: opt(str({ max: 200 })), sourceId: opt(uuid()), uploadId: opt(uuid()),
+  part: opt(num({ int: true, min: 1, max: 1000 })), final: opt(bool()) });
+
+const XLSX_TYPE = /spreadsheetml|application\/vnd\.ms-excel/i;
+
+/** An .xlsx file to the delimited text intake reads, or a plain refusal. Formulas are never evaluated (cached values only). */
+function convertXlsx(file: Buffer) {
+  if (file.length > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
+  if (file.length > 8 && file.readUInt32BE(0) === 0xd0cf11e0) throw new HttpError(422, 'old_excel', 'this is an old Excel file (.xls); save it as .xlsx or CSV and upload again');
+  try {
+    const x = readXlsx(file);
+    const text = rowsToCsv(x.rows);
+    return { text, converted: { from: 'xlsx' as const, fileBytes: file.length, fileSha256: createHash('sha256').update(file).digest('hex'), sheet: x.sheet,
+      rows: x.rows.length, formulaCells: x.formulaCells, formulaWithoutValue: x.formulaWithoutValue, errorCells: x.errorCells } };
+  } catch (e) {
+    if (e instanceof XlsxError) throw new HttpError(422, 'bad_file', e.message);
+    throw e;
+  }
+}
+
+const hookContact = obj({
+  phone: str({ min: 1, max: 40 }),
+  name: opt(str({ max: 200 })), language: opt(str({ max: 40 })), timezone: opt(str({ max: 60 })),
+  externalId: opt(str({ max: 120 })),
+  attributes: opt(record(any(), { maxKeys: 50 })),
+  consent: opt(obj({ purpose: str({ min: 2, max: 80 }), granted: bool(), basis: opt(str({ max: 40 })), channel: opt(str({ oneOf: ['voice', 'sms', 'whatsapp', 'email'] })), at: opt(str({ max: 40 })) })),
+  optOut: opt(bool()),
+});
+const hookBody = obj({ eventId: str({ min: 1, max: 200 }), occurredAt: opt(str({ max: 40 })), contacts: arr(hookContact, { min: 1, max: 500 }) });
+
+/** HMAC-SHA256(secret, timestamp + "." + exact body bytes), compared in constant time. */
+function signatureOk(secret: string, ts: string, raw: Buffer, given: string): boolean {
+  const m = /^sha256=([0-9a-f]{64})$/.exec(given.trim());
+  if (!m) return false;
+  const want = createHmac('sha256', secret).update(ts + '.').update(raw).digest();
+  return timingSafeEqual(want, Buffer.from(m[1], 'hex'));
+}
+
+/** Sign a webhook body the way /hooks/contacts expects (for senders and tests). Send exactly `body`. */
+export function signHook(secret: string, body: string, ts = Math.floor(Date.now() / 1000)): { 'x-vp-timestamp': string; 'x-vp-signature': string } {
+  return { 'x-vp-timestamp': String(ts), 'x-vp-signature': 'sha256=' + createHmac('sha256', secret).update(`${ts}.${body}`).digest('hex') };
+}
+
+const DRAFT_ROLES = ['owner', 'builder', 'operator'];
+
+export function registerSourceRoutes(router: Router, deps: Deps): void {
+  // A whole file (up to 20 MB) or parts of one. JSON {text, filename?, sourceId?, uploadId?, part?, final?} (required over a
+  // session cookie), or raw text/csv or text/tab-separated-values with the same fields in the query string (API keys).
+  // An Excel file (.xlsx) comes whole: raw bytes (API keys), or JSON {base64, filename} over a cookie.
+  router.add('POST', '/v1/uploads/contacts', async (req: Req) => {
+    const c = await deps.auth(req);
+    if (!c.actor.role || !DRAFT_ROLES.includes(c.actor.role)) throw new HttpError(403, 'forbidden', `a ${c.actor.role ?? 'caller without a role'} cannot upload people`);
+    if (!inScope(c.actor.scopes, 'source.upload')) throw new HttpError(403, 'forbidden', "this API key's scopes do not include source.upload");
+    const qp = req.query;
+    const raw = (req.body as Buffer | undefined) ?? Buffer.alloc(0);
+    let b: ReturnType<typeof partBody> & Partial<ReturnType<typeof convertXlsx>>;
+    if (String(req.headers['content-type'] ?? '').includes('application/json')) {
+      let j: unknown;
+      try { j = JSON.parse(raw.toString('utf8')); } catch { throw new HttpError(400, 'bad_json', 'the request body is not valid JSON'); }
+      b = partBody(j ?? {});
+    } else if (looksLikeXlsx(raw) || raw.subarray(0, 4).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0])) || XLSX_TYPE.test(String(req.headers['content-type'] ?? '')) || /\.xlsx?$/i.test(qp.get('filename') ?? '')) {
+      b = { ...partBody({ filename: qp.get('filename') ?? undefined, sourceId: qp.get('sourceId') ?? undefined }), ...convertXlsx(raw), final: true };
+    } else {
+      if (raw.length > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
+      b = partBody({ text: raw.toString('utf8'), filename: qp.get('filename') ?? undefined, sourceId: qp.get('sourceId') ?? undefined, uploadId: qp.get('uploadId') ?? undefined,
+        part: qp.get('part') ? Number(qp.get('part')) : undefined, final: qp.get('final') ? qp.get('final') === '1' || qp.get('final') === 'true' : undefined });
+    }
+    if (b.base64) b = { ...b, ...convertXlsx(Buffer.from(b.base64, 'base64')), base64: undefined, final: true };
+    if (b.text === undefined) throw new HttpError(422, 'invalid', 'send the file as text, or an Excel file as base64');
+    const part = { ...b, text: b.text };
+    const out = await tx(deps.pool, async q => {
+      const r = await receivePart(q, c.workspaceId, part);
+      await appendAudit(q, { workspaceId: c.workspaceId, actorType: c.actor.type, actorId: c.actor.id, action: 'source.upload_part', objectType: 'intake_upload', objectId: r.uploadId,
+        payload: { part: r.parts, bytes: r.bytes, status: r.status, ...(part.converted ? { from: 'xlsx', rows: part.converted.rows } : {}) } });
+      return r;
+    });
+    return { status: out.status === 'received' ? 201 : 202, body: out };
+  }, { rawBody: true, limit: MAX_B64_CHARS + 64 * 1024 });
+
+  router.add('POST', '/hooks/contacts/:sourceId', async (req: Req) => {
+    if (!/^[0-9a-f-]{36}$/i.test(req.params.sourceId)) throw new HttpError(404, 'not_found', 'no such source');
+    const src = await one<SourceRow>(deps.pool, 'SELECT * FROM intake_source WHERE id = $1', [req.params.sourceId]);
+    if (!src || !src.hook_secret_ciphertext) throw new HttpError(404, 'not_found', 'no such source');
+    const ts = String(req.headers['x-vp-timestamp'] ?? '');
+    const sig = String(req.headers['x-vp-signature'] ?? '');
+    if (!/^\d{9,11}$/.test(ts) || Math.abs(Date.now() / 1000 - Number(ts)) > HOOK_SKEW_S) throw new HttpError(401, 'bad_signature', 'missing or stale x-vp-timestamp');
+    const raw = (req.body as Buffer | undefined) ?? Buffer.alloc(0);
+    // The current secret, or the one it replaced while the overlap window after a rotation lasts.
+    const secrets = [openSecret(src.workspace_id, 'intake-hook', src.hook_secret_ciphertext),
+      ...(src.hook_secret_prev_ciphertext && src.hook_secret_prev_until && src.hook_secret_prev_until.getTime() > Date.now() ? [openSecret(src.workspace_id, 'intake-hook', src.hook_secret_prev_ciphertext)] : [])];
+    if (!secrets.some(k => signatureOk(k, ts, raw, sig))) throw new HttpError(401, 'bad_signature', 'the signature does not match');
+    if (src.status !== 'active') throw new HttpError(423, 'paused', 'this source is paused');
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw.toString('utf8')); } catch { throw new HttpError(400, 'bad_json', 'the body is not JSON'); }
+    const b = hookBody(parsed);
+    const ws = src.workspace_id;
+    const occurred = b.occurredAt ? new Date(b.occurredAt) : new Date();
+    const observedAt = Number.isNaN(occurred.getTime()) || occurred.getTime() > Date.now() + 60_000 ? new Date() : occurred;
+    return tx(deps.pool, async q => {
+      const fresh = await one(q, 'INSERT INTO intake_hook_event (source_id, event_id, workspace_id) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING RETURNING event_id', [src.id, b.eventId, ws]);
+      if (!fresh) {
+        const prev = await one<{ result: unknown }>(q, 'SELECT result FROM intake_hook_event WHERE source_id = $1 AND event_id = $2', [src.id, b.eventId]);
+        return { status: 200, body: { duplicate: true, eventId: b.eventId, result: prev?.result ?? null } };
+      }
+      const rows: InRow[] = b.contacts.map((ct, k) => {
+        const attrs: Record<string, unknown> = {};
+        for (const [key, v] of Object.entries(ct.attributes ?? {})) {
+          if (v === null || JSON.stringify(v).length > 2000) continue;
+          attrs[attrKey(key)] = v;
+        }
+        if (ct.externalId) attrs.external_id = ct.externalId;
+        if (ct.name) attrs.name = ct.name;
+        const l = ct.language ? normLanguage(ct.language) : null; if (l) attrs.language = l;
+        const tz = ct.timezone ? normTimezone(ct.timezone) : null; if (tz) attrs.timezone = tz;
+        return { row: k + 1, phone: ct.phone, attrs, optOut: ct.optOut, observedAt,
+          consent: ct.consent ? [{ granted: ct.consent.granted, purpose: ct.consent.purpose, basis: ct.consent.basis, channel: ct.consent.channel, at: ct.consent.at }] : undefined };
+      });
+      const res = await applyRows(q, ws, rows, { source: sourceRef(src) });
+      const result = { counts: res.counts, issues: res.issues.slice(0, 100) };
+      await q.query('UPDATE intake_hook_event SET result = $3 WHERE source_id = $1 AND event_id = $2', [src.id, b.eventId, JSON.stringify(result)]);
+      await appendAudit(q, { workspaceId: ws, actorType: 'system', actorId: 'hook:' + src.id, action: 'contact.webhook', objectType: 'intake_source', objectId: src.id,
+        argsHash: sha(raw.toString('utf8')), payload: { eventId: b.eventId, counts: res.counts } });
+      return { status: 200, body: { duplicate: false, eventId: b.eventId, result } };
+    });
+  }, { rawBody: true });
+}

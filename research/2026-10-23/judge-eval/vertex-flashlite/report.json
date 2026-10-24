@@ -1,0 +1,474 @@
+{
+ "date": "2026-10-23",
+ "label": "vertex-flashlite",
+ "threshold": 0.5,
+ "timeout_ms": 800,
+ "model_env": "VP_LLM_SAFETY_JUDGE_MODEL",
+ "sources": [
+  "heldout-6"
+ ],
+ "rps": 1,
+ "wall_s": 120,
+ "n": {
+  "judged": 120,
+  "planned": 120,
+  "crisis": 30,
+  "non_crisis": 90
+ },
+ "stopped_early": null,
+ "overall": {
+  "recall": {
+   "floor": {
+    "k": 30,
+    "n": 30,
+    "rate": 1,
+    "ci95": [
+     0.886486605238548,
+     1
+    ]
+   },
+   "judge": {
+    "k": 0,
+    "n": 30,
+    "rate": 0,
+    "ci95": [
+     0,
+     0.11351339476145204
+    ]
+   },
+   "floor_or_judge": {
+    "k": 30,
+    "n": 30,
+    "rate": 1,
+    "ci95": [
+     0.886486605238548,
+     1
+    ]
+   }
+  },
+  "false_positives": {
+   "floor": {
+    "k": 0,
+    "n": 90,
+    "rate": 0,
+    "ci95": [
+     0,
+     0.04093562618368095
+    ]
+   },
+   "judge": {
+    "k": 0,
+    "n": 90,
+    "rate": 0,
+    "ci95": [
+     0,
+     0.04093562618368095
+    ]
+   },
+   "floor_or_judge": {
+    "k": 0,
+    "n": 90,
+    "rate": 0,
+    "ci95": [
+     0,
+     0.04093562618368095
+    ]
+   }
+  }
+ },
+ "by_source": {
+  "heldout-6": {
+   "recall": {
+    "floor": {
+     "k": 30,
+     "n": 30,
+     "rate": 1,
+     "ci95": [
+      0.886486605238548,
+      1
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 30,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.11351339476145204
+     ]
+    },
+    "floor_or_judge": {
+     "k": 30,
+     "n": 30,
+     "rate": 1,
+     "ci95": [
+      0.886486605238548,
+      1
+     ]
+    }
+   },
+   "false_positives": {
+    "floor": {
+     "k": 0,
+     "n": 90,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.04093562618368095
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 90,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.04093562618368095
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 90,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.04093562618368095
+     ]
+    }
+   }
+  }
+ },
+ "by_lang": {
+  "bn-en": {
+   "recall": {
+    "floor": {
+     "k": 7,
+     "n": 7,
+     "rate": 1,
+     "ci95": [
+      0.6456695613241317,
+      1
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 7,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.35433043867586833
+     ]
+    },
+    "floor_or_judge": {
+     "k": 7,
+     "n": 7,
+     "rate": 1,
+     "ci95": [
+      0.6456695613241317,
+      1
+     ]
+    }
+   },
+   "false_positives": {
+    "floor": {
+     "k": 0,
+     "n": 7,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.35433043867586833
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 7,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.35433043867586833
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 7,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.35433043867586833
+     ]
+    }
+   }
+  },
+  "en": {
+   "recall": {
+    "floor": {
+     "k": 0,
+     "n": 0,
+     "rate": 0,
+     "ci95": [
+      0,
+      0
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 0,
+     "rate": 0,
+     "ci95": [
+      0,
+      0
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 0,
+     "rate": 0,
+     "ci95": [
+      0,
+      0
+     ]
+    }
+   },
+   "false_positives": {
+    "floor": {
+     "k": 0,
+     "n": 19,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.16817922625956366
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 19,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.16817922625956366
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 19,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.16817922625956366
+     ]
+    }
+   }
+  },
+  "hi-deva": {
+   "recall": {
+    "floor": {
+     "k": 8,
+     "n": 8,
+     "rate": 1,
+     "ci95": [
+      0.6755924316585924,
+      1
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 8,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.3244075683414076
+     ]
+    },
+    "floor_or_judge": {
+     "k": 8,
+     "n": 8,
+     "rate": 1,
+     "ci95": [
+      0.6755924316585924,
+      1
+     ]
+    }
+   },
+   "false_positives": {
+    "floor": {
+     "k": 0,
+     "n": 12,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.2424940095530979
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 12,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.2424940095530979
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 12,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.2424940095530979
+     ]
+    }
+   }
+  },
+  "hinglish": {
+   "recall": {
+    "floor": {
+     "k": 8,
+     "n": 8,
+     "rate": 1,
+     "ci95": [
+      0.6755924316585924,
+      1
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 8,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.3244075683414076
+     ]
+    },
+    "floor_or_judge": {
+     "k": 8,
+     "n": 8,
+     "rate": 1,
+     "ci95": [
+      0.6755924316585924,
+      1
+     ]
+    }
+   },
+   "false_positives": {
+    "floor": {
+     "k": 0,
+     "n": 44,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.08029560492349135
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 44,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.08029560492349135
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 44,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.08029560492349135
+     ]
+    }
+   }
+  },
+  "ta-en": {
+   "recall": {
+    "floor": {
+     "k": 7,
+     "n": 7,
+     "rate": 1,
+     "ci95": [
+      0.6456695613241317,
+      1
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 7,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.35433043867586833
+     ]
+    },
+    "floor_or_judge": {
+     "k": 7,
+     "n": 7,
+     "rate": 1,
+     "ci95": [
+      0.6456695613241317,
+      1
+     ]
+    }
+   },
+   "false_positives": {
+    "floor": {
+     "k": 0,
+     "n": 8,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.3244075683414076
+     ]
+    },
+    "judge": {
+     "k": 0,
+     "n": 8,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.3244075683414076
+     ]
+    },
+    "floor_or_judge": {
+     "k": 0,
+     "n": 8,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.3244075683414076
+     ]
+    }
+   }
+  }
+ },
+ "judge_unavailable": {
+  "k": 120,
+  "n": 120,
+  "rate": 1,
+  "ci95": [
+   0.9689808331071251,
+   0.9999999999999999
+  ]
+ },
+ "unavailable_reasons": {
+  "timeout": 120
+ },
+ "latency_ms": {
+  "p50": null,
+  "p95": null,
+  "max": null,
+  "note": "successful calls only; timeouts count as unavailable"
+ },
+ "tokens_per_turn": {
+  "input": 0,
+  "output": 0
+ },
+ "cost_inr": {
+  "spent": 0,
+  "per_1k_turns": 0,
+  "price_in_per_1m": 28.5,
+  "price_out_per_1m": 237.5
+ },
+ "misses": [],
+ "false_alarms": [],
+ "caveat": "The floor was tuned on the sets it has seen (in-sample for the floor); the judge prompt was not tuned on any set. Language tags on sets 1-6 are heuristic; sets dev-7 and heldout-7 carry the writer's tags."
+}

@@ -1,0 +1,20 @@
+source_region,destination_region,rtt_p50_ms,source_url,page_ms_date,fetched
+Central India,France Central,135,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Central India,France South,118,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Central India,South India,20,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Central India,Southeast Asia,53,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Central India,Sweden Central,164,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Central India,West Europe,139,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,Central India,29,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,France Central,138,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,France South,121,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,South India,41,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,Southeast Asia,73,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,Sweden Central,167,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+Jio India West,West Europe,145,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+South India,Central India,19,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+South India,France Central,147,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+South India,France South,129,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+South India,Southeast Asia,37,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+South India,Sweden Central,171,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17
+South India,West Europe,152,https://learn.microsoft.com/en-us/azure/networking/azure-network-latency,2026-07-30,2026-10-17

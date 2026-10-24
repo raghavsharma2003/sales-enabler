@@ -1,0 +1,495 @@
+{
+ "id": "economics-platform",
+ "screens": [
+  {
+   "name": "Billing & wallet (Settings › Billing)",
+   "purpose": "See money at a glance (balance, runway, caps) and act in one tap: top up, auto-recharge, switch to invoice, download a GST invoice, request a refund.",
+   "layout": "Top band: balance card with a state chip, plus a runway sparkline. Left column: caps (workspace, campaigns, API keys) with progress bars. Right column: top-up (UPI QR or VPA, card, netbanking), auto-recharge mandate, invoice-mode switch. Bottom: invoices table, credit notes, TDS certificates. The 'Talk to VP' panel is docked on the right edge.",
+   "elements": [
+    "Balance: 'INR 18,420.50 · ~6 din ka runway at last 7 days' pace (INR 3,050/day) · In-flight reserved: INR 212 (14 live calls)'",
+    "State chip: Healthy / Low / Critical / Exhausted / Overdrawn",
+    "Workspace cap: 'INR 90,000 this month · used INR 41,230 (46%) · stops at a call boundary at 100%'",
+    "Campaign budget row: 'Renewal Nov · INR 3,480 budget (p90 estimate incl. GST) · INR 1,912 used'",
+    "API key cap row: 'ci-renewals · INR 2,000/day · INR 1,140 today'",
+    "Top-up chips: INR 2,000 / 5,000 / 15,000; 'UPI Autopay up to INR 15,000 per debit without OTP (RBI e-mandate)'",
+    "Auto-recharge: 'Jab balance INR 3,000 se kam ho, INR 10,000 add karo' toggle, with mandate status",
+    "Invoice switch: 'Monthly spend above INR 15,000? Invoice + NEFT', with GSTIN, PO number and a TDS section field",
+    "Invoice row: 'Oct 2026 · INR 38,410 + IGST 6,913.80 = INR 45,323.80 · PDF · lines: Base minutes, A2P pass-through, WhatsApp utility'",
+    "Refund: 'Unused balance is refundable any time → Refund INR X to your UPI in ≤ 7 working days'",
+    "Rate strip: 'Base INR 3.49/min + GST · billed per second · telephony included · no setup or per-line fee'"
+   ],
+   "states": [
+    "Empty: new workspace, 'INR 300 trial credit · browser tests free today (INR 200 test budget)'",
+    "Low: amber banner, Treasurer card 'Top up INR 21,350 to cover the next 7 days'",
+    "Critical: new launches blocked with the reason; running campaigns continue",
+    "Exhausted (red): 'Naye calls ruk gaye. Live calls poore honge. Scheduled calls wait.'",
+    "Overdrawn (red): '−INR 46.20 · settles on next top-up · your numbers are safe for 30 days'",
+    "Invoice mode: credit limit, next invoice date, NEFT virtual account details",
+    "Payment failed: names the gateway reason and offers retry or another method",
+    "Refund pending, with an ETA",
+    "Loading skeleton; failed to load, with the reason and a retry"
+   ],
+   "beats": "Sarvam has INR, UPI and GST but releases numbers when the wallet empties and shows a negative balance in normal type. Bolna bills in USD and has unanswered refund complaints. Retell stops calls at zero balance. Vapi and ElevenLabs refuse billing actions to API keys. 0 of 5 cap spend by API key. VP adds runway, reservations, a bounded overdraft, number protection, a GST/TDS invoice path above the e-mandate cap, and refunds any time."
+  },
+  {
+   "name": "Rate card & 'Kitna lagega?' estimator (public /pricing and in-product)",
+   "purpose": "Give one honest all-in price and a calculator that turns a campaign into rupees with a range, then shows what the same calls cost elsewhere (dated and sourced).",
+   "layout": "Hero with the one number. Three tier columns. A calculator panel (inputs left, output right). An effective-price chart at 30 / 45 / 90 s. An FAQ on pulse, GST, pass-throughs and refunds.",
+   "elements": [
+    "Hero: 'INR 3.49 per connected minute + GST (INR 4.12). Billed per second. Telephony included. No setup fee. No platform fee. No per-line fee.'",
+    "Tier cards: Base INR 3.49 · Plus INR 3.99 · Premium INR 6.49 + dedicated voice INR 3.5 lakh/month",
+    "Calculator inputs: contacts 1,240 · connect rate 55% (labelled 'assumption, no history') · avg talk 1 min 40 s · max attempts 3 · WhatsApp follow-up on",
+    "Calculator output: 'INR 2,150-3,480 incl. GST (p10-p90) · cap suggested INR 3,480'",
+    "Chart 'Effective INR per connected minute at 45 s': VP 3.49 · Sarvam PAYG 5.20 · Bolna PAYG 7.63 · ElevenLabs 8.2+ · Retell (BYO trunk) 8.3+ · Vapi 12.5+ — footnote 'rate-card arithmetic, 2026-10-21; invoices not yet audited'",
+    "Pass-through table: A2P (INR 0 on 140/1600/1601; up to 0.05/min on 10-digit), number rental at carrier cost, WhatsApp at Meta rate",
+    "Ladder note: 'When our measured cost falls, the list price falls. Never by switching to a cheaper voice.'"
+   ],
+   "states": [
+    "Assumptions (no history) vs 'your own rates after 50 calls (n=50)'",
+    "Competitor price changed (Scout tripwire): chart re-dated",
+    "1600 or BYO carrier selected: telephony shown as 'paid to your carrier, metered by VP'",
+    "Promotional category chosen: shows the 140xx requirement and the A2P line"
+   ],
+   "beats": "Exotel gates prices behind a quote. Synthflow starts at USD 30k a year. Vapi's headline leaves out telephony and the wait. Sarvam's 60 s pulse turns 3.50 into 7.40 on a 30 s call. Retell scales billed time above 4,000 prompt tokens. VP shows the all-in per-second price and the range for the buyer's own campaign before any card is entered."
+  },
+  {
+   "name": "Stack cost & speed strip (Agent › Voice & speed; numbers owned by this module)",
+   "purpose": "Show the trade-off before choosing a stack: all-in INR, predicted reply gap at the phone, measured India latency with n and date, residency, data use and sunsets.",
+   "layout": "Header with the all-in price and the predicted gap. Preset cards (Natural, Fast, Indic, Premium Live locked). A table of ears, brain and voice rows. A stacked latency bar with five segments. A side drawer with the evidence for each row.",
+   "elements": [
+    "Header: 'All-in INR 3.49/min · predicted reply gap at the phone 1.85 s (Natural + gpt-4.1-mini) · budget 1.5 s'",
+    "Stacked bar: endpoint 620 | hold 40 | brain 304 | voice 624 | phone 300 (estimate) ms",
+    "Voice row: 'Gemini 3.8 Flash-Lite TTS · first audio 624 ms p50 (n=5, 2026-10-20, Central India) · INR 0.86/spoken min · price doubles 2027-01-01 · ▶ sample'",
+    "Brain row: 'gpt-4.1-mini (South India) · first token 304 ms (n=33) · retires 2027-04-14'",
+    "Residency badge: 'Processed in India' / 'Processed outside India (US)'; data-use badge 'Trains on your data unless opted out'",
+    "Locked card: 'Premium Live — unlocks after the 200+ attack-turn gate; COGS 4.7-6.2 at 3 min'",
+    "Phone leg cell: 'not measured — estimate 250-450 ms'"
+   ],
+   "states": [
+    "Measured vs 'not measured' (never zero)",
+    "Provider degraded: amber row linked to the status page",
+    "Quota-limited: 'max concurrent calls on this stack today: 40'",
+    "Price change scheduled: dated warning with a migration proposal",
+    "Over the speed budget: the bar segment is outlined with the lever named"
+   ],
+   "beats": "Vapi shows per-row latency and price but the US best case, and its headline is a component sum. ElevenLabs latency ranges span up to 10x with the prompt size unstated. Retell shows price only. Bolna, Sarvam and Exotel show nothing per option. 0 of 6 predict a reply gap."
+  },
+  {
+   "name": "Spend & usage explorer (Insights › Spend)",
+   "purpose": "Answer 'where did the money go and what did it buy?' by campaign, contact, agent, version, stack or day, down to per-second cost lines and cost per earned outcome.",
+   "layout": "A filter bar (period, group by). A KPI row. A stacked daily bar by cost line. A grouped table with drill-down to the call. Export. A 'same query by API' snippet.",
+   "elements": [
+    "KPI: 'Renewal Oct · INR 38,410 · 11,020 connected min · INR 3.49/min effective · cost per renewal paid INR 41.80 (n=919 verified via Razorpay webhook)'",
+    "KPI: 'Estimate vs actual: INR 36,200-41,900 estimated · INR 38,410 actual (inside range)'",
+    "Cost lines: telephony · ears · brain (cached / speculative) · voice · platform · analysis · A2P · WhatsApp",
+    "Per-contact row: 'Sunita V. (synthetic) · 3 attempts · 4 min 12 s · INR 14.66'",
+    "Call drill-down: per-second cost lines and the speed receipt (endpoint/hold/brain/voice/phone ms)",
+    "API snippet: 'GET /usage?group_by=campaign&from=2026-10-01'"
+   ],
+   "states": [
+    "Empty: 'No calls yet'",
+    "Outcome not wired: 'Cost per outcome: not measured — connect a payment webhook or CRM'",
+    "Reconciliation pending: the carrier invoice is not yet matched",
+    "Anomaly flag from the Treasurer: 'Pune cost per connected minute +18% since version v7 (longer turns)'",
+    "VP-fault credits shown as negative lines with reasons"
+   ],
+   "beats": "Vapi has typed cost lines and /analytics but no group-by campaign or contact. Sarvam has no per-call cost field or usage API. Retell exports from the dashboard only. 0 of 5 group cost by campaign or contact."
+  },
+  {
+   "name": "Developers (Settings › Developers)",
+   "purpose": "Let engineers and the client's own AI build on VP safely: scoped keys with spend caps, signed webhooks with replay, hooks with a test button, MCP connect, logs, spec versions.",
+   "layout": "Tabs: API keys | Webhooks | Hooks | MCP | Logs | Spec & SDKs. A detail drawer per item.",
+   "elements": [
+    "Key row: 'ci-renewals · scopes run, read · cap INR 2,000/day, INR 20,000/month · concurrency 20 · expires 2027-01-31 · last used 2 min ago'",
+    "Webhook endpoint: events call.ended, outcome.verified · signing secret [secret] · Rotate (overlap 24 h)",
+    "Delivery log row: 'evt_9f2 · call.ended · attempt 3 · 503 · next retry in 4 min · Replay'",
+    "Predial hook: 'https://crm.example.in/vp/predial · timeout 1,500 ms · on timeout: skip this attempt (fail-closed) · Send test'",
+    "Precall hook: 'returns variables within 800 ms during the ring; on timeout the call proceeds without them'",
+    "MCP: 'Connect Claude / ChatGPT / Cursor · spend and external actions return an approval link'",
+    "422 example in logs: 'unknown field voice_speed at agent.voice — did you mean voice.rate?'",
+    "Spec: 'VP-Version 2026-11-01 · TS and Python SDKs · changelog'"
+   ],
+   "states": [
+    "No keys yet",
+    "Key near cap (80%) or stopped at cap",
+    "Webhook auto-disabled after 50 consecutive failures over 24 h, with a re-enable button",
+    "Replay in progress",
+    "Hook timing out (p95 shown)",
+    "Deprecation notice 90 days ahead"
+   ],
+   "beats": "Retell's MCP has 2 tools and its CSV import is JWT-only. Vapi hides 68 paths, sends whole objects with no retry by default, and PATCH publishes. Bolna and Sarvam webhooks are unsigned. ElevenLabs refuses key and billing management to an API key. 3 of 4 writable vendors silently drop unknown fields."
+  },
+  {
+   "name": "Health & status (status page and in-app Health)",
+   "purpose": "Tell the truth about availability and speed, driven by synthetic Indian calls, with each tenant's own impact.",
+   "layout": "Overall banner. A component grid (India carriers, stack providers, VP dialer/API/dashboard/webhooks). A synthetic-call strip (24 h dots with reply gap). Incident timeline. In-app 'Your impact' panel.",
+   "elements": [
+    "Component: 'Plivo India — degraded since 11:42 IST · 18% dials failing (synthetic + live)'",
+    "Failover note: 'New attempts on your pre-approved Vobiz CLI · Renewal Nov paused 11:44, resumed 11:52'",
+    "Speed metric: 'Reply gap p50 1.3 s (synthetic, last hour) · budget 1.5 s'",
+    "Your impact: '3 campaigns affected · 27 calls interrupted → not billed, callbacks scheduled'",
+    "Incident post: timeline, cause, what changed, RCA link within 5 business days"
+   ],
+   "states": [
+    "All green",
+    "Degraded (including 'speed degraded')",
+    "Outage",
+    "Maintenance",
+    "Resolved with RCA",
+    "Monitor down: 'status unknown', never green"
+   ],
+   "beats": "Vapi showed 'Great news! no active issues' with no monitors configured and had a 4 h 07 min outage with no campaign retry. Retell had about 6 h of undetected degradation and posted 39 min after fleet failure. Exotel has no VoiceBot component and posts after the fact. Bolna has no carrier failover."
+  },
+  {
+   "name": "Integrations hub (Settings › Integrations)",
+   "purpose": "Connect the systems that make outcomes real (payments, CRM, Sheets, WhatsApp) and see each one's health and cost.",
+   "layout": "A card grid by category. A detail drawer with mapping, write-back fields, test and logs.",
+   "elements": [
+    "'Razorpay · connected · 919 payment.captured this month · 12 unmatched → review'",
+    "'Google Sheets: Renewals Nov · hourly sync · 1,240 rows · last 10:05 · results tab write-back on'",
+    "'WhatsApp (Cloud API) · 3 utility templates approved · INR 0.115/message at Meta rate'",
+    "'LeadSquared · write-back: disposition, next action, call link · confirmed / not_executed / unknown'",
+    "Generic webhook card with signing and replay"
+   ],
+   "states": [
+    "Not connected (one-line purpose and Connect)",
+    "Connecting (OAuth)",
+    "Healthy",
+    "Rate-limited (shows retry time)",
+    "Auth expired (owner card)",
+    "Mapping errors (per-row reasons)"
+   ],
+   "beats": "Relay listed 19 adapters that no tenant ever connected. Sarvam gates WhatsApp to Enterprise. Retell's CRM apps are US-centric. Bolna's WhatsApp is one AiSensy node. VP ships few connectors, each proven with a design partner, with payment events as outcome sources."
+  },
+  {
+   "name": "Scout radar (VP owner only)",
+   "purpose": "Keep learning from the market: what changed this week, which tripwires fired, which hypotheses weakened, and what VP should adopt or beat next.",
+   "layout": "A tripwires band at the top. Vendor cards with a threat-score trend. A change feed with diff snippets. A market price index chart. The W1-W10 scoreboard. A graph inbox queue. Monthly digest export.",
+   "elements": [
+    "Tripwire: 'Sarvam docs mention A2P declaration (2026-11-18) → weakens W1 export claim · inbox entry drafted'",
+    "Price move: 'Bolna PAYG 6.0¢ → 5.5¢ (−8%) · effective at 45 s now about INR 7.0'",
+    "API diff: 'ElevenLabs OpenAPI publishes /v1/convai/outbound-campaigns (16 paths) → re-run campaign battery'",
+    "Index: 'Median Indian self-serve all-in INR/min 5.7 → 5.4'",
+    "Scoreboard: 'W8 billing: holds on paper · T7 invoice audit pending'",
+    "Source health: 'retell pricing: 403 unreachable (not \"no change\")'"
+   ],
+   "states": [
+    "No changes this week",
+    "Source unreachable (named)",
+    "Baseline missing",
+    "Tripwire acknowledged / proposal created",
+    "Digest sent"
+   ],
+   "beats": "No competitor shows customers a market radar. The bar is VP's own learning speed: weekly diffs against 67 baselines, tripwires tied to W hypotheses, and graph entries so nothing is re-derived (req-60/61)."
+  }
+ ],
+ "comparison": [
+  {
+   "dimension": "Billing unit and pulse",
+   "best_competitor": "Retell (per-second product cost lines) / Bolna (30 s pulse, fee inside the 6 cents)",
+   "their_best": "Retell bills per product per second with typed lines. Bolna publishes 3.5 + 0.5 + 2 cents with a 30 s pulse.",
+   "vp_better_how": "All-in INR per connected second with no minimum and telephony included. VP absorbs carrier pulse rounding. No burst, setup, per-line or per-dial fees. At 30-90 s calls the effective price is 3.49 against Sarvam 5.07-7.40 and Bolna 5.72-7.63.",
+   "evidence": "RET-34, RAP-36/51; BOL-33, WT bolna 34/35; SAR-38; research/2026-10-20/teardown/synthesis/economics.csv [C, no invoice read]"
+  },
+  {
+   "dimension": "Price shown at the point of choice",
+   "best_competitor": "Retell (price at the toggle) and Vapi (per-row latency and price with presets)",
+   "their_best": "Memory USD 0.005/run, burst 0.10 and batch 0.005/dial shown at the toggle. Vapi shows a stage-coloured cost and latency bar.",
+   "vp_better_how": "Every stack row shows INR, India-measured p50/p90 with n and date, residency, data-use and sunset badges. The header shows all-in INR including telephony, pulse and turn wait, plus a predicted reply gap at the phone.",
+   "evidence": "WT retell png/76, 5x-settings; wt-vapi-12/13/19; decision.2026-10-21.wt-synthesis-stack-picker-all-in"
+  },
+  {
+   "dimension": "INR payments and invoices",
+   "best_competitor": "Sarvam",
+   "their_best": "INR credits via Razorpay, GST split, UPI autopay, unanswered calls free.",
+   "vp_better_how": "Adds an invoice/NEFT path above the INR 15,000 e-mandate cap, TDS credit by Form 16A, refunds any time to source, a bounded overdraft, numbers kept 30 days on an empty wallet, and red overdrawn states.",
+   "evidence": "SAR-09/36, sarvam-20/21/22; research/2026-10-17/lanes/l4c-incumbents-distribution/report.md §3c (e-mandate)"
+  },
+  {
+   "dimension": "Spend control",
+   "best_competitor": "None adequate (Synthflow thresholds; Retell stop at zero)",
+   "their_best": "Synthflow thresholds trigger invoices but do not cap. Retell's prepaid credits stop calls at zero.",
+   "vp_better_how": "Caps per workspace, campaign and API key (daily and monthly). Reservation before dial. Stops at a call boundary, never cutting a live call. Caps settable by API.",
+   "evidence": "research/2026-10-20/account-phase/SYNTHESIS.md XS-27/28 (0 of 5 cap by API key); SYN-10; RET-32"
+  },
+  {
+   "dimension": "Cost analytics",
+   "best_competitor": "Vapi",
+   "their_best": "8 typed USD cost lines per call and an /analytics query endpoint.",
+   "vp_better_how": "Per-second INR lines that sum to the bill. Group by campaign, contact, agent, version, stack or day. Cost per earned outcome joined to payment or CRM events. Estimate vs actual tracked.",
+   "evidence": "AP-35/37 (no group-by campaign or contact); data/blueprint/intelligence-module.json metric_layer"
+  },
+  {
+   "dimension": "Price level vs the INR 2 ambition",
+   "best_competitor": "SquadStack (vendor-stated INR 2-5) and Sarvam Business (3.00 + 0.40)",
+   "their_best": "Sarvam lists INR 3.00-3.50 on its own models. SquadStack quotes 2-5 per live minute, sales-led.",
+   "vp_better_how": "Base INR 3.49 per second beats every published self-serve price on short calls. A pre-registered ladder drops the list to 2.99 / 2.49 / 1.99 as measured COGS falls, never by swapping the voice. Honest limit: not INR 2 at launch, and Sarvam Business is INR 0.09 cheaper on whole-minute calls.",
+   "evidence": "research/2026-10-18/SYNTHESIS.md §1, §2.1, §4; SQS-35 [V]; rejected.2026-10-17.parity-undercut"
+  },
+  {
+   "dimension": "Reply gap (speed)",
+   "best_competitor": "Ultravox demo (p50 1.54 s, US-East) and ElevenLabs (3% collisions); India-hosted: Bolna (about 1.4 s code floor)",
+   "their_best": "Fastest measured incumbent clean-turn p50 is 1.54 s. ElevenLabs talks over callers on only 3% of turns.",
+   "vp_better_how": "India media and brain, warm pools, opening synthesised during the ring, leading-silence trim, per-segment budgets summing to 1.5 s at the handset, and a predicted gap shown per stack. Unproven: VP stacks still cut in on 15-42% of turns, and Natural is predicted at about 1.85-2.2 s.",
+   "evidence": "research/2026-10-17/lanes/l4b-measured/report.md [M]; L8 round2 [M]; open.2026-10-19.turn-taking; research/2026-10-20/voicelab/round1-review-and-v2.md"
+  },
+  {
+   "dimension": "Architecture and residency",
+   "best_competitor": "Sarvam (Azure Central India runtime) and Bolna (AWS Mumbai)",
+   "their_best": "The call is processed in India.",
+   "vp_better_how": "India media and orchestration by default, an India-resident preset (Azure STT CI + gpt-4.1-mini SI + MAI-Voice CI), a residency badge on every stack row, and recordings and transcripts in Central India. No US session replay.",
+   "evidence": "SAR-21/63, BOL-17/49; research/2026-10-20/teardown/SYNTHESIS.md §5 (4 of 8 US call paths)"
+  },
+  {
+   "dimension": "Reliability and incident honesty",
+   "best_competitor": "Sarvam (published component uptime 99.94%) and Synthflow (incident.io write-ups)",
+   "their_best": "A status page with components and uptime history.",
+   "vp_better_how": "Synthetic Indian calls every 5 min per carrier and preset. Detect within 5 min, notify within 15. Speed counts as a status. Dual-carrier failover. Auto-resume without double dials. VP-cut calls are not billed and get a callback. 'Status unknown', never a false green.",
+   "evidence": "SAR-19; SYN-52; VAP-54 (4 h 07 min, no campaign retry); RET-38/39 (6 h undetected); BOL-40 (9/18 upstream, no carrier failover); EXO-41; wt-vapi-37"
+  },
+  {
+   "dimension": "Failover",
+   "best_competitor": "Bolna (LLM overflow, provisioned to pay-as-you-go on 429)",
+   "their_best": "Same-model LLM overflow on 429 or 5xx.",
+   "vp_better_how": "Health- and quota-checked routing at call start to a declared alternate stack, filed under the combination that ran. Mid-call, only a same-voice, same-model fallback. Carrier failover across two declared CLIs. Tests never fall back.",
+   "evidence": "evidence.2026-10-20.acct-bolna-llm-overflow; open.2026-10-20.product-failover-policy; rejected.2026-10-20.silent-fallback-in-tests"
+  },
+  {
+   "dimension": "API, SDK and MCP",
+   "best_competitor": "Retell",
+   "their_best": "109 operations with SDK and MCP from one spec, an idempotency key on calls, 422 on a PATCH to a published version, no hidden routes.",
+   "vp_better_how": "One spec generates the API, SDKs, MCP, Operator tools and CLI, with a CI parity check against the dashboard. 422 on unknown fields. Idempotency on every create and dial. dry_run on every write. Billing, caps, imports and exports are on the API. MCP spend actions return approval links.",
+   "evidence": "RAP-03/07/12; XS-07/08/16; rejected.2026-10-20.acct-retell-csv-import-by-api-key; AP-06/07 (Vapi 68 hidden paths)"
+  },
+  {
+   "dimension": "Webhooks",
+   "best_competitor": "ElevenLabs (HMAC, auto-disable after 10 failures) and Sarvam (re-delivery up to 200 attempts)",
+   "their_best": "Signed delivery with a failure guard, and integrator-friendly re-delivery.",
+   "vp_better_how": "Slim signed events with a timestamp replay window, 72 h retries, a delivery log, replay by UI and API, and auto-disable only after 50 failures over 24 h, with notice. Delivery states are confirmed / not_executed / unknown.",
+   "evidence": "research/2026-10-20/account-phase/elevenlabs report §4; SAR-18; AP-28..31 (Vapi full payloads, no retry by default); BOL-14 (unsigned)"
+  },
+  {
+   "dimension": "Pre-dial and pre-call hooks",
+   "best_competitor": "Vapi (campaign.predial veto) and ElevenLabs (pre-call initiation webhook)",
+   "their_best": "A blocking predial veto, and pre-call variables or overrides.",
+   "vp_better_how": "Predial is fail-closed by default with a reason. Precall runs during the ring with an 800 ms budget and never delays the first word. Inbound pre-answer. A test button for each hook.",
+   "evidence": "AP-27; research/2026-10-20/account-phase/elevenlabs report §4; RAP-42"
+  },
+  {
+   "dimension": "Concurrency pricing",
+   "best_competitor": "Retell (20 free, then USD 8 per slot)",
+   "their_best": "A generous free concurrency floor with a reserved-for-batch readout.",
+   "vp_better_how": "No per-line fee. Base 10, Plus 25, Premium 100. Raising is a card answered in minutes, capped only by provider quota.",
+   "evidence": "RET-32; VAP-37; exotel-25"
+  },
+  {
+   "dimension": "Integrations",
+   "best_competitor": "Synthflow / Retell (CRM apps), Bolna (AiSensy WhatsApp node)",
+   "their_best": "CRM write-back and a WhatsApp follow-up node.",
+   "vp_better_how": "Payment webhooks as outcome sources (cost per renewal paid). Sheets two-way. The first partner's Indian CRM. WhatsApp utility with a per-message cost line. Each connector shows health and cost.",
+   "evidence": "SYN-02, RET-59, BOL workflow nodes; data/blueprint/memory-omni-defaults.json connectors; docs/harvest/se-live.md"
+  },
+  {
+   "dimension": "Learning from the market",
+   "best_competitor": "None visible",
+   "their_best": "Fast changelogs (ElevenLabs 195 agent items in 6 months).",
+   "vp_better_how": "Scout: 67 baselined URLs, daily and weekly diffs, tripwires mapped to W hypotheses, graph inbox entries, a market price index, and quarterly same-battery competitor calls.",
+   "evidence": "research/2026-10-20/teardown/radar/watchlist.json; research/2026-10-20/teardown/SYNTHESIS.md §4"
+  }
+ ],
+ "metrics": [
+  {
+   "metric": "Invoice accuracy vs rate card (T7)",
+   "target": "Within 1% on every invoice",
+   "how": "Monthly self-audit of 10 calls each at 30, 45 and 90 s, plus every invoice line recomputed from per-second meter rows."
+  },
+  {
+   "metric": "Meter vs vendor bills reconciliation",
+   "target": "Within 5% per provider per month",
+   "how": "Join cost lines to vendor invoices and usage APIs. Read real balances, never key limits (rejected.2026-10-20.or-key-limit-as-balance)."
+  },
+  {
+   "metric": "Effective INR per connected minute at 30-90 s vs incumbents (W8)",
+   "target": "Lowest against at least 5 of 7 incumbents",
+   "how": "Scout refreshes rate-card arithmetic monthly. T7 invoice audits where trial accounts exist."
+  },
+  {
+   "metric": "Gross margin per tier",
+   "target": "p50 at least 30%, floor 25%, never reached through a voice downgrade",
+   "how": "Meter COGS divided by revenue monthly. The listener-panel score of the tier default must not fall."
+  },
+  {
+   "metric": "Measured COGS per connected minute by stack",
+   "target": "Tracked against the ladder triggers (1.94 / 1.62 / 1.29)",
+   "how": "Reconciled meter, 2-month rolling p50."
+  },
+  {
+   "metric": "Pre-launch estimate accuracy",
+   "target": "Actual inside the p10-p90 range for at least 80% of campaigns; median absolute error 15% or less after 50 calls",
+   "how": "Campaign close compared with the launch-card estimate."
+  },
+  {
+   "metric": "Spend-cap overshoot",
+   "target": "INR 0 beyond in-flight reservations; 0 attempts started after a cap",
+   "how": "Dial-path log audit (one dial path, one precheck)."
+  },
+  {
+   "metric": "Billing complaints and refunds",
+   "target": "2 or fewer billing tickets per 100 active workspaces a month; 100% of refunds within 7 working days",
+   "how": "Ticket tags; refund ledger timestamps."
+  },
+  {
+   "metric": "Handset reply gap and cut-ins (W3, KC6)",
+   "target": "p50 1.5 s or less, p90 2.5 s or less, cut-ins 5% or less",
+   "how": "Stereo handset battery, at least 30 clean turns per stack per carrier (Jio, Airtel, Vi), monthly and on any stack change."
+  },
+  {
+   "metric": "Per-segment budget conformance",
+   "target": "At least 90% of turns within each segment budget; server p50 1.2 s or less",
+   "how": "Per-turn telemetry: endpoint, hold, brain first token, voice first audio, phone leg."
+  },
+  {
+   "metric": "Predicted-gap accuracy",
+   "target": "Within 150 ms of the measured handset p50",
+   "how": "Registry prediction compared with the battery result per preset."
+  },
+  {
+   "metric": "Silence caused by quota",
+   "target": "0 calls; provider 429s on under 0.1% of turns",
+   "how": "Error classifier on turn telemetry; quota reservation log."
+  },
+  {
+   "metric": "Call-path availability",
+   "target": "99.5% in v1; 99.9% in v2",
+   "how": "Answered attempts with an agent first word within 3 s, from synthetic and live calls."
+  },
+  {
+   "metric": "Time to detect / notify / post",
+   "target": "5 min or less / 15 min or less / 15 min or less",
+   "how": "Incident ledger timestamps; quarterly fault-injection drills."
+  },
+  {
+   "metric": "Resume integrity after outage",
+   "target": "100% of affected attempts re-queued without human action; 0 double dials; 0 VP-cut calls billed",
+   "how": "Drills plus a dial-path log audit."
+  },
+  {
+   "metric": "API parity and integrity (W10)",
+   "target": "100% of dashboard actions have a spec operation; 0 silent drops; stored config equals running config",
+   "how": "CI manifest check; a read-back test of 20 configs per release."
+  },
+  {
+   "metric": "Webhook delivery",
+   "target": "At least 99.9% within 60 s; at least 99.99% within 72 h",
+   "how": "Delivery log."
+  },
+  {
+   "metric": "Scout freshness and use",
+   "target": "Tripwire lag 24 h or less on status feeds and 7 days or less on weekly sources; 12 of 12 monthly digests; inbox entries merged within 7 days",
+   "how": "Scout run log and graph inbox timestamps."
+  },
+  {
+   "metric": "First human support reply in IST hours (W9)",
+   "target": "Under 2 h",
+   "how": "Ticket timestamps (an operating promise priced into the tiers)."
+  }
+ ],
+ "phases": [
+  {
+   "phase": "Phase 0 (before charging money)",
+   "scope": [
+    "Round-2 human ratings pick the default stack, which sets Base at 2.99, 3.49 or 3.99 by the margin rule",
+    "Handset stereo battery on VP stacks (KC6) to calibrate the phone leg and the predicted gap",
+    "First invoices from Plivo and each AI provider reconciled with the meter (settles the Plivo 30 vs 60 s pulse and the MAI-Voice meter)",
+    "Counsel: may VP re-bill tenant-held carrier telephony? CA: GST timing on top-ups, TDS section, e-invoicing",
+    "1600 carriage quote and streaming permission (KC5)",
+    "Buyer interviews include billing fairness as a switching reason (W8 kill bar)"
+   ]
+  },
+  {
+   "phase": "v1: honest money, India-native platform",
+   "scope": [
+    "Per-second INR billing, all-in including telephony; the re-priced Base, Plus late in v1, and Premium for enterprise; no setup, line or burst fees",
+    "Prepaid wallet (UPI, Autopay up to INR 15,000, cards) via the Razorpay seam; invoice and NEFT above the cap; GST invoices; TDS credit",
+    "Wallet states, reservation before dial, caps per workspace, campaign and API key, estimates with p10-p90, refunds and disputes",
+    "voice-rt ported from voicelab to Azure Central India; TypeScript control plane on India-resident Postgres; adapter registry with measured metrics; warm pools; quota admission and hot/background lanes",
+    "Per-segment speed budgets with a predicted gap at every stack choice",
+    "SLO 99.5%, synthetic Indian calls, status page, dual-carrier failover, call-start stack failover, auto-resume",
+    "One OpenAPI spec generating API, TS/Python SDKs, MCP, Operator tools and CLI; 422, idempotency, dry_run, signed slim webhooks with replay, predial and precall hooks, usage by campaign and contact",
+    "Integrations: Sheets, payment webhooks, the first partner's CRM, WhatsApp utility, generic webhooks",
+    "Scout weekly with tripwires, inbox entries and a monthly owner digest",
+    "Evidence that sets v1: W8 and W10 fail at every incumbent; 0 of 5 cap by key; billing is 107 of 459 coded Indian complaints; must-be items A and C"
+   ]
+  },
+  {
+   "phase": "v2: reliable at scale, deeper platform",
+   "scope": [
+    "SLO 99.9% with service credits on Premium; active-active Central India and South India",
+    "Pre-declared same-voice mid-call fallback; negation-aware speculative release to cut the gap safely",
+    "Per-outcome billing for managed design partners, and a modelled hybrid (minute floor plus outcome kicker)",
+    "More CRMs when 2 paying customers need each; WhatsApp episodes for memory; a priced India-resident SKU",
+    "Quarterly same-battery competitor calls; Scout OpenAPI auto-diff; usage forecasting",
+    "Evidence that sets v2: v1 incident data, design-partner outcome data, and the owner's order of memory before learning (req-32, req-34)"
+   ]
+  },
+  {
+   "phase": "v3: costs less",
+   "scope": [
+    "Price ladder to INR 2.49 and 1.99 when measured COGS crosses the triggers",
+    "Self-hosted Indic speech on an always-on GPU fleet at 1.6-2.5M min/month; telephony concurrency plans; speech commitment tiers",
+    "Self-hosted open-model option for BFSI residency (the LIC RFP shape)",
+    "Reseller and sub-account billing; a marketplace of connectors",
+    "Evidence that sets v3: COR §2 (D-lite reaches INR 2 from about 1.6M min/month); SY18 §4 (self-host from about 2.5M); research/2026-10-17/lanes/r2-untouched-raw/findings.md §2.1 (LIC RFP)"
+   ]
+  }
+ ],
+ "beyond": [
+  "A speed-and-cost receipt on every call: per-segment milliseconds (endpoint, hold, brain, voice, phone) and per-second INR lines that sum exactly to the bill.",
+  "A predicted reply gap at the phone and an all-in INR at every stack choice, computed from an adapter registry that carries n, date and vantage. 0 of 6 dashboards predict a gap.",
+  "Spend caps on every API key, reservation before dial and a bounded overdraft. A live call is never cut for money, and numbers are never released inside 30 days.",
+  "The client pays per second while carriers bill VP in 30-60 s pulses. VP absorbs the rounding (about INR 0.03-0.07/min).",
+  "VP-fault calls are auto-credited with a reason; refunds of unused balance any time, to source, within 7 working days.",
+  "The pre-launch estimate becomes a tracked forecast, and its accuracy is shown to the client.",
+  "A public price ladder tied to measured cost: when VP's reconciled cost falls past a trigger, the list price falls. A cheaper voice can never trigger it.",
+  "A status page driven by synthetic Indian calls per carrier and preset, where 'speed degraded' is an incident and a dead monitor shows 'status unknown', never green.",
+  "Outage-aware campaigns: auto-resume without double dials, attempt budgets not charged for VP outages, and one callback for every answered call VP cut.",
+  "No per-line concurrency fee; limits are safety and quota controls raised in minutes.",
+  "dry_run on every write, plus approval-card URLs for MCP spend and external actions, so a client's own AI assistant can drive VP without bypassing a human tap.",
+  "A sunset and price-shock shield: the registry knows deprecations and price changes (Gemini TTS doubling 2027-01-01, gpt-4.1-mini retiring 2027-04-14), and the Treasurer drafts a migration with an ear test 60 days ahead.",
+  "Scout, a standing competitor radar: 67 baselined URLs, tripwires mapped to W hypotheses, graph inbox entries, a market price index and quarterly same-battery calls. VP learns from the market every week."
+ ],
+ "risks": [
+  "Gemini dependency: TTS price doubles on 2027-01-01 (+INR 0.37/min, Natural Base margin 38% to 28%). Google access was restricted once, and Tier-1 caps silenced 6 of 12 calls (risk.2026-10-20.google-dependency).",
+  "gpt-4.1-mini, the fastest India brain (304 ms), retires 2027-04-14; the successor's latency and price are unknown.",
+  "A2P termination may rise to INR 0.50/min plus INR 0.05 per attempt (14% of Base). It can only be passed through.",
+  "1600 carriage price is unpublished, and streaming to third-party AI on 1600 is unconfirmed (KC5).",
+  "Re-billing tenant-held telephony may make VP a sender or aggregator, so one abusive tenant could bar VP resources. It stays 'carrier bills you' until counsel answers.",
+  "Incumbents can follow any price move: Bolna's COGS is INR 2.0-3.8 with 46-72% margin, and Sarvam lists at 2.3-3.0x its own API cost (rejected.2026-10-17.parity-undercut).",
+  "The self-serve ARPA trap: about INR 4,900 per customer-month at Bolna against a W9 human-support promise that costs headcount.",
+  "The MAI-Voice meter is unread. If it bills like HD, the Fast preset's margin at INR 3.49 falls to about 5%.",
+  "Speed is unproven: Natural is predicted at 1.85-2.2 s against a 1.5 s budget, every VP stack cuts in on 15-42% of turns, and no handset measurement exists.",
+  "Two runtimes (Python voice-rt and the TypeScript control plane) add operations cost and seam bugs.",
+  "Neon India residency is unverified. Getting it wrong breaks the BFSI residency contract terms.",
+  "Synthetic monitoring costs (about INR 12k/month at v1) and false alarms. The monitor sharing the production path must not starve live calls.",
+  "GST timing on wallet top-ups, the TDS section and e-invoicing obligations could be mis-implemented without a CA.",
+  "Long relational calls raise per-attempt reservations (max duration × rate), locking wallet funds; Plus/Premium max durations need tuning.",
+  "Scout blind spots: 403/429 blocks, JavaScript-rendered pricing pages and vendor terms (owner override accepted). Re-walks need authorised trials and owner approval.",
+  "The price-ladder promise sets expectations; a cost shock (2027 Gemini) may force an increase with 30 days' notice."
+ ],
+ "open_questions": [
+  "Which default stack wins round 2? This sets Base at 2.99 (Indic), 3.49 (Natural) or 3.49-3.99 (Fast) under the margin rule.",
+  "Does the owner accept INR 3.49 at launch, with INR 2 as a v3 ladder target, given req-02 and req-08 rank above req-41? Does the owner want to revisit the Inworld exclusion, the only managed path near INR 0.53 AI at 250k min/month?",
+  "Counsel: may VP re-bill tenant-held carrier telephony at cost on one invoice without becoming a sender or aggregator (RS §2.5 Q4)?",
+  "CA: GST timing on prepaid top-ups (advance receipt voucher or consumption), SAC code, e-invoicing threshold, and the TDS section buyers will apply.",
+  "Plivo India pulse: 30 s (l2 data) or 60 s (console read 2026-10-19 in voicelab/server/phone.py)? Settled by the first invoice.",
+  "MAI-Voice 2.1 Flash's real meter, which sets the Fast preset's cost.",
+  "What do 1600 numbers cost per minute and per number, and can media stream to VP's India gateway on 1600?",
+  "Does Neon offer an India region acceptable for BFSI residency, or should production Postgres be Azure PostgreSQL in Central India?",
+  "Is there a Vertex India region for Gemini TTS and STT? This decides residency and about 100-300 ms of latency on the Natural preset.",
+  "How many concurrent calls does one voice-rt vCPU carry with Silero VAD and resampling? This validates the INR 0.03/min infra line.",
+  "What carrier calls-per-second limits apply on Plivo India and Vobiz? They bound campaign pacing.",
+  "Is a hybrid unit (minute floor plus outcome kicker) worth modelling for self-serve, or does per-outcome stay managed-only?",
+  "Is 99.5% call-path availability acceptable to design partners for v1, and what service credits should Premium carry?",
+  "Do buyers rank billing fairness among their top 5 switching reasons (W8 kill bar)? It needs the 10-15 interviews."
+ ]
+}

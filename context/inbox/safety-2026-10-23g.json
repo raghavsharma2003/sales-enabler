@@ -1,0 +1,66 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-23.judge-checkin-path",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "Judge-only crisis check-in, behind config and off by default (judge.json checkin, VP_SAFETY_JUDGE_CHECKIN, mode raise only). A crisis raised by the judge alone makes her pause the agenda and check in, in her own words, from rules.json checkin shapes (never lines). It is recorded as one RD3 flagged safety event, with no hand-off. If the verdict is in before she speaks, the reply is rewritten as the check-in; a later verdict makes her next reply the check-in. The floor at any time, or a crisis verdict from the judge on the caller's answer, takes the full crisis path (14416 and 112, goal suspended, human offered). A calm answer ends the round, and the agenda returns only if they invite it. Check-in off: a judge raise is the full path at once, as before.",
+   "rationale": "Owner (open.2026-10-23.judge-raise-soft-checkin): a check-in makes a false judge raise cheap (Flash-Lite FP 10/100 on look-alikes in BLIND 7) while the judge lifts recall from 37/100 (floor) to 99/100. A crisis verdict on the answer, rather than parsing a yes, avoids reading 'haan' to 'are you okay?' backwards.",
+   "reverse_if": "Shadow or staging data shows a judge-only raise that was a real crisis where the check-in delayed the lines harmfully, or the owner prefers the full path on every raise."
+  },
+  {
+   "id": "asset.2026-10-23.blind-set-8",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "BLIND 8 crisis set (product/shared/safety/sets/heldout-8.json): 100 crisis and 100 look-alike benign caller lines, same language split as BLIND 7 (ta/bn/mr/te/gu-en 18/17 each, hinglish 6/10, hi-deva 4/5). Written by a separate agent with no repo access to the rules, prompt or earlier sets. The builder checked counts, duplicates (0), long digit runs (0) and overlap with earlier sets (0) by script, without reading a line. Not in cases.json. Integrator scores it once on the VM, after DEV tuning.",
+   "paths": [
+    "product/shared/safety/sets/heldout-8.json"
+   ],
+   "value": "the one clean measurement of the tuned judge and the check-in threshold",
+   "effort": "one agent run",
+   "caveat": "The builder wrote the writer's brief, which named the benign look-alike families (exaggeration, debt anger, someone else's death, planning questions, film or news, quoting, a past feeling, medical talk, tiredness, idioms, anger at someone else). Prompt changes must therefore come from DEV false positives only, never from that list."
+  },
+  {
+   "id": "open.2026-10-23.judge-checkin-dev-tuning",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "The check-in threshold and prompt are not tuned yet: no Flash-Lite DEV run exists (the sandbox cannot call Vertex). Next: on the VM, run judge-eval on dev-7 (and optout-dev) with Flash-Lite; read the threshold sweep; try prompt variants with --prompt-file built from DEV false positives only; set judge.json threshold; then score BLIND 8 once.",
+   "closes_when": "A DEV measurement node with the sweep, a chosen threshold and prompt in judge.json, and a BLIND 8 score."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-23.judge-checkin-path",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-23.judge-checkin-path",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "asset.2026-10-23.blind-set-8",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-23.judge-checkin-dev-tuning",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-judge-checkin",
+   "details": "Check-in path behind VP_SAFETY_JUDGE_CHECKIN (default off): rules.json checkin shapes, judge.json checkin, voice runtime state machine; 6 new runtime tests. judge-eval: threshold sweep and --prompt-file (DEV only, refuses heldout). BLIND 8 written by a separate agent, unread. Gates: tsc clean, fresh-DB 468/468, ui-contract strict 173/173, voice unittest OK."
+  }
+ ]
+}

@@ -1,0 +1,49 @@
+ip,dns_ms,tcp_ms,tls_ms,http_first_byte_ms,total_ms,status,tls_version,ts,target,host,arm,i
+20.192.44.106,11.12,4.29,26.41,6.94,48.75,401,,2026-10-17T17:05:05Z,cin-stt,centralindia.stt.speech.microsoft.com,cold,0
+20.192.44.106,0.36,3.56,27.02,5.66,36.6,401,,2026-10-17T17:05:05Z,cin-stt,centralindia.stt.speech.microsoft.com,cold,1
+20.192.44.106,0.34,6.16,27.39,7.49,41.37,401,,2026-10-17T17:05:05Z,cin-stt,centralindia.stt.speech.microsoft.com,cold,2
+,,,,4.08,4.08,401,,2026-10-17T17:05:05Z,cin-stt,centralindia.stt.speech.microsoft.com,warm,0
+,,,,3.58,3.58,401,,2026-10-17T17:05:05Z,cin-stt,centralindia.stt.speech.microsoft.com,warm,1
+,,,,3.74,3.74,401,,2026-10-17T17:05:05Z,cin-stt,centralindia.stt.speech.microsoft.com,warm,2
+20.192.44.108,29.69,10.95,28.29,56.87,125.81,401,,2026-10-17T17:05:05Z,cin-tts,centralindia.tts.speech.microsoft.com,cold,0
+20.192.44.108,0.42,1.86,21.84,47.32,71.44,401,,2026-10-17T17:05:05Z,cin-tts,centralindia.tts.speech.microsoft.com,cold,1
+20.192.44.108,0.47,3.48,23.24,51.26,78.46,401,,2026-10-17T17:05:05Z,cin-tts,centralindia.tts.speech.microsoft.com,cold,2
+,,,,1.91,1.91,401,,2026-10-17T17:05:05Z,cin-tts,centralindia.tts.speech.microsoft.com,warm,0
+,,,,6.35,6.35,401,,2026-10-17T17:05:05Z,cin-tts,centralindia.tts.speech.microsoft.com,warm,1
+,,,,17.13,17.13,401,,2026-10-17T17:05:05Z,cin-tts,centralindia.tts.speech.microsoft.com,warm,2
+20.192.170.56,7.38,10.51,31.68,13.2,62.77,401,,2026-10-17T17:05:06Z,cin-acct (Voice Live),vp-r2lat-cin.cognitiveservices.azure.com,cold,0
+20.192.170.56,0.58,9.51,26.96,6.6,43.65,401,,2026-10-17T17:05:06Z,cin-acct (Voice Live),vp-r2lat-cin.cognitiveservices.azure.com,cold,1
+20.192.170.56,0.52,4.19,24.27,632.66,661.64,401,,2026-10-17T17:05:06Z,cin-acct (Voice Live),vp-r2lat-cin.cognitiveservices.azure.com,cold,2
+,,,,2.05,2.05,401,,2026-10-17T17:05:07Z,cin-acct (Voice Live),vp-r2lat-cin.cognitiveservices.azure.com,warm,0
+,,,,1.83,1.83,401,,2026-10-17T17:05:07Z,cin-acct (Voice Live),vp-r2lat-cin.cognitiveservices.azure.com,warm,1
+,,,,1.78,1.78,401,,2026-10-17T17:05:07Z,cin-acct (Voice Live),vp-r2lat-cin.cognitiveservices.azure.com,warm,2
+20.192.158.81,17.51,23.91,66.0,43.32,150.74,401,,2026-10-17T17:05:07Z,sin-aoai,vp-r2lat-sin.openai.azure.com,cold,0
+20.192.158.81,0.66,24.86,68.89,46.46,140.87,401,,2026-10-17T17:05:07Z,sin-aoai,vp-r2lat-sin.openai.azure.com,cold,1
+20.192.158.81,0.62,27.78,73.78,51.72,153.89,401,,2026-10-17T17:05:07Z,sin-aoai,vp-r2lat-sin.openai.azure.com,cold,2
+,,,,23.15,23.15,401,,2026-10-17T17:05:08Z,sin-aoai,vp-r2lat-sin.openai.azure.com,warm,0
+,,,,22.97,22.97,401,,2026-10-17T17:05:08Z,sin-aoai,vp-r2lat-sin.openai.azure.com,warm,1
+,,,,23.14,23.14,401,,2026-10-17T17:05:08Z,sin-aoai,vp-r2lat-sin.openai.azure.com,warm,2
+20.43.132.19,19.49,49.18,69.4,101.73,239.8,401,,2026-10-17T17:05:08Z,sea-stt,southeastasia.stt.speech.microsoft.com,cold,0
+20.43.132.19,0.4,50.27,68.1,100.35,219.13,401,,2026-10-17T17:05:08Z,sea-stt,southeastasia.stt.speech.microsoft.com,cold,1
+20.43.132.19,0.41,49.48,71.52,101.11,222.52,401,,2026-10-17T17:05:08Z,sea-stt,southeastasia.stt.speech.microsoft.com,cold,2
+,,,,51.44,51.44,401,,2026-10-17T17:05:09Z,sea-stt,southeastasia.stt.speech.microsoft.com,warm,0
+,,,,51.37,51.37,401,,2026-10-17T17:05:09Z,sea-stt,southeastasia.stt.speech.microsoft.com,warm,1
+,,,,51.04,51.04,401,,2026-10-17T17:05:09Z,sea-stt,southeastasia.stt.speech.microsoft.com,warm,2
+20.43.132.24,3.37,50.39,69.92,175.05,298.73,401,,2026-10-17T17:05:09Z,sea-tts,southeastasia.tts.speech.microsoft.com,cold,0
+20.43.132.24,0.4,51.13,68.67,175.76,295.96,401,,2026-10-17T17:05:09Z,sea-tts,southeastasia.tts.speech.microsoft.com,cold,1
+20.43.132.24,0.43,51.01,69.16,180.45,301.05,401,,2026-10-17T17:05:10Z,sea-tts,southeastasia.tts.speech.microsoft.com,cold,2
+,,,,89.75,89.75,401,,2026-10-17T17:05:10Z,sea-tts,southeastasia.tts.speech.microsoft.com,warm,0
+,,,,56.48,56.48,401,,2026-10-17T17:05:10Z,sea-tts,southeastasia.tts.speech.microsoft.com,warm,1
+,,,,56.41,56.41,401,,2026-10-17T17:05:10Z,sea-tts,southeastasia.tts.speech.microsoft.com,warm,2
+23.98.109.37,7.95,50.96,118.21,95.4,272.51,401,,2026-10-17T17:05:10Z,sea-aoai,vp-research-ai-sea.openai.azure.com,cold,0
+23.98.109.37,2.39,53.56,120.92,95.39,272.26,401,,2026-10-17T17:05:11Z,sea-aoai,vp-research-ai-sea.openai.azure.com,cold,1
+23.98.109.37,0.6,59.93,128.62,106.35,295.51,401,,2026-10-17T17:05:11Z,sea-aoai,vp-research-ai-sea.openai.azure.com,cold,2
+,,,,53.56,53.56,401,,2026-10-17T17:05:11Z,sea-aoai,vp-research-ai-sea.openai.azure.com,warm,0
+,,,,50.93,50.93,401,,2026-10-17T17:05:11Z,sea-aoai,vp-research-ai-sea.openai.azure.com,warm,1
+,,,,50.3,50.3,401,,2026-10-17T17:05:11Z,sea-aoai,vp-research-ai-sea.openai.azure.com,warm,2
+20.111.5.9,14.91,123.45,266.37,242.68,647.4,401,,2026-10-17T17:05:12Z,frc-aoai,vp-research-ai-frc.openai.azure.com,cold,0
+20.111.5.9,0.62,120.74,263.33,241.06,625.75,401,,2026-10-17T17:05:13Z,frc-aoai,vp-research-ai-frc.openai.azure.com,cold,1
+20.111.5.9,0.68,124.1,266.38,254.3,645.46,401,,2026-10-17T17:05:13Z,frc-aoai,vp-research-ai-frc.openai.azure.com,cold,2
+,,,,123.03,123.03,401,,2026-10-17T17:05:14Z,frc-aoai,vp-research-ai-frc.openai.azure.com,warm,0
+,,,,122.95,122.95,401,,2026-10-17T17:05:14Z,frc-aoai,vp-research-ai-frc.openai.azure.com,warm,1
+,,,,122.94,122.94,401,,2026-10-17T17:05:14Z,frc-aoai,vp-research-ai-frc.openai.azure.com,warm,2

@@ -1,0 +1,35 @@
+{
+ "from": "operator",
+ "date": "2026-10-24",
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.operator-diagnose-uses-trace",
+   "type": "decision",
+   "reverse_if": "turnCauses prove wrong on real calls, or members name times in another form the parser misses",
+   "title": "For 'what went wrong on that call?', the assistant uses calls' contract: call.get's trace (times in ms from call start; trace.turns[].i indexes transcript), and call.explain's turnCauses (kind, turn, atMs, evidence, optional fix) when present. A time the member names ('1:20') is given to the model as ms (80000) to match against turn startMs. 'Fact missing from approved data' is said only when the trace or a turnCause says so. A turnCause's fix is a suggestion, never run; writes stay held until the member asks.",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "verified",
+   "rationale": "operator suites 88/88 and full fresh-DB 832/832, ui-contract 208/208 (scripted model; not measured on a real model)"
+  },
+  {
+   "id": "measurement.2026-10-24.operator-diagnose-real-turncauses",
+   "type": "measurement",
+   "n": 1,
+   "method": "scripted model, real modules, fresh DB (tests/operator-setup.test.ts); full suite 855/855, ui-contract 223/223",
+   "date": "2026-10-24",
+   "title": "On calls' real call.explain (2e1a7cb), a stored trace with a 2,600 ms reply gap reaches the assistant's model as turnCauses with kind reply_gap and the plain text 'Slow reply: 2,600 ms…'. The diagnose intent missed 'Why was there such a long pause at 0:13 on that call?' before this fix; pause/silence/slow-reply/lag wording and 'why … on that call' now match. turnCauses' fix is null for every cause until voice records a door reason such as unapproved_fact.",
+   "status": "measured",
+   "source": "verified"
+  },
+  {
+   "id": "thread.2026-10-24.voice-unapproved-fact-marker",
+   "type": "open-question",
+   "title": "For integrator to route to voice: record a reply-door reason such as 'unapproved_fact' in trace door[] when a line is held because the fact is not in approved data. Calls will then map it to fix {tool:'offering.edit'}; operator needs no change. Until then 'fact missing from approved data' cannot be diagnosed from the trace.",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "closes_when": "the runtime records a reply-door reason for unapproved facts that call.explain can name"
+  }
+ ]
+}

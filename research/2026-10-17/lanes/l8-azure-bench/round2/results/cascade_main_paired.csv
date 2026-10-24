@@ -1,0 +1,16 @@
+a,b,n_pairs,median_b_minus_a_ms,ci95
+A_seg500_fast,C_seg800_spec_fast,58,37,-4-62
+A_seg500_fast,E_seg500_spec_fast,58,-224,-259--150
+A_seg500_fast,B_seg800_fast,57,346,332-368
+A_seg500_fast,D_seg800_spec_quality,58,564,458-606
+A_seg500_fast,F_seg800_spec_nano,58,327,244-413
+C_seg800_spec_fast,E_seg500_spec_fast,58,-250,-299--179
+C_seg800_spec_fast,B_seg800_fast,57,329,313-361
+C_seg800_spec_fast,D_seg800_spec_quality,58,549,445-604
+C_seg800_spec_fast,F_seg800_spec_nano,58,300,252-348
+E_seg500_spec_fast,B_seg800_fast,57,558,501-613
+E_seg500_spec_fast,D_seg800_spec_quality,58,703,648-770
+E_seg500_spec_fast,F_seg800_spec_nano,58,511,460-561
+B_seg800_fast,D_seg800_spec_quality,57,167,48-253
+B_seg800_fast,F_seg800_spec_nano,57,-25,-103-52
+D_seg800_spec_quality,F_seg800_spec_nano,58,-217,-322--179

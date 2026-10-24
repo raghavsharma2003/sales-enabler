@@ -1,0 +1,110 @@
+== lab-gpt41
+[vp] Vertex route refused: no VERTEX_SA_FILE
+{
+ "vpLlmNamesSet": [
+  "VP_LLM_DEFAULT_KEY",
+  "VP_LLM_DEFAULT_KEY_HEADER",
+  "VP_LLM_DEFAULT_MODEL",
+  "VP_LLM_DEFAULT_URL"
+ ],
+ "briefReviewOwnVarsSet": [],
+ "authVarsSet": [],
+ "vertex": {
+  "VERTEX_SA_FILE_set": false,
+  "VERTEX_OFF": "1",
+  "tokenSource": "null (no Vertex route)"
+ },
+ "contract": {
+  "llm_purpose": "brief_review",
+  "threshold": 0.5,
+  "timeout_ms": 20000
+ },
+ "keysConfigured": {
+  "operator": true,
+  "memory": true,
+  "judge": true,
+  "learning": true,
+  "analysis": true,
+  "compile": true,
+  "simulate": true,
+  "safety_judge": true,
+  "brief_review": true
+ },
+ "reviewConfigured": true,
+ "templateDoorFindings": 0,
+ "review": {
+  "mode": "model",
+  "label": "AI-honesty review: rules and model",
+  "reason": null,
+  "modelFindings": 0
+ },
+ "requests": [
+  {
+   "toDefault": true,
+   "host": "(the default URL)",
+   "model": "lab-gpt41",
+   "headerNames": [
+    "api-key",
+    "content-type"
+   ],
+   "json": true
+  }
+ ],
+ "requestModelIsDefaultModel": true,
+ "defaultModel": "lab-gpt41"
+}
+== lab-gpt41mini-in
+[vp] Vertex route refused: no VERTEX_SA_FILE
+{
+ "vpLlmNamesSet": [
+  "VP_LLM_DEFAULT_KEY",
+  "VP_LLM_DEFAULT_KEY_HEADER",
+  "VP_LLM_DEFAULT_MODEL",
+  "VP_LLM_DEFAULT_URL"
+ ],
+ "briefReviewOwnVarsSet": [],
+ "authVarsSet": [],
+ "vertex": {
+  "VERTEX_SA_FILE_set": false,
+  "VERTEX_OFF": "1",
+  "tokenSource": "null (no Vertex route)"
+ },
+ "contract": {
+  "llm_purpose": "brief_review",
+  "threshold": 0.5,
+  "timeout_ms": 20000
+ },
+ "keysConfigured": {
+  "operator": true,
+  "memory": true,
+  "judge": true,
+  "learning": true,
+  "analysis": true,
+  "compile": true,
+  "simulate": true,
+  "safety_judge": true,
+  "brief_review": true
+ },
+ "reviewConfigured": true,
+ "templateDoorFindings": 0,
+ "review": {
+  "mode": "model",
+  "label": "AI-honesty review: rules and model",
+  "reason": null,
+  "modelFindings": 0
+ },
+ "requests": [
+  {
+   "toDefault": true,
+   "host": "(the default URL)",
+   "model": "lab-gpt41mini-in",
+   "headerNames": [
+    "api-key",
+    "content-type"
+   ],
+   "json": true
+  }
+ ],
+ "requestModelIsDefaultModel": true,
+ "defaultModel": "lab-gpt41mini-in"
+}

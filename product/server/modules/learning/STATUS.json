@@ -1,0 +1,122 @@
+{
+  "module": "learning",
+  "date": "2026-10-21",
+  "tools": [
+    {
+      "name": "learning.propose",
+      "risk": "draft"
+    },
+    {
+      "name": "proposal.list",
+      "risk": "read"
+    },
+    {
+      "name": "proposal.get",
+      "risk": "read"
+    },
+    {
+      "name": "proposal.probe",
+      "risk": "test"
+    },
+    {
+      "name": "proposal.accept",
+      "risk": "external",
+      "autonomy": "A2",
+      "roles": [
+        "owner",
+        "builder",
+        "operator"
+      ]
+    },
+    {
+      "name": "experiment.start",
+      "risk": "external",
+      "autonomy": "A2"
+    },
+    {
+      "name": "experiment.assign",
+      "risk": "read"
+    },
+    {
+      "name": "experiment.check",
+      "risk": "draft"
+    },
+    {
+      "name": "experiment.stop",
+      "risk": "draft"
+    },
+    {
+      "name": "experiment.list",
+      "risk": "read"
+    },
+    {
+      "name": "experiment.get",
+      "risk": "read"
+    },
+    {
+      "name": "lesson.list",
+      "risk": "read"
+    },
+    {
+      "name": "learning.power",
+      "risk": "read"
+    }
+  ],
+  "migrations": [
+    "db/migrations/0801_learning.sql",
+    "db/migrations/0802_learning_issue_runs.sql"
+  ],
+  "tests": {
+    "passed": 23,
+    "total": 23,
+    "files": [
+      "tests/learning.stats.test.ts",
+      "tests/learning.test.ts",
+      "tests/learning-issues.test.ts"
+    ],
+    "method": "learning-issues on the real modules (calls' evaluateMonitors opens the issues); each of its three guards (once per issue, engineering triage, daily cap) shown to fail with the guard removed; full suite on a fresh database 388/389 (1 skip: voice runtime Python); tsc clean"
+  },
+  "works": [
+    "Propose: evidence = open issues, moments (by hazard), recent live calls with judge results, and the workspace's lessons; the LLM (purpose 'learning', JSON) returns ops on the latest version's config; every cited id is checked against this workspace's own rows; uncited proposals are gated out",
+    "Gates (block, never warn): editable allowlist, empty locked-section diff on the resolved config, provenance (no new number or unverified domain), manipulation lint (incl. Hinglish urgency), never-say, shared lintAgentConfig and replyDoor",
+    "Tenant library: a change this workspace already rejected, lost or stopped (same change hash) is not re-proposed",
+    "Probe: test.simulate_batch on current and proposed configs with the same sim callers and seeds; fewer passes or any guarded metric worse (safety_violations, disclosure_missed, hung_up, cut_ins, reply_gap_ms) rejects and records a lesson; unreported metrics are listed, not assumed fine",
+    "Accept (A2): treatment version made by the agents module's version.candidate (learning never writes agent_version); if that tool is missing the experiment is still pre-registered and experiment.start retries, then refuses with a plain reason. Baseline from the workspace's own live calls on the control version (or given), Fleiss power at alpha 0.05 / power 0.8, calls-to-prove stored before launch, pre-registration hash, binding (campaign|inbound|web, default campaign)",
+    "Start (A2): shadow A/A (1,000 re-randomisations of the tenant's own contacts) plus outcome-plumbing check; too little history waits (aa_pending), broken plumbing fails (aa_failed + issue)",
+    "Assign: sticky arm per contact (hash of experiment and contact); stopped/decided experiments send no traffic",
+    "Check: test calls excluded; any treatment safety violation, 3+ complaints/opt-outs at 2x control, or the always-valid mSPRT harm test stops the arm at once, calls deployment.revert_to_last_good {agentId, binding} (A3), opens a critical issue and records a lesson",
+    "No peeking: effect is neither computed nor shown before the horizon and the minimum days; at the horizon one two-sided two-proportion z test; a win is proposed as deployment.split at 100% treatment on the experiment's binding, only if that tool is approval-gated, so it becomes an A2 card",
+    "No pooling: every query filters by workspace; rows in another workspace that point at this workspace's versions are ignored (tested)",
+    "Calls contract: success values are the business's outcome_definition.goal_values (via the campaign that runs the agent, else the goal's outcome key, or outcomeDefinitionId); hazard codes default to catalogue END_OPTED_OUT / CONV_COMPLAINT / END_CRISIS; baseline, power, horizon, verdict and the shadow A/A count only contacts with a recorded outcome (NULL = untrusted AI guess), and the card says so; guardrails count every live contact. Cross-module test writes conversations the way calls does",
+    "Issue trigger: a calls monitor issue (content signal) drafts one proposal citing the issue for the agent its evidence calls ran; engineering issues are skipped and recorded; the daily cap leaves the issue for a later day; nothing launches without probe, accept (A2) and start (A2)"
+  ],
+  "untested": [
+    "Against real sibling modules (all four sibling tools are fakes in tests)",
+    "With a real LLM: proposal quality, cost per cycle, and the INR 200/day test budget are not metered here",
+    "Moment-level fast lane on live calls (moment rows are read as evidence; this module does not compute hazards)",
+    "Clustered standard errors: the unit is the contact, but repeat calls within a contact are collapsed rather than modelled",
+    "Winner expiry/drift (60 days) and re-confirm cards; staged safety ramp (first 50 calls at 20%); Bonferroni for more than two arms",
+    "Retry/pacing policy changes: they live in campaigns, outside the agent config this module edits",
+    "Guardrails other than safety violations and complaint/opt-out reason codes (cut-ins, reply gap, disclosure rate, CLI flags)"
+  ],
+  "needs_from_others": [
+    "agents: test.simulate_batch {agentId, config, simCallerIds, seeds} -> {runs:[{simCallerId, seed, passed, metrics:{hung_up, safety_violations, disclosure_missed, cut_ins, reply_gap_ms}}]} (risk test) — not registered yet at e411b38",
+    "agents: version.candidate {agentId, config, parentVersionId, note} -> {versionId, number, versionHash, brief} — not registered yet; until then experiments cannot start",
+    "agents or calls: deployment.revert_to_last_good {agentId, binding} (A3 verb) — not registered yet; until then a hazard stop still cuts treatment traffic via experiment.assign and opens a critical issue",
+    "agents: deployment.split stays A2 (registered, external)",
+    "calls/campaigns: call experiment.assign {agentId, contactId} at dial time, stamp conversation.agent_version_id with the version that ran, and call experiment.check after each connected call",
+    "calls: keep conversation.outcome NULL unless verified, a person's label or a trusted judge's guess (refreshOutcome), and reason_code from the catalogue enum"
+  ],
+  "jobs": [
+    {
+      "name": "learning.check",
+      "everyMs": 60000,
+      "does": "checkRunning(deps, {workspaceId?}): experiment.check on every running experiment, each in its own workspace; tests pass workspaceId"
+    },
+    {
+      "name": "learning.propose_from_issues",
+      "everyMs": 60000,
+      "does": "proposeFromIssues(deps, {workspaceId?}): for each open monitor issue from the last 7 days, once per issue (learning_issue_run key), content signals only (early_hangup_rate, opt_out_rate, safety_event_rate), at most 3 runs per workspace per IST day: learning.propose {agentId from the issue's evidence calls, issueId, max 1}; drafts only"
+    }
+  ]
+}

@@ -1,0 +1,351 @@
+{
+ "file": "research/2026-10-20/teardown/synthesis/messy-50.template.csv",
+ "rows": [
+  {
+   "row": "R01",
+   "group": "A",
+   "trap": "control row, clean E.164, Devanagari name",
+   "expected_vp": "dial once"
+  },
+  {
+   "row": "R02",
+   "group": "A",
+   "trap": "exact duplicate of R01",
+   "expected_vp": "merge with R01; flag duplicate; no extra dial"
+  },
+  {
+   "row": "R03",
+   "group": "A",
+   "trap": "10-digit without +91; Latin-script name of the same person",
+   "expected_vp": "normalise to +91; flag cross-format, cross-script duplicate of R01"
+  },
+  {
+   "row": "R04",
+   "group": "A",
+   "trap": "0-prefixed 11-digit; ALL CAPS name with trailing space",
+   "expected_vp": "normalise; flag duplicate"
+  },
+  {
+   "row": "R05",
+   "group": "A",
+   "trap": "91-prefixed 12-digit without '+'; honorific; rupee sign in amount",
+   "expected_vp": "normalise; flag duplicate; parse amount"
+  },
+  {
+   "row": "R06",
+   "group": "A",
+   "trap": "spaced +91 format; premium missing (prompt variable empty)",
+   "expected_vp": "normalise; flag duplicate; never speak a blank or a template token"
+  },
+  {
+   "row": "R07",
+   "group": "A",
+   "trap": "different customer on the same (family) phone",
+   "expected_vp": "judgement row: keep as a separate customer on a shared number, call at most once per attempt window; record behaviour, not pass/fail"
+  },
+  {
+   "row": "R08",
+   "group": "A",
+   "trap": "Excel leading apostrophe; emoji in name; '24.5k' amount",
+   "expected_vp": "normalise; strip emoji for speech; parse amount or flag"
+  },
+  {
+   "row": "R09",
+   "group": "B",
+   "trap": "explicit opt-out",
+   "expected_vp": "suppress N2 everywhere; never dial"
+  },
+  {
+   "row": "R10",
+   "group": "B",
+   "trap": "same opted-out person, other row lacks the flag",
+   "expected_vp": "suppressed by number, not by row; never dial"
+  },
+  {
+   "row": "R11",
+   "group": "B",
+   "trap": "conflicting flag ('no') on an opted-out number, Devanagari name",
+   "expected_vp": "opt-out wins; never dial; flag the conflict"
+  },
+  {
+   "row": "R12",
+   "group": "B",
+   "trap": "two numbers in one cell (N1 / N2)",
+   "expected_vp": "do not guess; flag the row; never dial N2"
+  },
+  {
+   "row": "R13",
+   "group": "C",
+   "trap": "clean E.164; Tamil-script name; ta-en",
+   "expected_vp": "dial once; Tamil-English replies"
+  },
+  {
+   "row": "R14",
+   "group": "C",
+   "trap": "10-digit; 'Tamil' as free text; impossible date 31/02/2026",
+   "expected_vp": "normalise; flag duplicate; flag the impossible date (never speak it)"
+  },
+  {
+   "row": "R15",
+   "group": "C",
+   "trap": "extension suffix ' x22'",
+   "expected_vp": "strip or flag the extension; flag duplicate"
+  },
+  {
+   "row": "R16",
+   "group": "C",
+   "trap": "comma inside a quoted name; no consent evidence; category promotional",
+   "expected_vp": "flag duplicate; hold the promotional row (no consent evidence, promo needs 140-series and 10:00-21:00)"
+  },
+  {
+   "row": "R17",
+   "group": "D",
+   "trap": "BLOCK-PROMO number, service call",
+   "expected_vp": "dial (service calls are not DND-blocked, RS-10)"
+  },
+  {
+   "row": "R18",
+   "group": "D",
+   "trap": "BLOCK-PROMO number, promotional call",
+   "expected_vp": "hold or refuse (promo to a DND number needs registered consent, RS-13)"
+  },
+  {
+   "row": "R19",
+   "group": "E",
+   "trap": "5 digits",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R20",
+   "group": "E",
+   "trap": "empty phone",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R21",
+   "group": "E",
+   "trap": "'N/A'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R22",
+   "group": "E",
+   "trap": "letters",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R23",
+   "group": "E",
+   "trap": "NSN starting with 0",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R24",
+   "group": "E",
+   "trap": "twelve zeros",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R25",
+   "group": "E",
+   "trap": "9 digits",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R26",
+   "group": "E",
+   "trap": "NSN of 11 digits",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R27",
+   "group": "E",
+   "trap": "Mumbai code with a truncated subscriber number",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R28",
+   "group": "E",
+   "trap": "reserved fictional US number (NANP 555-01XX)",
+   "expected_vp": "flag as non-Indian number; do not dial in an Indian campaign"
+  },
+  {
+   "row": "R29",
+   "group": "E",
+   "trap": "reserved fictional UK number (Ofcom drama range)",
+   "expected_vp": "flag as non-Indian number; do not dial in an Indian campaign"
+  },
+  {
+   "row": "R30",
+   "group": "E",
+   "trap": "Excel scientific notation of an invalid number",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R31",
+   "group": "E",
+   "trap": "'+91' only",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R32",
+   "group": "E",
+   "trap": "text in the phone field",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R33",
+   "group": "F",
+   "trap": "completely empty row",
+   "expected_vp": "skip with a reason; never dial; never crash the import"
+  },
+  {
+   "row": "R34",
+   "group": "F",
+   "trap": "one extra unquoted field",
+   "expected_vp": "skip with a reason; never dial; never crash the import"
+  },
+  {
+   "row": "R35",
+   "group": "F",
+   "trap": "truncated row (fewer fields)",
+   "expected_vp": "skip with a reason; never dial; never crash the import"
+  },
+  {
+   "row": "R36",
+   "group": "F",
+   "trap": "whitespace-only row",
+   "expected_vp": "skip with a reason; never dial; never crash the import"
+  },
+  {
+   "row": "R37",
+   "group": "F",
+   "trap": "header line repeated mid-file",
+   "expected_vp": "skip with a reason; never dial; never crash the import"
+  },
+  {
+   "row": "R38",
+   "group": "F",
+   "trap": "only Notes filled",
+   "expected_vp": "skip with a reason; never dial; never crash the import"
+  },
+  {
+   "row": "R39",
+   "group": "H",
+   "trap": "unroutable CRM junk '+91 80 1234'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R40",
+   "group": "H",
+   "trap": "unroutable CRM junk '0091 12345'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R41",
+   "group": "H",
+   "trap": "unroutable CRM junk '+910'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R42",
+   "group": "H",
+   "trap": "unroutable CRM junk '91-'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R43",
+   "group": "H",
+   "trap": "unroutable CRM junk '++91 12345'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R44",
+   "group": "H",
+   "trap": "unroutable CRM junk '+91 98'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R45",
+   "group": "H",
+   "trap": "unroutable CRM junk '1800'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R46",
+   "group": "H",
+   "trap": "unroutable CRM junk '#N/A'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R47",
+   "group": "H",
+   "trap": "unroutable CRM junk 'NULL'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R48",
+   "group": "H",
+   "trap": "unroutable CRM junk '-'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R49",
+   "group": "H",
+   "trap": "unroutable CRM junk 'TBD'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  },
+  {
+   "row": "R50",
+   "group": "H",
+   "trap": "unroutable CRM junk '0'",
+   "expected_vp": "reject with a per-row reason; never dial"
+  }
+ ],
+ "file_level_traps": [
+  "UTF-8 BOM",
+  "CRLF line endings",
+  "header 'Phone Number' (spaces, capitals)",
+  "trailing unnamed empty column",
+  "'Email' column empty in every row",
+  "trailing blank line",
+  "mixed date formats",
+  "mixed amount formats"
+ ],
+ "numbers": {
+  "N1": "dialable customer A (our Plivo number; the battery harness answers)",
+  "N2": "opt-out number we own; ANY ring on N2 is a failure; log inbound on it",
+  "N3": "dialable customer B (our second number, or the owner handset via env only)",
+  "N4": "optional SIM we own registered BLOCK PROMO via 1909; without it R17-R18 render as invalid"
+ },
+ "perfect_vp_outcome": {
+  "unique_dials": "N1 x1 (plus R07 judgement), N3 x1, N4 x1 (service only)",
+  "N2_rings": 0,
+  "rejected_with_reason": "R19-R27, R30-R50 except structural rows skipped with a reason",
+  "held_for_category": [
+   "R16",
+   "R18"
+  ],
+  "flagged_duplicates": [
+   "R02",
+   "R03",
+   "R04",
+   "R05",
+   "R06",
+   "R08",
+   "R10",
+   "R11",
+   "R14",
+   "R15"
+  ]
+ },
+ "record_per_platform": [
+  "accepted / rejected / normalised value per row (screenshot or export)",
+  "reason text per rejected row",
+  "duplicate handling",
+  "number of rings on N1, N2, N3, N4 from our own inbound logs",
+  "how empty or odd variables were spoken (R06, R08, R14)",
+  "minutes and clicks to a clean upload, including any header renaming",
+  "whether the whole file was refused for one bad row"
+ ]
+}

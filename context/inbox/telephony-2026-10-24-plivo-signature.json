@@ -1,0 +1,22 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.plivo-signature-v3",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Every Plivo-facing control-plane route checks X-Plivo-Signature-V3 (or Ma-V3 with the main token) over the PUBLIC URL Plivo was given (VP_PUBLIC_URL + path + query), with each nonce accepted once (plivo_nonce, pruned after a day); no token or no public URL answers 503, never open",
+   "rationale": "Staging sits behind Caddy basic auth that Plivo cannot pass; the bypassed carrier paths need their own proof. The algorithm is Plivo's SDK's (plivo-python signature_v3.py read 2026-10-24); the docs page's examples are inconsistent, so the SDK is the reference and its transcription generates the test vectors both services test against.",
+   "reverse_if": "the first live callback fails the check (then log the base string Plivo's request implies, compare with the SDK, and fix the reconstruction; never disable the check), or Plivo publishes a V4"
+  },
+  {
+   "id": "measure.2026-10-24.plivo-signature-tests",
+   "type": "measurement", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "tests/plivo-signature.test.ts 3/3 (6 SDK vectors reproduced byte for byte; changed parameter, host, nonce or token refused; rotation list and Ma-V3 accepted; on the speak route: public URL behind a proxy accepted once, replay, unsigned, forged, upstream-URL-signed, tampered refused, no token 503) and numbers-kyc speak test signed",
+   "n": 3, "method": "node:test against Postgres 16; vectors from scripts/plivo-v3-vectors.py (transcription of the SDK, no install)", "path": "product/tests/plivo-signature.test.ts"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-24.plivo-signature-v3", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements" },
+  { "from": "measure.2026-10-24.plivo-signature-tests", "to": "decision.2026-10-24.plivo-signature-v3", "relation": "supports" }
+ ],
+ "events": []
+}

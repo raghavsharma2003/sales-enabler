@@ -1,0 +1,234 @@
+{
+ "adopt": [
+  {
+   "pattern": "Price, latency and a quality score on every picker row, plus one-click presets and a stage-coloured headline bar (VP version: INR, measured on Indian lines, includes telephony and the turn wait)",
+   "evidence": "wt-vapi-14/20, files 51-voice-model-dropdown.png, 33-riley-assistant.png (O); walkthrough s13 lists it as best-in-class across 6 dashboards",
+   "why": "Lets a self-serve buyer choose a stack (decision.2026-10-20.product-stack-selectable) without reading docs; Vapi's own headline understates (1,530 ms vs our 2.32 s demo p50), so adopt the pattern and fix the honesty."
+  },
+  {
+   "pattern": "Immutable agent versions with hash and parent, pinned by label, plus a traffic split between versions",
+   "evidence": "AP-19/21 (O, our API read-back); decision.2026-10-20.acct-vapi-parity-floor-items",
+   "why": "Parity floor confirmed at 4 of 5 incumbent APIs; needed for safe change and for v2 guarded ramping."
+  },
+  {
+   "pattern": "Typed per-component cost lines on every call (transport, transcriber, model, voice, platform, analysis) plus an analytics query endpoint",
+   "evidence": "AP-35/37 (O)",
+   "why": "Enables cost per call and per campaign; extend with contact and campaign group-bys that Vapi lacks."
+  },
+  {
+   "pattern": "Per-turn latency (model, voice, transcriber, endpointing, turn) stored in the call record, and latency assertions inside simulations",
+   "evidence": "AP-34, AP-17 (O)",
+   "why": "Makes the reply gap a first-class, testable quantity; VP adds handset-side clocks because Vapi's are server-side."
+  },
+  {
+   "pattern": "Webhook envelope with call-changing request/response events (assistant-request, tool-calls, transfer destination, campaign.predial veto)",
+   "evidence": "AP-28/30 (O); the predial veto is the only pre-dial hook in 5 APIs (account SYNTHESIS)",
+   "why": "Lets customers inject CRM context and suppression; VP ships it slimmer, signed and with retries by default."
+  },
+  {
+   "pattern": "QA chain: structured outputs feed scorecards; simulation personalities x scenarios with evaluations and latency expectations; GitOps path fields",
+   "evidence": "AP-16/17/61 (O); 51 of 143 public operations are QA (XS-37)",
+   "why": "A programmable QA layer is table stakes for enterprise buyers and the substrate for self-learning."
+  },
+  {
+   "pattern": "Monitoring with severity, MTTR, calls impacted and categories including Compliance; free default monitors offered up front",
+   "evidence": "wt-vapi-37, 71-mon-issues.png, 72-mon-monitors.png (O)",
+   "why": "Good model for an issue inbox; fix the empty-state lie ('Great news' with zero monitors)."
+  },
+  {
+   "pattern": "Grouped tool catalogue (phone-call tools, assistant tools, integrations) and describe-or-pick agent creation with a Composer-style chat entry in every header",
+   "evidence": "wt-vapi-30, 56-create-tool-types.png, 02-agent-builder-landing.png, 03-assistants.png (O)",
+   "why": "Fast path to a first agent in 3 steps; chat setup is parity in 5 of 6 dashboards, so VP wins on result, not on having it."
+  },
+  {
+   "pattern": "Empty states that explain the concept and offer one action; gated features shown in place with their tier",
+   "evidence": "04-squads.png, 40-evals.png, 34-builder-Advanced.png (O)",
+   "why": "Teaches the product while empty; avoid the action-less crown card."
+  },
+  {
+   "pattern": "Provider catalogue breadth (14 STT, 17 LLM, 20 voice variants) with BYOK, fallback voices and transcribers, config-as-code and generated TS/Python SDKs plus MCP",
+   "evidence": "AP-08/10/40 (O)",
+   "why": "Developer-surface floor; VP curates defaults on top and exposes every dashboard action on API and MCP."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "No contact object: customer is inline on every call and campaign row; no consent, DND/NCPR, suppression or attempt history; the only pre-dial hook needs the buyer's own scrub list.",
+   "how_vp_beats": "First-class Contact with India-default E.164, consent source, DND status and attempt history; predial veto ON by default against VP's own scrub list. Test: messy 50-row synthetic CSV (empty number, 10-digit numbers, duplicates, an opt-out row, Devanagari names) scored for correct rows in under 5 min and zero dials to the opt-out row, against Vapi's server-side outcome (must check the server, not the dashboard code).",
+   "evidence": "VAP-02/47/49, AP-12/58 (O); wt-vapi-43 (O); 0 of 6 dashboards put consent/DND/DLT on the campaign form (walkthrough s0 finding 1)"
+  },
+  {
+   "gap": "Campaign windows are one absolute range per campaign with no recurring daily window, no per-contact timezone, no retry; unanswered contacts are dropped at latestAt; outage calls were not retried.",
+   "how_vp_beats": "Recurring daily windows in 09:00-21:00 IST style, per-contact local time, retry policy with attempt budgets and backoff, resume after outage. Test: 3-day 10:00-21:00 IST schedule in one campaign, count of contacts retried per policy, and a forced-failure drill that resumes without human action.",
+   "evidence": "VAP-46/47/54 (O); VAP-P05 pre-registered (0.85)"
+  },
+  {
+   "gap": "Native telephony cannot present an Indian or declared CLI (no 140xx/1600xx, no DLT or A2P path); buyer needs a second vendor account and a +1 caller ID; no India region.",
+   "how_vp_beats": "Indian-line path with series CLI, A2P declaration and KYC walkthrough shown before the campaign wizard. Test: minutes from sign-up to the first ring on an Indian handset from an Indian CLI, against Vapi's at least 45 min with a +1 CLI (VAP-P02).",
+   "evidence": "VAP-42/43/44/48 (O/I); wt-vapi-41, 06c-free-vapi-number.png (O); W7 untested on both sides"
+  },
+  {
+   "gap": "Reply gap on Indian phone lines: US-West orchestration plus an international Twilio leg; demo p50 2.32 s from US-East; defaults hide the 1.5 s wait; collisions 35%.",
+   "how_vp_beats": "India-hosted media and orchestration with a published, handset-side measured reply gap. Test: stereo-recorded battery, at least 30 clean turns per vendor, pass if VP p50 is at least 0.3 s below Vapi, p90 2.5 s or less, collisions under Vapi's 35% (hypothesis W3, unproven until run; VP's own lab still shows 15-42% cut-ins).",
+   "evidence": "M: l4b report (n=40, p50 2.32 s, 25/72 collisions); VAP-20, wt-vapi-12/19; open.2026-10-19.turn-taking"
+  },
+  {
+   "gap": "Hinglish is configuration with English-first defaults: 22 English acknowledgement and 20 English interruption phrases, English-only smart endpointing, no phrase lists in the dashboard, no Indian speech vendor, Indic picker narrower than the API, 2 'Indian American' voices; demo replied in Gujarati on 17/18 Hinglish turns.",
+   "how_vp_beats": "Hinglish as the default mode with editable Hindi backchannel and interruption lists (haan, achha, theek hai, nahi, ruko), a language lock, never-discard-short-reply policy, all Indian languages in the picker and voices filtered by language and region. Test: per-turn language ID on the Hinglish and elderly-Hindi battery, pass at 95% or more correct language and short replies ('haan') never dropped.",
+   "evidence": "M: l4b CMP-03 (17/18 Gujarati); AP-43/45/47 (O/I); wt-vapi-21/22/24/25 (O); W4/W5"
+  },
+  {
+   "gap": "Outcomes are 638 engineering codes keyed to providers; the dashboard shows a truncated code; no business outcome; /analytics cannot group by campaign or contact.",
+   "how_vp_beats": "Business-language outcome and suggested action beside the raw carrier code; cost per contact and per campaign. Test: find a failed call and read its reason and next action in under 60 s (Vapi: found within 5 min but code only, VAP-P07).",
+   "evidence": "VAP-13, AP-24/37 (O); wt-vapi-38/39 and 71-mon-issues.png (O); W6"
+  },
+  {
+   "gap": "State integrity: a menu click creates and publishes a tool, a dropdown autosaves a draft, the Draft label lies after Discard, API PATCH publishes while the dashboard drafts, Next disabled with no reason.",
+   "how_vp_beats": "One publish path (draft, test, publish, ramp) where nothing is created or saved by a menu click, an always-correct unsaved marker, a materialised resolved-config view of what will actually run, and a reason plus fix link beside every disabled primary action. Test: click-through audit of every create menu and dropdown for server writes; zero unexpected writes.",
+   "evidence": "wt-vapi-31/55/44 (O); AP-18/19/20 (O); decision.2026-10-21.wt-synthesis-must-be-changes item D"
+  },
+  {
+   "gap": "Headline numbers are component sums that leave out telephony and the turn wait (1,530 ms; USD 0.09), USD-only billing, no per-number price, no GST field.",
+   "how_vp_beats": "One all-in INR per minute headline including telephony, pulse and the turn wait, with measured India p50/p90 beside any vendor figure. Test: T7 billing audit, 10 calls at 30, 45 and 90 s; invoice within 2% of the headline.",
+   "evidence": "wt-vapi-12/13/19/45 (I/O); account SYNTHESIS price table (Vapi INR 12.5-17.0 via Twilio vs VP target about INR 2)"
+  },
+  {
+   "gap": "Chat-driven setup (Composer) has no REST surface and the MCP server covers only 4 resource families; org, billing and spend cap need a dashboard session; webhooks carry the whole assistant and call on every event with no retry by default.",
+   "how_vp_beats": "Every dashboard and chat action is an API and MCP operation with the same auth, including spend cap and concurrency; slim signed webhooks with replay. Test: an agent can set up, launch and read back a campaign end to end through API only.",
+   "evidence": "AP-10/29/31/38/60 (O); decision.2026-10-20.acct-retell-api-parity-for-chat-setup"
+  },
+  {
+   "gap": "No cross-call memory for voice and a manual learning loop (monitors, issues, evals, simulations, manual splits); Composer-under-Bypass and Mission Control are human-started or flag-gated.",
+   "how_vp_beats": "v2: per-customer memory store, personalisation and guarded automatic ramping against guardrail metrics (cut-in rate, reply gap, opt-out), learning from outcomes with safety by predicate. Test (v2, not yet built): second-call continuity score on a synthetic customer set, and a ramp that auto-halts on a guardrail breach. Do not claim Vapi cannot auto-improve.",
+   "evidence": "AP-22/51, VAP-60/61 (O/I); l6 bandit work; ledger.LRN-09"
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "Hosting fee per minute",
+   "value": "USD 0.05 (INR 4.75 at FX 95), flat 2024-06 to 2026-10",
+   "grade": "observed",
+   "evidence": "VAP-33; research/2026-10-20/teardown/vapi/pricing.json; l4a pricing-history.json"
+  },
+  {
+   "metric": "All-in list price, Indian outbound minute via Twilio",
+   "value": "INR 12.48-16.96 (USD 0.1314-0.1785); INR 9.46 before any AI; hosting share 28-38%",
+   "grade": "inferred",
+   "evidence": "VAP-35; pricing.json; ECO-17"
+  },
+  {
+   "metric": "Hosting gross margin",
+   "value": "est. 90-98%, not established",
+   "grade": "unknown",
+   "evidence": "VAP-36 downgraded to unknown by verifier"
+  },
+  {
+   "metric": "Clean-turn reply gap, homepage demo agent",
+   "value": "p50 2.32 s (90% CI 2.12-2.50), p90 3.82 s, p95 4.24 s; n=40 turns; US-East vantage",
+   "grade": "measured",
+   "evidence": "research/2026-10-17/lanes/l4b-measured/report.md; measure.2026-10-17.demo-agent-clean-turn-p50-ultravox-vapi-elevenlabs; demo agent, not our spec"
+  },
+  {
+   "metric": "Collisions (agent over caller)",
+   "value": "25 of 72 caller turns (35%)",
+   "grade": "measured",
+   "evidence": "l4b report; measurements.csv"
+  },
+  {
+   "metric": "Barge-in handled",
+   "value": "2 of 8",
+   "grade": "measured",
+   "evidence": "l4b report"
+  },
+  {
+   "metric": "Wrong-language replies to Hinglish caller",
+   "value": "Gujarati on 17 of 18 turns (auto-detect on)",
+   "grade": "measured",
+   "evidence": "measure.2026-10-17.vapi-wrong-language-replies-to-hinglish-caller; ledger.CMP-03"
+  },
+  {
+   "metric": "Dashboard headline latency and cost",
+   "value": "about 1,530 ms (410+690+430) and USD 0.09 (0.05+0.004+0.02+0.02), excluding 1.5 s wait and telephony",
+   "grade": "inferred",
+   "evidence": "wt-vapi-12/13; 33-riley-assistant.png"
+  },
+  {
+   "metric": "Default End-of-Turn Wait",
+   "value": "1.5 s (range 0-3 s); Intelligent Turn-Taking Off; API startSpeaking waitSeconds 0.4",
+   "grade": "observed",
+   "evidence": "wt-vapi-27; 50-edit-Transcriber.png; AP-46"
+  },
+  {
+   "metric": "endedReason values",
+   "value": "638 (300 in-progress errors, 270 pipeline errors, 20 start errors, 39 plain)",
+   "grade": "observed",
+   "evidence": "VAP-13; AP-24; reproduced exactly in both passes"
+  },
+  {
+   "metric": "API surface",
+   "value": "74 public paths, 1,018 schemas; web SDK 137 paths (246 ops); dashboard about 142 path strings; server SDK 143 methods over 23 groups",
+   "grade": "observed",
+   "evidence": "VAP-11/12, AP-06/08"
+  },
+  {
+   "metric": "Webhook message types",
+   "value": "29 server-message types, 8 response schemas, default no retry",
+   "grade": "observed",
+   "evidence": "VAP-14; AP-28/31"
+  },
+  {
+   "metric": "Campaign limits",
+   "value": "10,000 contacts, 5 MB CSV, window at most 7 days ahead in 15-min steps, one timezone, no retry policy, maxConcurrency up to 500 within plan",
+   "grade": "observed",
+   "evidence": "VAP-03/46; wt-vapi-42"
+  },
+  {
+   "metric": "Concurrency on our Usage-only org",
+   "value": "4 lines; 1 or 2 concurrent simulations (unreconciled); 14-day history",
+   "grade": "observed",
+   "evidence": "AP-25/57; wt-vapi-45"
+  },
+  {
+   "metric": "Reliability",
+   "value": "33 incidents + 18 maintenances in 6 months; 4 h 07 min US outage 2026-05-21; about 2 h 2026-08-19; claim 99.99%",
+   "grade": "observed",
+   "evidence": "VAP-41/54; status.vapi.ai feed"
+  },
+  {
+   "metric": "Changelog velocity",
+   "value": "25 weekly entries, 82 items, 2026-04-13 to 2026-10-12; nothing India-specific",
+   "grade": "observed",
+   "evidence": "VAP-38/40"
+  },
+  {
+   "metric": "Customer rating",
+   "value": "Trustpilot 2.5/5 on 16 reviews; 15 coded complaint rows (BILLING 6, LATENCY 4, RELIABILITY 4)",
+   "grade": "observed",
+   "evidence": "VAP-51; l4a complaints.csv"
+  },
+  {
+   "metric": "Funding",
+   "value": "Series B USD 50M (Peak XV), about USD 500M valuation, 1B calls (May 2026)",
+   "grade": "vendor-claimed",
+   "evidence": "l4a report row 20 (TechCrunch 2026-05-12, secondary press, medium confidence)"
+  },
+  {
+   "metric": "Steps to a testable agent",
+   "value": "3 steps, 1 required field after login; time unmeasured",
+   "grade": "observed",
+   "evidence": "wt-vapi-05/07/08; VAP-P01 unscored"
+  },
+  {
+   "metric": "Provider catalogue",
+   "value": "14 STT, 17 LLM, 20 voice variants in spec; picker about 92 LLM rows, 45 voice, 40 transcriber, 57 languages; 26 tool types in API, 15 in the menu",
+   "grade": "observed",
+   "evidence": "AP-40/41/50; wt-vapi-15, wt-vapi-30"
+  },
+  {
+   "metric": "Indian-language coverage",
+   "value": "5 Indian languages plus Nepali in the Soniox picker vs 12 Indic codes in the API; 12 stock voices, 2 Indian American in the grid (22 and 3 in the API read)",
+   "grade": "observed",
+   "evidence": "wt-vapi-21/24; AP-43/45; unreconciled"
+  }
+ ]
+}

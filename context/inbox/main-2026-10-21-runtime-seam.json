@@ -1,0 +1,30 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-21.control-body-without-call-id",
+   "type": "rejection",
+   "title": "Kernel control calls to the voice runtime with an empty body",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop (found by the calls and voice builders)",
+   "tried": "server/runtime-client.ts control(id, 'end') posted {} to /v1/calls/<id>/end, with the call id only in the path.",
+   "broke": "The runtime requires {conversationId, endReason?} in the body. Its HMAC signature covers only the body, so the id in the body is the replay guard. Every kernel-initiated end would have got a 400, and no test covered it: the control plane only ever ran against FakeRuntime, which accepts anything.",
+   "instead": "control() always sends conversationId in the body and a caller cannot override it (391f49c). tests/runtime-client.test.ts runs HttpRuntime against a local stand-in of the runtime's HTTP surface, so a seam mismatch fails there and not on a call."
+  },
+  {
+   "id": "rejected.2026-10-21.busy-runtime-as-failed-attempt",
+   "type": "rejection",
+   "title": "Treating a busy voice runtime as a failed call attempt",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "main loop (found by the calls builder)",
+   "tried": "Campaign dispatch() ran failBeforeRing for every non-accepted start reply, including the runtime's new 503 at_capacity.",
+   "broke": "A busy runtime would have marked good numbers failed with provider_error and spent a retry_per_ladder step for each, using up people's retry ladders under load.",
+   "instead": "StartReply carries retryable/retryAfterS (391f49c). Dispatch requeues the same attempt after retryAfterS plus jitter, with no failure and no ladder step, and stops claiming for that tick (campaigns, in progress)."
+  }
+ ],
+ "edges": [
+  { "from": "rejected.2026-10-21.busy-runtime-as-failed-attempt", "to": "measure.2026-10-21.voice-audio-capacity-sandbox", "relation": "informed-by" }
+ ],
+ "events": []
+}

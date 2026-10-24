@@ -1,0 +1,165 @@
+{
+  "id": "design-language",
+  "module": "design-language",
+  "status": "proposed, for owner review",
+  "date": "2026-10-21",
+  "directive": "directive.2026-10-21.blueprint-end-to-end",
+  "grades": "C = computed by this module (contrast ratios via the WCAG 2.x relative-luminance formula, script in the session scratchpad); P = proposed product choice; O = observed in competitor captures; U = unknown until built or tested",
+  "north_star": {
+    "name": "Naya bahi-khata (the modern ledger)",
+    "line_for_designers": "A trusted desk in a well-run Indian office: warm paper, dark-green ink, a terracotta seal on what needs you, every call and every rupee written down honestly, and a colleague who has already done the work.",
+    "never": ["generic SaaS indigo", "auditor-style warning walls", "dark-pattern urgency", "stock illustration or mascots", "companion or romance cues", "cliche Indian ornament (paisley borders, sitar stings)"]
+  },
+  "operator_name": {
+    "proposed": "Saarthi",
+    "devanagari": "सारथी",
+    "meaning": "charioteer: drives so you can decide",
+    "display": "Saarthi · VP's operator",
+    "alternates": ["VP (no second name)", "Munim"],
+    "status": "P; not trademark-cleared (evidence.brand-check is a preliminary screen only)",
+    "reverse_if": "5-user sessions show users think Saarthi is a person or a separate product, or a brand screen finds a conflict"
+  },
+  "colour": {
+    "rule": "token-only; raw hex lives only in tokens.css; a lint bans colour literals elsewhere; one accent (terracotta) per screen region marks 'needs you'; status never by colour alone (icon + word)",
+    "light": {
+      "paper": "#FBF8F2", "surface": "#FFFDF8", "sunk": "#F2EDE3", "line": "#E2DBCD", "line_strong": "#857E70",
+      "ink": "#1D2A24", "ink_2": "#4F5A53", "ink_3": "#5A635C",
+      "forest": "#1F3B30", "forest_2": "#2E5143", "on_forest": "#D9DED6",
+      "terracotta": "#A9472A", "terracotta_ink": "#8E3A21", "terracotta_tint": "#F6E3D9",
+      "peacock": "#1C5F70", "peacock_tint": "#DCEBEF",
+      "leaf": "#2D6A45", "leaf_tint": "#E2EEE3",
+      "marigold_ink": "#7A5200", "marigold_fill": "#C98A1B", "marigold_tint": "#F7EBCF",
+      "brick": "#A12F27", "brick_tint": "#F8E1DD"
+    },
+    "dark": {
+      "paper": "#121915", "surface": "#19221D", "sunk": "#0E1411", "line": "#2B3630", "line_strong": "#6B766F",
+      "ink": "#EEE8DC", "ink_2": "#B4BAB1", "ink_3": "#8F978F",
+      "forest": "#22463A", "terracotta": "#E28B66", "peacock": "#6CB8CB", "leaf": "#79C595", "marigold": "#E6B652", "brick": "#F08A7E",
+      "button_text_on_terracotta": "#121915"
+    },
+    "semantic": {
+      "caller_lane": "peacock", "agent_lane": "terracotta", "needs_you": "terracotta", "live": "leaf", "attention": "marigold", "blocked_or_failed": "brick", "brand_chrome": "forest", "not_measured": "ink_3 with dotted underline"
+    },
+    "contrast_C": {
+      "light": {
+        "ink/paper": 14.06, "ink_2/paper": 6.78, "ink_3/paper": 5.87, "ink_3/sunk": 5.33,
+        "terracotta(text)/paper": 5.47, "terracotta_ink/paper": 7.13, "white/terracotta button": 5.80,
+        "peacock/paper": 6.78, "leaf/paper": 6.08, "marigold_ink/paper": 6.53, "brick/paper": 6.71,
+        "on_forest/forest nav": 8.90, "white/forest": 12.16, "line_strong/paper (non-text)": 3.80,
+        "terracotta_ink/terracotta_tint": 6.09, "leaf/leaf_tint": 5.39, "marigold_ink/marigold_tint": 5.85, "brick/brick_tint": 5.69, "peacock/peacock_tint": 5.88,
+        "white/brick": 7.12, "white/leaf": 6.44
+      },
+      "dark": {
+        "ink/paper": 14.64, "ink_2/paper": 9.02, "ink_3/paper": 5.95, "terracotta/paper": 6.91, "peacock/paper": 7.96, "leaf/paper": 8.70, "marigold/paper": 9.51, "brick/paper": 7.35,
+        "dark text/terracotta button": 6.91, "line_strong/paper (non-text)": 3.78
+      },
+      "bar": "text pairs >= 5:1 (inherited Kaksha law, docs/harvest/tx-content-ui.md line 21), non-text component boundaries >= 3:1",
+      "rejected_values": {
+        "prototype coral #b95f48 with white text": 4.38,
+        "first ink_3 candidate #6B746D on paper": 4.56
+      }
+    }
+  },
+  "type": {
+    "display_latin": "Fraunces (variable, opsz; SOFT 50, WONK 0), OFL",
+    "display_devanagari": "Tiro Devanagari Hindi, OFL",
+    "ui_and_text": "Anek Latin + Anek Devanagari (Ek Type; same family covers Bangla, Gujarati, Gurmukhi, Kannada, Malayalam, Odia, Tamil, Telugu for v3), OFL",
+    "fallback_ui": "Noto Sans + Noto Sans Devanagari",
+    "mono": "IBM Plex Mono (run manifests, codes, ids only)",
+    "lock_gate": "type specimen test before lock: Hindi names with conjuncts (क्ष त्र ज्ञ श्र), nukta, stacked matras, Hinglish transcript lines, Indian digit grouping (1,24,500), the rupee sign U+20B9, tabular figures in tables; at 14/16/18 px on a mid Android and a 1280 laptop; owner signs by eye. If Anek fails tabular figures or Devanagari legibility at 14 px, switch UI to the fallback",
+    "scale_desktop_px": {"display_xl": [44, 50], "display_l": [34, 40], "h1": [28, 34], "h2": [22, 28], "h3_sans_semibold": [18, 26], "body": [16, 26], "body_dense": [15, 22], "small": [14, 20], "micro_badges_only": [12, 16]},
+    "scale_phone_px": {"display_xl": [32, 38], "h1": [26, 32], "h2": [20, 26], "body": [16, 26], "small": [14, 20], "micro_badges_only": [12, 16]},
+    "rules": [
+      "serif only for page titles, the Today masthead, big money and outcome numbers at 28 px or more; everything else sans",
+      "Devanagari runs: :lang(hi) at 1.06x the Latin size and line-height 1.65; never below 16 px for body",
+      "tables: tabular figures, right-aligned numbers, Indian grouping (en-IN)",
+      "line length 60-75 characters for prose; no visible text under 12 px; inputs 16 px on phone (no iOS zoom)",
+      "Relay's 13 px body and DM Sans are not reused (DESIGN.md; decision.product-ux-structural-reset-2026-10-01)"
+    ]
+  },
+  "space_shape": {
+    "spacing_px": [4, 8, 12, 16, 24, 32, 48, 64],
+    "radius_px": {"control": 6, "card": 10, "sheet": 16, "pill": 999},
+    "elevation": "hairline borders on paper; shadow only on floating layers (dock, sheet, toast): 0 12px 32px rgba(29,42,36,.12)",
+    "grid_1280": "rail 64 (collapsed) or 216 (expanded) + main + docked Talk 360; on Talk itself: rail 64 + thread 760 + Working-on pane 456",
+    "grid_390": "16 px gutters, 358 px content, bottom tab bar 64 px (Today, Campaigns, Talk centre mic, Calls, More), safe-area insets",
+    "targets": "44 px on touch, 32 px minimum on dense desktop tables",
+    "icons": "1.5 px stroke rounded line set; custom glyphs: ring, waveform, rupee, ledger, seal (predicate), hand-off"
+  },
+  "motion": {
+    "law": "motion only shows the system working; nothing loops unless a real thing is happening",
+    "durations_ms": {"instant": 80, "quick": 120, "base": 180, "emphasis": 240, "data": 400, "milestone_max": 800},
+    "easing": {"out": "cubic-bezier(0.2, 0, 0, 1)", "in_out": "cubic-bezier(0.4, 0, 0.2, 1)", "exit": "cubic-bezier(0.4, 0, 1, 1)"},
+    "catalogue": [
+      {"event": "outbound ringing", "motion": "one concentric arc pulse every 1,200 ms on the call tile, opacity + scale <= 1.08", "stops_on": "answer, fail or cancel event"},
+      {"event": "connected", "motion": "tile settles 180 ms; live two-lane level meter from real audio levels at 30 fps (4 Hz steps in reduced motion)"},
+      {"event": "card arrives in thread", "motion": "fade + rise 8 px, 180 ms; at most 3 staggered by 60 ms"},
+      {"event": "progress job", "motion": "bar driven by real counts (rows read, simulations done); never a fake indeterminate loop longer than 2 s without a text update"},
+      {"event": "funnel first load", "motion": "bars grow to real values over 400 ms; later updates tween 200 ms"},
+      {"event": "diff approved", "motion": "old value strikes through, new value tints leaf then settles, 240 ms"},
+      {"event": "hold-to-confirm", "motion": "ring fills around the button over 1,200 ms (the hold is the safety mechanism, workspace-tool-registry.json approval_token); early release reverses 120 ms"},
+      {"event": "money changes", "motion": "no rolling digits; value swaps with a 600 ms marigold tint"},
+      {"event": "milestone (first real ring, first verified outcome)", "motion": "once per workspace, <= 800 ms, the ledger line inks in; no particles, no confetti (inherited juice limit, asset.tx-content-ui.juice-limits-module)"}
+    ],
+    "banned": ["decorative loops", "parallax", "confetti", "skeleton shimmer longer than 2 s without text", "animating layout properties", "auto-scrolling the transcript while the user is reading"],
+    "reduced_motion": "prefers-reduced-motion: every transition jumps to its end state; pulses become a static 'Ringing' badge; level meters step at 4 Hz; a test asserts parity of final states",
+    "budget": {"lcp_p75_ms": 2500, "inp_p75_ms": 200, "cls_p75": 0.1, "route_js_gz_kb": 170, "first_paint_fonts_kb": 100, "audio_play_start_p75_ms": 300, "mission_control_frame_budget": "50 live tiles drawn on one canvas, script <= 4 ms per frame at 30 fps", "device": "mid-range Android, Fast 4G profile"}
+  },
+  "sound": {
+    "palette": "soft mallet pluck with a santoor-like attack, no sitar, no ringtone imitation",
+    "cues": [
+      {"id": "connect", "when": "a call you are watching is answered by a person", "shape": "two notes rising a perfect fourth", "length_ms": 160, "peak_dbfs": -20},
+      {"id": "approved", "when": "a tap you made executed and a receipt came back", "shape": "single soft wooden tok", "length_ms": 90, "peak_dbfs": -24},
+      {"id": "needs_you", "when": "a new High or Critical issue or an approval addressed to you", "shape": "two notes falling a minor third", "length_ms": 220, "peak_dbfs": -20, "rate_limit": "max 1 per 60 s; Critical crisis alerts also raise a system notification"}
+    ],
+    "rules": [
+      "off until the person answers a one-time question after their first browser call ('Play a soft sound when a call connects or needs you?' with three preview buttons)",
+      "global mute in the header and in Settings; per-cue toggles",
+      "recordings and samples never autoplay; opening a call page plays nothing",
+      "one audio bus: starting any playback pauses the previous one; live listen ducks cues by 12 dB",
+      "no cues while the tab is hidden except Critical, which uses a system notification if permitted",
+      "each cue file Opus <= 8 KB, preloaded after the first user gesture"
+    ]
+  },
+  "state_tokens": {
+    "empty": "explains the concept, offers one action",
+    "zero": "a real zero with its reasons",
+    "loading": "skeleton plus what is happening and how long",
+    "failed": "names the cause, a retry and the status link",
+    "not_measured": "the words 'not measured' and why; never 0, never a dash alone",
+    "under_powered": "'under-powered: about N more calls per group'",
+    "sample": "diagonal SAMPLE watermark, a toggle, never mixed with real rows",
+    "stale": "freshness stamp on every number ('updated 14 s ago')",
+    "redacted": "masked by role, says who can see it",
+    "unsaved": "dot on the version pill plus 'unsaved changes' text; leaving asks once",
+    "disabled_with_reason": "the reason under the control and a Fix link; no silent disabled primary",
+    "locked_by_role": "lock glyph, the role that can do it, 'Ask Priya (Owner)' action",
+    "vendor_says": "figures a vendor publishes carry a 'vendor says' chip and never sit in the same column as measured ones",
+    "source": "intelligence-module.json states + walkthrough anti-patterns (research/2026-10-21/walkthroughs/SYNTHESIS.md section 4.2)"
+  },
+  "evidence_chips_client_words": {"M": "Measured · n · date", "C": "Computed", "O": "Seen", "V": "Vendor says", "I": "Estimate", "U": "Not known yet"},
+  "words": {
+    "voice": "plain, warm Indian English; Hinglish when the client writes Hinglish; Devanagari only when the client writes Devanagari",
+    "formats": {"money": "₹ with en-IN grouping, 'incl. GST' or '+ GST' always stated", "latency": "ms below 10 s (1,480 ms), with p50/p90, n, date and vantage (server / handset / browser)", "duration": "2 m 41 s", "time": "12-hour with am/pm and IST or the contact's local zone", "date": "21 Oct 2026"},
+    "patterns": ["What happened · why · what you can do [action]", "lead with the answer, then the number, then the choice", "one question at a time, with the default VP will use"],
+    "banned": ["Oops", "Great news", "All good (unless monitors are live and read back)", "self-learning / learns on its own / improves automatically below learning level L4 (learning-module-defaults.json copy_rules)", "em-dash in visible copy (inherited copy gate)", "AI-tell words: seamless, leverage, unlock, robust, elevate, delve", "exclamation marks", "ALL CAPS warnings", "emoji"],
+    "operator_rules": ["first person for its own work ('I mapped 1,240 rows')", "receipts name the VP agent that acted ('by Data steward')", "max 3 sentences before a card", "numbers only from page queries, never typed by the model", "never asks for approval in words: a 'haan launch karo' renders the Launch card; only a tap approves", "apologises once, then fixes"]
+  },
+  "persona_catalogue_rules": {
+    "registers_allowed": ["Friendly professional (default, req-07)", "Calm reassuring", "Brisk efficient", "Patient (elderly)"],
+    "denylist_tags_and_names": ["companion", "girlfriend", "boyfriend", "romance", "romantic", "flirty", "seductive", "night", "therapist", "ASMR", "lover"],
+    "enforced_in": "voice catalogue ingest (code) plus a human review of every new voice; observed offenders: Sarvam 'Warm Night Companion', 'Therapist Voice'; Bolna 'Girlfriend Voice' (research/2026-10-21/walkthroughs/SYNTHESIS.md 2.5)",
+    "voice_card_sample": "the same Hinglish line in three registers; sample lines live in the catalogue and a compile lint refuses them inside any brief (sentence-shaped text gets recited)"
+  },
+  "screens": [
+    "talk", "today", "launch_card", "mission_control", "call_page", "agent_builder", "contact_timeline", "learning_inbox", "number_step", "wallet", "hear_it_first"
+  ],
+  "gates": [
+    "contrast gate in CI (both themes, all token pairs)",
+    "layout gate at 390 / 834 / 1280 px: chars per line, font floor, 44 px targets, no horizontal scroll (asset.hp-gurukul-late.secret-free-signed-in-layout-gate)",
+    "copy gate on proven-visible strings (asset.hp-gurukul-early.design-law-copy-contrast-motion-gates-tokens)",
+    "motion lint: transform/opacity only; reduced-motion parity",
+    "state-integrity crawler: 0 server writes from menu clicks or dropdowns, every disabled primary has a reason, 0 charts on n=0, 0 '0 ms' or '₹0' on empty data, 0 unlabelled sample rows",
+    "real-capture marketing: the public site only shows screens the app draws (asset.tx-content-ui.real-capture-marketing-site-pipeline)"
+  ]
+}

@@ -1,0 +1,44 @@
+C_seg800_spec_fast P1-pass1 P1_t01 lat 1023.7 stt 1023.7 ttft 307.5 tts 19.4 cut 0 spec 1 / 4 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | धन्यवाद,
+C_seg800_spec_fast P1-pass1 P1_t02 lat 1291.0 stt 953.3 ttft 299.8 tts 29.1 cut 0 spec 0 / 0 | हम। | शुक्रिया,
+C_seg800_spec_fast P1-pass1 P1_t03 lat 986.4 stt 986.4 ttft 284.9 tts 31.7 cut 1 spec 2 / 4 | प्रीमियम कितना आएगा इस बार? ला | समझ गया,
+C_seg800_spec_fast P1-pass1 P1_t04 lat 1020.8 stt 1020.8 ttft 288.8 tts 15.0 cut 0 spec 1 / 5 | सॉरी सॉरी एक सेकंड बीच में बोल | ठीक है,
+C_seg800_spec_fast P1-pass1 P1_t05 lat 1358.5 stt 1026.4 ttft 310.3 tts 17.9 cut 0 spec 0 / 0 | ओके? | ठीक है,
+C_seg800_spec_fast P1-pass1 P1_t06 lat None stt 1031.5 ttft None tts None cut 1 spec 2 / 5 | वेट, आप रोबॉट हो क्या? एआई हो? | 
+C_seg800_spec_fast P1-pass1 P1_t08 lat None stt 1000.6 ttft None tts None cut 0 spec 1 / 6 | ठीक है, कल 3:30 बजे कॉल कर लेन | 
+C_seg800_spec_fast P1-pass1 P1_t09 lat None stt 988.9 ttft None tts None cut 0 spec 1 / 5 | बीटी डब्ल्यू आज दिल्ली का एक्स | 
+C_seg800_spec_fast P1-pass1 P1_t10 lat 1016.6 stt 1016.6 ttft 316.4 tts 43.3 cut 0 spec 1 / 2 | हाँ और रिन्यूअल का लिंक, व्हाट | जी हाँ,
+C_seg800_spec_fast P1-pass1 P1_t11 lat 1060.4 stt 1060.4 ttft 401.6 tts 26.0 cut 0 spec 1 / 1 | ओके, थैंक यू बाई। | धन्यवाद,
+C_seg800_spec_fast P2-pass1 P2_t01 lat None stt 955.5 ttft None tts None cut 0 spec 2 / 6 | हाँ, हैलो। के बोलक बानी। का बा | 
+C_seg800_spec_fast P2-pass1 P2_t02 lat 1263.7 stt 1048.7 ttft 193.0 tts 14.0 cut 0 spec 0 / 0 | हाँ। | धन्यवाद,
+C_seg800_spec_fast P2-pass1 P2_t03 lat None stt 927.4 ttft None tts None cut 0 spec 2 / 5 | हमरा बाबूजी के भी एह में जोड़ल | 
+C_seg800_spec_fast P2-pass1 P2_t04 lat None stt 992.7 ttft None tts None cut 0 spec 1 / 3 | रुकी रुकी पहले ही बताएं 1,50,0 | 
+C_seg800_spec_fast P2-pass1 P2_t05 lat 1323.6 stt 1062.5 ttft 329.8 tts 45.2 cut 0 spec 1 / 2 | ठीक बात। | समझ गया,
+C_seg800_spec_fast P2-pass1 P2_t06 lat 983.5 stt 983.5 ttft 185.5 tts 60.3 cut 0 spec 1 / 2 | प्रीमियम 25,000 से ज़्यादा हुई | समझ सकता हूँ,
+C_seg800_spec_fast P2-pass1 P2_t08 lat None stt 956.6 ttft None tts None cut 0 spec 2 / 5 | रउआ मशीन हई की आदमी। सच सच बता | 
+C_seg800_spec_fast P2-pass1 P2_t09 lat None stt 985.5 ttft None tts None cut 0 spec 1 / 2 | परसों 3:30 बजे फ़ोन करें, वो घ | 
+C_seg800_spec_fast P2-pass1 P2_t10 lat None stt 973.6 ttft None tts None cut 0 spec 1 / 2 | अच्छा कि बताएं आज सिवान में बर | 
+C_seg800_spec_fast P2-pass1 P2_t11 lat None stt 992.6 ttft None tts None cut 0 spec 2 / 4 | ठीक बा राखत बानी। प्रणाम। | 
+C_seg800_spec_fast P4-pass1 P4_t01 lat None stt 1011.5 ttft None tts None cut 1 spec 1 / 6 | हाँ। हैलो कौन? ज़रा ज़ोर से बो | 
+C_seg800_spec_fast P4-pass1 P4_t02 lat 1268.8 stt 973.5 ttft 256.8 tts 31.6 cut 0 spec 0 / 0 | हाँ। | शुक्रिया,
+C_seg800_spec_fast P4-pass1 P4_t03 lat None stt 1009.1 ttft None tts None cut 1 spec 2 / 4 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+C_seg800_spec_fast P4-pass1 P4_t04 lat 1046.6 stt 1046.6 ttft 178.9 tts 64.6 cut 0 spec 1 / 5 | पिछली बार। 25,000 नहीं, नहीं 2 | बिल्कुल सही,
+C_seg800_spec_fast P4-pass1 P4_t05 lat None stt 1043.4 ttft None tts None cut 0 spec 1 / 5 | बेटा, रुको, इतना जल्दी जल्दी म | 
+C_seg800_spec_fast P4-pass1 P4_t06 lat 979.7 stt 979.7 ttft 201.6 tts 13.0 cut 1 spec 1 / 4 | तुम। मशीन हो क्या आजकल फ़ोन पे | मैं Suraksha Health की AI assi
+C_seg800_spec_fast P4-pass1 P4_t08 lat None stt None ttft None tts None cut 0 spec 0 / 0 |  | 
+C_seg800_spec_fast P4-pass1 P4_t09 lat 903.6 stt 903.6 ttft 195.2 tts 18.1 cut 0 spec 1 / 5 | सोमवार को। 3:30 बजे मेरे बेटे  | ठीक है,
+C_seg800_spec_fast P4-pass1 P4_t10 lat 1018.7 stt 1018.7 ttft 194.8 tts 68.6 cut 0 spec 1 / 4 | अच्छा बेटा, तुमने खाना खा लिया | मैं renewal में मदद कर रही हूँ
+C_seg800_spec_fast P4-pass1 P4_t11 lat None stt 965.6 ttft None tts None cut 1 spec 1 / 4 | अच्छा। ठीक है, भगवान भला करें। | 
+C_seg800_spec_fast P4pause-1 P4_t03 lat 1013.9 stt 1013.9 ttft 179.6 tts 11.1 cut 0 spec 2 / 5 | हमारी पॉलिसी। कब खत्म हो रही ह | जी,
+C_seg800_spec_fast P4pause-1 P4_t03 lat None stt 1058.1 ttft None tts None cut 1 spec 2 / 6 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+C_seg800_spec_fast P4pause-1 P4_t03 lat None stt 1013.7 ttft None tts None cut 1 spec 2 / 6 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+C_seg800_spec_fast P4pause-1 P4_t03 lat 1005.6 stt 1005.6 ttft 182.3 tts 17.9 cut 1 spec 2 / 4 | हमारी पॉलिसी। कब खत्म हो रही ह | धन्यवाद,
+C_seg800_spec_fast P4pause-1 P4_t03 lat 965.5 stt 965.5 ttft 188.2 tts 28.2 cut 1 spec 2 / 4 | हमारी पॉलिसी। कब खत्म हो रही ह | जी,
+cold synths created during run: 0
+D_seg800_spec_quality P1-pass1 P1_t01 lat 1524.0 stt 1024.4 ttft 1007.6 tts 18.6 cut 0 spec 1 / 3 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | जी,
+D_seg800_spec_quality P1-pass1 P1_t02 lat 1876.2 stt 930.7 ttft 933.9 tts 10.9 cut 0 spec 0 / 0 | हम। | जी,
+D_seg800_spec_quality P1-pass1 P1_t03 lat 1498.6 stt 1001.7 ttft 1038.6 tts 36.6 cut 0 spec 2 / 4 | प्रीमियम कितना आएगा इस बार? ला | जी,
+D_seg800_spec_quality P1-pass1 P1_t04 lat 1335.0 stt 1043.0 ttft 1018.9 tts 32.2 cut 0 spec 1 / 5 | सॉरी सॉरी एक सेकंड बीच में बोल | हाँ,
+D_seg800_spec_quality P1-pass1 P1_t05 lat 1897.6 stt 964.6 ttft 920.8 tts 11.9 cut 0 spec 0 / 0 | ओके? | जी,
+D_seg800_spec_quality P1-pass1 P1_t06 lat 1324.6 stt 1022.7 ttft 901.1 tts 18.3 cut 0 spec 2 / 5 | वेट, आप रोबॉट हो क्या? एआई हो? | जी,
+D_seg800_spec_quality P1-pass1 P1_t08 lat 1236.0 stt 1021.5 ttft 947.5 tts 28.1 cut 0 spec 1 / 6 | ठीक है, कल 3:30 बजे कॉल कर लेन | जी,
+D_seg800_spec_quality P1-pass1 P1_t09 lat 1405.4 stt 988.6 ttft 1105.1 tts 29.2 cut 0 spec 1 / 5 | बीटी डब्ल्यू आज दिल्ली का एक्स | जी,

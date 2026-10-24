@@ -1,0 +1,6 @@
+region,segmentation,n_clips,final_after_speech_end_p50_ms,p50_ci95,p90_ms,first_partial_after_speech_start_p50_ms,clips_with_final_mid_turn,elderly_P4_with_final_mid_turn,no_final_after_end
+centralindia,500,30,622,608-632,680,924,15/30,8/10,1
+centralindia,semantic,30,848,824-905,1609,926,15/30,8/10,1
+southeastasia,500,30,677,666-704,743,985,15/30,8/10,1
+centralindia,300,30,450,411-473,522,926,20/30,8/10,1
+centralindia,800,30,985,981-1000,1023,925,13/30,6/10,1

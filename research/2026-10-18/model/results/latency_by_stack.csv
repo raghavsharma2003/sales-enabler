@@ -1,0 +1,25 @@
+stack,vantage,p50_ms,p50_ci95,p90_ms,n,cutins,source
+C1 Azure STT + gpt-4.1-mini + Azure neural,"Central India VM, no phone leg",1026,"1,017-1,035",1143,58 (6),16/60 main (27%); 12/12 pause,g3 results/rederived_latency.csv
+C1g C1 + VAD-gated STT,Central India VM,989,967-994,1072,28 (3),9/30; 6/6 pause,g3 rederived_latency.csv
+C2 Azure STT + gpt-4.1-mini + DragonHD,Central India VM,1133,"1,118-1,140",1231,58 (6),9/60 (15%); 12/12,g3 rederived_latency.csv
+C3 Azure STT + gpt-oss-120b@Groq + DragonHD,Central India VM,1044,"1,029-1,077",1230,57 (6),16/60 (27%); 12/12,g3 rederived_latency.csv
+C6 transcribe-live + gpt-oss@Groq + Azure neural,Central India VM,1031,"1,010-1,052",1404,60 (6),19/60 (32%); 12/12,g3 rederived_latency.csv
+C6g C6 + VAD-gated STT,Central India VM,1038,"990-1,163",1453,30 (3),7/30 (23%); 6/6,g3 rederived_latency.csv
+C7 Azure STT + gemini-3.5-flash-lite (free) + neural,Central India VM,1568,"1,514-1,602",1790,56 (6),2/60; 12/12,g3 rederived_latency.csv
+C8 transcribe-live + flash-lite (free) + neural,Central India VM,1688,"1,654-1,718",1789,59 (6),2/60; 12/12,g3 rederived_latency.csv
+G-D Azure STT + gpt-oss + 3.8-flash-lite-tts (computed),Central India VM components,1842,"1,782-1,901",2180,57 x 40 TTS,n/a,g3 composite_gemini_tts_latency.csv
+G-A all-Gemini lite (computed),Central India VM components,2532,"2,498-2,566",2722,59 x 40,n/a,g3 composite_gemini_tts_latency.csv
+"Round-2 config A (Azure STT 500 ms + gpt-4.1-mini + neural, say-first)",Central India VM,1004,"989-1,017",1105,48 clean,18-50% by config; 12/12,2026-10-17 SYNTHESIS-v2 section 5 [LAT-02]
+"Gemini 3.8 Live, paid key, Meera VAD",Central India VM,1006,"950-1,253",1524,30 (6),22/53 talk-over (42%); 8/8 pause,g5 results/latency_summary.csv
+"Gemini 3.8 Live, free key, Meera VAD",Central India VM,1089,"958-1,291",1584,31 (6),23/54,g5 latency_summary.csv
+Gemini 3.8 Live + thinkingBudget:0 (free key),Central India VM,819,784-847,1514,26 (4),52% of spoken turns,g2 results/latency_summary.csv
+"Gemini 3.8 Live, default thinking (free key)",Central India VM,1250,"1,122-1,428",1656,52 (6),34%,g2 results/latency_summary.csv
+"Gemini 3.1 flash live, paid key (Meera's model)",Central India VM,1950,"1,705-2,125",5299,33 (6),4/37; 6/6 pause,g5 latency_summary.csv
+"Gemini 3.1 flash live, Meera config (free key)",Central India VM,1970,"1,949-2,135",3214,37 (5),server VAD end alone 1.36 s,g2 results/latency_summary.csv
+Gemini 2.5 native audio (free key),Central India VM,2977,-,7604,23 (4),48%,g2 results/latency_summary.csv
+"Gemini 3.8 Live, paid key",sandbox US-East via proxy,1382,"1,164-1,572",1815,43 (6),11/54,g5 latency_summary.csv
+"TTS gemini-3.8-flash-lite-tts stream (paid), first byte",Central India VM,857,-,997,40 requests,+0.14-0.36 s leading silence,g5 tts_summary.csv
+"TTS Azure neural Swara, first byte",Central India VM,113,-,162,24,-,g3 results/tts_india_az.csv
+"LLM gpt-oss-120b@Groq via OpenRouter, TTFT",Central India VM,253,-,490,30,-,g3 results/llm_india_summary.csv
+"LLM gpt-4.1-mini South India, TTFT",Central India VM,526,-,636,30,-,g3 results/llm_india_summary.csv
+"LLM gemini-3.5-flash-lite free tier, TTFT",Central India VM,783,-,980,30,-,g3 results/llm_india_summary.csv

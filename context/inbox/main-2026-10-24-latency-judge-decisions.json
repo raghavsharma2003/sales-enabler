@@ -1,0 +1,38 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.latency-flags-provider-aware",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "Speculative brain calls and pre-warm run only where they measurably help: on for unpaced brains (Azure: v2-54mini 3.01 s -> 2.13 s p50), off when the brain's provider is paced (staging Vertex, where they made flashlite 2.30 -> 3.20 s and mai 2.05 -> 2.66 s); the call-start Vertex HEAD obeys VP_PREWARM",
+      "rationale": "Same-session A/B on staging e9fdde3 (n=22-24 replies per arm): with a 1 req/s pacer the discarded speculative requests and warm HEADs queue ahead of the real brain request, and speculation kept its reply in only 2 of about 23 replies per stack while sending 1.5-2x the requests. On the unpaced Azure brain (54mini) the arm with the flags on had brain stage 886 ms vs 1,096 ms. The HEAD at call start ignores the flag and costs 837-998 ms on every paced flashlite opening.",
+      "reverse_if": "An unpaced Vertex measurement (after the appeal commitment lifts) shows speculation saving at least 200 ms p50 with a keep rate of at least 50%, or the Azure gain does not hold at n>=20 per arm on a second run."
+    },
+    {
+      "id": "decision.2026-10-24.barge-long-ms-stays-700",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "VP_BARGE_LONG_MS stays 700 ms: staging partial lag is 858 ms median (p25 722, p90 1,145, n=464), far above the ~300 ms at which the bench found 500 ms safe; faster barge-in has to come from the audio side (energy onset plus the nod classifier), not from waiting less for words",
+      "rationale": "measure.2026-10-24.staging-partial-lag: 96% of partials arrive after 500 ms; the DEV bench showed 500 ms stops her on most nods at 500 ms lag.",
+      "reverse_if": "Partial lag falls below 400 ms median on staging (a faster recogniser or streaming setting), or an energy-onset barge-in with the nod guard measures fewer than 1 in 20 false stops on nods."
+    }
+  ],
+  "edges": [
+    {"from": "decision.2026-10-24.latency-flags-provider-aware", "to": "rejected.2026-10-24.latency-flags-on-paced-vertex", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.latency-flags-provider-aware", "to": "measure.2026-10-24.product-reply-gap-v2-54mini-e9fdde3", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.latency-flags-provider-aware", "to": "rejected.2026-10-24.call-start-vertex-head-on-paced-staging", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.barge-long-ms-stays-700", "to": "measure.2026-10-24.staging-partial-lag", "relation": "derived-from"},
+    {"from": "decision.2026-10-24.barge-long-ms-stays-700", "to": "open.2026-10-23.voice-barge-long-ms-on-staging", "relation": "informed-by"}
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-staging-e9fdde3-judge8",
+      "details": "VM worker (Rs 98.02, worst case Rs 124) on staging e9fdde3. Openings: disclosure exactly once 6/6, the right name 6/6, guidance read aloud 0/6, RD1 hold cost 0-122 ms. Reply gap p50 with the flags off: flashlite 2.30 s, mai 2.05 s; with them on, 54mini 2.13 s. partialLagMs median 858 ms. Judge on BLIND 8 at the pre-registered 0.9: floor-or-judge recall 75/100, FP 9/100 (all from the floor); the sweep, for information only, shows 93/100 with 1/100 at 0.5; the rule failed on Flash-Lite's stepped confidences. The shadow batch was refused by the product's own daily test budget (Rs 200 per workspace per IST day), working as designed. Decided: decision.2026-10-24.latency-flags-provider-aware and decision.2026-10-24.barge-long-ms-stays-700. Routed: voice -> provider-aware flags, the HEAD obeys VP_PREWARM, the brand's spoken name in Devanagari (the brain wrote सांच for सांझ 2 of 3 times), and energy-onset barge-in; safety -> the judge mints its own Vertex token, the floor's 9/100 look-alike FPs, the threshold re-chosen on DEV with stepped confidences in mind, then a BLIND 9."
+    }
+  ]
+}

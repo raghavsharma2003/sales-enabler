@@ -1,0 +1,12 @@
+arm,scope,served_region,n,ttft_p50_ms,ttft_p50_ci95,ttft_p90_ms,ttft_p90_ci95,total_p50_ms,cached_share,service_tier,first_ts,last_ts
+sin-std gpt-4.1-mini,Regional (India geography),South India,33,304,298-322,387,328-767,612,0.91,default,2026-10-17T17:08:17Z,2026-10-17T17:16:26Z
+sea-gs gpt-5.4-nano,Global,Southeast Asia,33,577,571-583,610,593-640,927,0.85,default,2026-10-17T17:08:23Z,2026-10-17T17:16:20Z
+sin-gs gpt-5.4-nano,Global,South India,33,745,736-752,781,761-795,1194,0.82,default,2026-10-17T17:08:16Z,2026-10-17T17:16:27Z
+sea-gs gpt-5.4-mini,Global,Southeast Asia,33,773,757-795,918,824-1238,1020,0.76,default,2026-10-17T17:08:20Z,2026-10-17T17:16:21Z
+sea-gs gpt-4.1-mini,Global,Southeast Asia,33,774,766-793,962,804-1012,1057,0.91,default,2026-10-17T17:08:29Z,2026-10-17T17:16:26Z
+sea-dzapac gpt-5.4-mini,DataZone APAC,Southeast Asia,33,784,765-803,885,816-904,1050,0.78,default,2026-10-17T17:08:24Z,2026-10-17T17:16:19Z
+frc-dzeu DeepSeek-V4-Flash,DataZone EU,France Central,33,816,764-839,964,856-1022,1046,0.92,,2026-10-17T17:08:30Z,2026-10-17T17:16:17Z
+frc-dzeu gpt-6-luna,DataZone EU,France Central,33,883,879-894,929,900-999,1251,0.96,default,2026-10-17T17:08:17Z,2026-10-17T17:16:18Z
+sea-gs gpt-5.4-mini priority,Global (priority tier),Southeast Asia,33,903,890-976,1588,1526-1625,1218,0.78,priority,2026-10-17T17:08:19Z,2026-10-17T17:16:16Z
+frc-dzeu gpt-6-sol,DataZone EU,France Central,33,1005,970-1023,1222,1048-1653,1412,0.96,default,2026-10-17T17:08:22Z,2026-10-17T17:16:22Z
+sea-dzapac gpt-6.1-sol,DataZone APAC,Southeast Asia,33,1814,1651-1937,2819,2204-6021,3264,0.96,default,2026-10-17T17:08:28Z,2026-10-17T17:16:25Z

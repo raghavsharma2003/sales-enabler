@@ -1,0 +1,41 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.analysis-default-mini-in-code",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Analysis default in code is gpt-4.1-mini single (implements decision.2026-10-24.analysis-default-mini-single-outcome-first). defaultAnalysisSetting() returns {mode:'single', model: the curated default, threshold 0.6} whatever else the deployment curates; tiered and gpt-4.1 stay selectable in analysis.model.set, and a saved call_analysis_setting row keeps its value (no migration). Each single-pass call stores analysis.wouldEscalate: why tiered would have read it again under the same predicate at the setting's threshold ('the first pass failed' | 'no outcome' | 'low confidence', confidence strictly below the threshold), or null; never on engine-decided codes or a first-pass no-decision code; absent on tiered calls. analysis.settings.get returns wouldEscalate {calls, ofSinglePassCalls} over the workspace's non-test calls, the counter that lets real traffic answer open.2026-10-24.analysis-escalation-path-unexercised.",
+   "reverse_if": "the would-escalate share on real traffic is high and a tiered A/B on those calls shows tiered changes outcomes, or a bench round shows mini single losing to tiered on any field",
+   "evidence": [
+    "product/tests/calls-analysis-rules.test.ts: 'the product default is gpt-4.1-mini, one pass…' and 'one model: a call is marked would-escalate below 0.6…' (fake LLM; n=1 default workspace, n=6 flagged calls: 0.59 flagged, 0.6 and 0.9 not, crisis / early hang-up / opt-out not)"
+   ],
+   "rationale": "Implements decision.2026-10-24.analysis-default-mini-single-outcome-first (bench r7, 9bdc047: mini single matched tiered 42/42 on every pass; tiered escalated 0 of 117, so the escalation path is unmeasured and the counter is how real traffic measures it)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.analysis-default-mini-in-code",
+   "to": "decision.2026-10-24.analysis-default-tiered-in-code",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-default-mini-in-code",
+   "to": "decision.2026-10-24.analysis-default-mini-single-outcome-first",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-default-mini-in-code",
+   "to": "open.2026-10-24.analysis-escalation-path-unexercised",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "analysis-default-mini-in-code",
+   "details": "The unset analysis default is now gpt-4.1-mini single; single-pass calls carry wouldEscalate and analysis.settings.get counts them. Also fixed a calls-analysis-tier flake: the two cost lines share one transaction's now(), so ORDER BY created_at alone was random (3/3 passes after)."
+  }
+ ]
+}

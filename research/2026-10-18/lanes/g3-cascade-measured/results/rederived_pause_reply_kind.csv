@@ -1,0 +1,9 @@
+config,pause_cutins,short_continue_prompt,substantive_answer_to_half_question,other,examples
+C1_az_az41_azneural,12,0,12,0,"जी हाँ, आपकी Suraksha Family H | जी, आपकी Suraksha Family Healt"
+C2_az_az41_azhd,12,0,12,0,"जी हाँ, आपकी Suraksha Family H | जी, आपकी Suraksha Family Healt | जी, आपकी policy का renewal 15  | जी, आपकी पॉलिसी Suraksha Famil"
+C3_az_or_azhd,12,12,0,0,"कृपया आगे बताइए? | कृपया आगे बताइए। | कृपया बताइए? | कृपया, आगे बताइए?"
+C6_gtl_or_azneural,12,12,0,0,और बताइए? | कृपया बताइए? | कृपया बताइए। | कृपया?
+C7_az_gm_azneural,12,0,12,0,"जी बिल्कुल, आपकी Suraksha Fami | जी हाँ, Suraksha Family Health | जी हाँ, आपकी Suraksha Family H | जी हाँ, सही कहा। आपकी policy क"
+C8_gtl_gm_azneural,12,2,9,1,"जी बिल्कुल, आपकी policy के बार | जी बिल्कुल, बता दीजिए क्या जान | जी हाँ, आपकी Suraksha Family H | जी हाँ, बताइये, आपकी Suraksha "
+C1_az_az41_azneural+gatedSTT,6,0,6,0,"जी हाँ, आपकी Suraksha Family H | जी, आपकी Suraksha Family Healt | जी, आपकी policy का renewal 15 "
+C6_gtl_or_azneural+gatedSTT,6,6,0,0,और बताइए? | कृपया बताइए? | कृपया?

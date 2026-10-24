@@ -1,0 +1,626 @@
+{
+ "schema": "vp-stimuli-text/2",
+ "written_at": "2026-10-17T20:35:46Z",
+ "authors": {
+  "neutral_hinglish": "hand-written for r2-listener-panel (no native review yet)",
+  "neutral_hinglish_safety": "hand-written for r2-listener-panel (no native review yet)",
+  "bhojpuri_mix": "gpt-6-sol (r2p-gpt-6-sol-dz, DataZone EU), from the hand-written Hinglish",
+  "tamil_english": "gpt-6-sol (r2p-gpt-6-sol-dz, DataZone EU), from the hand-written Hinglish",
+  "marathi_mix": "gpt-6-sol (r2p-gpt-6-sol-dz, DataZone EU), from the hand-written Hinglish",
+  "indian_english": "gpt-6-sol (r2p-gpt-6-sol-dz, DataZone EU), from the hand-written Hinglish"
+ },
+ "turn_specs": {
+  "R1": {
+   "topic": "health renewal: opening, AI disclosure, due date",
+   "line": "health",
+   "gloss_en": "Hello, this is Asha (male voice: Amit), an AI assistant from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we talk for two minutes?",
+   "key_tokens": [
+    {
+     "kind": "word",
+     "id": "ai_disclosure",
+     "alts": [
+      "AI",
+      "A.I",
+      "एआई",
+      "ए आई",
+      "ஏஐ",
+      "ஏ ஐ",
+      "एआय",
+      "ए आय",
+      "artificial"
+     ]
+    },
+    {
+     "kind": "date",
+     "id": "due_date",
+     "day": 15,
+     "month": 11
+    }
+   ]
+  },
+  "R2": {
+   "topic": "health premium and sum insured, confirmation question",
+   "line": "health",
+   "gloss_en": "This year the premium is Rs 24,850 including GST. The sum insured stays at 5 lakh. Shall I confirm this amount?",
+   "key_tokens": [
+    {
+     "kind": "num",
+     "id": "premium",
+     "value": 24850
+    },
+    {
+     "kind": "num",
+     "id": "sum_insured",
+     "value": 500000
+    }
+   ]
+  },
+  "R3": {
+   "topic": "motor 4W renewal: vehicle number, expiry date, premium with NCB",
+   "line": "motor_4w",
+   "gloss_en": "The insurance of your car, number 4 7 2 9, ends on 28 October. With the no-claim bonus, the renewal premium is Rs 11,240.",
+   "key_tokens": [
+    {
+     "kind": "num",
+     "id": "vehicle_digits",
+     "value": 4729
+    },
+    {
+     "kind": "date",
+     "id": "expiry",
+     "day": 28,
+     "month": 10
+    },
+    {
+     "kind": "num",
+     "id": "premium",
+     "value": 11240
+    }
+   ]
+  },
+  "R4": {
+   "topic": "motor 2W policy already expired, premium today",
+   "line": "motor_2w",
+   "gloss_en": "Your bike policy expired on 12 October. If you renew today the premium is Rs 1,538. Shall I start the renewal?",
+   "key_tokens": [
+    {
+     "kind": "date",
+     "id": "expired_on",
+     "day": 12,
+     "month": 10
+    },
+    {
+     "kind": "num",
+     "id": "premium",
+     "value": 1538
+    }
+   ]
+  },
+  "R5": {
+   "topic": "life lapse revival: missed instalment, revival amount and late fee",
+   "line": "life",
+   "gloss_en": "The 15 August instalment of your life policy is unpaid, so the policy is lapsed now. To restart it you pay Rs 18,600 and a late fee of Rs 420.",
+   "key_tokens": [
+    {
+     "kind": "date",
+     "id": "missed_instalment",
+     "day": 15,
+     "month": 8
+    },
+    {
+     "kind": "num",
+     "id": "revival_amount",
+     "value": 18600
+    },
+    {
+     "kind": "num",
+     "id": "late_fee",
+     "value": 420
+    }
+   ]
+  },
+  "R6": {
+   "topic": "life revival deadline and advisor callback",
+   "line": "life",
+   "gloss_en": "The policy can be restarted until 31 December; only a short health form is needed. Shall I arrange a call from an advisor tomorrow at 6 pm?",
+   "key_tokens": [
+    {
+     "kind": "date",
+     "id": "deadline",
+     "day": 31,
+     "month": 12
+    },
+    {
+     "kind": "num",
+     "id": "callback_hour",
+     "value": 6
+    }
+   ]
+  },
+  "R7": {
+   "topic": "payment-link hand-off on WhatsApp",
+   "line": "health",
+   "gloss_en": "Alright, I am sending the payment link to your WhatsApp; it works for 24 hours. After payment the receipt will also come on WhatsApp.",
+   "gloss_en_safety": "Alright, I am sending the payment link to your WhatsApp; it works for 24 hours. We never ask for an OTP on a call; if you prefer, pay in the company's own app.",
+   "key_tokens": [
+    {
+     "kind": "word",
+     "id": "whatsapp",
+     "alts": [
+      "WhatsApp",
+      "Whatsapp",
+      "whatsapp",
+      "व्हाट्सएप",
+      "वॉट्सऐप",
+      "व्हाट्सऐप",
+      "वाट्सएप",
+      "व्हॉट्सॲप",
+      "व्हाट्सॲप",
+      "व्हॉट्सअ‍ॅप",
+      "व्हॉट्सअॅप",
+      "வாட்ஸ்அப்",
+      "வாட்ஸ்ஆப்",
+      "வாட்ஸப்"
+     ]
+    },
+    {
+     "kind": "num",
+     "id": "link_hours",
+     "value": 24
+    }
+   ],
+   "key_tokens_safety_extra": [
+    {
+     "kind": "word",
+     "id": "otp",
+     "alts": [
+      "OTP",
+      "ओटीपी",
+      "ओ टी पी",
+      "ஓடிபி",
+      "ஓ.டி.பி"
+     ]
+    }
+   ]
+  },
+  "R8": {
+   "topic": "number confirmation read-back: instalment amount, date, phone-number last digits",
+   "line": "life",
+   "gloss_en": "Let me confirm once: the next instalment is Rs 7,365, on 5 January. The link will come to the number ending 4 3 2 1.",
+   "key_tokens": [
+    {
+     "kind": "num",
+     "id": "instalment",
+     "value": 7365
+    },
+    {
+     "kind": "date",
+     "id": "next_due",
+     "day": 5,
+     "month": 1
+    },
+    {
+     "kind": "num",
+     "id": "phone_last4",
+     "value": 4321
+    }
+   ]
+  },
+  "C1": {
+   "topic": "Block C: instalment option",
+   "line": "health",
+   "gloss_en": "I understand. If you like, you can pay the premium in three instalments; each instalment will be about Rs 8,300.",
+   "key_tokens": [
+    {
+     "kind": "num",
+     "id": "instalment",
+     "value": 8300
+    }
+   ]
+  },
+  "C2": {
+   "topic": "Block C: callback promise",
+   "line": "health",
+   "gloss_en": "No problem, take your time with the documents. I will call again the day after tomorrow at 10 in the morning, all right?",
+   "key_tokens": [
+    {
+     "kind": "num",
+     "id": "hour",
+     "value": 10
+    }
+   ]
+  },
+  "C3": {
+   "topic": "Block C: adding a parent",
+   "line": "health",
+   "gloss_en": "Yes, your father can also be added to this policy. He is 70, so the premium will go up a little.",
+   "key_tokens": [
+    {
+     "kind": "num",
+     "id": "age",
+     "value": 70
+    }
+   ]
+  },
+  "C4": {
+   "topic": "Block C: already renewed, close",
+   "line": "motor_4w",
+   "gloss_en": "Oh, you have already renewed? Very good. Then I will remove your name from the list. Thank you.",
+   "key_tokens": []
+  }
+ },
+ "content": {
+  "R1": {
+   "neutral_hinglish": {
+    "F": "नमस्ते, मैं आशा, साथी Insurance से AI assistant बोल रही हूँ। आपकी Health policy का renewal 15 नवंबर को है। दो मिनट बात करें?",
+    "M": "नमस्ते, मैं अमित, साथी Insurance से AI assistant बोल रहा हूँ। आपकी Health policy का renewal 15 नवंबर को है। दो मिनट बात करें?"
+   },
+   "gloss_en": "Hello, this is Asha (male voice: Amit), an AI assistant from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we talk for two minutes?",
+   "bhojpuri_mix": {
+    "F": "प्रणाम, हम आशा, साथी इंश्योरेंस से एआई असिस्टेंट बोलत बानी। रउआ के हेल्थ पॉलिसी के रिन्यूअल 15 नवंबर के बा। दू मिनट बात हो सकेला?",
+    "M": "प्रणाम, हम अमित, साथी इंश्योरेंस से एआई असिस्टेंट बोलत बानी। रउआ के हेल्थ पॉलिसी के रिन्यूअल 15 नवंबर के बा। दू मिनट बात हो सकेला?"
+   },
+   "tamil_english": {
+    "F": "வணக்கம், நான் ஆஷா, சாத்தி இன்ஷூரன்ஸ்ல இருந்து பேசுற ஏஐ அசிஸ்டன்ட். உங்க ஹெல்த் பாலிசி ரினியூவல் 15 நவம்பருக்கு இருக்கு. ரெண்டு நிமிஷம் பேசலாமா?",
+    "M": "வணக்கம், நான் அமித், சாத்தி இன்ஷூரன்ஸ்ல இருந்து பேசுற ஏஐ அசிஸ்டன்ட். உங்க ஹெல்த் பாலிசி ரினியூவல் 15 நவம்பருக்கு இருக்கு. ரெண்டு நிமிஷம் பேசலாமா?"
+   },
+   "marathi_mix": {
+    "F": "नमस्कार, मी आशा, साथी इन्शुरन्समधून एआय असिस्टंट बोलतेय. तुमच्या हेल्थ पॉलिसीचं रिन्यूअल 15 नोव्हेंबरला आहे. दोन मिनिटं बोलू का?",
+    "M": "नमस्कार, मी अमित, साथी इन्शुरन्समधून एआय असिस्टंट बोलतोय. तुमच्या हेल्थ पॉलिसीचं रिन्यूअल 15 नोव्हेंबरला आहे. दोन मिनिटं बोलू का?"
+   },
+   "indian_english": {
+    "F": "Hello, I'm Asha, an AI assistant calling from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we speak for two minutes?",
+    "M": "Hello, I'm Amit, an AI assistant calling from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we speak for two minutes?"
+   }
+  },
+  "R2": {
+   "neutral_hinglish": {
+    "F": "इस साल का premium ₹24,850 है, GST मिलाकर। Sum insured 5 लाख ही रहेगा। क्या मैं यही amount confirm कर दूँ?"
+   },
+   "gloss_en": "This year the premium is Rs 24,850 including GST. The sum insured stays at 5 lakh. Shall I confirm this amount?",
+   "bhojpuri_mix": {
+    "F": "एह साल के प्रीमियम जीएसटी मिला के ₹24,850 बा। सम इंश्योर्ड 5 लाखे रही। ईहे अमाउंट कन्फर्म कर दीं का?"
+   },
+   "tamil_english": {
+    "F": "இந்த வருஷ பிரீமியம் ஜிஎஸ்டி சேர்த்து ₹24,850. சம் இன்ஷூர்டு 5 லட்சமாவே இருக்கும். இந்த அமௌன்ட்டை கன்ஃபர்ம் பண்ணட்டுமா?"
+   },
+   "marathi_mix": {
+    "F": "यावर्षीचा प्रीमियम जीएसटीसह ₹24,850 आहे. सम इन्शुअर्ड 5 लाखच राहील. हीच अमाऊंट कन्फर्म करू का?"
+   },
+   "indian_english": {
+    "F": "This year's premium is ₹24,850, including GST. The sum insured stays at 5 lakh. Shall I confirm this amount?"
+   }
+  },
+  "R3": {
+   "neutral_hinglish": {
+    "F": "आपकी car, number 4 7 2 9, का insurance 28 अक्टूबर को खत्म हो रहा है। No-claim bonus के साथ premium ₹11,240 है।"
+   },
+   "gloss_en": "The insurance of your car, number 4 7 2 9, ends on 28 October. With the no-claim bonus, the renewal premium is Rs 11,240.",
+   "bhojpuri_mix": {
+    "F": "रउआ के कार, नंबर 4 7 2 9, के इंश्योरेंस 28 अक्टूबर के खत्म होत बा। नो-क्लेम बोनस के साथ प्रीमियम ₹11,240 बा।"
+   },
+   "tamil_english": {
+    "F": "உங்க கார் இன்ஷூரன்ஸ், நம்பர் 4, 7, 2, 9, 28 அக்டோபர்ல முடியுது. நோ-கிளைம் போனஸோட பிரீமியம் ₹11,240."
+   },
+   "marathi_mix": {
+    "F": "तुमच्या 4 7 2 9 नंबरच्या कारचा इन्शुरन्स 28 ऑक्टोबरला संपतोय. नो-क्लेम बोनससह प्रीमियम ₹11,240 आहे."
+   },
+   "indian_english": {
+    "F": "The insurance for your car, number 4 7 2 9, ends on 28 October. With the no-claim bonus, the premium is ₹11,240."
+   }
+  },
+  "R4": {
+   "neutral_hinglish": {
+    "F": "आपकी bike की policy 12 अक्टूबर को expire हो गई है। आज renew करें तो premium ₹1,538 है। Renewal शुरू कर दूँ?"
+   },
+   "gloss_en": "Your bike policy expired on 12 October. If you renew today the premium is Rs 1,538. Shall I start the renewal?",
+   "bhojpuri_mix": {
+    "F": "रउआ के बाइक के पॉलिसी 12 अक्टूबर के एक्सपायर हो गइल बा। आज रिन्यू करब त प्रीमियम ₹1,538 बा। हम रिन्यूअल शुरू करीं का?"
+   },
+   "tamil_english": {
+    "F": "உங்க பைக் பாலிசி 12 அக்டோபர்ல எக்ஸ்பையர் ஆயிடுச்சு. இன்னிக்கு ரினியூ பண்ணா பிரீமியம் ₹1,538. ரினியூவல் ஆரம்பிக்கட்டுமா?"
+   },
+   "marathi_mix": {
+    "F": "तुमच्या बाइकची पॉलिसी 12 ऑक्टोबरला एक्सपायर झालीये. आज रिन्यू केलं तर प्रीमियम ₹1,538 आहे. रिन्यूअल सुरू करू का?"
+   },
+   "indian_english": {
+    "F": "Your bike policy expired on 12 October. If you renew today, the premium is ₹1,538. Shall I start the renewal?"
+   }
+  },
+  "R5": {
+   "neutral_hinglish": {
+    "F": "आपकी Life policy की 15 अगस्त की किस्त बाकी है, इसलिए policy lapse है। चालू करने में ₹18,600 और ₹420 late fee लगेगी।"
+   },
+   "gloss_en": "The 15 August instalment of your life policy is unpaid, so the policy is lapsed now. To restart it you pay Rs 18,600 and a late fee of Rs 420.",
+   "bhojpuri_mix": {
+    "F": "रउआ के लाइफ पॉलिसी के 15 अगस्त के किस्त बाकी बा, एह से पॉलिसी लैप्स बा। फेर चालू करे खातिर ₹18,600 आ ₹420 लेट फीस लागी।"
+   },
+   "tamil_english": {
+    "F": "உங்க லைஃப் பாலிசியோட 15 ஆகஸ்ட் இன்ஸ்டால்மென்ட் பாக்கி இருக்கு, அதனால பாலிசி லாப்ஸ் ஆயிடுச்சு. திரும்ப ஆரம்பிக்க ₹18,600, கூடவே ₹420 லேட் ஃபீ கட்டணும்."
+   },
+   "marathi_mix": {
+    "F": "तुमच्या लाइफ पॉलिसीचा 15 ऑगस्टचा हप्ता बाकी आहे, त्यामुळे पॉलिसी लॅप्स झालीये. पुन्हा सुरू करायला ₹18,600 आणि ₹420 लेट फी लागेल."
+   },
+   "indian_english": {
+    "F": "Your life policy's 15 August instalment is unpaid, so the policy has lapsed. To restart it, you'll need ₹18,600 plus a ₹420 late fee."
+   }
+  },
+  "R6": {
+   "neutral_hinglish": {
+    "F": "Policy 31 दिसंबर तक फिर चालू हो सकती है, बस एक छोटा health form भरना होगा। कल शाम 6 बजे advisor से call करवा दूँ?"
+   },
+   "gloss_en": "The policy can be restarted until 31 December; only a short health form is needed. Shall I arrange a call from an advisor tomorrow at 6 pm?",
+   "bhojpuri_mix": {
+    "F": "पॉलिसी 31 दिसंबर तक फेर चालू हो सकेला, बस एगो छोट हेल्थ फॉर्म भरे के होई। काल्ह साँझ 6 बजे एडवाइजर से कॉल करवा दीं का?"
+   },
+   "tamil_english": {
+    "F": "பாலிசியை 31 டிசம்பர் வரை திரும்ப ஆரம்பிக்கலாம், ஒரு சின்ன ஹெல்த் ஃபார்ம் மட்டும் நிரப்பணும். நாளைக்கு சாயங்காலம் 6 மணிக்கு அட்வைசர் கால் பண்ண ஏற்பாடு பண்ணட்டுமா?"
+   },
+   "marathi_mix": {
+    "F": "पॉलिसी 31 डिसेंबरपर्यंत पुन्हा सुरू होऊ शकते, फक्त एक छोटा हेल्थ फॉर्म भरावा लागेल. उद्या संध्याकाळी 6 वाजता अ‍ॅडव्हायजरचा कॉल लावून देऊ का?"
+   },
+   "indian_english": {
+    "F": "The policy can be restarted until 31 December; you just need to fill a short health form. Shall I arrange an advisor's call tomorrow at 6 pm?"
+   }
+  },
+  "R7": {
+   "neutral_hinglish": {
+    "F": "ठीक है, payment link आपके WhatsApp पर भेज रही हूँ, 24 घंटे चलेगा। Payment के बाद receipt भी WhatsApp पर आ जाएगी।",
+    "M": "ठीक है, payment link आपके WhatsApp पर भेज रहा हूँ, 24 घंटे चलेगा। Payment के बाद receipt भी WhatsApp पर आ जाएगी।"
+   },
+   "gloss_en": "Alright, I am sending the payment link to your WhatsApp; it works for 24 hours. After payment the receipt will also come on WhatsApp.",
+   "neutral_hinglish_safety": {
+    "F": "ठीक है, payment link आपके WhatsApp पर भेज रही हूँ, 24 घंटे चलेगा। हम call पर कभी OTP नहीं माँगते, चाहें तो company की app से pay करें।",
+    "M": "ठीक है, payment link आपके WhatsApp पर भेज रहा हूँ, 24 घंटे चलेगा। हम call पर कभी OTP नहीं माँगते, चाहें तो company की app से pay करें।"
+   },
+   "gloss_en_safety": "Alright, I am sending the payment link to your WhatsApp; it works for 24 hours. We never ask for an OTP on a call; if you prefer, pay in the company's own app.",
+   "bhojpuri_mix": {
+    "F": "ठीक बा, पेमेंट लिंक रउआ के व्हाट्सऐप पर भेजत बानी, 24 घंटा चली। पेमेंट के बाद रसीदियो व्हाट्सऐप पर आ जाई।"
+   },
+   "tamil_english": {
+    "F": "சரி, பேமென்ட் லிங்க் உங்க வாட்ஸ்அப்புக்கு அனுப்புறேன், 24 மணி நேரம் வேலை செய்யும். பேமென்ட் முடிஞ்சதும் ரிசீட்டும் வாட்ஸ்அப்புல வந்துடும்."
+   },
+   "marathi_mix": {
+    "F": "ठीक आहे, पेमेंट लिंक तुमच्या व्हॉट्सअ‍ॅपवर पाठवतेय, 24 तास चालेल. पेमेंटनंतर रिसीटही व्हॉट्सअ‍ॅपवर येईल.",
+    "M": "ठीक आहे, पेमेंट लिंक तुमच्या व्हॉट्सअ‍ॅपवर पाठवतोय, 24 तास चालेल. पेमेंटनंतर रिसीटही व्हॉट्सअ‍ॅपवर येईल."
+   },
+   "indian_english": {
+    "F": "Alright, I'm sending the payment link to your WhatsApp. It'll work for 24 hours. After payment, the receipt will also come on WhatsApp."
+   }
+  },
+  "R8": {
+   "neutral_hinglish": {
+    "F": "एक बार confirm कर लूँ: अगली किस्त ₹7,365 की, 5 जनवरी को। Link उस number पर आएगा जिसके आखिरी अंक 4 3 2 1 हैं।"
+   },
+   "gloss_en": "Let me confirm once: the next instalment is Rs 7,365, on 5 January. The link will come to the number ending 4 3 2 1.",
+   "bhojpuri_mix": {
+    "F": "एगो बेर कन्फर्म कर लेत बानी: अगिला किस्त ₹7,365 के, 5 जनवरी के बा। लिंक ओह नंबर पर आई जेकर आखिरी अंक 4 3 2 1 बा।"
+   },
+   "tamil_english": {
+    "F": "ஒரு தடவை கன்ஃபர்ம் பண்ணிக்கறேன்: அடுத்த தவணை ₹7,365, 5 ஜனவரி. லிங்க் கடைசி இலக்கங்கள் 4 3 2 1 இருக்கிற நம்பருக்கு வரும்."
+   },
+   "marathi_mix": {
+    "F": "एकदा कन्फर्म करू: पुढचा हप्ता ₹7,365, 5 जानेवारीला. लिंक शेवटचे अंक 4 3 2 1 असलेल्या नंबरवर येईल."
+   },
+   "indian_english": {
+    "F": "Let me confirm once: the next instalment is ₹7,365, due on 5 January. The link will come to the number ending 4 3 2 1."
+   }
+  },
+  "C1": {
+   "neutral_hinglish": {
+    "F": "जी, मैं समझ सकती हूँ। आप चाहें तो premium तीन किस्तों में दे सकते हैं, हर किस्त लगभग ₹8,300 की होगी।",
+    "M": "जी, मैं समझ सकता हूँ। आप चाहें तो premium तीन किस्तों में दे सकते हैं, हर किस्त लगभग ₹8,300 की होगी।"
+   },
+   "gloss_en": "I understand. If you like, you can pay the premium in three instalments; each instalment will be about Rs 8,300."
+  },
+  "C2": {
+   "neutral_hinglish": {
+    "F": "कोई बात नहीं, आप आराम से documents देख लीजिए। मैं परसों सुबह 10 बजे फिर से call कर लूँगी, ठीक है?",
+    "M": "कोई बात नहीं, आप आराम से documents देख लीजिए। मैं परसों सुबह 10 बजे फिर से call कर लूँगा, ठीक है?"
+   },
+   "gloss_en": "No problem, take your time with the documents. I will call again the day after tomorrow at 10 in the morning, all right?"
+  },
+  "C3": {
+   "neutral_hinglish": {
+    "F": "हाँ जी, आपके पिताजी को भी इसी policy में जोड़ सकते हैं। उनकी उम्र 70 साल है, तो premium थोड़ा बढ़ जाएगा।"
+   },
+   "gloss_en": "Yes, your father can also be added to this policy. He is 70, so the premium will go up a little."
+  },
+  "C4": {
+   "neutral_hinglish": {
+    "F": "अच्छा, आपने renewal पहले ही कर दिया? बहुत बढ़िया। तो मैं आपका नाम इस list से हटा देती हूँ। धन्यवाद।",
+    "M": "अच्छा, आपने renewal पहले ही कर दिया? बहुत बढ़िया। तो मैं आपका नाम इस list से हटा देता हूँ। धन्यवाद।"
+   },
+   "gloss_en": "Oh, you have already renewed? Very good. Then I will remove your name from the list. Thank you."
+  }
+ },
+ "text_checks": {
+  "R3|tamil_english|F": [
+   "vehicle_digits"
+  ]
+ },
+ "llm": {
+  "deployment": "r2p-gpt-6-sol-dz",
+  "model": "gpt-6-sol-2026-09-22",
+  "usage": {
+   "completion_tokens": 4796,
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": 0,
+    "audio_tokens": 0,
+    "reasoning_tokens": 2382,
+    "rejected_prediction_tokens": 0
+   },
+   "latency_checkpoint": {
+    "engine_tbt_ms": 7,
+    "engine_ttft_ms": 207,
+    "engine_ttlt_ms": 34885,
+    "pre_inference_ms": 157,
+    "service_tbt_ms": 7,
+    "service_ttft_ms": 453,
+    "service_ttlt_ms": 35125,
+    "user_visible_ttft_ms": 296
+   },
+   "prompt_tokens": 1669,
+   "prompt_tokens_details": {
+    "audio_tokens": 0,
+    "cache_write_tokens": 1666,
+    "cached_tokens": 0
+   },
+   "total_tokens": 6465
+  },
+  "latency_s": 37.2,
+  "finish_reason": "stop",
+  "prompt_system": "You write test stimuli for a blind listening study on Indian voice agents. Output strict JSON only. Write natural SPOKEN register exactly as a real insurance renewal telecaller from that region speaks on the phone to an existing policy-holder from the same region: polite, short, not written or literary language, and not a caricature.",
+  "prompt_user": "For each turn below, rewrite the Hinglish source in each register. Registers (keys):\n\"bhojpuri_mix\": for a customer in Siwan or Chhapra, Bihar: Bhojpuri-dominant with the Hindi and English loanwords a Bhojpuri-speaking telecaller in Patna really uses; genuine Bhojpuri grammar (raua, bani, ba, hamni, rahi, kaile) not Hindi with one Bhojpuri word; Devanagari script, English loanwords also in Devanagari.\n\"tamil_english\": for a customer in Madurai: colloquial spoken Tamil-English code-mix; everything in Tamil script, English loanwords transliterated into Tamil script (no Latin letters at all; digits and the rupee sign allowed).\n\"marathi_mix\": for a customer in Pune or Nashik: colloquial spoken Marathi as a Marathi telecaller speaks, mixing in the Hindi and English words people really use; Devanagari script including the loanwords (write AI as एआय, EMI-style abbreviations in Devanagari).\n\"indian_english\": Indian English as a Chennai or Bengaluru telecaller speaks, Latin script.\nHard rules for every register:\n- Exactly the same facts as the Hinglish source, nothing added or dropped, no sales or cross-sell line, no extra greeting.\n- Keep every number exactly as in the source and write it with digits: amounts as in the source with the rupee sign (for example ₹24,850, ₹1,538), dates as day digits plus the month word in that language, times as digits (\"6\"), the sum insured as \"5\" plus the word for lakh. Keep digit-by-digit identifiers exactly as space-separated digits: \"4 7 2 9\" and \"4 3 2 1\".\n- The company name is \"Saathi Insurance\": transliterate it in the register's script. The caller is Asha (female) or Amit (male).\n- In R1 the caller must say clearly that they are an AI assistant.\n- Similar length to the source (it must take 8 to 13 seconds to speak at a normal pace).\n- Give a \"F\" version (caller Asha, female) and, only where the register's grammar or the name differs, an \"M\" version (caller Amit, male). If the two would be identical apart from nothing, give only \"F\".\nReturn JSON: {\"<turn_id>\": {\"bhojpuri_mix\": {\"F\": ..., \"M\": ...}, \"tamil_english\": {...}, \"marathi_mix\": {...}, \"indian_english\": {...}}, ...}\nTurns (JSON):\n{\n \"R1\": {\n  \"hinglish_F\": \"नमस्ते, मैं आशा, साथी Insurance से AI assistant बोल रही हूँ। आपकी Health policy का renewal 15 नवंबर को है। दो मिनट बात करें?\",\n  \"hinglish_M\": \"नमस्ते, मैं अमित, साथी Insurance से AI assistant बोल रहा हूँ। आपकी Health policy का renewal 15 नवंबर को है। दो मिनट बात करें?\",\n  \"meaning\": \"Hello, this is Asha (male voice: Amit), an AI assistant from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we talk for two minutes?\"\n },\n \"R2\": {\n  \"hinglish_F\": \"इस साल का premium ₹24,850 है, GST मिलाकर। Sum insured 5 लाख ही रहेगा। क्या मैं यही amount confirm कर दूँ?\",\n  \"hinglish_M\": \"इस साल का premium ₹24,850 है, GST मिलाकर। Sum insured 5 लाख ही रहेगा। क्या मैं यही amount confirm कर दूँ?\",\n  \"meaning\": \"This year the premium is Rs 24,850 including GST. The sum insured stays at 5 lakh. Shall I confirm this amount?\"\n },\n \"R3\": {\n  \"hinglish_F\": \"आपकी car, number 4 7 2 9, का insurance 28 अक्टूबर को खत्म हो रहा है। No-claim bonus के साथ premium ₹11,240 है।\",\n  \"hinglish_M\": \"आपकी car, number 4 7 2 9, का insurance 28 अक्टूबर को खत्म हो रहा है। No-claim bonus के साथ premium ₹11,240 है।\",\n  \"meaning\": \"The insurance of your car, number 4 7 2 9, ends on 28 October. With the no-claim bonus, the renewal premium is Rs 11,240.\"\n },\n \"R4\": {\n  \"hinglish_F\": \"आपकी bike की policy 12 अक्टूबर को expire हो गई है। आज renew करें तो premium ₹1,538 है। Renewal शुरू कर दूँ?\",\n  \"hinglish_M\": \"आपकी bike की policy 12 अक्टूबर को expire हो गई है। आज renew करें तो premium ₹1,538 है। Renewal शुरू कर दूँ?\",\n  \"meaning\": \"Your bike policy expired on 12 October. If you renew today the premium is Rs 1,538. Shall I start the renewal?\"\n },\n \"R5\": {\n  \"hinglish_F\": \"आपकी Life policy की 15 अगस्त की किस्त बाकी है, इसलिए policy lapse है। चालू करने में ₹18,600 और ₹420 late fee लगेगी।\",\n  \"hinglish_M\": \"आपकी Life policy की 15 अगस्त की किस्त बाकी है, इसलिए policy lapse है। चालू करने में ₹18,600 और ₹420 late fee लगेगी।\",\n  \"meaning\": \"The 15 August instalment of your life policy is unpaid, so the policy is lapsed now. To restart it you pay Rs 18,600 and a late fee of Rs 420.\"\n },\n \"R6\": {\n  \"hinglish_F\": \"Policy 31 दिसंबर तक फिर चालू हो सकती है, बस एक छोटा health form भरना होगा। कल शाम 6 बजे advisor से call करवा दूँ?\",\n  \"hinglish_M\": \"Policy 31 दिसंबर तक फिर चालू हो सकती है, बस एक छोटा health form भरना होगा। कल शाम 6 बजे advisor से call करवा दूँ?\",\n  \"meaning\": \"The policy can be restarted until 31 December; only a short health form is needed. Shall I arrange a call from an advisor tomorrow at 6 pm?\"\n },\n \"R7\": {\n  \"hinglish_F\": \"ठीक है, payment link आपके WhatsApp पर भेज रही हूँ, 24 घंटे चलेगा। Payment के बाद receipt भी WhatsApp पर आ जाएगी।\",\n  \"hinglish_M\": \"ठीक है, payment link आपके WhatsApp पर भेज रहा हूँ, 24 घंटे चलेगा। Payment के बाद receipt भी WhatsApp पर आ जाएगी।\",\n  \"meaning\": \"Alright, I am sending the payment link to your WhatsApp; it works for 24 hours. After payment the receipt will also come on WhatsApp.\"\n },\n \"R8\": {\n  \"hinglish_F\": \"एक बार confirm कर लूँ: अगली किस्त ₹7,365 की, 5 जनवरी को। Link उस number पर आएगा जिसके आखिरी अंक 4 3 2 1 हैं।\",\n  \"hinglish_M\": \"एक बार confirm कर लूँ: अगली किस्त ₹7,365 की, 5 जनवरी को। Link उस number पर आएगा जिसके आखिरी अंक 4 3 2 1 हैं।\",\n  \"meaning\": \"Let me confirm once: the next instalment is Rs 7,365, on 5 January. The link will come to the number ending 4 3 2 1.\"\n }\n}",
+  "raw_output": {
+   "R1": {
+    "bhojpuri_mix": {
+     "F": "प्रणाम, हम आशा, साथी इंश्योरेंस से एआय असिस्टेंट बोलत बानी। रउआ के हेल्थ पॉलिसी के रिन्यूअल 15 नवंबर के बा। दू मिनट बात हो सकेला?",
+     "M": "प्रणाम, हम अमित, साथी इंश्योरेंस से एआय असिस्टेंट बोलत बानी। रउआ के हेल्थ पॉलिसी के रिन्यूअल 15 नवंबर के बा। दू मिनट बात हो सकेला?"
+    },
+    "tamil_english": {
+     "F": "வணக்கம், நான் ஆஷா, சாத்தி இன்ஷூரன்ஸ்ல இருந்து பேசுற ஏஐ அசிஸ்டன்ட். உங்க ஹெல்த் பாலிசி ரினியூவல் 15 நவம்பருக்கு இருக்கு. ரெண்டு நிமிஷம் பேசலாமா?",
+     "M": "வணக்கம், நான் அமித், சாத்தி இன்ஷூரன்ஸ்ல இருந்து பேசுற ஏஐ அசிஸ்டன்ட். உங்க ஹெல்த் பாலிசி ரினியூவல் 15 நவம்பருக்கு இருக்கு. ரெண்டு நிமிஷம் பேசலாமா?"
+    },
+    "marathi_mix": {
+     "F": "नमस्कार, मी आशा, साथी इन्शुरन्समधून एआय असिस्टंट बोलतेय. तुमच्या हेल्थ पॉलिसीचं रिन्यूअल 15 नोव्हेंबरला आहे. दोन मिनिटं बोलू का?",
+     "M": "नमस्कार, मी अमित, साथी इन्शुरन्समधून एआय असिस्टंट बोलतोय. तुमच्या हेल्थ पॉलिसीचं रिन्यूअल 15 नोव्हेंबरला आहे. दोन मिनिटं बोलू का?"
+    },
+    "indian_english": {
+     "F": "Hello, I'm Asha, an AI assistant calling from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we speak for two minutes?",
+     "M": "Hello, I'm Amit, an AI assistant calling from Saathi Insurance. Your health policy is due for renewal on 15 November. Can we speak for two minutes?"
+    }
+   },
+   "R2": {
+    "bhojpuri_mix": {
+     "F": "एह साल के प्रीमियम जीएसटी मिला के ₹24,850 बा। सम इंश्योर्ड 5 लाखे रही। ईहे अमाउंट कन्फर्म कर दीं का?"
+    },
+    "tamil_english": {
+     "F": "இந்த வருஷ பிரீமியம் ஜிஎஸ்டி சேர்த்து ₹24,850. சம் இன்ஷூர்டு 5 லட்சமாவே இருக்கும். இந்த அமௌன்ட்டை கன்ஃபர்ம் பண்ணட்டுமா?"
+    },
+    "marathi_mix": {
+     "F": "यावर्षीचा प्रीमियम जीएसटीसह ₹24,850 आहे. सम इन्शुअर्ड 5 लाखच राहील. हीच अमाऊंट कन्फर्म करू का?"
+    },
+    "indian_english": {
+     "F": "This year's premium is ₹24,850, including GST. The sum insured stays at 5 lakh. Shall I confirm this amount?"
+    }
+   },
+   "R3": {
+    "bhojpuri_mix": {
+     "F": "रउआ के कार, नंबर 4 7 2 9, के इंश्योरेंस 28 अक्टूबर के खत्म होत बा। नो-क्लेम बोनस के साथ प्रीमियम ₹11,240 बा।"
+    },
+    "tamil_english": {
+     "F": "உங்க கார் இன்ஷூரன்ஸ், நம்பர் 4 7 2 9, 28 அக்டோபர்ல முடியுது. நோ-கிளைம் போனஸோட பிரீமியம் ₹11,240."
+    },
+    "marathi_mix": {
+     "F": "तुमच्या 4 7 2 9 नंबरच्या कारचा इन्शुरन्स 28 ऑक्टोबरला संपतोय. नो-क्लेम बोनससह प्रीमियम ₹11,240 आहे."
+    },
+    "indian_english": {
+     "F": "The insurance for your car, number 4 7 2 9, ends on 28 October. With the no-claim bonus, the premium is ₹11,240."
+    }
+   },
+   "R4": {
+    "bhojpuri_mix": {
+     "F": "रउआ के बाइक के पॉलिसी 12 अक्टूबर के एक्सपायर हो गइल बा। आज रिन्यू करब त प्रीमियम ₹1,538 बा। हम रिन्यूअल शुरू करीं का?"
+    },
+    "tamil_english": {
+     "F": "உங்க பைக் பாலிசி 12 அக்டோபர்ல எக்ஸ்பையர் ஆயிடுச்சு. இன்னிக்கு ரினியூ பண்ணா பிரீமியம் ₹1,538. ரினியூவல் ஆரம்பிக்கட்டுமா?"
+    },
+    "marathi_mix": {
+     "F": "तुमच्या बाइकची पॉलिसी 12 ऑक्टोबरला एक्सपायर झालीये. आज रिन्यू केलं तर प्रीमियम ₹1,538 आहे. रिन्यूअल सुरू करू का?"
+    },
+    "indian_english": {
+     "F": "Your bike policy expired on 12 October. If you renew today, the premium is ₹1,538. Shall I start the renewal?"
+    }
+   },
+   "R5": {
+    "bhojpuri_mix": {
+     "F": "रउआ के लाइफ पॉलिसी के 15 अगस्त के किस्त बाकी बा, एह से पॉलिसी लैप्स बा। फेर चालू करे खातिर ₹18,600 आ ₹420 लेट फीस लागी।"
+    },
+    "tamil_english": {
+     "F": "உங்க லைஃப் பாலிசியோட 15 ஆகஸ்ட் இன்ஸ்டால்மென்ட் பாக்கி இருக்கு, அதனால பாலிசி லாப்ஸ் ஆயிடுச்சு. திரும்ப ஆரம்பிக்க ₹18,600, கூடவே ₹420 லேட் ஃபீ கட்டணும்."
+    },
+    "marathi_mix": {
+     "F": "तुमच्या लाइफ पॉलिसीचा 15 ऑगस्टचा हप्ता बाकी आहे, त्यामुळे पॉलिसी लॅप्स झालीये. पुन्हा सुरू करायला ₹18,600 आणि ₹420 लेट फी लागेल."
+    },
+    "indian_english": {
+     "F": "Your life policy's 15 August instalment is unpaid, so the policy has lapsed. To restart it, you'll need ₹18,600 plus a ₹420 late fee."
+    }
+   },
+   "R6": {
+    "bhojpuri_mix": {
+     "F": "पॉलिसी 31 दिसंबर तक फेर चालू हो सकेला, बस एगो छोट हेल्थ फॉर्म भरे के होई। काल्ह साँझ 6 बजे एडवाइजर से कॉल करवा दीं का?"
+    },
+    "tamil_english": {
+     "F": "பாலிசியை 31 டிசம்பர் வரை திரும்ப ஆரம்பிக்கலாம், ஒரு சின்ன ஹெல்த் ஃபார்ம் மட்டும் நிரப்பணும். நாளைக்கு சாயங்காலம் 6 மணிக்கு அட்வைசர் கால் பண்ண ஏற்பாடு பண்ணட்டுமா?"
+    },
+    "marathi_mix": {
+     "F": "पॉलिसी 31 डिसेंबरपर्यंत पुन्हा सुरू होऊ शकते, फक्त एक छोटा हेल्थ फॉर्म भरावा लागेल. उद्या संध्याकाळी 6 वाजता अ‍ॅडव्हायजरचा कॉल लावून देऊ का?"
+    },
+    "indian_english": {
+     "F": "The policy can be restarted until 31 December; you just need to fill a short health form. Shall I arrange an advisor's call tomorrow at 6 pm?"
+    }
+   },
+   "R7": {
+    "bhojpuri_mix": {
+     "F": "ठीक बा, पेमेंट लिंक रउआ के व्हाट्सऐप पर भेजत बानी, 24 घंटा चली। पेमेंट के बाद रसीदियो व्हाट्सऐप पर आ जाई।"
+    },
+    "tamil_english": {
+     "F": "சரி, பேமென்ட் லிங்க் உங்க வாட்ஸ்அப்புக்கு அனுப்புறேன், 24 மணி நேரம் வேலை செய்யும். பேமென்ட் முடிஞ்சதும் ரிசீட்டும் வாட்ஸ்அப்புல வந்துடும்."
+    },
+    "marathi_mix": {
+     "F": "ठीक आहे, पेमेंट लिंक तुमच्या व्हॉट्सअ‍ॅपवर पाठवतेय, 24 तास चालेल. पेमेंटनंतर रिसीटही व्हॉट्सअ‍ॅपवर येईल.",
+     "M": "ठीक आहे, पेमेंट लिंक तुमच्या व्हॉट्सअ‍ॅपवर पाठवतोय, 24 तास चालेल. पेमेंटनंतर रिसीटही व्हॉट्सअ‍ॅपवर येईल."
+    },
+    "indian_english": {
+     "F": "Alright, I'm sending the payment link to your WhatsApp. It'll work for 24 hours. After payment, the receipt will also come on WhatsApp."
+    }
+   },
+   "R8": {
+    "bhojpuri_mix": {
+     "F": "एगो बेर कन्फर्म कर लेत बानी: अगिला किस्त ₹7,365 के, 5 जनवरी के बा। लिंक ओह नंबर पर आई जेकर आखिरी अंक 4 3 2 1 बा।"
+    },
+    "tamil_english": {
+     "F": "ஒரு தடவை கன்ஃபர்ம் பண்ணிக்கறேன்: அடுத்த தவணை ₹7,365, 5 ஜனவரி. லிங்க் கடைசி இலக்கங்கள் 4 3 2 1 இருக்கிற நம்பருக்கு வரும்."
+    },
+    "marathi_mix": {
+     "F": "एकदा कन्फर्म करू: पुढचा हप्ता ₹7,365, 5 जानेवारीला. लिंक शेवटचे अंक 4 3 2 1 असलेल्या नंबरवर येईल."
+    },
+    "indian_english": {
+     "F": "Let me confirm once: the next instalment is ₹7,365, due on 5 January. The link will come to the number ending 4 3 2 1."
+    }
+   },
+   "C1": {},
+   "C2": {},
+   "C3": {},
+   "C4": {}
+  },
+  "raw_output_note": "reconstructed from content of the single --llm run (2026-10-17) before any manual edit"
+ },
+ "manual_edits": [
+  {
+   "turn": "R1",
+   "register": "bhojpuri_mix",
+   "gender": "F",
+   "from": "एआय",
+   "to": "एआई",
+   "why": "the model used the Marathi spelling of AI; Bhojpuri/Hindi readers write एआई"
+  },
+  {
+   "turn": "R1",
+   "register": "bhojpuri_mix",
+   "gender": "M",
+   "from": "एआय",
+   "to": "एआई",
+   "why": "the model used the Marathi spelling of AI; Bhojpuri/Hindi readers write एआई"
+  },
+  {
+   "turn": "R3",
+   "register": "tamil_english",
+   "gender": "F",
+   "from": "4 7 2 9",
+   "to": "4, 7, 2, 9",
+   "why": "automatic QA, 2026-10-17: with plain spaces the ta-IN text normaliser merged the digits with the following date in 4/4 voices (Pallavi, Valluvar, Meera HD, Arjun HD); both ASR engines heard \"47 September 2,928\". Commas fixed it in a probe (2 voices x 2 engines). The Hinglish and other registers read the spaced digits correctly."
+  }
+ ]
+}

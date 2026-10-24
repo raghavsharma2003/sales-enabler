@@ -1,0 +1,646 @@
+[
+ {
+  "persona": "nbfc-d",
+  "step": "01-signup",
+  "ms": 647,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "02-first-screen",
+  "ms": 1815,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "03-empty-agents",
+  "ms": 1124,
+  "error": null,
+  "url": "/agents"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "04-empty-contacts",
+  "ms": 1131,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "05-empty-campaigns",
+  "ms": 1126,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "06-empty-calls",
+  "ms": 1113,
+  "error": null,
+  "url": "/calls"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "07-empty-insights",
+  "ms": 1280,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "08-empty-numbers",
+  "ms": 1179,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "09-empty-billing",
+  "ms": 1202,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "10-describe-job",
+  "ms": 1003,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "11-templates",
+  "ms": 226,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "12-template-chosen",
+  "ms": 191,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "13-agent-created",
+  "ms": 1502,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "14-agent-persona",
+  "ms": 894,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?tab=persona"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "15-agent-job",
+  "ms": 993,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?tab=job"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "16-agent-rules",
+  "ms": 874,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?tab=rules"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "17-agent-tools",
+  "ms": 862,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?tab=tools"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "18-knowledge",
+  "ms": 951,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "19-knowledge-added",
+  "ms": 2160,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "20-brand",
+  "ms": 928,
+  "error": null,
+  "url": "/settings/brand"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "21-stack",
+  "ms": 2770,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?tab=voice"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "22-stack-build-own",
+  "ms": 1385,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?tab=voice"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "23-test-panel",
+  "ms": 1758,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?test=1"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "24-browser-call",
+  "ms": 6334,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?test=1"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "25-browser-call-ended",
+  "ms": 2226,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?test=1"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "26-practice-chat",
+  "ms": 4143,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?test=1"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "27-practice-chat-reply",
+  "ms": 3764,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?test=1"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "28-practice-callers",
+  "ms": 462,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e?test=1"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "29-publish-sheet",
+  "ms": 1154,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "30-published",
+  "ms": 3580,
+  "error": null,
+  "url": "/agents/6cbfee47-37b5-488d-bda8-6d00b4ffe50e"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "31-import",
+  "ms": 952,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "32-import-pasted",
+  "ms": 179,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "33-import-checked",
+  "ms": 316,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "34-import-saved",
+  "ms": 2636,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "35-contacts",
+  "ms": 1269,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "36-campaign-new",
+  "ms": 1132,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "37-campaign-draft",
+  "ms": 1809,
+  "error": null,
+  "url": "/campaigns/838af062-bd14-43d4-8d82-8cd837ccb062"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "38-campaign-launch-card",
+  "ms": 243,
+  "error": "Launch is not available yet (see the checks on the page)",
+  "url": "/campaigns/838af062-bd14-43d4-8d82-8cd837ccb062"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "39-numbers",
+  "ms": 1365,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "40-numbers-ring-me",
+  "ms": 2689,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "41-calls",
+  "ms": 1338,
+  "error": null,
+  "url": "/calls?view=test"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "42-call-page",
+  "ms": 2015,
+  "error": null,
+  "url": "/calls/b79851c5-02d5-4d4e-82e8-4a8b37d42bfa"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "43-insights",
+  "ms": 1446,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "44-op-setup",
+  "ms": 3786,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "45-op-what-went-wrong",
+  "ms": 3874,
+  "error": null,
+  "url": "/campaigns/838af062-bd14-43d4-8d82-8cd837ccb062"
+ },
+ {
+  "persona": "nbfc-d",
+  "step": "46-today-after",
+  "ms": 1424,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "01-signup",
+  "ms": 537,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "02-first-screen",
+  "ms": 1748,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "03-empty-agents",
+  "ms": 1088,
+  "error": null,
+  "url": "/agents"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "04-empty-contacts",
+  "ms": 1101,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "05-empty-campaigns",
+  "ms": 1088,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "06-empty-calls",
+  "ms": 1091,
+  "error": null,
+  "url": "/calls"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "07-empty-insights",
+  "ms": 1175,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "08-empty-numbers",
+  "ms": 1103,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "09-empty-billing",
+  "ms": 1132,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "10-describe-job",
+  "ms": 953,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "11-templates",
+  "ms": 189,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "12-template-chosen",
+  "ms": 160,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "13-agent-created",
+  "ms": 1443,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "14-agent-persona",
+  "ms": 841,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?tab=persona"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "15-agent-job",
+  "ms": 890,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?tab=job"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "16-agent-rules",
+  "ms": 863,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?tab=rules"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "17-agent-tools",
+  "ms": 838,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?tab=tools"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "18-knowledge",
+  "ms": 933,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "19-knowledge-added",
+  "ms": 2122,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "20-brand",
+  "ms": 909,
+  "error": null,
+  "url": "/settings/brand"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "21-stack",
+  "ms": 2647,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?tab=voice"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "22-stack-build-own",
+  "ms": 1146,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?tab=voice"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "23-test-panel",
+  "ms": 1585,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?test=1"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "24-browser-call",
+  "ms": 6204,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?test=1"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "25-browser-call-ended",
+  "ms": 2119,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?test=1"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "26-practice-chat",
+  "ms": 3981,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?test=1"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "27-practice-chat-reply",
+  "ms": 3639,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?test=1"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "28-practice-callers",
+  "ms": 459,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d?test=1"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "29-publish-sheet",
+  "ms": 1125,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "30-published",
+  "ms": 3531,
+  "error": null,
+  "url": "/agents/dbbca8ab-19e6-4267-9dab-047782ca911d"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "31-import",
+  "ms": 916,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "32-import-pasted",
+  "ms": 81,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "33-import-checked",
+  "ms": 281,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "34-import-saved",
+  "ms": 2617,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "35-contacts",
+  "ms": 1175,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "36-campaign-new",
+  "ms": 1002,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "37-campaign-draft",
+  "ms": 1751,
+  "error": null,
+  "url": "/campaigns/89bff20a-0fd3-447e-9e25-25f0b2bb4d24"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "38-campaign-launch-card",
+  "ms": 138,
+  "error": "Launch is not available yet (see the checks on the page)",
+  "url": "/campaigns/89bff20a-0fd3-447e-9e25-25f0b2bb4d24"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "39-numbers",
+  "ms": 1363,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "40-numbers-ring-me",
+  "ms": 2682,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "41-calls",
+  "ms": 1296,
+  "error": null,
+  "url": "/calls?view=test"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "42-call-page",
+  "ms": 1975,
+  "error": null,
+  "url": "/calls/43a9a825-2796-4ae6-965d-0f6777a28db7"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "43-insights",
+  "ms": 1377,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "44-op-setup",
+  "ms": 8419,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "45-op-what-went-wrong",
+  "ms": 8428,
+  "error": null,
+  "url": "/campaigns/89bff20a-0fd3-447e-9e25-25f0b2bb4d24"
+ },
+ {
+  "persona": "nbfc-m",
+  "step": "46-today-after",
+  "ms": 1326,
+  "error": null,
+  "url": "/"
+ }
+]

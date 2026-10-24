@@ -1,0 +1,80 @@
+series,date,usd_per_ref_minute,inr_per_ref_minute_at_95.11,label,on_envelope
+llm_small_tier,2023-03-01,0.036384,3.4605,gpt-3.5-turbo,True
+llm_small_tier,2023-11-06,0.018528,1.7622,gpt-3.5-turbo-1106,True
+llm_small_tier,2024-01-25,0.009432,0.8971,gpt-3.5-turbo-0125,True
+llm_small_tier,2024-07-18,0.001962,0.1866,gpt-4o-mini-2024-07-18,True
+llm_small_tier,2025-04-14,0.001002,0.0953,gpt-4.1-nano,True
+llm_small_tier,2025-08-07,0.000476,0.0453,gpt-5-nano,True
+llm_small_tier,2026-03-17,0.001788,0.1701,gpt-5.4-nano,False
+llm_small_tier,2026-06-26,0.008856,0.8423,gpt-5.6-luna (launch),False
+llm_small_tier,2026-07-30,0.001771,0.1685,gpt-5.6-luna (price cut),False
+llm_small_tier,2026-09-22,0.000852,0.0810,gpt-6-luna (<=272k),False
+llm_frontier_tier,2023-03-14,0.555840,52.8659,gpt-4 (8K),True
+llm_frontier_tier,2023-11-06,0.188640,17.9416,gpt-4-1106-preview (GPT-4 Turbo),True
+llm_frontier_tier,2024-05-13,0.094320,8.9708,gpt-4o-2024-05-13,True
+llm_frontier_tier,2024-08-06,0.032700,3.1101,gpt-4o-2024-08-06,True
+llm_frontier_tier,2025-04-14,0.020040,1.9060,gpt-4.1,True
+llm_frontier_tier,2025-08-07,0.011910,1.1328,gpt-5,True
+llm_frontier_tier,2026-03-05,0.022140,2.1057,gpt-5.4 (<=272k),True
+llm_frontier_tier,2026-06-26,0.022140,2.1057,gpt-5.6-terra (launch),True
+llm_frontier_tier,2026-07-30,0.017712,1.6846,gpt-5.6-terra (price cut),True
+llm_frontier_tier,2026-09-22,0.017040,1.6207,gpt-6-sol (<=272k),True
+llm_frontier_tier,2026-09-29,0.015816,1.5043,gpt-6.1-sol (<=272k),True
+asr_azure_streaming,2018-11-01,0.016667,1.5852,S1 Speech to Text real-time (standard),True
+asr_azure_streaming,2025-10-01,0.009000,0.8560,Voice Live Std - standard speech audio input,True
+asr_azure_streaming,2025-11-01,0.007500,0.7133,Voice Live BYO - standard speech audio input,True
+asr_azure_streaming,2026-05-01,0.017000,1.6169,gpt-realtime-whisper,False
+asr_azure_streaming,2026-08-01,0.017000,1.6169,gpt-live-transcribe,False
+asr_any_streaming,2018-11-01,0.016667,1.5852,S1 Speech to Text real-time (standard),True
+asr_any_streaming,2023-04-01,0.016500,1.5693,Enhanced streaming (PAYG),True
+asr_any_streaming,2023-09-23,0.005900,0.5611,Nova-2 streaming (PAYG),True
+asr_any_streaming,2024-06-15,0.007833,0.7450,Streaming STT (Best),False
+asr_any_streaming,2025-03-27,0.007700,0.7323,Nova-3 streaming (PAYG),False
+asr_any_streaming,2025-06-17,0.002500,0.2378,Universal-Streaming,True
+asr_any_streaming,2025-10-01,0.009000,0.8560,Voice Live Std - standard speech audio input,False
+asr_any_streaming,2025-11-01,0.007500,0.7133,Voice Live BYO - standard speech audio input,False
+asr_any_streaming,2026-03-05,0.007700,0.7323,Flux (conversational STT with end-of-turn) PAYG,False
+asr_any_streaming,2026-05-01,0.017000,1.6169,gpt-realtime-whisper,False
+asr_any_streaming,2026-06-06,0.006500,0.6182,Scribe v2 Realtime,False
+asr_any_streaming,2026-08-01,0.017000,1.6169,gpt-live-transcribe,False
+asr_any_streaming,2026-09-07,0.009000,0.8560,Gemini 3.5 Transcribe Live (blended),False
+asr_any_streaming,2026-10-17,0.004700,0.4470,Saarika/Saaras STT real-time,False
+tts_azure_neural,2023-03-01,0.006600,0.6277,S1 Neural TTS (carried back),True
+tts_azure_neural,2024-02-01,0.006600,0.6277,S1 Neural TTS,False
+tts_azure_quality,2023-03-01,0.006600,0.6277,S1 Neural TTS (carried back),True
+tts_azure_quality,2024-02-01,0.006600,0.6277,S1 Neural TTS,True
+tts_azure_quality,2025-09-10,0.013200,1.2555,Neural HD (DragonHD),True
+tts_azure_quality,2026-03-01,0.009680,0.9207,Neural HD (DragonHD),True
+tts_azure_hd,2025-09-10,0.013200,1.2555,Neural HD (DragonHD),True
+tts_azure_hd,2026-03-01,0.009680,0.9207,Neural HD (DragonHD),True
+tts_premium_thirdparty,2024-09-15,0.016456,1.5651,Sonic Scale plan ($299/8M chars; overage $38/1M),True
+tts_premium_thirdparty,2024-12-09,0.026400,2.5109,Turbo/Flash on Business plan ($1320/11M credits at 0.5 credit/char),False
+tts_premium_thirdparty,2025-09-08,0.026400,2.5109,Flash v2.5 on Business plan (~$0.06/min),False
+tts_premium_thirdparty,2026-06-06,0.016456,1.5651,Sonic-3.5 Scale plan ($239/mo annual or $299 monthly; 8M credits),False
+tts_premium_thirdparty,2026-06-06,0.022000,2.0924,Flash/Turbo PAYG API,False
+rt_openai_flagship,2024-10-01,0.217500,20.6864,gpt-4o-realtime-preview (audio),True
+rt_openai_flagship,2024-12-17,0.075000,7.1332,gpt-4o-realtime-preview-2024-12-17 (audio),True
+rt_openai_flagship,2025-08-28,0.050400,4.7935,gpt-realtime GA (audio),True
+rt_openai_flagship,2026-02-23,0.050400,4.7935,gpt-realtime-1.5 (audio),False
+rt_openai_flagship,2026-05-07,0.050400,4.7935,gpt-realtime-2 (audio),False
+rt_openai_flagship,2026-07-07,0.050400,4.7935,gpt-realtime-2.1 (audio),False
+rt_openai_mini,2024-12-17,0.016080,1.5294,gpt-4o-mini-realtime-preview (audio),True
+rt_openai_mini,2025-10-06,0.016080,1.5294,gpt-realtime-mini (audio),False
+rt_openai_mini,2026-07-07,0.016080,1.5294,gpt-realtime-2.1-mini (audio),False
+rt_live1,2026-09-01,0.050000,4.7555,GPT-Live-1 (duration billed),True
+platform_us_platform_fee,2024-06-23,0.050000,4.7555,platform fee (models and telephony extra),True
+platform_us_platform_fee,2026-10-17,0.050000,4.7555,platform fee,False
+platform_us_engine,2024-12-06,0.070000,6.6577,voice engine incl. ElevenLabs voice (LLM/telephony extra),True
+platform_us_engine,2024-12-11,0.130000,12.3643,overage (all-in plan),False
+platform_us_engine,2026-03-05,0.080000,7.6088,Voice Agent API Standard,False
+platform_us_engine,2026-03-14,0.090000,8.5599,voice engine (LLM + telephony extra),False
+platform_us_engine,2026-06-06,0.060000,5.7066,Line voice agents (call duration),True
+platform_us_engine,2026-06-06,0.080000,7.6088,Agents,False
+platform_us_engine,2026-06-12,0.070000,6.6577,infra $0.055 + TTS $0.015,False
+platform_india_all_in,2024-06-25,0.200000,19.0220,annual plans,True
+platform_india_all_in,2025-09-08,0.200000,19.0220,PAYG all-in incl. telephony,False
+platform_india_all_in,2026-03-14,0.100000,9.5110,PAYG all-in incl. telephony,True
+platform_india_all_in,2026-10-17,0.068000,6.4675,INR 6 per connected minute all-in,True
+platform_india_bundled,2025-12-08,0.100000,9.5110,Starter bundle (models bundled; telephony extra),True
+platform_india_bundled,2026-06-10,0.060000,5.7066,PAYG standard,True
+platform_india_bundled,2026-10-17,0.039800,3.7854,Samvaad PAYG (telephony INR 0.40/min extra),True

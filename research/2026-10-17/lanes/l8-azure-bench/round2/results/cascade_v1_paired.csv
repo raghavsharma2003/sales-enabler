@@ -1,0 +1,4 @@
+a,b,n_pairs,median_b_minus_a_ms,ci95
+A_seg500_fast,B_seg800_fast,29,310,282-338
+A_seg500_fast,C_seg800_spec_fast,7,74,-69-350
+B_seg800_fast,C_seg800_spec_fast,7,-373,-409-61

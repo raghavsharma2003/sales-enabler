@@ -1,0 +1,4 @@
+source,speaker,gender,turn,script,take,chosen,file,capture,notes
+human,talentF1,F,R1,plain,1,yes,H_R1_talentF1_1.wav,studio,example row; delete
+human,talentM1,M,C2,blockc,2,yes,H_C2_talentM1_2.wav,phone-recorder,example row; delete
+competitor,vendorname,F,R3,plain,1,yes,K_R3_vendorname_1.wav,harness-first-message,"platform; TTS engine and voice name; settings; example row, delete"

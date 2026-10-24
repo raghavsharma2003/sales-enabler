@@ -1,0 +1,675 @@
+[
+ {
+  "id": "wt-bolna-01",
+  "area": "coverage",
+  "grade": "observed",
+  "claim": "The walkthrough holds 44 PNGs and 43 per-page text captures plus Instinct's notes and cross-vendor report. All 43 text captures, the notes and the Bolna section of the report were read, and 28 PNGs were opened directly. File number 11 is absent from both sets (the sequence runs 10 to 12). Every PNG is the logged-in app: no sign-up or sign-in screen was captured, so sign-up friction is not evidenced.",
+  "evidence": [
+   "drive-text-files.json",
+   "00-NOTES-AND-COVERAGE.md",
+   "00-login-landing.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-02",
+  "area": "coverage",
+  "grade": "observed",
+  "claim": "Several file names do not match their pixels: 00-login-landing is the logged-in Agent Studio mid-load; 29-billing, 30-team and 31-settings are all the Agent Studio New Agent draft (29 is the cost-still-loading state, 30 and 31 are identical); 33-org-switcher is Analytics with no menu open; 21-calling-toggles-on-unsaved shows no unsaved marker; 40-recharge-dialog is the Add Funds modal over Analytics. Real billing, account, team and compliance content is in 34, 35 and the 36-account-* set.",
+  "evidence": [
+   "29-billing.png",
+   "30-team.png",
+   "31-settings.png",
+   "33-org-switcher.png",
+   "21-calling-toggles-on-unsaved.png",
+   "40-recharge-dialog.png",
+   "00-login-landing.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-03",
+  "area": "coverage",
+  "grade": "observed",
+  "claim": "The account was empty and no call was placed, so no call-record view was captured: no transcript, recording, per-call cost breakdown, progression or raw-log screen, no real analytics data, no invoice, no campaign or batch row. Every list page shows an empty state.",
+  "evidence": [
+   "06-call-history.png",
+   "07-analytics.png",
+   "32-user-menu.png",
+   "37-debugging.png",
+   "08-reports.png",
+   "36-account-Invoices.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-04",
+  "area": "coverage",
+  "grade": "observed",
+  "claim": "Some content comes only from Instinct's notes, with no screenshot or text capture behind it: the open provider option lists for LLM, STT and TTS; the full OpenAI model list; the Voice engine options (Cascaded or Realtime Beta); the Engine tail values (check-in 10 s, hangup on silence 20 s, call timeout 90 s); the batch/campaign template column; email-plus-password and GitHub/Google sign-in; load timings. These are reported here as notes-sourced.",
+  "evidence": [
+   "00-NOTES-AND-COVERAGE.md",
+   "13-builder-Intelligence.png",
+   "14-builder-Languages.png",
+   "16-builder-Engine.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-05",
+  "area": "coverage",
+  "grade": "unknown",
+  "claim": "Not captured at all: Graph Agent page, the Organisation page under Settings, Documentation, the Import dialog, the Get-a-call dropdown, the agent history and duplicate icons, Browse Modules, AI Edit output, Add Section, Hangup-using-a-prompt content, the Upload Batch dialog, Verify phone number dialog, Create trunk dialog, Create compliance application form, Generate report dialog, Top Agents tab, Campaigns Executions tab, the Pilot tab of the recharge dialog, the Add URL tab of Add Knowledge Base, Auto Build, and the org switcher options. Their contents are unknown.",
+  "evidence": [
+   "00-NOTES-AND-COVERAGE.md",
+   "drive-text-files.json"
+  ]
+ },
+ {
+  "id": "wt-bolna-06",
+  "area": "ia",
+  "grade": "observed",
+  "claim": "Full navigation from the text captures: Ask Bolna (Beta); BUILD: Agent Studio, Graph Agent, Workflows (Beta), Knowledge Base; DEPLOY: Campaigns (Beta), Batches, My Numbers, SIP Trunks; MONITOR: Call History, Analytics, Reports, Debugging; DEVELOPERS: API Keys, Documentation; SETTINGS: Integrations, Organisation. At 1280x720 the sidebar is clipped after Analytics, so Reports, Debugging, Developers and Settings need a sidebar scroll.",
+  "evidence": [
+   "24-buy-number-dialog.txt",
+   "34-account.txt",
+   "26-integrations-providers.txt",
+   "00-login-landing.png",
+   "25-india-number-options-plivo.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-07",
+  "area": "ia",
+  "grade": "observed",
+  "claim": "Account-level surfaces are not in the sidebar: the user popover holds a theme toggle, Recharge account, Account (with '0/2 ongoing calls'), Verified numbers and Log out. Account opens 'Workplace settings' with six tabs: Account Information, Team Members, Compliance Settings, Invoices, Violations, Vobiz KYC. Page titles differ from nav labels (Call History is titled Agent Conversations; API Keys is titled Developers).",
+  "evidence": [
+   "32-user-menu.png",
+   "34-account.png",
+   "36-account-Invoices.png",
+   "06-call-history.png",
+   "28-api-keys.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-08",
+  "area": "ia",
+  "grade": "observed",
+  "claim": "Gating and maturity markers: Beta badges on Ask Bolna, Workflows, Campaigns and on AI Edit in the prompt editor; a blue 'New' badge on the Pilot tab of the recharge dialog; Team Members shows 'This is a paid feature' with a sales-call route; and a persistent trial banner says outbound calls are limited to verified phone numbers. Core outbound (Campaigns) is itself Beta.",
+  "evidence": [
+   "02-campaigns.png",
+   "10-workflows.png",
+   "20-add-language.png",
+   "40-recharge-dialog.png",
+   "36-account-Team-Members.png",
+   "00-login-landing.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-09",
+  "area": "first-run",
+  "grade": "observed",
+  "claim": "A new user lands directly on Agent Studio with a pre-created draft 'My New Agent' already selected: welcome message 'Hello from Bolna', engine Cascaded, cost bar $0.060, Hindi default, wallet $5.00, no tour or wizard seen. The trial banner (not dismissible) and a promo banner (dismissible) take about 90 px of 720 px on every screen.",
+  "evidence": [
+   "01-dashboard-agent-studio.png",
+   "00-login-landing.png",
+   "01-dashboard-agent-studio.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-10",
+  "area": "first-run",
+  "grade": "inferred",
+  "claim": "Steps to a first working agent, from captures: (1) sign in, (2) type a prompt into the Canvas, (3) optionally edit the pre-filled welcome message, (4) Save agent, (5) verify your own phone number (user menu > Verified numbers), (6) Get a call from agent. That is about 5 to 7 steps with one required typed field (the prompt) because name, welcome message, engine, model, voice and transcriber arrive pre-set. What Save actually validates was not seen, and the draft's other tabs were not opened.",
+  "evidence": [
+   "01-dashboard-agent-studio.png",
+   "12-builder-Agent.png",
+   "27-verified-numbers.png",
+   "32-user-menu.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-11",
+  "area": "first-run",
+  "grade": "observed",
+  "claim": "The cost header loads late: while pending it reads 'Cost per min (approx): ~ $' over an empty bar with no Welcome Message Delay input, then the bar, legend and 'Preferred Price' badge arrive and the layout jumps about 24 px.",
+  "evidence": [
+   "29-billing.png",
+   "30-team.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-12",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "Agent Studio is a master-detail single page: agent list (Import, New Agent, search) on the left; on the right a header with name, Voice engine select, duplicate and history icon buttons and a cost bar, then seven tabs (Agent, Intelligence, Languages, Calling, Engine, Tools, Extractions). A sticky footer holds 'Updated N minutes ago', Save agent and a Get a call from agent split button. The cost header stays visible on every tab.",
+  "evidence": [
+   "12-builder-Agent.png",
+   "13-builder-Intelligence.png",
+   "16-builder-Engine.png",
+   "17-builder-Tools.png",
+   "18-builder-Extractions.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-13",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "The Agent tab holds the welcome message (variables via {{name}}), 'Ignore user speech before welcome message' (off) and Welcome Message Delay (0 ms), then a Canvas prompt editor. The new-agent Canvas is a five-section skeleton (Identity and Demeanour, Conversation Starter, Conversation Flow, Closing, Frequently Asked Questions) with a token counter (24 tokens) and the hint '{{ variables, @ modules/functions, # sections, - lists'. It also has per-language chips with Add Language, AI Edit (Beta), Browse Modules, Add Section, test variables with Asia/Kolkata, and a Hangup using a prompt control.",
+  "evidence": [
+   "01-dashboard-agent-studio.txt",
+   "12-builder-Agent.txt",
+   "20-add-language.png",
+   "01-dashboard-agent-studio.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-14",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "Intelligence tab on the saved agent: provider openai, model gpt-4.1-mini, tokens per LLM output 100, temperature 0.1, and a multi-select Knowledge Base attach field. Knowledge bases are attached here, not on the Tools tab.",
+  "evidence": [
+   "13-builder-Intelligence.png",
+   "13-builder-Intelligence.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-15",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "Languages tab is per-language ('Settings for' chip row, Hindi Default): Voice (ElevenLabs, Eleven Turbo v2.5, voice 'Tripti - Calm and Clear' with preview, plus an Advanced settings accordion) and Transcription (deepgram, nova-3, Keywords, Context). The prompt, voice and transcriber are therefore set per language.",
+  "evidence": [
+   "14-builder-Languages.png",
+   "19-voice-library.png",
+   "14-builder-Languages.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-16",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "Calling tab defaults on the saved agent: Telephony Provider Plivo, Ambient Noise None, and Noise Cancellation, Voicemail Detection, Keypad Input (DTMF), Auto Reschedule and Inbound Calling all off. Switching them on reveals defaults: noise cancellation 85 (%), voicemail detection 2.5 (s). Inbound adds an inbound-number select, a 'database for inbound numbers' data source that allows calls only from the chosen database, spam prevention (max calls per number, always-allow list), and an outbound timing window whose selectors read 9:00 AM to 9:00 PM.",
+  "evidence": [
+   "15-builder-Calling.png",
+   "21-calling-toggles-on-unsaved.png",
+   "15-builder-Calling.txt",
+   "21-calling-toggles-on-unsaved.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-17",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "Engine tab on the saved agent: Response Rate preset 'Custom', Endpointing 500 ms, Linear delay 900 ms, and 'Number of words to wait for before interrupting' 1. Below the fold (text only) are User Online Detection (per-language message, 'Hindi 24 chars'; invoke after N s), Final Call Message (Hindi, 0 chars), Allow interruption, Hangup on User Silence and Total Call Timeout.",
+  "evidence": [
+   "16-builder-Engine.png",
+   "16-builder-Engine.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-18",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "Tools tab offers four presets (Calendar Availability, Book Appointment, Transfer Call 'Route call to human', Web Search) plus a Custom Function ('Connect any API endpoint': write manually, or generate from cURL). Extractions tab holds webhook config (URL, Add headers toggle, Trigger on statuses defaulting to All, Send test) and an Extraction Library with one entry, 'Call Summary', plus New Category.",
+  "evidence": [
+   "17-builder-Tools.png",
+   "18-builder-Extractions.png",
+   "17-builder-Tools.txt",
+   "18-builder-Extractions.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-19",
+  "area": "builder",
+  "grade": "observed",
+  "claim": "The builder shows no unsaved-changes indicator: Save agent is always enabled and the only state cue is 'Updated N minutes ago'. In 21 the toggles are switched on and the footer still reads 'Updated 5 minutes ago' with no draft marker (Instinct reloaded without saving).",
+  "evidence": [
+   "21-calling-toggles-on-unsaved.png",
+   "12-builder-Agent.png",
+   "00-NOTES-AND-COVERAGE.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-20",
+  "area": "choice",
+  "grade": "observed",
+  "claim": "No latency figure is displayed anywhere in the captured Bolna dashboard. The model, voice, transcriber and language pickers show no per-option price, latency or quality score. The only trade-off signal is the header cost ($0.060/min) with a three-segment bar and a 'Preferred Price' badge. The cross-vendor report says Vapi, Retell and ElevenLabs show per-option latency and cost inline.",
+  "evidence": [
+   "13-builder-Intelligence.png",
+   "14-builder-Languages.png",
+   "19-voice-library.png",
+   "35-account-show-models.png",
+   "00-FINAL-REPORT.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-21",
+  "area": "choice",
+  "grade": "observed",
+  "claim": "The 'Show models' list on the Account page shows the models inside the flat 3.5 cent voice-agent price: 9 ASR chips (nova-2, nova-3, saarika:v2.5, saaras:v2.5, saaras:v3, saaras:v4, stt-rt-v5, azure, scribe_v2_realtime), 13 LLM chips (gpt-4.1-mini through gpt-6-luna, plus 5 azure/ variants) and 16 TTS chips (bulbul v2/v3/v4-flash, 7 ElevenLabs, 4 sonic, neural, maya). No chip carries a price. Anthropic, Kalpa, Smallest and Soniox TTS appear as selectable providers per the notes but have no chip.",
+  "evidence": [
+   "35-account-show-models.png",
+   "35-account-show-models.txt",
+   "00-NOTES-AND-COVERAGE.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-22",
+  "area": "choice",
+  "grade": "observed",
+  "claim": "The voice picker lists about 100 ElevenLabs voices (counted from the text capture) with a search box, All/Male/Female/Neutral chips, per-row preview and 'Add new voice'. Rows show name, gender and one category tag (about 85 'conversational'; others advertisement, social_media, characters_animation, informative_educational, narrative_story, entertainment_tv). There is no language, price or latency column. The list opened under the Hindi chip still includes Marathi, Gujarati, Bengali and Kannada voice names, an Omani Arabic voice and an American English voice, and two romance-register voices ('Girlfriend Voice, Feels Romantic' and 'Sweet Romantic AI Girlfriend').",
+  "evidence": [
+   "19-voice-library.png",
+   "19-voice-library.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-23",
+  "area": "choice",
+  "grade": "observed",
+  "claim": "Add Language offers 22 options after the Hindi default: English, Tamil, Telugu, Kannada, Malayalam, Bengali, Marathi, Gujarati, India Multilingual, Punjabi, Odia, Spanish, Assamese, Arabic, Burmese, Dutch, French, German, Indonesian, Italian, Malay, Urdu. There is no Hinglish or Bhojpuri entry; 'India Multilingual' sits beside single languages with no explanation.",
+  "evidence": [
+   "20-add-language.png",
+   "20-add-language.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-24",
+  "area": "choice",
+  "grade": "observed",
+  "claim": "Per the notes, the agent selects offer: LLM providers azure, openai, google, openrouter, deepseek, anthropic plus a custom LLM; STT providers assembly, azure, deepgram, elevenlabs, gemini, gladia, google, openai, sarvam, smallest, soniox; TTS providers Cartesia, ElevenLabs, Maya, Sarvam, Azuretts, Smallest, Kalpa, Soniox. The option lists were not preserved in a capture.",
+  "evidence": [
+   "00-NOTES-AND-COVERAGE.md",
+   "13-builder-Intelligence.png",
+   "14-builder-Languages.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-25",
+  "area": "pricing",
+  "grade": "displayed-by-vendor",
+  "claim": "Header: 'Cost per min: $0.060' with a stacked bar whose segments (green about 58 percent, orange about 8, blue about 33 to 34) match the Account table split of 3.5 / 0.5 / 2 cents out of 6. The bar has no per-segment dollar amounts; 'Preferred Price' and 'India routing' badges carry no visible explanation.",
+  "evidence": [
+   "01-dashboard-agent-studio.png",
+   "12-builder-Agent.png",
+   "34-account.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-26",
+  "area": "pricing",
+  "grade": "displayed-by-vendor",
+  "claim": "Account > Pricing Information: Voice agent cost 3.5 cents, Telephony 0.5, Bolna Platform 2, Total 6 cents per minute, each with a 30-second pulse. The 'Price (in cents)' and 'Price (per minute in cents)' columns are identical in every row. The recharge dialog calls the rate '6c/min' and says preferred models are included.",
+  "evidence": [
+   "34-account.png",
+   "35-account-show-models.png",
+   "40-recharge-dialog.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-27",
+  "area": "pricing",
+  "grade": "inferred",
+  "claim": "The displayed 6 cents already includes the 2 cent Bolna Platform line (3.5 + 0.5 + 2 = 6; the header and the recharge 'base price' are both $0.060). This supports the 'fee included' branch of the earlier open question, not the 'fee added on top' branch (INR 8.0). It stays unverified until an invoice shows it.",
+  "evidence": [
+   "34-account.png",
+   "40-recharge-dialog.png",
+   "01-dashboard-agent-studio.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-28",
+  "area": "pricing",
+  "grade": "displayed-by-vendor",
+  "claim": "Recharge dialog: tiers $15, $60, $150 (pre-selected), $300 (+10%), $600 (+15%, 11,500 min, ~Rs 4.98 = $0.052/min), $1,500 (+20%, 30,000 min, ~Rs 4.77 = $0.050), $3,000 (+33%, 66,500 min, ~Rs 4.30 = $0.045), custom $10 to 5,000; base and effective price at $150 both $0.060 (~Rs 5.72); 'Pilot' tab (New) and an Enterprise 'Book Meeting' card; paid via Stripe. Only the three top tiers show minutes and rate.",
+  "evidence": [
+   "40-recharge-dialog.png",
+   "40-recharge-dialog.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-29",
+  "area": "pricing",
+  "grade": "inferred",
+  "claim": "Recomputing the displayed tiers shows the bonus is extra credit at the flat $0.06 rate: 600 x 1.15 / 0.06 = 11,500, 1,500 x 1.20 / 0.06 = 30,000, 3,000 x 1.33 / 0.06 = 66,500 minutes. So $300 should give 5,500 minutes (not displayed). Best displayed effective rate is 4.51 cents, 25 percent under base. Billing is USD (invoice column 'Total amount (USD)'); INR is an approximate overlay at about Rs 95.3 per dollar.",
+  "evidence": [
+   "40-recharge-dialog.png",
+   "36-account-Invoices.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-30",
+  "area": "pricing",
+  "grade": "displayed-by-vendor",
+  "claim": "Trial state: $5.00 wallet, a red '83' minutes chip (text capture: 'MINUTES 83'), concurrency 2 (Account table and '0/2 ongoing calls' in the user popover), outbound limited to verified numbers. 5 / 0.06 = 83.3 minutes, so the chip is the wallet at the displayed rate. The chip appears on saved-agent pages only, not on the draft or on other pages.",
+  "evidence": [
+   "12-builder-Agent.png",
+   "34-account.png",
+   "32-user-menu.png",
+   "02-campaigns.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-31",
+  "area": "conversation",
+  "grade": "observed",
+  "claim": "Defaults on the saved agent: endpointing 500 ms, linear delay 900 ms, words before interrupting 1, welcome delay 0, ignore-speech-before-welcome off. These equal the values the earlier API lane stored (500 / 900 / 1) and differ from the docs (400 / 2). The agent's origin is unknown (its name and prompt follow the teardown's synthetic-agent convention), and the New Agent draft's Engine tab was never opened, so what a freshly dashboard-created agent gets is not settled. The 'Custom' Response Rate suggests named presets exist whose options were not seen.",
+  "evidence": [
+   "16-builder-Engine.png",
+   "12-builder-Agent.png",
+   "01-dashboard-agent-studio.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-32",
+  "area": "conversation",
+  "grade": "inferred",
+  "claim": "The prior floor holds on the dashboard's own numbers: 500 ms endpointing plus 900 ms linear delay is 1.4 s before the reply audio can start, before LLM/TTS overlap, transport and buffering. The UI shows the two sliders under 'Response Latency' with no sum, no predicted reply gap and no consequence text. Slider thumbs imply roughly 0 to 2,500 ms for linear delay and 0 to 5,000 ms for endpointing (estimates from thumb position).",
+  "evidence": [
+   "16-builder-Engine.png",
+   "16-builder-Engine.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-33",
+  "area": "conversation",
+  "grade": "observed",
+  "claim": "Silence and ending controls (Engine tab, values from the notes): User Online Detection with a per-language message ('Hindi 24 chars', the length of the English 'Hey, are you still there') invoked after 10 s; hangup on user silence 20 s; total call timeout 90 s; Final Call Message empty (0 chars) in Hindi; Allow interruption present. The check-in text for the Hindi agent is therefore English-length by default.",
+  "evidence": [
+   "16-builder-Engine.txt",
+   "00-NOTES-AND-COVERAGE.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-34",
+  "area": "conversation",
+  "grade": "observed",
+  "claim": "Voicemail, DTMF and noise are minimal in the UI: Voicemail Detection exposes only a seconds value (2.5 when on); Keypad Input is a bare toggle; Noise Cancellation is a percent slider (85 default, thumb position consistent with 60 to 100); Ambient Noise is a select (None) with add and preview buttons. No voicemail message or Hindi operator-message handling is exposed.",
+  "evidence": [
+   "15-builder-Calling.png",
+   "21-calling-toggles-on-unsaved.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-35",
+  "area": "conversation",
+  "grade": "inferred",
+  "claim": "Interruption is one integer (words to wait, default 1) with no language option. With the earlier code finding that finals at or under the threshold are dropped against an English-only stop list, the UI gives a Hindi builder no way to see or fix that a short 'haan' or 'nahi' can be discarded. Unmeasured on a call.",
+  "evidence": [
+   "16-builder-Engine.png",
+   "16-builder-Engine.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-36",
+  "area": "conversation",
+  "grade": "observed",
+  "claim": "The Agent tab toggle 'Ignore user speech before welcome message' is off by default (draft and saved agent). The earlier claim that everything said during the welcome is dropped therefore needs a condition: either the drop applies when this flag is on, or the hosted engine drops it by another path. Not resolvable without a call.",
+  "evidence": [
+   "01-dashboard-agent-studio.png",
+   "12-builder-Agent.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-37",
+  "area": "tools-kb",
+  "grade": "observed",
+  "claim": "Add Knowledge Base is a modal with two source tabs (Upload PDF, Add URL), a drop zone ('Only .pdf files are supported'), a Language Support select defaulting to English, and an Upload PDF button that looks enabled with no file. There is no name field and no stated size or page limit. The list columns are RAG ID, Source, Type, Created, Status, Delete; API and MCP buttons sit beside Add.",
+  "evidence": [
+   "39-add-knowledge-base.png",
+   "09-knowledge-base.png",
+   "09-knowledge-base.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-38",
+  "area": "tools-kb",
+  "grade": "observed",
+  "claim": "Integrations lists 18 provider cards: Telephony (Exotel, Plivo, Twilio, Vobiz), LLM (Azure OpenAI, OpenAI, OpenRouter, Perplexity, Custom LLM), TTS (Cartesia, ElevenLabs, Rime, Sarvam, Custom TTS), STT (Deepgram, Sarvam), Tools (Ai Sensy, Cal.com) and an AWS Marketplace listing. There is no CRM, calendar beyond Cal.com, or Sheets card. Most cards have no description and no connected-state badge.",
+  "evidence": [
+   "26-integrations-providers.png",
+   "26-integrations-providers.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-39",
+  "area": "workflows",
+  "grade": "observed",
+  "claim": "The workflow builder is a canvas with a Start node ('Next' output), an Inspector listing node types, and a toolbar (Add node, wand, undo, redo, search, history, settings, validate, Publish). Node types: Agent, Extraction, Wait, Retry, Condition ('Branch on a text expression') under CORE; API request, Callback, AiSensy WhatsApp under EXTERNAL; End under FLOW. Retry is 'the only node allowed to close a cycle, and the only retry mechanism'; Extraction 'must sit immediately after the call it reads'. A new workflow opens at 175 percent zoom with the Inspector clipping the Start node.",
+  "evidence": [
+   "23-workflow-builder.png",
+   "23-workflow-builder.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-40",
+  "area": "testing",
+  "grade": "observed",
+  "claim": "Testing and QA surfaces are thin: a Get a call from agent split button (phone call to a verified number on trial), a Send test webhook button, a Test button in the Extraction Library, and the Debugging page (search by execution ID only). No simulation, eval, test-suite, scorecard or QA nav item exists in the captured sidebar; Graph Agent was not captured.",
+  "evidence": [
+   "12-builder-Agent.png",
+   "18-builder-Extractions.png",
+   "37-debugging.png",
+   "24-buy-number-dialog.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-41",
+  "area": "testing",
+  "grade": "observed",
+  "claim": "Ask Bolna (Beta) is a chat assistant with a history rail and a New chat button; the copy says it answers about agents, calls, batches and numbers and 'can take action when you ask it to'. Suggested prompts mix reads (last batch status, configured dispositions, workflow campaign performance) and a write (create a SIP trunk for Twilio). A header sparkle button duplicates it. It is a chat-over-the-platform, not a visible agent builder.",
+  "evidence": [
+   "38-ask-bolna.png",
+   "38-ask-bolna.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-42",
+  "area": "telephony",
+  "grade": "observed",
+  "claim": "My Numbers has nine columns (number, answering agent, telephony, purchased, renews, monthly rent, unlink, Verify on Truecaller, delete) with no import-number control. The Buy dialog is country, optional digit pattern, number select, Subscribe, and shows no price, rent or setup fee; its helper text and placeholder are US-centric (615 / 1615XXXXXX).",
+  "evidence": [
+   "04-my-numbers.png",
+   "24-buy-number-dialog.png",
+   "24-buy-number-dialog.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-43",
+  "area": "telephony",
+  "grade": "observed",
+  "claim": "Choosing India adds a red 'No compliance applications found. Create one' row and a provider select showing Plivo, so the compliance gate appears only after the country is chosen; Subscribe stays disabled with no tooltip. Per the notes, Vobiz is the other India provider.",
+  "evidence": [
+   "25-india-number-options-plivo.png",
+   "25-india-number-options-plivo.txt",
+   "00-NOTES-AND-COVERAGE.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-44",
+  "area": "telephony",
+  "grade": "observed",
+  "claim": "Vobiz KYC tab: 'Required to purchase VoBiz phone numbers in India. Verifies PAN + Aadhaar (persons) or PAN + GSTIN (companies)'; Start KYC redirects to a VoBiz-hosted page. Compliance Settings is a table of applications (name, first/last name, company, Tax ID Number, status, date, delete) with 'Create a new Application'. KYC was not started.",
+  "evidence": [
+   "36-account-Vobiz-KYC.png",
+   "36-account-Compliance-Settings.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-45",
+  "area": "telephony",
+  "grade": "observed",
+  "claim": "SIP Trunks lists trunks with columns Trunk, Carrier IPs, Health, Numbers, Active calls, Last call and a clear empty state ('Create one to connect your carrier to your agents'). My verified phone numbers is a separate page (Phone Number, Status, Created, Remove) reachable from the banner and the user menu.",
+  "evidence": [
+   "05-sip-trunks.png",
+   "27-verified-numbers.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-46",
+  "area": "campaigns",
+  "grade": "observed",
+  "claim": "New campaign is one modal with three inputs: Campaign name, Workflow plus Version (both required before anything else), and a Contacts drop zone (CSV or JSON, up to 32 MB, 150,000 rows) with a Column template link. Dependent fields are greyed with explanatory placeholders. No Create button is visible in the initial state.",
+  "evidence": [
+   "22-new-campaign-dialog.png",
+   "22-new-campaign-dialog.txt"
+  ]
+ },
+ {
+  "id": "wt-bolna-47",
+  "area": "campaigns",
+  "grade": "inferred",
+  "claim": "A campaign is bound to a published workflow version, not an agent, and Batches is a separate agent-scoped CSV upload; so outbound has two entry points. The minimum path to a first campaign is: create agent, create workflow with an Agent node, publish, verify a phone number, then New campaign. The flow was blocked by no published workflow and the trial's verified-numbers rule.",
+  "evidence": [
+   "22-new-campaign-dialog.png",
+   "03-batches.png",
+   "10-workflows.png",
+   "23-workflow-builder.png",
+   "00-login-landing.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-48",
+  "area": "compliance",
+  "grade": "observed",
+  "claim": "No consent, DND, DLT, retry or schedule field exists in the campaign dialog. The only calling-window control seen is on the agent's Calling tab (Allowed Time Window, Start 9:00 AM, End 9:00 PM, whole-hour selectors); whether it is enforced by default was not seen. The notes record no consent or DND column in the template.",
+  "evidence": [
+   "22-new-campaign-dialog.png",
+   "21-calling-toggles-on-unsaved.txt",
+   "00-NOTES-AND-COVERAGE.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-49",
+  "area": "compliance",
+  "grade": "observed",
+  "claim": "Violations tab: 'Reports forwarded from telephony providers regarding call violation', a Pending-filtered table of 10 columns (user email, execution ID, agent ID, sub account, reported date, from, to, call date, status, actions). Compliance is reactive at account level.",
+  "evidence": [
+   "36-account-Violations.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-50",
+  "area": "analytics",
+  "grade": "observed",
+  "claim": "Analytics is a Metabase iframe: Main Dashboard and All agents selects, Calls and Top Agents tabs, a date chip defaulting to 'Previous 7 days', and three chart titles: Daily Call Volume by Status, Completed Calls by Hangup Initiator, Completed Calls by Hangup Reason (all 'No results'). No cost, latency or outcome chart title appears in the Calls tab capture. Call History has agent and batch selects, Refresh, Stop Queued Calls, Download Records, Execution-ID search, 20 rows per page; Reports is an async job list (Triggered, Entity, Filters, Rows, Status, Requested by, Size, Actions).",
+  "evidence": [
+   "07-analytics.txt",
+   "32-user-menu.png",
+   "06-call-history.png",
+   "08-reports.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-51",
+  "area": "account",
+  "grade": "observed",
+  "claim": "Team Members is a paywall ('This is a paid feature') routed to a sales call and an enterprise contact address ([email redacted]); the Invite Member button looks active. Developers shows one key (identifier 'vp-teardown', value [secret redacted], created by team@vyakti.ai, last accessed 20 Oct) with a delete icon and no scope, copy or reveal control. Invoices has filters (ID, status, item type, date) and eight columns. The workspace switcher reads 'bolna.ai / Active' for this account.",
+  "evidence": [
+   "36-account-Team-Members.png",
+   "28-api-keys.png",
+   "36-account-Invoices.png",
+   "00-login-landing.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-52",
+  "area": "prior",
+  "grade": "observed",
+  "claim": "Contradiction on billing granularity. Prior claim (account-phase report section 8): 'Telephony is billed per minute, rounded up. The platform fee is charged per minute of call duration.' The Account table shows a 30-second pulse for telephony and platform (and voice agent) alike.",
+  "evidence": [
+   "34-account.png",
+   "35-account-show-models.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-53",
+  "area": "prior",
+  "grade": "observed",
+  "claim": "Contradiction on number KYC. Prior claim (BOL-45 / structured result): 'Number KYC needs a CIN and accepts Pvt Ltd companies only.' The Vobiz KYC page says it verifies PAN + Aadhaar (persons) or PAN + GSTIN (companies); the Compliance Settings table shows a Tax ID Number column and no CIN column. The CIN-for-Pvt-Ltd rule may belong to the Plivo compliance application, which was not opened.",
+  "evidence": [
+   "36-account-Vobiz-KYC.png",
+   "36-account-Compliance-Settings.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-54",
+  "area": "prior",
+  "grade": "observed",
+  "claim": "Contradiction on default stack. Prior (BOL-25): 'telephony: Vobiz; LLM: Azure gpt-4.1-mini; office ambient noise.' The saved agent shows Plivo, provider openai with gpt-4.1-mini, and Ambient Noise None; only Deepgram nova-3 and ElevenLabs Turbo v2.5 'Tripti' match. Caveat: this agent's creation path is unknown and the draft's tabs were not opened.",
+  "evidence": [
+   "15-builder-Calling.png",
+   "13-builder-Intelligence.png",
+   "14-builder-Languages.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-55",
+  "area": "prior",
+  "grade": "observed",
+  "claim": "Contradiction on hosted defaults. The calibration note said hosted dashboard defaults differ from open-source ones ('call_terminate 90 vs 300 s, incremental_delay 900 vs 300 ms, interruption words 1 vs 2'). The dashboard agent shows 900 ms, 1 word and (per notes) 90 s, i.e. the open-source values. Consistent with the API lane's stored values and not with the calibration note, subject to the origin caveat.",
+  "evidence": [
+   "16-builder-Engine.png",
+   "00-NOTES-AND-COVERAGE.md"
+  ]
+ },
+ {
+  "id": "wt-bolna-56",
+  "area": "prior",
+  "grade": "observed",
+  "claim": "Confirmations: top-up floor 4.51 cents (3,000 / 66,500); AWS Marketplace listing present; Truecaller verification is a per-number column; analytics is Metabase; workflow nodes match the API catalogue (dashboard Wait is the API time node, API request is api); no CRM card; Extraction Library shows only Call Summary, so the auto-generated Call Success / Call Completion judges stay hidden from the dashboard builder (Ask Bolna references dispositions); Ask Bolna, AI Edit and Workflows are Beta.",
+  "evidence": [
+   "40-recharge-dialog.png",
+   "26-integrations-providers.png",
+   "04-my-numbers.png",
+   "32-user-menu.png",
+   "23-workflow-builder.txt",
+   "18-builder-Extractions.png",
+   "38-ask-bolna.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-57",
+  "area": "prior",
+  "grade": "unknown",
+  "claim": "The meaning of the 'India routing' label with an info icon under the Voice engine select on every agent (it sits on a Plivo/ElevenLabs/Deepgram agent) is unknown: processing region, call routing, or an Enterprise residency state. The earlier docs-versus-infrastructure region mismatch is not settled by the dashboard.",
+  "evidence": [
+   "01-dashboard-agent-studio.png",
+   "12-builder-Agent.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-58",
+  "area": "prior",
+  "grade": "unknown",
+  "claim": "Auto Build (prior: 'Studio Auto Build from a brief') and Graph Agent were not visible in any capture, so prediction P03 (working agent in 10 minutes or less via Auto Build) is untested. The only AI-assisted authoring seen is AI Edit (Beta) in the prompt editor and Ask Bolna.",
+  "evidence": [
+   "01-dashboard-agent-studio.png",
+   "20-add-language.png",
+   "38-ask-bolna.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-59",
+  "area": "ux",
+  "grade": "observed",
+  "claim": "Overlay and layout defects: the floating Bolna bubble covers the Temperature field (13), the Send test button (18) and toggles (15); the voice popup is anchored to the top of the viewport over the header, not the select (19); the agent name field truncates ('VP-teardown-synthetic-minima') and so does the voice name; My Numbers headers wrap to two lines; the empty-state wording varies ('No data available.', 'No campaigns match.', 'No records found').",
+  "evidence": [
+   "13-builder-Intelligence.png",
+   "18-builder-Extractions.png",
+   "15-builder-Calling.png",
+   "19-voice-library.png",
+   "12-builder-Agent.png",
+   "04-my-numbers.png"
+  ]
+ },
+ {
+  "id": "wt-bolna-60",
+  "area": "ux",
+  "grade": "observed",
+  "claim": "Unit and format mixing: prices in cents in the table, dollars in the header, approximate rupees in the recharge dialog; Created At is relative ('2 hours ago') beside Last Accessed absolute ('20th Oct, 2026'); the chip showing 83 is unlabelled; tab and title capitalisation differs (Vobiz KYC tab, VoBiz KYC title).",
+  "evidence": [
+   "34-account.png",
+   "40-recharge-dialog.png",
+   "28-api-keys.png",
+   "12-builder-Agent.png",
+   "36-account-Vobiz-KYC.png"
+  ]
+ }
+]

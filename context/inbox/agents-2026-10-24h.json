@@ -1,0 +1,34 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.stack-selection-finished",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Stack selection finished: each stack card shows the provisional default, the measured reply gap, talking over the caller as its own figure (never zero), the provider cost per minute or 'Price not set yet', the sample clip, and what it is good and weak at in plain English; a published agent keeps its stack until a new version is published with approval, and the approval card names the change in words",
+      "rationale": "Integrator step 2 (owner: selecting the stack option must be excellent). shared/stack-traits.ts holds the hand-written good and weak lines, restating only what stacks.ts notes and risks already record, kept out of stacks.ts because of its Python mirror; the speed line (slower than the target, quick, or meets) and the cut-in figure come from stack-measures.json, so they change when the staging numbers are loaded and cannot disagree with the gate. The card hides the note when it shows the traits (it repeated the first good line). The Default chip reads Provisional default, with its reason on hover. The picker says that choosing a stack changes the draft only and published versions keep theirs until the next publish, which asks for approval; the publish card's change list names stacks by label ('voice stack: A to B'), never by id. Built stacks stay test-calls-only until measured (unchanged, pinned earlier).",
+      "reverse_if": "Per-stack cut-in rates and the staging reply gaps change the order of stacks (then the default may change: decision.2026-10-22.default-stack), or a stack's written good line stops being true in measurement."
+    },
+    {
+      "id": "decision.2026-10-24.agent-archive-never-delete",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Set up, reset and set up again: agents can be duplicated, archived and restored; archive never deletes; an archived agent takes no edits, publishes or calls; a fresh agent from a starter carries nothing of an old one",
+      "rationale": "Integrator step 3 (owner will set agents up from scratch, reset them and set them up again). Migration 0207 adds archived_at, archived_from, archived_by and archive_reason. agent.archive refuses while a scheduled, running or paused campaign or an inbound line uses the agent (naming it); saveDraft and createVersion refuse an archived agent; the dial gate already refused it; campaign launch checks add agent_archived with a Restore fix. agent.list hides archived agents unless archived: true. agent.restore puts back the status it had. agent.duplicate copies the draft only (brief, voice, linked company information), never versions, tests or calls. A fresh agent from a template has the template's facts only, no linked offerings, versions or tests. Contact memory is held per person, not per agent, so no agent memory exists to leak. Web: Agents page In use / Archived, Duplicate and Archive on each card (Archive explains that nothing is deleted), Restore in Archived and on the agent page of an archived agent.",
+      "reverse_if": "Buyers need to delete for good (then a separate, owner-only, approval-held delete with an export first), or an archived agent's calls must leave reports (they are kept now)."
+    },
+    {
+      "id": "measure.2026-10-24.stack-and-lifecycle-tests",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
+      "title": "Stack selection 8/8 (traits in plain words for every stack, default stack's slower-than-target line, cut-in never zero, meets and cut-in figure when measured, stack change on a published agent needs approval and is named in words) and agent lifecycle 3/3 (archive keeps versions and tests, hides, refuses edit and publish; fresh template agent clean; restore; archive refused while a campaign runs; agent_archived launch blocker; duplicate copies the draft only); browser flows for the picker card and for duplicate, archive and restore, shots at 1440 and 390 looked at",
+      "n": 11, "method": "node:test tests/stack-gate.test.ts and tests/agents-lifecycle.test.ts on throwaway Postgres 16; browser flows via product/web/e2e/run.sh filtered, then the full suite.",
+      "notes": "Not verified: per-stack cut-in rates (none measured); the integrator's staging numbers are still to load. A post-push full run after step 1 had one unreproduced axe failure on Audiences (document-title, with a 404 on /v1/client-events); it passed alone twice since."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.stack-selection-finished", "to": "decision.2026-10-24.stack-gate-visible", "relation": "extends" },
+    { "from": "decision.2026-10-24.stack-selection-finished", "to": "decision.2026-10-22.custom-stack-contract", "relation": "informs" },
+    { "from": "measure.2026-10-24.stack-and-lifecycle-tests", "to": "decision.2026-10-24.stack-selection-finished", "relation": "tests" },
+    { "from": "measure.2026-10-24.stack-and-lifecycle-tests", "to": "decision.2026-10-24.agent-archive-never-delete", "relation": "tests" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "agents-stack-and-lifecycle", "details": "Integrator steps 2 and 3: stack selection finished (traits, cut-in figure, price not set, provisional default, publish card names the stack change) and set-up, reset, set-up again (archive never delete, restore, duplicate, clean fresh agents). Staging numbers still to load after 18:36 UTC." }
+  ]
+}

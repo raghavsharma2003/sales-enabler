@@ -1,0 +1,33 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.mcp-from-registry",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "An MCP server and a TypeScript SDK are generated from the tool registry; over MCP every approval class, including the A3 verbs, and A0 drafts become approval cards",
+      "rationale": "The must-be audit found defining decision 1 (one spec generates the API, SDK, MCP and the Operator's tools) contradicted: there was no MCP server and no SDK. An outside agent is held to the strictest path: it can propose, never run something that needs a person, and never approve.",
+      "reverse_if": "A customer needs an outside agent to run a risk-lowering A3 verb (pause, stop) without a tap, in which case allow named A3 verbs per key scope"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.mcp-from-registry",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "mcp-and-sdk",
+      "details": "MCP server (POST /v1/mcp, streamable HTTP, JSON-RPC; API keys only; role and scopes as the HTTP endpoint; approval classes and A0 held as cards; action.get to read a card), TypeScript SDK in product/sdk generated from the catalog, docs/mcp.md. tests/mcp.test.ts 5/5 (scoped key cannot call out of scope; A2 and an A3 verb create pending cards and change nothing; tools/list equals the registry for the role; A0 holds drafts; API key only, Origin and GET refused), tests/sdk.test.ts 3/3 (generated types current with the catalog and the catalog with the registry; typed calls; waitForApproval reads a person's decision). Gates on a fresh DB: tsc clean (product and web), 605/609 (0 fail, 4 skipped), ui-contract strict 181/181. Not verified: a real third-party MCP client."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "gates-after-mcp-rebase",
+      "details": "After rebasing the MCP/SDK commit onto 12f26d2: fresh-DB full suite 630/635, 1 fail, 4 skipped; ui-contract strict 194/194; tsc clean (product and web). The failure is not the Operator's: tests/brand-strings.test.ts finds 4 'VP' strings added by 12f26d2 (intake/overrides.ts:28, intake/sources.ts:62, intake/xlsx.ts:52 and :55). The tool catalog and SDK types were regenerated for the SSO/SCIM/audit-export tools that landed meanwhile."
+    }
+  ]
+}

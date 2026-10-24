@@ -1,0 +1,614 @@
+# Verbatim primary excerpts relied on by package r2-regulation-insurance (extracted 2026-10-17 with pdftotext / html-to-text; Hindi lines dropped; "..." marks omissions).
+# Personal contact details in source annexures were deliberately not copied.
+
+==== R01 | TRAI Direction 16-12-2025 para 9 (re-fetched 2026-10-17; sha256 7c4e3fca...ab71 identical to round-1 copy)
+(i) adoption of the 1600-numbering series by all entities regulated by
+ IRDAI is completed by 15th February 2026;
+ (ii) in the event of any complaint of unsolicited commercial
+ communication (UCC) against any entities regulated by IRDAI, which fail
+ to subscribe to the 1600-series by the 15th February 2026, the action is
+ taken as per regulatory provisions applicable to unregistered
+ telemarketers;
+ (iii) entities regulated by IRDAI are not permitted to initiate any service
+ or transactional voice calls, even with the explicit or inferred consent of
+ customers, from numbers other than those allocated under the 1600-
+ series, after the 15th February 2026, and
+ (iv) the Authority is furnished with, within fifteen (15) days from the
+ date of issue of this Direction, the status report indicating the actions
+ taken in compliance with this Direction and periodic submission of
+ information a
+
+==== R03 | IRDAI Circular IRDAI/PP&GR/CIR/MISC/02/01/2026 dated 6 Jan 2026 (English part)
+Circular No. IRDAI/PP&GR/CIR/MISC/02/01/2026 6th January, 2026
+All Insurers and Insurance Intermediaries
+1. In order to curb Unsolicited Commercial Communication (UCC), prevent
+ impersonation based frauds and enhance consumer trust, the Telecom
+ Regulatory Authority of India (TRAI) has issued a Direction dated 16th December
+ 2025 (copy enclosed) under section 13, read with sub-clauses (i) and (v) of clause
+ (b) of sub-section (1) of section 11 of the TRAI Act, 1997, mandating adoption of
+ the 1600-series for all service and transactional voice calls made by entities
+ regulated by IRDAI to the consumers.
+2. In this regard, all Insurers and Insurance Intermediaries are advised to ensure
+ that:
+ i. Adoption of the 1600-series for all service and transactional voice calls is
+ completed on or before 15th February, 2026.
+ ii. No service or transactional voice calls are initiated from any number other
+ than those allocated under the 1600-series after the aforesaid date,
+ irrespective of explicit or inferred customer consent.
+ iii. Any complaint of UCC against entities not complying with the above shall
+ attract action as per regulatory provisions of TRAI applicable to unregistered
+ telemarketers, in addition to any action as may be considered appropriate
+ by the Authority.
+ iv. Status Reports as specified by TRAI in its directions are furnished on timely
+ basis with a copy to the Authority.
+3. Insurers and Insurance Intermediaries may coordinate with their respective
+ Telecom Service Providers (TSPs) for timely allocation, activation and
+ operationalization of the 1600-series numbers. For this purpose, the contact
+ details of the Nodal Officers of the Access Providers are enclosed as Annexure -
+ I.
+All Insurers and Insurance Intermediaries are advised to take note of the above and
+ensure strict compliance.
+ Survey No. 115/1, Financial District, Nanakramguda, Hyderabad 500 032
+[Annexure-I (scanned p.3) lists nodal officers of 8 access providers: Quadrant Televentures (QTL), Tata Teleservices (TTLS), Vodafone Idea (VIL), Airtel, Reliance Communications (RCOM), Satzilio Telecom (STPL), Reliance Jio (RJIL), BSNL. Names, e-mails and mobiles of individuals deliberately NOT copied.]
+
+==== R04 | TRAI PR 135/2025 (19 Nov 2025)
+Consequent to these efforts, about 485 entities have
+already adopted 1600 series, subscribing to a total of over 2800 numbers.
+Based on TRAI's interac
+iii. For the time being, other SEBI-registered intermediaries may
+ voluntarily migrate to the 1600-series after verification of their
+ registration details.
+B.
+The matter of mandating last date for adoption of 1600 series by the
+entities in the insurance sector is under discussion with IRDAl, and will
+be notified subsequently.
+ The structured and time-bound
+
+==== R05 | TRAI PR 151/2025 (17 Dec 2025)
+Consequent to these efforts, about 570
+entities have already adopted 1600 series numbers, subscribing to a total
+of over 3000 numbers. Based on TRAI's interacti
+
+==== R06 | TRAI PR 91/2026 (10 Jul 2026) para (i)
+(i) TRAI has mandated the use of 1600xx series numbers for service and
+ transaction calls by regulated entities of BFSI sector i.e. entities regulated by
+ RBI, SEBI, IRDAI and PFRDA to their existing customers and by government
+ entities for government to citizen communication. A key objective of assigning
+ designated series for these important communications is to make such calls
+ trustworthy for the customers/ citizen. Under the Telecom Commercial
+ Communications Customer Preference Regulation (TCCCPR), any tagging,
+ blocking or filtering of the calls originating from 1600 series numbers is not
+ permiUed.
+ (ii) TRAI has mandated use of 140
+
+==== R09 | Plivo docs: 160-Series Numbers (provisioning)
+160-series numbers are allocated only to BFSI (Banking, Financial Services, and Insurance) entities that hold a valid licence or registration from a recognized financial regulator. You declare the regulator and licence number on the BFSI Customer Application Form.
+ Entity Type Governing regulator Examples
+ Bank RBI Commercial banks, cooperative banks, small finance banks
+ NBFC RBI Non-banking financial companies
+ Insurance IRDAI Life, general, and health insurance providers
+ Mutual Fund / Asset Manager SEBI Asset management companies, mutual fund distributors
+ Payment Aggregator RBI Payment service providers and aggregators authorized under the PA/PG framework
+ Pension Fund PFRDA Pension fund managers, NPS intermediaries
+ Fintech RBI / SEBI / IRDAI (as applicable) Regulated financial technology businesses
+ Other BFSI Specify regulator on the form Other regulated financial entities (specify in the BFSI Customer Application Form)
+ ​
+ Roles in 160-Series Provisioning
+ Role Who it is Responsibilities
+ Access Service Provider (VNO) Plivo Allocates the 160-series number and issues the NOC to the TM. Plivo is neither the PE nor the TM
+ Principal Entity (PE) The BFSI business Holds the regulatory licence, registers as PE on Tata DLT, owns the content templates, signs the BFSI Customer Application Form
+ Telemarketer (TM) The entity placing the call Holds the Tata DLT TM ID, signs the Aggregator Telemarketer Declaration, approves the Voice Header in Partner-Managed setups
+ ​
+ Self-Managed vs Partner-Managed
+ There are two possibilities depending on who places the calls:
+ Setup Description Example
+ Self-Managed The PE and TM are the same legal entity . The BFSI business that owns the campaign also makes the calls A bank running its own transactional alerts and OTP calls
+ Partner-Managed The PE and TM are different entities . A third party makes calls on behalf of the BFSI business A contact-center provider placing OTP and reminder calls on behalf of a bank
+ Both setups use the same steps below; the difference shows up during registration.
+ TM registration location. Plivo currently accepts 160-series provisioning only when the TM entity is registered in Mumbai or Karnataka . Entities registered elsewhere are not supported today.
+ DLT operator support. Plivo currently provisions 140 and 160-series numbers exclusively through Tata Teleservices and is in the process of onboarding additional service providers. Entities registered on other DLT platforms (Airtel, Vi, BSNL) are not supported today.
+ ​
+ Prerequisites
+ Requirement Details
+ Plivo account Active Plivo India account
+ Regulatory licence Valid licence or registration number from your governing regulator (RBI, SEBI, IRDAI, PFRDA, or equivalent)
+ Tata DLT registration PE registered on the Tata DLT portal . In Partner-Managed, the TM is registered separately; in Self-Managed, the same entity registers as both PE and TM
+ The BFSI Customer Application Form and the Aggregator Telemarketer Declaration are collected by Plivo during Step 2 below — no separate Plivo KYC is required.
+
+==== R11 | Vobiz docs: 140 & 160 Series Number Acquisition Guide
+Outbound only. Neither 140 nor 160 numbers support inbound calls. For inbound, Vobiz provides DID numbers that can be paired with your 140 / 160 setup.
+ ​
+ 1. Overview
+ Key differences between the two series at a glance.
+ 140 - Promotional & Commercial
+ Calling hours: 9 AM – 9 PM only
+ DND bypass: Not allowed
+ Use: Sales, lead gen, campaigns
+ Source: Vobiz pool (assigned to you)
+ DLT: TATA DLT - mandatory
+ 160 - Transactional & Service
+ Calling hours: 24 × 7
+ DND bypass: Allowed for pre-consented transactions
+ Use: OTP, alerts, booking confirmations
+ Source: Acquired from operator (2 scenarios)
+ DLT: TATA DLT (Scenario 2) / any DLT as private entity (Scenario 1)
+ ​
+ Three Acquisition Paths
+ # Path Description
+ 01 140 Series Vobiz assigns from pool
+ 02 160 - Scenario 1 You acquire; Vobiz delivers
+ 03 160 - Scenario 2 Vobiz acquires on your behalf
+ ​
+ 2. 140 Series - Vobiz Assigns from Pool
+ Vobiz assigns a number from its existing pool directly to your TATA DLT ID.
+ Pre-requisite - You must be registered on TATA DLT specifically - no other DLT provider is accepted. If
+...
+Approach any telecom operator of your choice and request a 160 series number. Mention that the number will be routed through Vobiz infrastructure.
+ 3
+ Operator Requests Technical Details from Vobiz
+ The operator will ask for Vobiz’s technical information - specifically the IP address and the data centre where the 160 number should be delivered. Vobiz provides this directly to the operator.
+ 4
+ You Assign the Number to Vobiz's DLT ID
+ Once the operator has set up the number, assign it to Vobiz’s DLT ID (shared by Vobiz with you). This is done on your DLT platform.
+ 5
+ Vobiz Approves the Numb
+...
+Signed Letter of Intent - channels and quantity confirmed (LOI format from Vobiz)
+ GST Registration Certificate
+ PAN Card
+ Authorised Signatory KYC details
+ TATA DLT ID (must be TATA DLT specifically)
+ Vobiz DLT ID (shared by Vobiz - needed to assign the number in Step 6)
+ ​
+ 5. CPS & Concurrency
+ 140 / 160 CPS and concurrency are separate from your central pool. Calls on 140 and 160 series numbers do not draw from your account’s central CPS / concurrency allocation - they use their own dedicated capacity, which is purchased separately and provisioned on request .
+ To increase the CPS or concurrency available to your 140 / 160 numbers, email support@vobiz.ai with your account ID and the target CPS / concurrency, and the team will provision the dedicated 140 / 160 capacity for you. This is separate from your standard account limits - for the central pool, see Can I purchase additional
+
+==== R08 | Tata Tele Business Services 1600 page FAQ
+Is DLT registration required for the 1600 Series?
+ Yes. DLT registration of headers and templates is mandatory to ensure traceability and regulatory compliance.
+ Which industries does this apply to?
+ It applies to banks, NBFCs, insurance companies, capital market intermediaries, pension funds, and other entities regulated by RBI, IRDAI, SEBI, and PFRDA.
+ How does the 1600 Series reduce fraud?
+ 1600 series can only be issued to the entities regulated by RBI, IRDAI, SEBI, and PFRDA hence It prevents misuse of ambiguous or spoofed caller IDs, making it easier for customers to identify legitimate service calls.
+ Will customers recognise calls from the 1600 Series?
+ Yes. The 1600 prefix signals verified service and transactional communication, improving customer trust and call acceptance.
+ Does adoption to the 1600 Series disrupt operations?
+ No. With planned adoption and cutover support, customer communication continues withal most no to low disruption.
+ Can the 1600 Series support remote or scattered branches?
+ Yes. It can be delivered via SIP Trunk, PRI, or Internet Telephony, enabling compliance even in remote locations.
+ Is the 1600 Series available across India?
+ Yes. The 1600 Series is available pan-India with circle-wise allocation.
+ Products Related to 1600 Phone Number Series
+ Toll Free Number
+ SIP Trunk: Never
+ Smart Single Number Solution
+ Please Fill in Your Details and We'll Call You Back!
+ Name
+ Please enter Name
+ Special characters are not allowed
+ Name s
+
+==== R19 | IRDAI (Registration of Corporate Agents) Regs 2015 - defs (d),(q); reg 25
+     (d) "Authorized Verifier" means a person employed by a Telemarketer for the purpose of solicitation or sale
+         over telephonic mode and shall fulfill the requirements as specified under regulation 7(3) of these regulations
+         for a specified person;
+      (q) "Telemarketer" means an entity registered with Telecom Regulatory Authority of India under Chapter III of
+          the Telecom Commercial Communications Customer Preference Regulations, 2010 to conduct the business
+          of sending commercial communications and holding a certificate issued by the Authority;
+           (i v)    In case an Authorised Verifier intends lo switch to another telemarketer who is also dealing with
+                    insurance intermediation, they shall obtain a No Objection Certificate from the erstwhil e telemarketer
+                    and submit the same to the Authority for issuing a fresh certificate. In case, the present telemarketer
+                    does not issue a no objection certificate wi thin 30 days from the date of application for the same, 1i shall
+                    be deemed that the telemarketer has no objection to his switching over;
+            (v)     Application for removal or addition o f Authorised Verifiers shall be made by the Corporate Agent
+                    concerned through the Principal Officer;
+           (vi)     In case the corporate agent registers as telemarketer wi th TRAI, the corporate agent shall act as
+                    telemarketer for only those insurers with whom he has arrangements;
+          (vi i )   No corporate agent or its telemarketer shall make outbound calls to any person unless he or she has
+                    shown interest in buying an insurance policy by making enquiries to that effect. They shall maintai n the
+                    database of such persons and the enquiry made for verification and checki ng by the Authority or any
+                    person authorized by it.
+          (viii)    The telemarketer shall disclose to the prospecti ve customer the following information -
+                    (a) The name of the corporate agent they represent;
+                    (b) The registration number of the corporate agent;
+                    (c) Contact number of the telemarketer and/or corporate agent in case the customer desires to call back
+                        or verify the telesales information ;
+                    (d) Name and identification number of the person (Authori sed V erifier) making the tele-call.
+           (ix)     A corporate agen t engaging a telemarketer shall enter into an agreement with the te lemarketer and the
+                    agreement shall provide the details such as source of the database, duties and responsi bilities, payment
+                    details, period of agreement, actions to be taken in case of violation of Act, regulations, guideli nes,
+                    circulars, directions issued by the Authority, Code of Conduct o f Authorised Verifiers. The agreements
+                    shall be made available to the Authority or any person authorized by the Authority for verification as
+                    and when required;
+            (x)     Every telemarketer and the authorized Verifier shall abide by the Code of Conduct appl icable to
+                    corporate agents as specified in Schedule III of these regulations.
+            (xi)    The Au thority shall have the power to inspect the premises of the telemarketer or any other premises,
+                    wh ich the Authority feels necessary for the veri fication of records/documents and seek any
+                    document/rccprd, record statemen ts of any employee o f the telemarketer or make copies of any
+                    documents/records at its discretion;
+           (xii)    The telemarketer shall have to compl y with any other terms and conditions as may be prescribed by the
+                    A uthority from time to time in the matter.
+          (3)       A telemarketer shall not be engaged with more than three insurers or insurance related entities.
+
+==== R19b | CA Regs 2015 Schedule VII (telemarketing/distance marketing) selected
+I. Instructions for Sale of Insurance products by tele-marketing mode and other distance marketing activities
+   of corporate agent
+     1.     Scope and applicabiJity - This covers distance marketing acti vities of corporate agents at all the stages
+            including offer, negotiation as well as conclusion of sale.
+     a) Distance marketing includes every activity of solicitation and sale of insurance products through the following
+             modes:
+             (i)       Voice mode, which includes telephone-calling;
+...
+    3.          Persons engaged for solicitation
+                (a) For the purpose of solicitation of insurance business through distance marketing, the corporate agent
+                    may engage:
+                                     ( i) Specified persons of corporate agents, or
+                                     (ii)Authorised Verifiers of Telemarketers
+                (b) The corporate agent shall be responsible for all acts of commission and omission of the persons deployed
+                    on their behalf.
+    4.    Agreements between the corporate agent and Telemarketers
+                       The agreement between the corporate agent and Telemarketer, by whatever name called, shall interalia
+                       include the following clauses:
+                 (i)           The Telemarketer shall maintain/preserve recordings of all the calls in a manner that is compliant with
+                               the provisions of these instructions and forward all such records to the corporate agent. The corporate
+                               agent in turn shall forward a copy of the records to the insurer in satisfactory condition.
+                 (ii)          The Telemarketer shall maintain records of all the a uthorized Verifiers employed by them along with
+                               their training and assessme nt particulars, including the certificate issued by the Authority.
+                 (iii) The records under (i) & (ii) above shall be open to inspection by the Authority.
+    5.    Role of Authorized Verifier:
+          (i)           Telemarketers shall employ authorized Verifiers, who a lone are permitted for soliciting and concluding
+                        the sale o f insurance products;
+          (ii)          The authorized Verifiers shall be employees of the Telemarketer . and they shall be assigned to the
+                        corporate agent as per the certificate issued by the Authority for the purpose of sale of insurance products.
+                        Any change in such assignment shall be disclosed to the Authority and a fresh certificate to that effect
+                        shall be obtained from the Authority without which the Authorised Ver-ifier shall not be permitted to
+                        solic it and conclude the sale of insurance products;
+                                                                                                            -;,,,,-
+          (i ii)          Authorized Verifiers are barred from solic iting insurance in their individual capacity in any mode, or on
+                          behalf of any organization other than the Telemarketer employi ng them.
+          (iv)            the corporate agent shall maintain records in the formal specified by the Authority which shall capture
+                          policy-wise and Authorised Verifier-wise detai ls wherein each policy solicited by the corporate agent
+                          through the disianl mode is tagged to the authorized Verifier. The corporate agent shall put in place
+[7.3(iv) and 8(v)-(vi) are in the same schedule but the PDF text layer is column-scrambled; paraphrase: the Authorised Verifier shall inform prospects the call is recorded and that they are entitled to a voice copy; recordings of every call that materialises into a policy are transferred to the insurer within 30 days of sale.]
+
+==== R18 | IRDAI (Insurance Intermediaries) (Amendment) Regulations 2026 (Gazette 30 Jul 2026) selected
+     1.1. These Regulations may be called the Insurance Regulatory and Development Authority of India
+          (Insurance Intermediaries) (Amendment) Regulations, 2026.
+     1.2. These Regulations shall come into force on the date of their publication in the Official Gazette.
+ 2. Objective:
+      2.1 The objective of these regulations is to align the regulatory framework governing insurance
+           intermediaries with the provisions of the Sabka Bima Sabki Raksha (Amendment of Insurance
+           Laws) Act, 2025 and the Indian Insurance Companies (Foreign Investment) Amendment
+           Rules, 2025.
+      2.2 To enhance accountability and transparency in the conduct of insurance intermediaries and
+           safeguarding policyholder’s interests.
+...
+      a)     opening line, the words “the renewal” shall be omitted.
+      b)     clause (v), shall be substituted, namely:-
+             “Every Corporate Agent shall ensure that no insurance solicitation shall be carried out from a
+             branch office unless a Specified Person, who is assigned exclusively to that branch, has been
+             appointed and each of its branch offices employs adequate number of Specified Persons
+             commensurate with the volume of its business, including the number of members enrolled under
+             group policies.”
+      c)     clause (vi), shall be substituted, namely:-
+           “The Corporate Agent shall maintain records of all insurance policies solicited through it, including
+            the name and functional identity of the Specified Person/ Point of Sales Person/ Designated
+            Person/ Authorised Verifier or any other authorised salesperson who sold the policy. The
+            functional identity of such persons shall be assigned by the Corporate Agent based on a
+            unique identity issued by the Central Government. The Corporate Agent shall ensure that such
+            records are maintained in a manner that enables the Authority to access them remotely.
+           The proposal form, insurance policy and Certificate of Insurance shall record the name and
+            functional identity of Specified Person/ Point of Sales Person/ Designated Person/
+            Authorised Verifier or any other authorised salesperson who sold the policy along with the mobile
+            number and email address of the branch or office through which the policy was solicited.
+           Provided that, where a policy is solicited directly through the digital platform of the Corporate
+            Agent, without the involvement of a Specified Person, Point of Sales Person, Designated Person,
+            Authorised Verifier, or any other authorised salesperson, the proposal form, insurance policy
+            document, and certificate of insurance shall disclose the telephone number and email address of
+            the Principal Officer of Corporate Agent.
+            Provided further that the requirements relating to tagging under this clause shall be applicable
+            with effect from 1st January, 2027.
+...
+(11)    In Regulation 22, sub-regulation (5), the words “certificate number ” shall be substituted with
+        “enrollment number”.
+(12)    In Regulation 25
+         a) clause (iii) of sub-regulation (2), shall be substituted, namely:-
+            “Further, the Corporate Agent shall file with the Authority the complete details of Authorised
+             Verifiers engaged/ proposed to be engaged in the format as specified by the Authority from time
+             to time. The Authority on verification of the same issue a Letter of Enrollment to the Authorised
+             Verifier as specified in these Regulations.”
+         b) Clause (iv) of sub-regulation (2), shall be substituted, namely:-
+             “In case an Authorised Verifier intends to switch to another telemarketer who is also dealing
+             with insurance intermediation, they shall obtain a No Objection Certificate from the erstwhile
+             telemarketer and submit the same to the Authority for issuing a fresh Letter of Enrollment. In
+             case, the present telemarketer does not issue a no objection certificate within 30 days from the
+             date of application for the same, it shall be deemed that the telemarketer has no objection to his
+             switching over;”
+         c) Clause (v) of sub-regulation (2), shall be omitted.
+...
+    Provided that, where a policy is solicited directly through the digital platform of the insurance broker,
+    without the involvement of a Broker Qualified Person, Point of Sales Person, Designated Person,
+    Authorised Verifier, or any other authorised salesperson, the proposal form, insurance policy
+    document, and certificate of insurance shall disclose the telephone number and email address of the
+    Principal Officer of the insurance broker.
+    Provided further that the requirements relating to tagging under this clause shall be applicable with
+    effect from 1st January, 2027.
+    Explanation: “Point of Sales Person” or ‘Designated Person’ or ‘other Authorised Salesperson’ shall
+    have the same meaning as assigned to it by the Authority in the concerned regulatory instructions.”
+
+==== R20 | IRDAI (Insurance Brokers) Regs 2018 selected
+     t.      ―Solicitation‖ – for the purpose of these regulations is defined as the approach of an insurer or an intermediary to
+             the client with a view to convince the client to purchase an insurance or reinsurance policy;
+36. Outsourcing of activities by insurance broker – An Insurance Broker can outsource the activities given in
+    Schedule II - Form X based on a Board approved policy.
+                         ONLINE SALES, TELEMARKETING AND DISTANCE MARKETING
+44. Sale of Insurance Online –
+   (1) Insurance brokers may enter into an agreement with insurers for sale of insurance products online by linking to
+          the web portals of the insurers.
+   (2) The sale of insurance online by Insurance Brokers shall be as per IRDAI (Insurance Web Aggregators)
+          Regulations, 2017 and Guidelines on Insurance e-commerce issued by the Authority in so far as they are
+          applicable.
+45. Sale of Insurance by tele-marketing mode–
+   (1) The sale of insurance where leads are generated through online and off-line mode and completed through tele-
+          marketing mode by Insurance Brokers shall be as per IRDAI (Insurance Web Aggregators) Regulations, 2017
+          issued by the Authority and the Insurance Broker can undertake outsourcing activities only to the extent of tele-
+          calling as allowed under IRDAI (Insurance Web Aggregators) Regulations, 2017 in so far as they are applicable.
+46. Sale of Insurance through distance marketing mode –
+     (1) The sale of insurance where leads are generated through online and offline and completed through distance
+           marketing mode by Insurance Brokers shall be as per IRDAI (Insurance Web Aggregators) Regulations, 2017
+           issued by the Authority and the Insurance Broker can undertake outsourcing activities only to the extent of
+           tele-calling as allowed under IRDAI (Insurance Web Aggregators) Regulations, 2017 in so far as they are
+           applicable.
+     (g) Acting promptly on instructions from a client and providing him written acknowledgements and progress
+            reports;
+     (h) Assisting clients in paying premium under section 64VB of Insurance Act, 1938 (4 of 1938);
+     (i) Assisting in the negotiation of the claims;
+     (j) Maintaining proper records of claims;
+     (k) Assisting in opening of e-insurance accounts;
+     (l) Assisting in issuing e-insurance policies; and
+     (m) Any other function which the Authority may specify.
+6.       Conduct in relation to renewal of policies — Every insurance broker shall:
+         (a) ensure that its client is aware of the expiry date of the insurance even if it chooses not to offer further cover
+             to the client;
+         (b) ensure that renewal notices contain a warning about the duty of disclosure including the necessity to advise
+             changes affecting the policy, which have occurred since the policy inception or the last renewal date;
+         (c) ensure that renewal notices contain a requirement for keeping a record (including copies of letters) of all
+             information supplied to the insurer for the purpose of renewal of the contract;
+         (d) ensure that the client receives the insurer's renewal notice well in time before the expiry date.
+Outsourcing of Activities
+    1.    Core Activities
+         (a) The Insurance broker shall not outsource any of the following activities in any manner whatsoever:
+               i.   the functions of the direct/ reinsurance/ composite broker as given in Schedule I – Form A under
+                    Regulation 4.
+              ii.   risk management services unless the broker does not undertake this activity at all.
+             iii.   claims consultancy services unless the broker does not undertake this activity at all.
+
+==== R21 | IRDAI (Registration of IMF) Regs 2015 as amended (reg 3(b), 3(d))
+b. Insurance Servicing Activities of the Insurance Marketing Firm by:
+           6
+      i.    [undertaking such activities of insurers as allowed in the Insurance Regulatory and
+           Development Authority of India (Outsourcing of Activities by Indian Insurers)
+           Regulations, 2017, as amended from time to time;]
+     ii.   becoming approved person of Insurance Repositories;
+           7
+    iii.    [***]
+    iv.    any other insurance related activity permitted by the Authority from time to time.
+           Explanation: For the purpose of these Regulations, the Insurance Marketing Firm shall
+           undertake the insurance servicing activities in respect of only those insurance
+           companies with whom they have an agreement for soliciting or procuring insurance
+ [d. An IMF shall abide by the guidelines /regulations/circulars issued by the Authority from time
+to time on Distance Marketing of Insurance Products subject to the following:
+Distance Marketing shall be
+   i.  undertaken by the IMF without engaging tele-marketer(s).
+  ii.  undertaken after obtaining prior approval from the Authority.
+ iii.  carried out only through ISPs.
+ iv.   on behalf of those Insurer(s) with whom agreements are entered by IMF for carrying out
+
+==== R22 | IRDAI (Insurance Web Aggregators) Regs 2017 selected
+(c)     “Authorised Verifier” for the purpose of these Regulations is a person employed by the Insurance Web Aggregator
+        or a Tele-marketer for insurance solicitation and procurement through Telemarketing and Distance Marketing
+        mode and who has undergone training and passed the examination as specified by the Authority;
+(n)    “Telemarketer” for the purpose of these Regulations, is an entity registered with Telecom Regulatory Authority of
+       India under Chapter III of The Telecom Commercial Communications Customer Preference Regulations, 2010 (as
+       amended from time to time);
+Obligations of Insurance Web Aggregators
+Insurance Web Aggregator shall
+      a)   display Certificate of registration obtained from the Authority and details of validity of certificate of registration
+           on its web site.
+      i)   maintain the records and the reports of its activities under the agreement with Insurer, in the manner specified in
+
+==== R23 | IRDAI (PPHI, Operations and Allied Matters of Insurers) Regs 2024 reg 3(13), reg 53(2), reg 58(1)(f)
+     (13)      “Solicitation” means the act of approaching a prospect or a policyholder by an insurer or by a
+              distribution channel with a view to persuading the prospect or a policyholder to purchase or to
+              renew an insurance policy.
+      (2) In cases where insurer outsources to the service providers outside India, if permitted by the Competent
+          Authority, the insurers shall ensure that the terms of the agreement are in compliance with respective host
+          country regulations governing the outsourcing service provider and laws of the country concerned and such
+          laws and regulations do not impede the regulatory access and oversight by the Authority. All original
+          policyholder records continue to be maintained in India.
+                  Regulations, 2016
+         f)       Insurance Regulatory and Development Authority of India (Outsourcing of Activities by Indian Insurers)
+
+==== R25 | Master Circular on Operations and Allied Matters of Insurers 19-06-2024 (scanned; transcribed by this package from page images pp.51-52, 66, 67)
+17.2 These provisions shall not apply to the activities permitted to be carried out by insurance agents, intermediaries, insurance intermediaries as provided in the Insurance Act, 1938, IRDA Act, 1999 and rules, regulations made thereunder.
+21.1 The insurers are prohibited from outsourcing any of the following activities in any manner: i. Investment and related functions. ii. Fund Management including NAV calculations. iii. Compliance with AML and KYC, provided, KYC verification through third party service providers as prescribed in Master Guidelines on AML/CFT, 2022 ... iv. Decision making a) on product designing, actuarial functions and enterprise risk management. b) in underwriting and claims functions. c) related to policyholders' grievances redressal and allied matters.
+44. Where the existing policies, which were serviced by any one of the distribution channel, are currently not being serviced due to termination of the tie-up or due to the exit of the respective distribution channel or otherwise, insurer may provide an option to the policyholders for their policy servicing: i. To opt for online mode of premium payment and for all other services; or ii. To allot an insurance agent or direct sales staff.
+46. Renewal commission, as per the Board approved policy, may be paid to the allotted insurance agent or direct sales staff, as long as the policy is inforce.
+48. [Repeal list, 11 items, none of which is the 2011 Distance Marketing Guidelines.]
+
+==== R27 | IRDAI (Maintenance of Information by the Regulated Entities and Sharing of Information by the Authority) Regs 2025, reg 13, 16, Sch II
+13. Every intermediary or insurance intermediary shall maintain at their principal place of business in
+    India:
+       i.   all records, information, data, documents, books or registers required to be maintained by them
+            under the extant provisions of the Act, Rules, Regulations, Guidelines, Circulars or Directions
+            applicable to the intermediaries and provisions of any other law, as applicable to its business,
+            and
+      ii.   the items of information specified in Schedule – II to these regulations, as applicable to their
+            business.
+        Provided that where it is not convenient or practicable to maintain any item of information in full
+            detail at such principal place of business, it may be maintained at the branches or other offices
+            in such a way that each such branch or office maintains only the relevant part of the
+            information applicable to its working or in data centres located and maintained in India.
+        Provided further that, if the information, as required in Schedule – II, is readily available from the
+            records, a separate record under these regulations need not be maintained.
+...
+16. Board Approved Policy on Record Maintenance: The insurers, intermediaries and insurance
+    intermediaries shall put in place appropriate policy, approved by their respective Boards, on
+    maintenance of records and destruction of old records, both physical and electronic form,
+    considering the nature, importance, business needs and other applicable legal requirements:
+Provided, the records, other than those specified under clause 8 of Schedule - I, shall be maintained
+    either for a minimum period of 10 years or as per the extant legal requirements, applicable,
+    whichever is later:
+       i.   from the date of last transaction on the respective records, or
+      ii.   from the date of expiry of the policy.
+...
+      iii.   A record of policies solicited with respect to renewal business giving - (a) due date of premium
+             and date of renewal intimation sent by the intermediary with cross-reference to the policy
+             number; (b) previous policy number, if any; (c) date of receipt and amount of renewal
+             premium, if authorized by the insurer to collect the premium; (d) office, where the premium is
+             received; (e) mode of receipt of premium either in cash, cheque or otherwise, and (f) date of
+             remittance of renewal premium to the insurer.
+...
+     xiii.   A record of all phone numbers used for solicitation of insurance business along with the bills.
+
+==== R29 | IRDAI Information and Cyber Security Guidelines 2023 (full text, p.134)
+                                        regulatory guidelines
+                                    14. ICT infrastructure logs shall be maintained for a rolling
+                                        period of 180 days and within the Indian jurisdiction as
+                                        per directions issued by Cert-In from time to time.
+                                    15. Monitor attempts to access deactivated accounts
+
+==== R30 | IRDAI Information and Cyber Security Guidelines 2026, cover circular IRDAI/GA&HR/CIR/MISC/51/4/2026 (06 Apr 2026)
+5. All Insurers including FRBs, Insurance Intermediaries covering Brokers, Corporate
+   Agents, Web Aggregators, TPAs, IMFs, insurance Repositories, ISNP, Corporate
+   Surveyors, MISPs, CSCs and the Insurance Information Bureau of India (IIB) shall
+   strictly adhere to the said guidelines and ensure compliance from the current
+   financial year.
+
+==== R31 | IRDAI (EoM including Commission) Regs 2024 selected
+             (d) “Commission” means any compensation including remuneration, or reward, by whatever name
+                 called, paid by an insurer to an Insurance agent, Intermediary or Insurance intermediary, as
+                 applicable, for soliciting or procuring or transacting insurance business.
+No insurer carrying on General Insurance Business in India shall incur expenses of management in
+ excess of 30 percent of gross premium written in India in a financial year.
+ (2) No insurer exclusively carrying on Health Insurance Business in India shall incur expenses of
+ management in excess of 35 percent of gross premium written in India in a financial year.
+7. Limit of expenses of management i
+              (3) Insurance Regulatory and Development Authority of India (Payment of Commission) Regulations,
+                   2023 shall be repealed from the date these Regulations come into force.
+
+==== R33 | Master Circular on EoM including Commission 2024, 1.2(b),(g)
+          (b)   Fairness and Reasonableness: The commission structure shall be
+                reasonable and not result in excessive compensation for intermediaries at
+                the expenses of customers or the insurer. Insurers shall ensure their
+                commission structure is commensurate with the efforts required to acquire
+                and sustain that type of business. This means intermediaries shall be
+                compensated fairly for their work, regardless of their size or bargaining
+                power.
+       (g)   Applicability: Any new commission structure shall not apply to already
+             sold policies.
+
+==== R34 | IRDAI Guidelines on PoSP - Non-Life & Health (26 Oct 2015) IV, VI(3)
+IV.       Appointment of Point of Sales Person
+      1. An insurance company or an insurance intermediary can engage a "Point of Sales
+          Person' to represent him
+      2. A · Point of Sales Person can represent an insurance company or an insurance
+       3   For sales effected through the insurance intermediary. the insurance intermediary
+           shall record the Aadhaar card number or the PAN card number of the 'Point of
+           Sales Person·· in the proposal form and require insurance company to do the same
+           in the insurance policy. The insurance intermediary shall be responsible for the
+           conduct of the "Point of Sales Person" engaged by it and any misconduct on part of
+           the Point of Sales Person shall make it liable to a penalty as per provisions of
+           Section 102 of the Act
+       4   One of the factors that shall be considered while renewing the certificate of
+
+==== R35 | TRAI TCCCPR (Third Amendment) Regulations 2026 (05 of 2026): commencement, A2P def, relationship (ii), (bh), reg 4, reg 35A
+    1. Short title, extent and commencement.
+        (1) These regulations may be called the Telecom Commercial Communications Customer Preference (Third
+            Amendment) Regulations, 2026 (05 of 2026).
+        (2) These regulations shall apply throughout the territory of India.
+        (3) These regulations shall come into force after thirty days from the date of their publication in the Official
+            Gazette except­
+            (a) regulation 4, regulation 6, regulation 8(a) and regulation 18, which shall come into force after sixty
+                days; and
+            (b) the amendments listed in Annexure, which shall come into force after ninety days,
+            from the date of their publication in the Official Gazette, respectively.
+   (a) after clause (e) the following clause shall be inserted, namely:­
+        "(ea) "Application-to-Person call or A2P call" refers to a voice call that is initiated by an application,
+       software system, or automated platform without direct human dialling and delivered to an individual telecom
+               (ii) On the basis of an inquiryfor goods or products or services, submitted by the Recipient to Sender within
+                    seven days immediately preceding the date of the receiving of communication, which relationsh4' has
+                    not been previously terminated by either party:
+                    Provided that such an inquiry shall be made in writing or through digital means, and shall be
+                    maintained in a ver/Iable form by the Sender;
+               (iii) on the basis of application regarding products or services made by or submitted by Recipient to
+                    Sender within the three months immediately preceding the date of the receiving of communication,
+                    which relationship has not been previously terminated by either party; ";
+      (h) for clause (bh), the following clause shall be substituted, namely:­
+           "(b/i) "Service message or Service Call" means a message sent or voice call made by a Sender to
+          (i) its Customer to provide information pertaining to a product or service procured by such customer
+          its warranty or service, product recall, software upgrade alerts, safety or security of the product used or
+          purchased by the Customer, periodic balance alerts, information regarding delivery of goods or services,
+          OTPsfor authentication, such as app login, password reset, two-factor authentication etc., and such messages
+          or voice calls are not promotional in nature and do not require Explicit Consent; or
+          (ii) a Recipient to facilitate a commercial transaction involving the ongoing purchase or the use by the
+          Recipient of the product or services offered by the Sender after obtaining Explicit Consent from the Recipient
+          and such messages or voice calls are not promotional in nature:
+          Provided that such Explicit Consent shall be validfor a period ofseven days or until revoked by the customer,
+          whichever is earlier, and it may be renewed at the instance of the customer for an additional period of seven
+          days at a time:
+          Providedfurther that the Authority may specy5.' the validity period ofsuch Explicit Consent from time to time:
+          Provided also that a transactional Message or transactional Voice Call containing information pertaining to
+          service shall be treated as a Service Message or Service Voice Call; ";
+"4. Intimation regarding use ofA2P calls.
+Every Sender shall declare to the Originating Access Provider (OAP), in advance, about the use of Application-to-
+Person (A2P) calls, along with the details such as Calling Line IdentifIcation (CLI) ranges to be usedfor making A2P
+calls, or any other details as specifIed by the Authority from time to time, and such declaration shall be recorded on
+the DLTplaiform by the OAP along with the levels/series! numbering resources assigned to such Sender:
+Provided that any such call made by a Sender without prior declaration to the OAF, shall be treated as Unsolicited
+commercial communication, and the OAP shall take action against such Sender as per the provisions of these
+regulations."
+           "35A. The Terminating Access Provider (TAP) may charge the Originating Access Provider (OAP) upto Rs. 0.05
+          (fIve paisa only) per minute on per minute pulse basis forA2P calls:
+          Provided that such charge shall not be more than the lowest tar ff offered by the TerminatingAccess Provider to the
+          Senders or the Telemarketers for whom it acts as the Originating Access Provider:
+          Providedfurther that there shall be no such charge on  -
+              () any A2P calls made using number resources assigned from l40xx, 1600xx, l6Olxx or any other series
+                    designated by the Authority for Commercial Communications from time to time unless notifIed to the
+                    contrary by the Authority;
+              (ii) any A2P calls made by or on the directions of the Authority;
+              (iii) any A2P calls made by any agency authorized by the Authority from time to time."
+
+==== R36 | TRAI TCCCPR (Second Amendment) Regulations 2025: def (av); memo para 39
+“(av) “Promotional Voice Call” means commercial communication any voice Commercial Communication
+containing promotional material or advertisement of a product or service:
+Provided that if promotional content is mixed with any type of commercial Voice Call, such voice call shall be
+treated as a Promotional Voice Call.
+...
+39. It has been observed that some service messages such as EMI reminders, periodic balance alerts, etc are sent
+    to customers over extended periods. Renewing consent for the same purpose every year would be both
+    inefficient and burdensome. Therefore, such service messages should be treated as service messages based
+    on inferred consent. This approach recognizes that ongoing service-related communications are essential for
+    maintaining customer relationships and facilitating smooth service delivery. Inferred consent for such
+    messages should be deemed valid for the duration/ discharge of the contract between the sender and the
+    customer. However, it is crucial that this inferred consent be clearly and reasonably inferable from the content
+    of the message template itself, ensuring transparency and avoiding any ambiguity regarding the purpose of
+    the communication.
+
+==== R39 | Microsoft Learn: ACS retirement and breaking changes guide (ms.date 2026-08-18; updated_at 2026-10-08), FAQ lines
+ Customers with an Azure Communication Services resource created before October 23, 2026, can continue using their existing resources to support current business workloads during the transition period.
+ Restrictions on retiring services will begin with limiting onboarding for customers without an Azure Communication Services resource created before October 23, 2026. These customers will not be able to acquire phone numbers for retiring telephony workloads, including PSTN calling and SMS. Additional measures to limit expansion of additional retiring services will be introduced during the retirement period at any time after October 23, 2026. Therefore, customers should plan and execute their migration strategy accordingly and monitor this page for future updates.
+> - **New Tenants:** While resource creation remains possible during the retirement period, tenants that have not received phone numbers before October 23, 2026 will not be able to purchase new phone numbers.
+> - **Existing Tenants:** Tenants granted phone numbers before October 23, 2026, will continue to function and can purchase additional phone numbers throughout the retirement period.
+ Will the phone number acquisition capabilities still be available in the portal?
+ You’ll still see the Phone Numbers / Get phone number option in the Azure portal, but for new ACS resources created after the announcement, phone number capabilities are intentionally disabled as part of the ACS telephony retirement process.
+ So the portal window may be visible, but actions like acquiring or starting a trial/lookup will be unavailable (greyed out) because that new resource has a zero initial usage for phone numbers.
+ If you have a critical business need, please contact support and we can review what options may be available.
+ Will new customers be able to buy phone numbers after the announcement?
+ After the September 2026 announcement, customers who do not have existing ACS phone numbers will no longer be able to acquire new phone numbers.
+ Please follow Azure Updates for notifications to changes on our ability to offer phone numbers for existing customers.
+Yes. Only tenants with existing ACS resources can acquire new phone numbers for PSTN calling scenarios.
+
+==== R40 | Microsoft Learn: Country/region availability of telephone numbers (updated 2026-09-23)
+44 countries/regions listed (Argentina ... United States); the string "India" occurs 0 times on the page (grep -c, 2026-10-17).

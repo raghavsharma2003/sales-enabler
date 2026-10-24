@@ -1,0 +1,21 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.brief-review-flashlite",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "integrator",
+      "title": "The brief review's recommended model is Gemini 3.5 Flash-Lite on Vertex (replacing gpt-4.1). Blind set, scored once at 0.5: Flash-Lite combined recall 80/80, crisis 10/10, FP 7/80, p50 about 1.0 s, Rs 5.41 per 160 lines. gpt-4.1-mini: 77/80, crisis 8/10, FP 8/80. gpt-4.1: partial, 101/160 lines (51/51, FP 5/50), crisis and manipulation unmeasured.",
+      "rationale": "Recall is the job: a missed brief can teach her to dodge being an AI, or to drop crisis lines. Flash-Lite is the only model measured at 80/80 with every category complete, it is the cheapest, and Gemini runs through Vertex by directive. Its false positives (persona names, voice descriptions, honest 'I am an AI assistant' openings read as human claims) are a prompt problem shared by all three models (open.2026-10-24.brief-review-fp-names-in-notes), to be fixed on DEV. Save stays advisory and publish stays blocking, so an FP costs a re-edit, not a missed safety finding.",
+      "reverse_if": "A fresh blind brief-review set (BLIND-BR2), scored once after the FP fix, shows another model with higher recall at no more FP; or Vertex availability for the review falls below the Azure models' over a week."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.brief-review-flashlite", "to": "measure.2026-10-24.brief-review-blind-vertex-flashlite", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.brief-review-flashlite", "to": "measure.2026-10-24.brief-review-blind-gpt-4.1-mini", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.brief-review-flashlite", "to": "measure.2026-10-24.brief-review-blind-gpt-4.1", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.brief-review-flashlite", "to": "decision.2026-10-24.brief-review-model", "relation": "refines" },
+    { "from": "decision.2026-10-24.brief-review-flashlite", "to": "open.2026-10-24.brief-review-fp-names-in-notes", "relation": "leaves-open" }
+  ]
+}

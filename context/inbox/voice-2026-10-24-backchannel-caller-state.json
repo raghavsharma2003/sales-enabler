@@ -1,0 +1,65 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.voice-backchannel-dev-r1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Backchannels round 1 on the turn bench, DEV split, 47 clips (all long turns), Silero VAD, partial lag 300 ms, turn and statement scenarios, OFF vs ON (BC_TURN_MS 4000, BC_PAUSE_MS 350-700, cut at caller onset): cut-in 1/47 per turn and 1/149 per pause both arms; end-of-turn 998 vs 992 ms, statements 1304 vs 1304 ms; ON fired in 44/47 long turns, 80 backchannels across turn + statement, 30/80 overlapped caller speech by >= 50 ms (about 0.1-0.2 s, the VAD onset before the cut), 23/80 started after the caller's last speech (the turn was over)",
+   "rationale": "bench/results/turn-2026-10-24-dev-bc-off and -on (.md, .json). Fakes for ears, brain and voice; no echo. Reply timing and cut-ins did not move; the backchannels themselves overlap and mistime too often to ship.",
+   "reverse_if": "a re-run with the same seed differs (the bench is real time)",
+   "n": "47 DEV long-turn clips; 80 backchannels in the ON arm",
+   "method": "turn bench, DEV split, Silero VAD, fakes for ears/brain/voice, OFF vs ON arms on the same clips"
+  },
+  {
+   "id": "decision.2026-10-24.voice-backchannel-off-until-tuned",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Backchannels (cascade BACKCHANNEL, duplex.py) ship OFF by default (VP_BACKCHANNEL=1 turns them on); round 2 tunes on DEV for overlap <= 10% and after-end <= 10% with cut-in not above 1/47, then reports once on TEST",
+   "rationale": "measure.2026-10-24.voice-backchannel-dev-r1: no harm to replies but 37.5% overlap and 29% at turn end. Candidate levers: a longer pause floor, an incomplete-words requirement (cascade.incomplete), firing only on a pause the clip's pace says is mid-thought.",
+   "reverse_if": "a DEV/TEST round meets the bars"
+  },
+  {
+   "id": "decision.2026-10-24.voice-caller-state",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Caller state per turn (caller_state.py): upset > confused > rushed > warm > neutral, from words (brief.CUES plus a confusion pattern) and timing (they cut in on 2 of her last 3 turns -> rushed). It adds a reply-shape row to the ledger (none in crisis or check-in), a delivery note for styled voices (upset -> gentle, confused -> calm; the brain's own [tone:] wins), and the trace's agent-turn state. Gemini TTS takes no note (rejected.2026-10-20.gemini-tts-style-prefix): text shape is its only lever",
+   "rationale": "Integrator humanness item 'emotion and pacing'. Unit-tested reading and plumbing only; its effect on reply shape with a real brain, and how MAI softvoice sounds, are NOT measured (needs devsim with a model or staging).",
+   "reverse_if": "a devsim or staging review shows the shape rows make replies worse or get recited"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.voice-backchannel-off-until-tuned",
+   "to": "measure.2026-10-24.voice-backchannel-dev-r1",
+   "relation": "based_on"
+  },
+  {
+   "from": "decision.2026-10-24.voice-caller-state",
+   "to": "rejected.2026-10-20.gemini-tts-style-prefix",
+   "relation": "based_on"
+  },
+  {
+   "from": "decision.2026-10-24.voice-backchannel-off-until-tuned",
+   "to": "open.2026-10-24.voice-humanness-round",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.voice-caller-state",
+   "to": "open.2026-10-24.voice-humanness-round",
+   "relation": "implements"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "voice-backchannel-caller-state",
+   "details": "Backchannels built and measured on DEV (no cut-in or gap change; overlap 30/80, after-end 23/80): off by default, round 2 tuning next. Caller state per turn built, logged in the trace."
+  }
+ ]
+}

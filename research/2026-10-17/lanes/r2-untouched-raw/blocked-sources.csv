@@ -1,0 +1,15 @@
+host_or_source,what_was_tried,result,date,workaround
+"gem.gov.in, bidplus.gem.gov.in",curl and curl --http1.1,TCP connection reset (likely geo/bot block from US egress),2026-10-17,CPPP gemtender mirror; web search for buyer-hosted bid PDFs
+eprocure.gov.in/cppp/gemtender keyword search,form search,image CAPTCHA required; not bypassed,2026-10-17,"none; listing pageable without search but 3,899 pages not crawled"
+tenders.infralens.in,curl,403,2026-10-17,none
+www.publicservicesmap.in,curl,egress proxy refused connection,2026-10-17,none
+www.bideasy.in,curl,TLS certificate expired; not bypassed,2026-10-17,none
+tender18.com documents,-,tender documents require registration; not attempted (no sign-ups),2026-10-17,listing metadata only
+www.tgsouthernpower.org/download/1481,curl,403,2026-10-17,none
+www.g2.com,curl and Playwright,403,2026-10-17,"Capterra.in, Trustpilot, Google Play"
+"reddit.com JSON API, pullpush.io",curl,403 / 429,2026-10-17,Playwright HTML pages (rate-limited after ~38 threads; retried with 20 s spacing)
+"Reddit threads 1pr1uwm, 1ptmiif",Playwright,HTTP failure after rate limit,2026-10-17,not retried
+capterra.in review pagination,Playwright ?page=N,returns the same first 5 reviews (JS pagination),2026-10-17,first 5 Exotel reviews only
+"TRAI PDFs: Tanla 2024, Exotel 2024, SquadStack 2024, Go2market 2026, Truecaller 2026",pdftotext,scanned images (no text layer); no OCR engine installed,2026-10-17,"viewed selected pages as images: Exotel pp.2-3, SquadStack pp.1,2,4,6, Truecaller p.2; Tanla 2024 and Go2market not read"
+reuters.com,WebSearch domain filter,not accessible to the search tool,2026-10-17,Insurance Journal / Claims Journal syndication of Reuters
+"RBI, CERT-In advisories on fake insurance calls",-,not searched this round (RBI CAPTCHA known from round 1; search budget),2026-10-17,IRDAI AR and PIB used instead

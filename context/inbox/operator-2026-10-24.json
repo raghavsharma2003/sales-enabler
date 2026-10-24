@@ -1,0 +1,73 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.not-done-retry-first",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "After a NOT DONE that carries a fix (or a reason naming the correction), the Operator is told to retry at once and ask the client only for a fact no tool can give",
+      "rationale": "Bench r3: 15 runs asked the client after a refusal that said exactly what to send; the old note offered 'or tell the client' as an equal option (rejected.2026-10-23.operator-not-done-then-ask).",
+      "reverse_if": "The bench shows retry loops that burn the step cap on refusals that need the client, or retries that act on a guessed value"
+    },
+    {
+      "id": "decision.2026-10-24.claim-check",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "A reply claiming a change with no successful write in the turn gets a plain correction at once and one repair turn",
+      "rationale": "Bench r3: 5 task/model pairs replied with changes no tool made. Deltas are already streamed, so the correction is appended rather than the text withdrawn; one repair turn lets the model make the change or say plainly it did not.",
+      "reverse_if": "The pattern check flags true replies in the bench or in real threads more than rarely, or streaming moves to after-the-fact release so the claim can be withheld instead"
+    },
+    {
+      "id": "decision.2026-10-24.chat-uploads-staged",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "A table attached in chat is staged as an intake upload as the member who attached it, and the model is given its uploadId",
+      "rationale": "Uploads arrived only as inline text and the model sent 'upload:customers.csv' as an id (rejected.2026-10-23.chat-upload-without-upload-id). The member attached the file, so staging runs as them (role-checked), not as the Operator; staging changes no contact until source.commit.",
+      "reverse_if": "Staging unused uploads clutters sources, in which case stage on the first source.map call instead"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.not-done-retry-first",
+      "to": "rejected.2026-10-23.operator-not-done-then-ask",
+      "relation": "informed-by"
+    },
+    {
+      "from": "decision.2026-10-24.claim-check",
+      "to": "rejected.2026-10-23.operator-reply-claims-without-write",
+      "relation": "informed-by"
+    },
+    {
+      "from": "decision.2026-10-24.chat-uploads-staged",
+      "to": "rejected.2026-10-23.chat-upload-without-upload-id",
+      "relation": "informed-by"
+    },
+    {
+      "from": "decision.2026-10-24.not-done-retry-first",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.claim-check",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.chat-uploads-staged",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "operator-bench-r3-fixes",
+      "details": "Operator fixes for bench r3: retry-first NOT DONE with campaign.draft version-id hints; page note carries the published agent version id; chat CSV/TSV staged as a real upload with its uploadId; claim check with correction and one repair turn; default brain gpt-4.1 when curated; bench grading: provider_refused is not_measured and outside counts, csv-pune accepts a filter audience. 7 tests in tests/operator-bench-r3.test.ts, each failing on the previous code (run with stub exports). Gates on a fresh DB: tsc clean, 482/485 (0 fail, 3 skipped), ui-contract strict 174/174. operator_find_tools: scripted recovery works, but it is unused by real models (0/96); left as is. Not verified on real models until the bench re-run."
+    }
+  ]
+}

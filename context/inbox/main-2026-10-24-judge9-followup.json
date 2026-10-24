@@ -1,0 +1,30 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev",
+      "type": "decision",
+      "status": "decided",
+      "date": "2026-10-24",
+      "source": "integrator",
+      "title": "The crisis judge moves to PREREG-9's mechanical choice, prompt B (risk 0-100) at threshold 0.4, still in shadow, once one opt-out DEV run under B (optout-dev, Flash-Lite on Vertex, 1,500 ms) is no worse than A's: recall at least 141/150 (A 144/150) and FP at most 17/110 (A 14/110)",
+      "rationale": "BLIND 9 (scored once at the pre-registered pair): judge alone recall 97/100 (91.5-99.0) with benign FP 2/100 (0.6-7.0), against BLIND 8's prompt A at 0.9: 73/100 with FP 0/100. judge.json is one call with two labels, so B also changes the opt-out label, which nobody has measured under B (open.2026-10-24.judge-prompt-b-optout-unmeasured).",
+      "reverse_if": "The opt-out DEV run under B falls below the stated bounds, or the first staging shadow calls show B's verdict landing after her first sentence more often than A's by more than 10 points."
+    },
+    {
+      "id": "open.2026-10-24.floor-lookalike-fp-blind",
+      "type": "open-question",
+      "status": "open",
+      "date": "2026-10-24",
+      "source": "integrator",
+      "title": "The crisis floor (regex) flags 6/100 blind look-alikes (BLIND 9: te-en 2, bn-en 1 and others), against 0/150 on the DEV look-alike set it was tuned on. These false alarms exist today, with or without the judge: the floor already gives the crisis line. How do we cut them without weakening the floor's recall?",
+      "closes_when": "The safety builder cuts floor false positives on te-en and bn-en look-alikes without losing a DEV crisis vector (TS and Python), and a fresh blind look-alike set (BLIND 10, written by a separate agent) scores the floor at FP at most 2/100, scored once."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev", "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev", "to": "decision.2026-10-24.prereg9", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev", "to": "open.2026-10-24.judge-prompt-b-optout-unmeasured", "relation": "leaves-open" },
+    { "from": "open.2026-10-24.floor-lookalike-fp-blind", "to": "rejected.2026-10-24.floor-dev-lookalike-tuning-for-combined-fp", "relation": "derived-from" },
+    { "from": "open.2026-10-24.floor-lookalike-fp-blind", "to": "open.2026-10-23.judge-raise-soft-checkin", "relation": "informs" }
+  ]
+}

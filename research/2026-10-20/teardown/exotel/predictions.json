@@ -1,0 +1,120 @@
+{
+ "lane": "exotel",
+ "registered": "2026-10-20",
+ "status": "pre-registered before any Exotel trial account exists; score after the account phase",
+ "how_to_score": "Each prediction states a measurable quantity and a pass/fail rule. Record the observed value, run date, n and whether it held. Do not edit predictions after the account exists. Claim ids (EXO-xx) refer to claims.json.",
+ "predictions": [
+  {
+   "id": "EXO-P01",
+   "task": "sign-up to first live VoiceBot call to our own handset (trial, no KYC)",
+   "prediction": "Sign-up needs a business email (team@vyakti.ai works), a phone OTP, then a missed-call number verification. With VoiceBot 'live by default on all Exolite accounts' (Sep 2026), a prompt-built bot can ring our own verified handset in 25-60 min (point 40 min). It cannot ring any number that is not a verified user on the account (e.g. a Plivo number not added as a co-worker) before KYC.",
+   "holds_if": "median of 2 runs within 25-60 min AND a call to an unverified number is refused or blocked before KYC",
+   "basis": "EXO-03, EXO-49; data/teardown/exotel/docs-md/business-phone-system__create-a-trial-account.md; build post 10 Sep 2026",
+   "confidence": 0.6
+  },
+  {
+   "id": "EXO-P02",
+   "task": "first AgentStream (BYO-bot) call with VP's own bot",
+   "prediction": "Not possible on day 1: AgentStream / Connect Voice AI needs KYC (1-3 business days, company documents) plus an enablement email to hello@exotel.com. Elapsed time from sign-up to first AgentStream call >= 2 business days (point 4).",
+   "holds_if": ">= 2 business days, or KYC/enablement is demanded before the Voicebot/Stream applet or Connect Voice AI can be used",
+   "basis": "EXO-49; research/2026-10-19/voicelab/desk/phone-leg.md section 2.3",
+   "confidence": 0.8
+  },
+  {
+   "id": "EXO-P03",
+   "task": "build the standard agent (Hinglish renewal-reminder spec)",
+   "prediction": "Succeeds in 15-40 min from the prompt box. 'Templates', 'Enhance Prompt' and web-call testing are absent or disabled, so every test iteration is a real phone call (>= 30 s each). Selecting Hindi with English as secondary works only if STT and TTS are kept on the same provider; a mixed-provider choice silently drops code-switching or is blocked.",
+   "holds_if": "build time 15-40 min AND no in-browser test call is available",
+   "basis": "EXO-03, EXO-23",
+   "confidence": 0.65
+  },
+  {
+   "id": "EXO-P04",
+   "task": "upload the messy 50-row synthetic CSV and call it with the bot",
+   "prediction": "Takes two consoles (voicebot console for the bot URL, my.exotel.com App Bazaar + Campaigns for the flow and list). Numbers with spaces/dashes/brackets are rejected, not normalised (>= 3 of our malformed rows fail), duplicates are dropped silently by default, Hindi (Devanagari) names upload as UTF-8, and the opt-out row is dialled unless removed by hand (no suppression column).",
+   "holds_if": ">= 3 of the 4 sub-claims hold (two consoles; malformed rows rejected; dupes dropped; opt-out row not suppressed)",
+   "basis": "EXO-05, EXO-15, EXO-16",
+   "confidence": 0.7
+  },
+  {
+   "id": "EXO-P05",
+   "task": "schedule within calling hours",
+   "prediction": "Only one absolute window per campaign (send_at/end_at); no recurring daily window and no time-zone conversion. A campaign whose end_at is 22:30 IST is accepted with no warning about the 09:00-21:00 window.",
+   "holds_if": "no daily-window control exists AND an out-of-window schedule is accepted without a compliance warning",
+   "basis": "EXO-15, EXO-45",
+   "confidence": 0.75
+  },
+  {
+   "id": "EXO-P06",
+   "task": "handle a voicemail and a transfer",
+   "prediction": "No answering-machine detection on the VoiceBot/AgentStream path (AMD is an ECC licence via the CSM); a voicemail/network-announcement leg is billed and the bot talks into it. Transfer to a human works only by adding a Connect applet after the Voicebot applet (cold, no context handed to the agent) on a trial; warm transfer with transcript needs Harmony/Monitored Bot licences.",
+   "holds_if": "no AMD option for the bot campaign AND the trial offers only a flow-level (cold) transfer",
+   "basis": "EXO-06, EXO-09",
+   "confidence": 0.7
+  },
+  {
+   "id": "EXO-P07",
+   "task": "find a failed call and its reason",
+   "prediction": "PSTN outcomes (busy/no-answer/failed) appear with operator-derived codes, but bot-side failures (e.g. a bot with a bad tool or a mismatched voice) show as a vague error or a short completed call. Of 3 induced failures (wrong number, caller hangs up in 3 s, broken tool URL), >= 1 has no actionable reason in the UI, and finding them needs both call-logs/interaction-history and the telephony call report.",
+   "holds_if": ">= 1 of 3 induced failures lacks an actionable reason OR the reason is only in a second console",
+   "basis": "EXO-08, EXO-58",
+   "confidence": 0.6
+  },
+  {
+   "id": "EXO-P08",
+   "task": "export results",
+   "prediction": "Interaction-history/report export exists (report-requests are async), but transcripts, recordings and campaign outcomes come from separate places; a single export with number + outcome + transcript + recording link per row is not available without the API.",
+   "holds_if": "no single per-call export joining outcome, transcript and recording",
+   "basis": "EXO-10, bundle endpoints report-requests / voicebot-sessions / recording",
+   "confidence": 0.6
+  },
+  {
+   "id": "EXO-P09",
+   "task": "handset reply gap on Indian PSTN (Exotel VoiceBot, certified hi/en stack)",
+   "prediction": "Median gap from end of caller speech to first bot audio at the handset 1.6-2.4 s (point 1.9 s), p90 >= 2.8 s, over the standard battery on our Plivo-side recording (n >= 30 turns). Slower than VP's server-side cascade medians (0.95-1.4 s) once PSTN legs are added.",
+   "holds_if": "median within 1.6-2.4 s",
+   "basis": "EXO-23, EXO-29; measure.2026-10-20.round1-reply-gap; open.2026-10-20.handset-reply-gap",
+   "confidence": 0.5
+  },
+  {
+   "id": "EXO-P10",
+   "task": "first audio after pick-up",
+   "prediction": "On a Connect Voice AI outbound call the first bot audio arrives 0.8-2.0 s after the callee answers (no Exotel-side greeting on that path); on a Flow path with a cached greeting it is < 0.6 s.",
+   "holds_if": "Connect path 0.8-2.0 s",
+   "basis": "build post 8 Sep 2026 'The first second of the call'",
+   "confidence": 0.55
+  },
+  {
+   "id": "EXO-P11",
+   "task": "language hold on Hinglish caller turns",
+   "prediction": "With Hindi primary and English secondary on one provider, the bot replies in Hindi or Hinglish on >= 90% of turns (no drift to another Indian language, unlike Vapi's Gujarati result in l4b).",
+   "holds_if": ">= 90% of turns in Hindi/Hinglish/English",
+   "basis": "EXO-23; research/2026-10-17/lanes/l4b-measured/report.md",
+   "confidence": 0.6
+  },
+  {
+   "id": "EXO-P12",
+   "task": "'are you a bot?' disclosure",
+   "prediction": "Disclosure depends entirely on the buyer's prompt. With the docs' own persona pattern ('Hi, this is Aditi calling from ...') and no disclosure instruction, the bot does not volunteer that it is an AI and, when asked, deflects or claims to be the named person in >= 2 of 5 calls.",
+   "holds_if": ">= 2 of 5 calls without an honest AI disclosure when asked",
+   "basis": "EXO-03 (docs persona example); no disclosure control found in docs or bundle",
+   "confidence": 0.45
+  },
+  {
+   "id": "EXO-P13",
+   "task": "sales and support responsiveness",
+   "prediction": "A written request for AgentStream enablement and VoiceBot pricing gets a human reply in > 1 business day, and a per-minute price only after a sales call.",
+   "holds_if": "first human reply > 1 business day OR price withheld until a call",
+   "basis": "EXO-53, EXO-54, EXO-34",
+   "confidence": 0.65
+  },
+  {
+   "id": "EXO-P14",
+   "task": "price quote",
+   "prediction": "VoiceBot all-in quote INR 3-8 per connected minute with a monthly minimum or prepaid commitment; AgentStream quoted as a per-minute or per-channel fee on top of PSTN of INR 0.2-1.0/min; billing in 60-second pulses.",
+   "holds_if": "VoiceBot quote within INR 3-8/min",
+   "basis": "EXO-34, EXO-35, EXO-36; l4a Indian list-price band",
+   "confidence": 0.5
+  }
+ ]
+}

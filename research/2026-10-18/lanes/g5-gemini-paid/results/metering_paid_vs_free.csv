@@ -1,0 +1,41 @@
+paid_tag (g5),free_tag (g2),model,paid_prompt_audio_tok_per_min,free_prompt_audio_tok_per_min,paid_prompt_text_tok_per_min,free_prompt_text_tok_per_min,paid_resp_audio_tok_per_min,free_resp_audio_tok_per_min,paid_usage_events_per_min,free_usage_events_per_min,paid_first_prompt,free_first_prompt
+cost_g31_10m_off_a,us_g31_10m_off,3.1-flash-live,25682,21001,7231,6183,813,819,3.91,3.72,1211,1211
+cost_g31_10m_on6k_a,us_g31_10m_on6k,3.1-flash-live,15511,14166,6106,5518,869,913,4.38,3.83,1211,1211
+cost_g31_1m_off_a,us_g31_1m_off,3.1-flash-live,3045,3709,3545,3645,996,958,3.74,3.81,1213,1213
+cost_g31_1m_on6k_a,us_g31_1m_on6k,3.1-flash-live,3695,3197,3720,3248,885,1047,3.83,3.36,1213,1213
+cost_g31_3m_off_a,us_g31_3m_off,3.1-flash-live,10772,8543,5887,4480,880,872,4.94,3.88,1213,1213
+cost_g31_3m_on6k_a,us_g31_3m_on6k,3.1-flash-live,8628,6945,4408,3816,876,985,3.71,3.32,1213,1213
+cost_g31_5m_off_a,us_g31_5m_off,3.1-flash-live,16180,12624,6247,4965,858,838,4.4,3.6,1215,1215
+cost_g31_5m_on6k_a,us_g31_5m_on6k,3.1-flash-live,11718,12191,5062,5318,904,848,3.87,4.07,1215,1215
+cost_g38_10m_off_a,us_g38_10m_off,3.8-live,34429,33903,10868,11199,724,715,5.56,5.86,1313,1313
+cost_g38_10m_on6k_a,us_g38_10m_on6k,3.8-live,23466,25033,9941,10237,729,759,6.0,6.01,1313,1313
+cost_g38_1m_off_a,us_g38_1m_off,3.8-live,5010,4209,8024,6141,741,815,7.26,5.53,1313,1313
+cost_g38_1m_on6k_a,us_g38_1m_on6k,3.8-live,5116,4836,8040,7368,759,768,7.28,6.67,1313,1313
+cost_g38_3m_off_a,us_g38_3m_off,3.8-live,12809,9119,8820,6067,709,683,6.82,4.65,1313,1385
+cost_g38_3m_on6k_a,us_g38_3m_on6k,3.8-live,12634,12410,8787,8460,682,716,6.66,6.55,1313,1313
+cost_g38_5m_off_a,us_g38_5m_off,3.8-live,19737,18145,9856,8974,734,712,6.41,6.09,1313,1313
+cost_g38_5m_on6k_a,us_g38_5m_on6k,3.8-live,19584,17511,9536,8409,741,728,6.18,5.71,1313,1313
+lat_us_g31_paid_r0,lat_us_g31_free_r0 (g5 free),3.1-flash-live,,,,,,,4.48,3.39,1213,1213
+lat_us_g31_paid_r1,lat_us_g31_free_r1 (g5 free),3.1-flash-live,,,,,,,3.86,4.28,1362,1362
+lat_us_g31_paid_r2,lat_us_g31_free_r2 (g5 free),3.1-flash-live,,,,,,,3.94,4.6,1225,1178
+lat_us_g31_paid_r3,lat_us_g31_free_r3 (g5 free),3.1-flash-live,,,,,,,3.62,3.52,1191,1191
+lat_us_g31_paid_r4,lat_us_g31_free_r4 (g5 free),3.1-flash-live,,,,,,,3.75,4.01,1213,1213
+lat_us_g31_paid_r5,lat_us_g31_free_r5 (g5 free),3.1-flash-live,,,,,,,4.38,3.9,1373,1373
+lat_us_g38_paid_r0,lat_us_g38_free_r0 (g5 free),3.8-live,,,,,,,5.39,5.75,1313,1313
+lat_us_g38_paid_r1,lat_us_g38_free_r1 (g5 free),3.8-live,,,,,,,5.79,6.12,1539,1539
+lat_us_g38_paid_r2,lat_us_g38_free_r2 (g5 free),3.8-live,,,,,,,6.62,5.27,1318,1318
+lat_us_g38_paid_r3,lat_us_g38_free_r3 (g5 free),3.8-live,,,,,,,5.17,4.84,1382,1382
+lat_us_g38_paid_r4,lat_us_g38_free_r4 (g5 free),3.8-live,,,,,,,6.49,6.03,1313,1313
+lat_us_g38_paid_r5,lat_us_g38_free_r5 (g5 free),3.8-live,,,,,,,7.46,6.56,1378,1378
+lat_in_g31_paid_r0,lat_in_g31_free_r0 (g5 free),3.1-flash-live,,,,,,,2.85,3.53,1213,1213
+lat_in_g31_paid_r1,lat_in_g31_free_r1 (g5 free),3.1-flash-live,,,,,,,4.11,3.75,1362,1362
+lat_in_g31_paid_r2,lat_in_g31_free_r2 (g5 free),3.1-flash-live,,,,,,,3.81,3.67,1225,1225
+lat_in_g31_paid_r3,lat_in_g31_free_r3 (g5 free),3.1-flash-live,,,,,,,3.59,3.62,1191,1191
+lat_in_g31_paid_r4,lat_in_g31_free_r4 (g5 free),3.1-flash-live,,,,,,,3.61,4.43,1213,1213
+lat_in_g31_paid_r5,lat_in_g31_free_r5 (g5 free),3.1-flash-live,,,,,,,4.18,3.96,1373,1373
+lat_in_g38_paid_r0,lat_in_g38_free_r0 (g5 free),3.8-live,,,,,,,6.37,6.41,1313,1313
+lat_in_g38_paid_r1,lat_in_g38_free_r1 (g5 free),3.8-live,,,,,,,8.83,8.78,1378,1378
+lat_in_g38_paid_r2,lat_in_g38_free_r2 (g5 free),3.8-live,,,,,,,6.37,6.12,1318,1318
+lat_in_g38_paid_r3,lat_in_g38_free_r3 (g5 free),3.8-live,,,,,,,5.38,5.45,1382,1382
+lat_in_g38_paid_r4,lat_in_g38_free_r4 (g5 free),3.8-live,,,,,,,6.37,6.52,1313,1313
+lat_in_g38_paid_r5,lat_in_g38_free_r5 (g5 free),3.8-live,,,,,,,7.14,7.87,1378,1378

@@ -1,0 +1,25 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.practice-chat",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Must-be audit gap 19: a typed practice chat in the agent's test panel. The buyer types as the caller and she answers from the saved draft through the same compile(), ledger, TAIL, marker rules and reply door as a call; the door's verdicts show inline; no call is placed and nothing reaches the call log",
+      "rationale": "server/modules/agents/chat.ts: test.chat (risk test, A1) is stateless on the server; the panel sends the chat so far and the next caller line. Each caller line is read by callerSignals (the floor) and the caller-crisis judge when a safety_judge model is configured, and stored redacted. The call state is rebuilt from the chat: disclosed (affirmsAi on her earlier turns), crisis (sticky: floor on any caller line, the judge on this one, or lines already given), asked-if-AI, opt-out, recording refused. Her reply goes through the runtime door as product/voice/vpvoice/safety.py reply_door does it, not only the shared RD rules: crisis lines first (Tele-MANAS 14416 and 112, a person offered) until given; asked if she is an AI, the honest line replaces a reply that mentions AI or is put first; her first breath carries disclosure.json's line unless the opening already discloses; then each sentence alone and joined with the one before; a replacement ends the reply. Each verdict comes back as a note (Said instead / Held back / Added first, a plain label, the reason, and what she would have said), shown under her reply. It uses LLM purpose 'simulate' like practice callers: model tokens only, no dial, no test-call budget. test.chat_keep stores a chat in agent_test_run with kind 'chat' (migration 0206), caller digits masked; the publish card's 'last practice call' reads only kind 'simulate'. Web: practice-chat.tsx is its own lazy chunk (1.8 KB gzip; test panel 5.9 KB; largest chunk still settings 25.7 KB, under 30). Dev server (DEV ONLY): the agent side of simulate answers in Hinglish and a price question gets an offer not in her facts, so the panel's Held back shows in the browser flow.",
+      "reverse_if": "Buyers read the typed chat as a measure of how she sounds or how fast she is (then fold it into the browser call), or the chat's door drifts from the Python runtime's (then generate both from one spec, as cases.json does for the shared rules)."
+    },
+    {
+      "id": "measure.2026-10-24.practice-chat-tests",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
+      "title": "Practice chat 5/5 server tests (crisis line typed gets 14416 and 112, no agenda, sticky next turn; denial bait gets the honest AI answer, replaced or put first; opening disclosure; a 40% offer not in facts held back and shown; no conversation or safety event written, kept chat stored as kind chat with an OTP masked; a later turn needs a caller line) and 1 browser flow (denial bait, held-back figure with what she would have said, crisis lines, nothing in the call log, keep for review, shots at 1440 and 390 looked at, no sideways scroll at 390); axe adds the practice chat screen with no serious or critical violation",
+      "n": 6, "method": "node:test tests/agents-chat.test.ts on throwaway Postgres 16 with a scripted model; browser flows via product/web/e2e/run.sh (73 pass, 0 fail, 2 skipped: voice Python disabled); full fresh-DB suite 767/767; tsc clean; ui-contract --strict 0 missing; voice unittest OK; shots product/web/shots/practice-chat-1440.png and -390.png.",
+      "notes": "Not verified: a real model's replies in the chat (all tests use scripted replies), and the caller-crisis judge path (no safety_judge model configured in tests; the floor alone)."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.practice-chat", "to": "component.2026-10-21.agents-module", "relation": "extends" },
+    { "from": "measure.2026-10-24.practice-chat-tests", "to": "decision.2026-10-24.practice-chat", "relation": "tests" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "agents-practice-chat", "details": "Must-be audit gap 19: typed practice chat in the test panel through the call's brief and runtime door; crisis and denial-bait tests; browser flow with shots and axe. Staging reply-gap and cut-in numbers still to load into stack-measures.json when the integrator sends them (re-measure at 18:36 UTC)." }
+  ]
+}

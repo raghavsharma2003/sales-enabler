@@ -1,0 +1,29 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-22.voice-runtime-azure-ears",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-22",
+   "source": "model",
+   "title": "The product runtime's ears for the curated cascade stacks (v2-flashlite, v2-54mini, v2-38flash, v2-mai, v2-luna) are Azure Speech real-time STT (hi-IN, Central India, LAB_SPEECH_KEY/REGION) through the VAD gate, ported from the lab's measured AzureSTT via the Speech SDK (azure-cognitiveservices-speech 1.52.0). Gemini ears stay in the catalog, unavailable with \"Gemini listening isn't offered on Google Cloud\"; never rerouted",
+   "rationale": "decision.2026-10-22.ears-azure-not-gemini: Vertex has no Gemini transcription model (measure.2026-10-22.vertex-availability-probe). The SDK path is what the lab runs and measured; a hand-rolled websocket protocol would be new, unmeasured code on the hottest path.",
+   "reverse_if": "Vertex offers a Gemini transcription model and it beats Azure on Hinglish accuracy or latency in the lab; or the Speech SDK cannot run in the deploy image (then the REST/websocket protocol or Sarvam ears)"
+  },
+  {
+   "id": "decision.2026-10-22.voice-groq-not-offered",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-22",
+   "source": "model",
+   "title": "The product runtime does not offer gpt-oss-120b@groq: gpt-oss-120b runs on our Azure Foundry (routing Vertex > Foundry > OpenRouter). The cost is first-token latency: Groq 0.48 s against Azure 1.47 s (n=6, India VM, 2026-10-19, tests/brain_bench.py)",
+   "rationale": "directive.2026-10-22.provider-routing: OpenRouter only for what is in neither Vertex nor our Foundry.",
+   "reverse_if": "the owner judges the extra ~1 s of first-token latency worth an OpenRouter route for gpt-oss-120b"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-22.voice-runtime-azure-ears", "to": "decision.2026-10-22.ears-azure-not-gemini", "relation": "implements" },
+  { "from": "decision.2026-10-22.voice-groq-not-offered", "to": "directive.2026-10-22.provider-routing", "relation": "implements" }
+ ],
+ "events": []
+}

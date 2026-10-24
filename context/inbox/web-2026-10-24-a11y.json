@@ -1,0 +1,99 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.web-axe-wcag21aa",
+   "type": "measurement",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "axe-core 4.10.2, WCAG 2.0/2.1 A+AA, on 24 main screen states of the seeded workspace at 1440 and 390 px: before 24 serious (one rule, color-contrast on the sidebar member line), after 0 critical/serious/moderate/minor in light and dark (96 states); keyboard-only completion of create agent, test call, CSV import, publish and launch cap passes; 0 of 24 screens scroll sideways at 320 px.",
+   "method": "product/web/e2e/a11y.mjs (Playwright Chromium, reducedMotion reduce); gate flow in web/e2e/flows.test.mjs fails on any serious or critical violation; table in research/2026-10-24/walkthrough/A11Y.md.",
+   "n": 96,
+   "not_verified": "A screen reader by ear; 200% desktop zoom; sign-up/login, a real-model Operator chat, a live campaign and Insights with proposals."
+  },
+  {
+   "id": "decision.2026-10-24.web-a11y-gate",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "web builder",
+   "title": "Accessibility is a gate: the browser flows run axe on every main screen at desktop and phone width and fail on any serious or critical violation; dimmed text uses a checked token pair, never opacity.",
+   "rationale": "Enterprise buyers ask for WCAG 2.1 AA; opacity hid a contrast failure from every tool.",
+   "reverse_if": "The gate adds more than a minute to CI and a cheaper equivalent exists."
+  },
+  {
+   "id": "rejected.2026-10-24.opacity-dimmed-text",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Dimming text with opacity (the sidebar member line).",
+   "tried": "style={{ opacity: 0.8 }} on nav text over --forest-2.",
+   "broke": "axe could not resolve the pair and flagged it serious on every desktop screen; a person's contrast checker cannot see through opacity either. Replaced by --nav-ink-dim (5.09:1 light, 6.95:1 dark), added to the token-contrast test."
+  },
+  {
+   "id": "rejected.2026-10-24.sheet-focus-effect-on-onclose",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "A dialog focus effect keyed on its onClose prop.",
+   "tried": "Sheet useEffect(..., [onClose]) with callers passing inline functions.",
+   "broke": "Any parent re-render while a sheet was open re-ran the effect and threw focus to the sheet's first control (latent: no current flow re-rendered mid-typing). The effect now runs once per opening and reads onClose from a ref."
+  },
+  {
+   "id": "rejected.2026-10-24.tests-write-tracked-shot",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The browser-call flow writing product/web/shots/browser-call-live.png on every run.",
+   "tried": "call.screenshot into web/shots in flows.test.mjs.",
+   "broke": "Every `node scripts/test.mjs` left the tree dirty. The shot now goes to E2E_DIAG_DIR unless E2E_RESHOOT=1, and web.test.ts fails if the flows change any tracked file under product/web."
+  },
+  {
+   "id": "open.2026-10-24.static-cache-for-samples",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "server/app.ts serves every static file with cache-control immutable for a year and without Range: the samples manifest and clips work around it (a fresh query on the manifest, ?v=<recordedAt> on each clip). The web commit added audio/ogg for .ogg/.opus to the MIME map, because the voice renderer writes Ogg/Opus.",
+   "closes_when": "server/app.ts:158 sends no-cache for /samples/manifest.json and Range for audio, or a decision says the workaround stands."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.web-axe-wcag21aa",
+   "to": "decision.2026-10-24.web-a11y-gate",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.web-axe-wcag21aa",
+   "to": "rejected.2026-10-24.opacity-dimmed-text",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-axe-wcag21aa",
+   "to": "rejected.2026-10-24.sheet-focus-effect-on-onclose",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.web-a11y-gate",
+   "to": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.static-cache-for-samples",
+   "to": "open.2026-10-24.stack-voice-samples",
+   "relation": "part-of"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "kind": "commit",
+   "title": "Web: tests leave the tree clean; axe WCAG 2.1 AA gate (0 serious/critical, light and dark, 1440/390); skip link; sheet focus fix; reduced-motion scrolls; stack voice samples from /samples/manifest.json (ships empty)",
+   "source": "web builder"
+  }
+ ]
+}

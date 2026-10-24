@@ -1,0 +1,96 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.hook-secret-overlap-24h",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "inference",
+      "date": "2026-10-24",
+      "title": "After source.hook_secret.rotate, the previous intake webhook secret is accepted for 24 hours (HOOK_SECRET_OVERLAP_MS), then refused. A second rotation inside the window keeps only the secret it replaces.",
+      "rationale": "Long enough for a sender's team to deploy a config change the same working day or the next; short enough that a leaked secret stops working within a day of rotation. Stripe-style rolling is configurable up to 24 h by default.",
+      "reverse_if": "A buyer's sender deploys only weekly (a batch ETL), or a rotation is for a known leak: then add an overlap argument (0 for a leak, up to 7 days).",
+      "path": "product/server/modules/intake/sources.ts"
+    },
+    {
+      "id": "decision.2026-10-24.hook-secret-vault-js-migration",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Intake webhook secrets are sealed in the workspace vault (AES-256-GCM under VP_SECRET_KEY, purpose 'intake-hook', bound to the workspace) at creation and rotation. Existing plaintext rows are sealed by migration 0109, a .mjs migration: scripts/migrate.mjs now also runs NNNN_*.mjs files, whose default export gets the client inside the same transaction. It seals every row in the format crypto.ts opens, then drops intake_source.hook_secret. With plaintext rows and no key it stops and changes nothing. ops/STAGING.md says to migrate with the server's key.",
+      "rationale": "SQL cannot encrypt under the application key. A separate seal script plus a later drop migration would make deploys two-step and leave a window where both forms exist.",
+      "reverse_if": "Migrations must run where VP_SECRET_KEY is not available (a separate migration role); then seal lazily on first read and drop the column in a later release.",
+      "path": "product/db/migrations/0109_intake_hook_secret_vault.mjs"
+    },
+    {
+      "id": "decision.2026-10-24.duty-roster",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "On duty is a roster: weekly shifts (ISO days, start and end minutes in the roster's timezone, default Asia/Kolkata; a shift past midnight is two shifts) and dated overrides that put someone on duty (cover) or take them off (leave), at most 92 days. Owners, builders, operators and compliance members can be on duty; viewers cannot. Email alerts with no listed addresses go to whoever is on shift, else to every active owner, operator and compliance member. Changes are policy actions (duty.roster.set, duty.override.add and .remove). The in-app crisis alert (calls' alertOnDuty) still uses the role rule. The Settings > Notifications card is built (local branch roster-ui-wip) but held by the integrator until web's lazy-load trim lands, then goes into that page's lazy chunk.",
+      "rationale": "Integrator brief. Falling back to roles means a gap in the roster never silences an alert.",
+      "reverse_if": "Buyers want the in-app crisis banner to follow the roster too, or need per-destination rosters (a night team on its own Slack channel).",
+      "path": "product/server/modules/workspace/duty.ts"
+    },
+    {
+      "id": "measure.2026-10-24.secret-vault-roster-tests",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "New tests on Postgres 16. smtp.test.ts (4, no database):\n- STARTTLS upgrade with a trusted self-signed openssl certificate: only EHLO and STARTTLS travel in the clear, and AUTH, MAIL, RCPT and DATA go inside TLS;\n- an untrusted certificate: refused before any AUTH;\n- no STARTTLS on a non-loopback address (192.0.2.2 here): refused after EHLO, with nothing sent;\n- a loopback relay without TLS is allowed.\nnotifications.test.ts gains a test that in-app crisis alerts are unchanged beside Slack and a not-set-up email.\nintake-hook-vault.test.ts (2):\n- the migration runs on a scratch database: 2 plaintext secrets are sealed and open with crypto.ts, they are bound to the workspace, and the column is dropped; without a key it rejects and nothing changes;\n- rotation end to end: viewers and another workspace are refused, the new secret is shown once, neither secret is in the stored action, the old one gives 200 inside the window and 401 after it.\nduty-roster.test.ts (2) uses fixed instants (Monday 10:00 IST, 20:00 IST, Saturday) to cover weekly hours, leave, cover, the role fallback, a timezone change to Asia/Dubai, the refusals, and email to the person on shift only through a fake SMTP server.",
+      "n": 15,
+      "method": "node --test; openssl-made certificate; scratch database via CREATE DATABASE",
+      "path": "product/tests/"
+    },
+    {
+      "id": "open.2026-10-24.bundle-over-205",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The web bundle is over its temporary 205 KB gzip ceiling on head before any workspace roster UI: all chunks measured 205.7 KB after 470e1c4 and 6f800ef. With the roster card and the workspace copy trims it is 206.4 KB (roster +1.2 KB, trims -0.5 KB). The integrator decides: raise the ceiling, wait for web's lazy-load and dedupe, or hold the roster UI. Integrator decision (option c): push the roster backend now; hold the UI until web's trim; no further ceiling raise (the 205 ceiling was already temporary; load time on a mid-range Android over 4G is part of the product).",
+      "closes_when": "Head builds at or under 205 KB gzip with the roster card in the Settings > Notifications lazy chunk."
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.hook-secret-vault-js-migration",
+      "to": "open.2026-10-21.intake-hook-secret-vault",
+      "relation": "resolves"
+    },
+    {
+      "from": "decision.2026-10-24.hook-secret-overlap-24h",
+      "to": "decision.2026-10-24.hook-secret-vault-js-migration",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.2026-10-24.duty-roster",
+      "to": "decision.2026-10-24.slack-hooks-only-email-smtp-env",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.secret-vault-roster-tests",
+      "to": "open.2026-10-24.notifications-unverified",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.secret-vault-roster-tests",
+      "to": "decision.2026-10-24.hook-secret-vault-js-migration",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.secret-vault-roster-tests",
+      "to": "decision.2026-10-24.duty-roster",
+      "relation": "informs"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "workspace-batch-vault-roster",
+      "details": "Integrator's batch, in order:\n1. Test gaps closed: STARTTLS upgrade, plaintext refused off loopback, in-app alerts unchanged.\n2. Intake hook secrets in the vault: migration 0109 (.mjs) and rotate with a 24 h overlap. This closes open.2026-10-21.intake-hook-secret-vault.\n3. Duty roster backend: weekly hours plus leave and cover, email to whoever is on shift. The Settings > Notifications card is held until web's bundle trim.\nThe integrator chose to hold the UI (open.2026-10-24.bundle-over-205). Not verified: real SMTP providers, a production deploy of migration 0109."
+    }
+  ]
+}

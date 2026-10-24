@@ -1,0 +1,95 @@
+{
+  "nodes": [
+    {
+      "id": "rejected.2026-10-24.check-waits-for-experiment-lock",
+      "type": "rejection", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+      "title": "Rejected: experiment.check waiting for the experiment row lock (FOR UPDATE) while it may call a sibling tool on a second pooled connection.",
+      "tried": "experiment.check before 0e4e7da, run by calls after every connected call, so checks of one experiment overlap.",
+      "broke": "Overlapping checks held the pool's other connections while they waited for the row lock, and the lock holder waited for a connection. The loop e2e hung for good on PG_POOL_MAX=3 and timed out once at 300 s on the default pool under load (pg_stat_activity: checks on a tuple lock behind one 'idle in transaction')."
+    },
+    {
+      "id": "decision.2026-10-24.check-skip-locked",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "experiment.check takes its row with FOR UPDATE SKIP LOCKED. A check that finds it locked returns at once with a note, and the next call or the learning.check job looks again.",
+      "rationale": "rejected.2026-10-24.check-waits-for-experiment-lock; measure.2026-10-24.check-deadlock.",
+      "reverse_if": "Cross-module calls run on the caller's own connection (nested in its transaction); then waiting is safe again."
+    },
+    {
+      "id": "measure.2026-10-24.check-deadlock",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24", "n": 15,
+      "method": "The loop e2e on pool sizes 2, 3, 5 and 10, and a stress of 6 concurrent copies plus the learning and safety suites, 3 rounds. The shadow A/A was simulated 400 times on the test's own data to rule it out.",
+      "title": "Before the fix: the loop e2e hung on a pool of 3 and passed on 5. After: it passed on pools of 2, 3 and 10, and 15 of 15 stressed runs took 26-31 s (timeout 300 s). The shadow A/A failed 0 of 400 times on that data, so it was not the cause.",
+      "path": "research/2026-10-23/walkthrough/LEARNING-LOOP.md"
+    },
+    {
+      "id": "decision.2026-10-24.version-kind-live",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "An agent version is 'published' or 'candidate' (agent_version.kind, migration 0204). 'The live version' is the newest published one (agent.get liveVersion). Readers never take 'the newest version'. campaign.draft and version.restore refuse a candidate, and version.candidate's parent must be published.",
+      "rationale": "The web campaign and inbound forms used versions[0], so during a test a new campaign or line would have run the untested candidate for everyone. Measured: version.restore to a candidate published it as version 4. Also affected: learning's proposal base, memory, the calls test-call default, the publish parent and card, and version.diff.",
+      "reverse_if": "Agents gains first-class branches, where a version's role is a pointer rather than a property of the row."
+    },
+    {
+      "id": "decision.2026-10-24.probe-inconclusive",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "A probe where both versions pass none of the practice calls and nothing regressed reads 'inconclusive', with a note, never 'pass'. The proposal may still be tested on real calls.",
+      "rationale": "On the dev walk, with no simulation model, both versions scored 0 of 12, and 'no regression' read as a pass.",
+      "reverse_if": "Practice calls get a calibrated pass rate on the current version; then an inconclusive probe could block instead."
+    },
+    {
+      "id": "decision.2026-10-24.issue-recovery",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "Adoption writes the adopted change onto the monitor issue that started it. A monitor closes its issue when the calls that ended after it opened (at least its minimum) are at or under 80% of its threshold. The resolution states the numbers and names an adopted change as 'observed together, not proof'.",
+      "rationale": "The issue that started the loop stayed open with no link to the result. The first version, without hysteresis, closed the loop's issue at 34.8% against 35%, a rate that would reopen it on the next wobble.",
+      "reverse_if": "Issues flap or close too late in real use; then tune RECOVER_AT per signal."
+    },
+    {
+      "id": "rejected.2026-10-24.learning-reads-moment-table",
+      "type": "rejection", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+      "title": "Rejected: learning's evidence reading moments from the 'moment' table.",
+      "tried": "gatherEvidence before 686b491.",
+      "broke": "Nothing writes that table; analysis writes call_moment. Learning never saw an objection, a question, a confusion or a commitment, and never saw insight themes."
+    },
+    {
+      "id": "decision.2026-10-24.learning-evidence-shapes",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "Learning reads, from the live version's last 30 days: call_moment counts by kind, up to 4 caller lines per quotable kind (objection, question, confusion, callback request, commitment), reason codes, outcomes including none, and the agent's latest insight themes. A crisis call's words are never shown to the model; an opt-out is counted, never quoted.",
+      "rationale": "rejected.2026-10-24.learning-reads-moment-table. These are the shapes the round-3 analysis bench produced (research/2026-10-23/benches-r3: 270 analyses, six moment kinds, twelve reason codes, 94 with no outcome).",
+      "reverse_if": "Analysis changes what it stores; the fixtures in product/tests/fixtures/analysed-calls.ts must follow."
+    },
+    {
+      "id": "decision.2026-10-24.shape-gate-via-compile",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "Every learning proposal is compiled through agents' brief.compile before it is drafted. Only a refusal the change causes counts: if the live version itself no longer compiles under today's rules, the gate records 'not checked' instead of blocking.",
+      "rationale": "A learned note that reads as a line (first person, quotes, a greeting, Hindi, digits) passed every learning gate and was refused only when the candidate compiled, after a person had approved it.",
+      "reverse_if": "The shape lint moves to shared/ and learning's own gates run it directly."
+    },
+    {
+      "id": "rejected.2026-10-24.gate-rejudges-existing-entries",
+      "type": "rejection", "status": "confirmed", "source": "verified", "date": "2026-10-24",
+      "title": "Rejected: learning's per-string gates judging every string a whole-list change contains.",
+      "tried": "runGates before 686b491, on a change that sets 'objections' to the existing notes plus one.",
+      "broke": "The insurance-renewal template's own note ('no defending, no discount talk') trips the reply door's promotion rule (RD7), so every objection proposal on that template was gated out by text nobody proposed. 1 of 6 template objection notes (16 templates) is affected."
+    },
+    {
+      "id": "decision.2026-10-24.objection-notes-from-themes",
+      "type": "decision", "status": "active", "source": "verified", "date": "2026-10-24",
+      "title": "A recurring objection theme (agent-scope insight, last 7 days, 3+ calls, 5%+ of the sample, 2+ verified quotes) that no existing note answers becomes one drafted objection note. The note is an English trigger + approach about behaviour, appended after the business's notes, which stay unchanged (gate objection_append_only). It never reuses a caller's words (gate copied_quote: any 4 consecutive words or the whole line). It runs once per theme per agent (learning_theme_run, migration 0804) within the daily cap of 3 model runs shared with issues. A trigger that already names it, or the model replying 'covered', records already_answered.",
+      "rationale": "The integrator's task 2026-10-24. Caller words in a brief get recited back to the next caller (agents' lint law); a learned change must never rewrite what the business wrote.",
+      "reverse_if": "Real use shows the thresholds draft too often or too rarely, measured as drafted notes per 100 insight runs and their approval rate."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.check-skip-locked", "to": "rejected.2026-10-24.check-waits-for-experiment-lock", "relation": "derived-from" },
+    { "from": "measure.2026-10-24.check-deadlock", "to": "decision.2026-10-24.check-skip-locked", "relation": "supports" },
+    { "from": "decision.2026-10-24.learning-evidence-shapes", "to": "rejected.2026-10-24.learning-reads-moment-table", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.objection-notes-from-themes", "to": "decision.2026-10-24.learning-evidence-shapes", "relation": "requires" },
+    { "from": "decision.2026-10-24.objection-notes-from-themes", "to": "decision.2026-10-24.shape-gate-via-compile", "relation": "requires" },
+    { "from": "decision.2026-10-24.shape-gate-via-compile", "to": "rejected.2026-10-24.gate-rejudges-existing-entries", "relation": "informed-by" },
+    { "from": "decision.2026-10-24.version-kind-live", "to": "open.2026-10-23.agents-candidate-version-latest", "relation": "closes" },
+    { "from": "decision.2026-10-24.probe-inconclusive", "to": "open.2026-10-23.probe-inconclusive", "relation": "closes" },
+    { "from": "decision.2026-10-24.issue-recovery", "to": "open.2026-10-23.issue-after-adoption", "relation": "closes" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "learning-open-items-and-real-shapes", "details": "Closed learning's three open questions (one live version, probe inconclusive, issue after adoption). Found the loop e2e's one failure: a pool deadlock in experiment.check, fixed with SKIP LOCKED. Learning now reads what real analysis writes (call_moment, reasons, outcomes, insight themes) and drafts objection notes from recurring unanswered objection themes. Fixtures: product/tests/fixtures/analysed-calls.ts." }
+  ]
+}

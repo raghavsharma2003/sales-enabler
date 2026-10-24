@@ -1,0 +1,153 @@
+## Cascade: caller end of speech -> first agent audio byte (Central India VM, no telephone leg)
+| config | turns | turns_answered | p50_ms | p50_ci95 | p50_ci95_session_cluster | p90_ms | share_le_1200 | clean_turns | clean_p50_ms | clean_p90_ms |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 60 | 58 | 1026 | 1000-1038 | 1017-1035 | 1143 | 0.95 | 30 | 1034 | 1156 |
+| C1_az_az41_azneural+gatedSTT | 30 | 28 | 989 | 950-1024 | 967-994 | 1072 | 1.0 | 15 | 968 | 1072 |
+| C2_az_az41_azhd | 60 | 58 | 1133 | 1115-1155 | 1118-1140 | 1231 | 0.83 | 30 | 1119 | 1231 |
+| C3_az_or_azhd | 60 | 57 | 1044 | 1019-1061 | 1029-1080 | 1230 | 0.86 | 30 | 1088 | 1433 |
+| C6_gtl_or_azneural | 60 | 60 | 1031 | 1011-1057 | 1010-1052 | 1404 | 0.82 | 30 | 1067 | 1355 |
+| C6_gtl_or_azneural+gatedSTT | 30 | 30 | 1038 | 1009-1245 | 990-1163 | 1453 | 0.6 | 15 | 1241 | 1590 |
+| C7_az_gm_azneural | 60 | 56 | 1568 | 1511-1592 | 1514-1602 | 1790 | 0.0 | 30 | 1500 | 1679 |
+| C8_gtl_gm_azneural | 60 | 59 | 1688 | 1665-1718 | 1654-1718 | 1789 | 0.0 | 30 | 1657 | 1759 |
+
+| config | stt_final_rel_end_p50_ms | llm_ttft_p50_ms | first_clause_rel_end_p50_ms | llm_done_rel_end_p50_ms | tts_ttfb_p50_ms | tts_ttfb_p90_ms | responses_per_turn | turns_with_errors |
+|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 662 | 308 | 982 | 1229 | 32 | 91 | 1.87 | 0 |
+| C1_az_az41_azneural+gatedSTT | 648 | 308 | 968 | 1194 | 29 | 44 | 1.87 | 0 |
+| C2_az_az41_azhd | 646 | 301 | 962 | 1214 | 164 | 191 | 1.87 | 0 |
+| C3_az_or_azhd | 648 | 208 | 878 | 945 | 160 | 184 | 1.85 | 0 |
+| C6_gtl_or_azneural | 771 | 208 | 991 | 1073 | 34 | 63 | 1.9 | 0 |
+| C6_gtl_or_azneural+gatedSTT | 753 | 222 | 1007 | 1114 | 32 | 54 | 1.83 | 0 |
+| C7_az_gm_azneural | 640 | 824 | 1514 | 1532 | 48 | 86 | 1.85 | 1 |
+| C8_gtl_gm_azneural | 766 | 794 | 1646 | 1676 | 46 | 84 | 1.83 | 1 |
+
+| config | cutin_turns_main | cutin_gap_turns | cutin_clean_turns | elderly_pause_cutin | P1_p50_ms | P2_p50_ms | P4_p50_ms | gate_substitutions |
+|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 16/60 | 16/30 | 0/30 | 12/12 | 1016 | 1035 | 1017 | 0 |
+| C1_az_az41_azneural+gatedSTT | 9/30 | 9/15 | 0/15 | 6/6 | 967 | 994 | 985 | 0 |
+| C2_az_az41_azhd | 9/60 | 9/30 | 0/30 | 12/12 | 1121 | 1147 | 1123 | 1 |
+| C3_az_or_azhd | 16/60 | 16/30 | 0/30 | 12/12 | 1013 | 1095 | 1030 | 3 |
+| C6_gtl_or_azneural | 19/60 | 19/30 | 0/30 | 12/12 | 1038 | 1054 | 1010 | 1 |
+| C6_gtl_or_azneural+gatedSTT | 7/30 | 7/15 | 0/15 | 6/6 | 1092 | 1163 | 990 | 0 |
+| C7_az_gm_azneural | 2/60 | 2/30 | 0/30 | 12/12 | 1500 | 1592 | 1576 | 2 |
+| C8_gtl_gm_azneural | 2/60 | 2/30 | 0/30 | 12/12 | 1695 | 1665 | 1718 | 3 |
+
+| config | exchanges_measured | prompt_base_tokens | prompt_growth_tokens_per_exchange | llm_waste_factor | cached_share | completion_tokens_per_exchange | tts_chars_per_exchange | gem_tts_out_tokens_per_exchange | agent_audio_s_per_exchange | exchanges_per_min_modelled | tts_chars_per_agent_s | gem_tts_tokens_per_agent_s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 60 | 1696 | 44.5 | 1.84 | 0.94 | 28.6 | 109.7 | 0.0 | 10.94 | 3.74 | 10.03 |  |
+| C1_az_az41_azneural+gatedSTT | 30 | 1690 | 44.2 | 1.84 | 0.944 | 31.8 | 112.9 | 0.0 | 10.99 | 3.75 | 10.27 |  |
+| C2_az_az41_azhd | 60 | 1693 | 45.8 | 1.84 | 0.948 | 30.4 | 118.7 | 0.0 | 6.91 | 4.96 | 17.18 |  |
+| C3_az_or_azhd | 60 | 1728 | 60.9 | 1.82 | 0.82 | 85.2 | 163.3 | 0.0 | 9.33 | 4.15 | 17.51 |  |
+| C6_gtl_or_azneural | 60 | 1732 | 56.3 | 1.86 | 0.831 | 76.5 | 141.9 | 0.0 | 13.85 | 3.15 | 10.24 |  |
+| C6_gtl_or_azneural+gatedSTT | 30 | 1892 | 35.6 | 1.79 | 0.851 | 66.7 | 124.4 | 0.0 | 12.88 | 3.31 | 9.66 |  |
+| C7_az_gm_azneural | 60 | 1771 | 31.5 | 1.8 | 0.0 | 20.4 | 78.7 | 0.0 | 8.33 | 4.32 | 9.45 |  |
+| C8_gtl_gm_azneural | 60 | 1764 | 32.4 | 1.78 | 0.0 | 22.6 | 80.8 | 0.0 | 8.73 | 4.15 | 9.25 |  |
+
+### cost shape: battery-measured
+| config | call_min | exchanges | stt_inr_per_min | llm_inr_per_min | tts_inr_per_min | ai_inr_per_min | ai_inr_per_min_stt_vad_gated | ai_inr_per_min_stt_upper | ai_inr_per_min_2027_prices | ai_inr_per_call |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 1 | 4 | 1.583 | 0.179 | 0.585 | 2.348 | 1.269 | 2.348 | 2.348 | 2.35 |
+| C1_az_az41_azneural | 3 | 11 | 1.583 | 0.177 | 0.585 | 2.346 | 1.267 | 2.346 | 2.346 | 7.04 |
+| C1_az_az41_azneural | 5 | 19 | 1.583 | 0.199 | 0.585 | 2.368 | 1.289 | 2.368 | 2.368 | 11.84 |
+| C1_az_az41_azneural | 10 | 37 | 1.583 | 0.227 | 0.585 | 2.396 | 1.318 | 2.396 | 2.396 | 23.96 |
+| C1_az_az41_azneural+gatedSTT | 1 | 4 | 0.512 | 0.179 | 0.604 | 1.294 | 1.294 | 1.294 | 1.294 | 1.29 |
+| C1_az_az41_azneural+gatedSTT | 3 | 11 | 0.469 | 0.176 | 0.604 | 1.249 | 1.249 | 1.249 | 1.249 | 3.75 |
+| C1_az_az41_azneural+gatedSTT | 5 | 19 | 0.486 | 0.198 | 0.604 | 1.288 | 1.288 | 1.288 | 1.288 | 6.44 |
+| C1_az_az41_azneural+gatedSTT | 10 | 38 | 0.486 | 0.234 | 0.604 | 1.323 | 1.323 | 1.323 | 1.323 | 13.23 |
+| C2_az_az41_azhd | 1 | 5 | 1.583 | 0.224 | 1.231 | 3.038 | 2.123 | 3.038 | 3.038 | 3.04 |
+| C2_az_az41_azhd | 3 | 15 | 1.583 | 0.249 | 1.231 | 3.063 | 2.149 | 3.063 | 3.063 | 9.19 |
+| C2_az_az41_azhd | 5 | 25 | 1.583 | 0.275 | 1.231 | 3.089 | 2.174 | 3.089 | 3.089 | 15.44 |
+| C2_az_az41_azhd | 10 | 50 | 1.583 | 0.338 | 1.231 | 3.152 | 2.238 | 3.152 | 3.152 | 31.52 |
+| C3_az_or_azhd | 1 | 4 | 1.583 | 0.131 | 1.418 | 3.132 | 2.109 | 3.132 | 3.132 | 3.13 |
+| C3_az_or_azhd | 3 | 12 | 1.583 | 0.146 | 1.418 | 3.147 | 2.123 | 3.147 | 3.147 | 9.44 |
+| C3_az_or_azhd | 5 | 21 | 1.583 | 0.171 | 1.418 | 3.172 | 2.148 | 3.172 | 3.172 | 15.86 |
+| C3_az_or_azhd | 10 | 42 | 1.583 | 0.212 | 1.418 | 3.213 | 2.19 | 3.213 | 3.213 | 32.13 |
+| C6_gtl_or_azneural | 1 | 3 | 0.586 | 0.096 | 0.637 | 1.319 | 0.954 | 1.612 | 1.319 | 1.32 |
+| C6_gtl_or_azneural | 3 | 9 | 0.586 | 0.104 | 0.637 | 1.327 | 0.962 | 1.62 | 1.327 | 3.98 |
+| C6_gtl_or_azneural | 5 | 16 | 0.592 | 0.121 | 0.637 | 1.35 | 0.984 | 1.636 | 1.35 | 6.75 |
+| C6_gtl_or_azneural | 10 | 31 | 0.589 | 0.138 | 0.637 | 1.363 | 0.998 | 1.653 | 1.363 | 13.63 |
+| C6_gtl_or_azneural+gatedSTT | 1 | 3 | 0.208 | 0.096 | 0.587 | 0.891 | 0.891 | 1.184 | 0.891 | 0.89 |
+| C6_gtl_or_azneural+gatedSTT | 3 | 10 | 0.231 | 0.113 | 0.587 | 0.931 | 0.931 | 1.214 | 0.931 | 2.79 |
+| C6_gtl_or_azneural+gatedSTT | 5 | 17 | 0.236 | 0.122 | 0.587 | 0.945 | 0.945 | 1.225 | 0.945 | 4.72 |
+| C6_gtl_or_azneural+gatedSTT | 10 | 33 | 0.229 | 0.132 | 0.587 | 0.948 | 0.948 | 1.232 | 0.948 | 9.48 |
+| C7_az_gm_azneural | 1 | 4 | 1.583 | 0.392 | 0.484 | 2.459 | 1.458 | 2.459 | 2.459 | 2.46 |
+| C7_az_gm_azneural | 3 | 13 | 1.583 | 0.456 | 0.484 | 2.523 | 1.522 | 2.523 | 2.523 | 7.57 |
+| C7_az_gm_azneural | 5 | 22 | 1.583 | 0.495 | 0.484 | 2.562 | 1.561 | 2.562 | 2.562 | 12.81 |
+| C7_az_gm_azneural | 10 | 43 | 1.583 | 0.557 | 0.484 | 2.624 | 1.623 | 2.624 | 2.624 | 26.24 |
+| C8_gtl_gm_azneural | 1 | 4 | 0.615 | 0.389 | 0.477 | 1.482 | 1.159 | 1.745 | 1.482 | 1.48 |
+| C8_gtl_gm_azneural | 3 | 12 | 0.615 | 0.416 | 0.477 | 1.508 | 1.185 | 1.772 | 1.508 | 4.52 |
+| C8_gtl_gm_azneural | 5 | 21 | 0.621 | 0.468 | 0.477 | 1.566 | 1.243 | 1.823 | 1.566 | 7.83 |
+| C8_gtl_gm_azneural | 10 | 41 | 0.618 | 0.524 | 0.477 | 1.619 | 1.296 | 1.88 | 1.619 | 16.19 |
+
+### cost shape: ref 5/min, agent 40%
+| config | call_min | exchanges | stt_inr_per_min | llm_inr_per_min | tts_inr_per_min | ai_inr_per_min | ai_inr_per_min_stt_vad_gated | ai_inr_per_min_stt_upper | ai_inr_per_min_2027_prices | ai_inr_per_call |
+|---|---|---|---|---|---|---|---|---|---|---|
+| C1_az_az41_azneural | 1 | 5 | 1.583 | 0.227 | 0.343 | 2.153 | 1.361 | 2.153 | 2.153 | 2.15 |
+| C1_az_az41_azneural | 3 | 15 | 1.583 | 0.252 | 0.343 | 2.178 | 1.386 | 2.178 | 2.178 | 6.53 |
+| C1_az_az41_azneural | 5 | 25 | 1.583 | 0.277 | 0.343 | 2.203 | 1.412 | 2.203 | 2.203 | 11.02 |
+| C1_az_az41_azneural | 10 | 50 | 1.583 | 0.34 | 0.343 | 2.266 | 1.475 | 2.266 | 2.266 | 22.66 |
+| C1_az_az41_azneural+gatedSTT | 1 | 5 | 0.64 | 0.226 | 0.351 | 1.217 | 1.217 | 1.217 | 1.217 | 1.22 |
+| C1_az_az41_azneural+gatedSTT | 3 | 15 | 0.64 | 0.251 | 0.351 | 1.242 | 1.242 | 1.242 | 1.242 | 3.72 |
+| C1_az_az41_azneural+gatedSTT | 5 | 25 | 0.64 | 0.275 | 0.351 | 1.266 | 1.266 | 1.266 | 1.266 | 6.33 |
+| C1_az_az41_azneural+gatedSTT | 10 | 50 | 0.64 | 0.337 | 0.351 | 1.328 | 1.328 | 1.328 | 1.328 | 13.28 |
+| C2_az_az41_azhd | 1 | 5 | 1.583 | 0.224 | 0.862 | 2.669 | 1.877 | 2.669 | 2.669 | 2.67 |
+| C2_az_az41_azhd | 3 | 15 | 1.583 | 0.249 | 0.862 | 2.694 | 1.903 | 2.694 | 2.694 | 8.08 |
+| C2_az_az41_azhd | 5 | 25 | 1.583 | 0.275 | 0.862 | 2.72 | 1.928 | 2.72 | 2.72 | 13.6 |
+| C2_az_az41_azhd | 10 | 50 | 1.583 | 0.338 | 0.862 | 2.783 | 1.992 | 2.783 | 2.783 | 27.83 |
+| C3_az_or_azhd | 1 | 5 | 1.583 | 0.166 | 0.878 | 2.628 | 1.836 | 2.628 | 2.628 | 2.63 |
+| C3_az_or_azhd | 3 | 15 | 1.583 | 0.189 | 0.878 | 2.651 | 1.859 | 2.651 | 2.651 | 7.95 |
+| C3_az_or_azhd | 5 | 25 | 1.583 | 0.213 | 0.878 | 2.674 | 1.883 | 2.674 | 2.674 | 13.37 |
+| C3_az_or_azhd | 10 | 50 | 1.583 | 0.271 | 0.878 | 2.733 | 1.941 | 2.733 | 2.733 | 27.33 |
+| C6_gtl_or_azneural | 1 | 5 | 0.644 | 0.165 | 0.35 | 1.16 | 0.91 | 1.394 | 1.16 | 1.16 |
+| C6_gtl_or_azneural | 3 | 15 | 0.644 | 0.187 | 0.35 | 1.181 | 0.932 | 1.416 | 1.181 | 3.54 |
+| C6_gtl_or_azneural | 5 | 25 | 0.644 | 0.209 | 0.35 | 1.203 | 0.954 | 1.438 | 1.203 | 6.02 |
+| C6_gtl_or_azneural | 10 | 50 | 0.644 | 0.263 | 0.35 | 1.258 | 1.008 | 1.492 | 1.258 | 12.58 |
+| C6_gtl_or_azneural+gatedSTT | 1 | 5 | 0.347 | 0.163 | 0.33 | 0.841 | 0.841 | 1.075 | 0.841 | 0.84 |
+| C6_gtl_or_azneural+gatedSTT | 3 | 15 | 0.347 | 0.176 | 0.33 | 0.854 | 0.854 | 1.088 | 0.854 | 2.56 |
+| C6_gtl_or_azneural+gatedSTT | 5 | 25 | 0.347 | 0.189 | 0.33 | 0.867 | 0.867 | 1.101 | 0.867 | 4.33 |
+| C6_gtl_or_azneural+gatedSTT | 10 | 50 | 0.347 | 0.222 | 0.33 | 0.899 | 0.899 | 1.134 | 0.899 | 8.99 |
+| C7_az_gm_azneural | 1 | 5 | 1.583 | 0.494 | 0.323 | 2.4 | 1.609 | 2.4 | 2.4 | 2.4 |
+| C7_az_gm_azneural | 3 | 15 | 1.583 | 0.534 | 0.323 | 2.441 | 1.649 | 2.441 | 2.441 | 7.32 |
+| C7_az_gm_azneural | 5 | 25 | 1.583 | 0.574 | 0.323 | 2.481 | 1.689 | 2.481 | 2.481 | 12.41 |
+| C7_az_gm_azneural | 10 | 50 | 1.583 | 0.675 | 0.323 | 2.582 | 1.79 | 2.582 | 2.582 | 25.82 |
+| C8_gtl_gm_azneural | 1 | 5 | 0.644 | 0.491 | 0.316 | 1.452 | 1.202 | 1.686 | 1.452 | 1.45 |
+| C8_gtl_gm_azneural | 3 | 15 | 0.644 | 0.532 | 0.316 | 1.493 | 1.243 | 1.727 | 1.493 | 4.48 |
+| C8_gtl_gm_azneural | 5 | 25 | 0.644 | 0.573 | 0.316 | 1.534 | 1.284 | 1.768 | 1.534 | 7.67 |
+| C8_gtl_gm_azneural | 10 | 50 | 0.644 | 0.676 | 0.316 | 1.636 | 1.387 | 1.871 | 1.636 | 16.36 |
+
+## LLM streaming TTFT from the Central India VM (warm, ~1.8k-token prompt, n=30 attempted per arm)
+| arm | calls | ok | ttft_p50_ms | ttft_p50_ci95 | ttft_p90_ms | total_p50_ms | cached_share | completion_tokens_mean | failures |
+|---|---|---|---|---|---|---|---|---|---|
+| or:openai/gpt-oss-120b@groq | 30 | 30 | 253 | 222-273 | 490 | 336 | 0.62 | 87.5 | {} |
+| or:meta-llama/llama-3.1-8b-instruct@groq | 22 | 14 | 261 | 249-277 | 284 | 312 | 0.14 | 35.2 | {'429': 8} |
+| az:g3-gpt-4-1-mini-std | 30 | 30 | 526 | 329-570 | 636 | 595 | 0.96 | 33.0 | {} |
+| or:meta-llama/llama-3.3-70b-instruct@groq | 24 | 19 | 546 | 503-757 | 817 | 687 | 0.0 | 32.2 | {'429': 5} |
+| or:openai/gpt-oss-20b@groq | 30 | 30 | 558 | 521-591 | 792 | 603 | 0.27 | 51.1 | {} |
+| or:openai/gpt-oss-120b@cerebras | 30 | 30 | 642 | 632-680 | 943 | 661 | 0.85 | 71.6 | {} |
+| or:google/gemini-3.1-flash-lite@google-ai-studio | 30 | 30 | 743 | 722-835 | 1022 | 878 | 0.0 | 33.3 | {} |
+| gm:gemini-flash-lite-latest | 30 | 30 | 760 | 665-812 | 908 | 891 | 0.0 | 27.8 | {} |
+| gm:gemini-3.5-flash-lite | 30 | 30 | 783 | 712-827 | 980 | 888 | 0.0 | 27.6 | {} |
+| gm:gemini-3.1-flash-lite | 30 | 30 | 885 | 776-1024 | 1508 | 1015 | 0.0 | 34.7 | {} |
+| or:google/gemini-2.5-flash-lite@google-ai-studio | 30 | 30 | 899 | 839-1062 | 1107 | 1019 | 0.39 | 22.3 | {} |
+| or:deepseek/deepseek-v4-flash@deepinfra | 30 | 30 | 1258 | 1109-1455 | 2495 | 2597 | 0.73 | 38.1 | {} |
+| gm:gemini-3.6-flash | 22 | 16 | 1260 | 1226-1480 | 1743 | 1525 | 0.0 | 31.6 | {'429': 6} |
+| or:meta-llama/llama-3.3-70b-instruct@deepinfra | 30 | 30 | 2585 | 1543-4305 | 12498 | 12705 | 0.0 | 32.3 | {} |
+| gm:gemini-3.8-flash | 23 | 17 | 3279 | 2088-4260 | 10355 | 3285 | 0.0 | 34.4 | {'503': 1, '429': 5} |
+| or:qwen/qwen3.7-flash@alibaba | 30 | 0 |  | None-None |  |  |  |  | {'200': 30} |
+
+## TTS time to first audio from the Central India VM
+| arm | text | calls | ok | ttfb_p50_ms | ttfb_p50_ci95 | ttfb_p90_ms | rtf_p50 | max_underrun_ms | failures |
+|---|---|---|---|---|---|---|---|---|---|
+| az:hi-in-diya:DragonHDOmniIndicNeural | sentence | 24 | 24 | 302 | 297-305 | 308 | 0.245 | 0 | {} |
+| az:hi-IN-SwaraNeural | sentence | 24 | 24 | 113 | 106-122 | 162 | 0.032 | 0 | {} |
+| az:en-IN-Meera:DragonHDLatestNeural | sentence | 24 | 24 | 169 | 166-170 | 178 | 0.284 | 0 | {} |
+| az:hi-IN-KavyaNeural | sentence | 24 | 24 | 107 | 88-116 | 147 | 0.03 | 0 | {} |
+| az:en-IN-Aarti:DragonHDLatestNeural | sentence | 24 | 24 | 169 | 166-171 | 177 | 0.288 | 0 | {} |
+| az:hi-IN-KavyaNeural | short | 6 | 6 | 60 | 28-104 | 104 | 0.077 | 0 | {} |
+| az:en-IN-Aarti:DragonHDLatestNeural | short | 6 | 6 | 157 | 150-168 | 168 | 0.332 | 0 | {} |
+| az:hi-in-diya:DragonHDOmniIndicNeural | short | 6 | 6 | 285 | 282-290 | 290 | 0.315 | 0 | {} |
+| az:en-IN-Meera:DragonHDLatestNeural | short | 6 | 6 | 157 | 151-161 | 161 | 0.333 | 0 | {} |
+| az:hi-IN-SwaraNeural | short | 6 | 6 | 46 | 30-77 | 77 | 0.072 | 0 | {} |
+| gg:gemini-3.8-flash-lite-tts:Despina | sentence | 1 | 0 |  | None-None |  |  | 0 | {'429': 1} |
+| gg:gemini-3.8-flash-tts:Despina | sentence | 2 | 1 | 1316 | None-None | 1316 |  | 0 | {'429': 1} |
+

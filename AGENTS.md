@@ -1,5 +1,14 @@
 # Project continuity
 
+## Current entry point — 20 October 2026
+
+Start with `CLAUDE.md` and `context/DIRECTION.md`. The context protocol is in `context/PROTOCOL.md`.
+
+The sections below are the September–October continuity record. Where they conflict with DIRECTION.md, the newer owner
+directive wins. For example, "Azure remains the only approved paid inference provider" was superseded for the voice
+stack by `directive.2026-10-18.provider-open`: Gemini, OpenRouter and others are allowed, chosen by measurement, and
+always as explicit choices.
+
 ## Checkpoint preference — 30 September 2026
 
 The user explicitly requests frequent context logging and local Git commits so work survives usage limits and handoffs. Update context/STATE.md, context/graph.json and the append-only context/events.jsonl at meaningful milestones, validate with npm run context:check, and commit completed work. Keep credentials, databases and raw customer material out of commits. Record verification boundaries and blockers accurately; a checkpoint does not establish deployment or production readiness.

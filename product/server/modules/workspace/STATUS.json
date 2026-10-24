@@ -1,0 +1,351 @@
+{
+  "module": "workspace",
+  "tools": [
+    {
+      "id": "action.undo",
+      "risk": "draft"
+    },
+    {
+      "id": "activity.list",
+      "risk": "read"
+    },
+    {
+      "id": "apikey.create",
+      "risk": "policy"
+    },
+    {
+      "id": "apikey.list",
+      "risk": "read"
+    },
+    {
+      "id": "apikey.revoke",
+      "risk": "external"
+    },
+    {
+      "id": "apikey.rotate",
+      "risk": "policy"
+    },
+    {
+      "id": "audit.export",
+      "risk": "policy"
+    },
+    {
+      "id": "audit.export.list",
+      "risk": "read"
+    },
+    {
+      "id": "audit.export.verify",
+      "risk": "read"
+    },
+    {
+      "id": "brand.cnap_name.set",
+      "risk": "policy"
+    },
+    {
+      "id": "brand.get",
+      "risk": "read"
+    },
+    {
+      "id": "brand.update",
+      "risk": "draft"
+    },
+    {
+      "id": "integration.connect",
+      "risk": "policy"
+    },
+    {
+      "id": "integration.disconnect",
+      "risk": "destructive"
+    },
+    {
+      "id": "integration.kinds",
+      "risk": "read"
+    },
+    {
+      "id": "integration.list",
+      "risk": "read"
+    },
+    {
+      "id": "integration.stage_secrets",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.ingest",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.list",
+      "risk": "read"
+    },
+    {
+      "id": "knowledge.span.approve",
+      "risk": "draft"
+    },
+    {
+      "id": "member.invite",
+      "risk": "policy"
+    },
+    {
+      "id": "member.list",
+      "risk": "read"
+    },
+    {
+      "id": "member.remove",
+      "risk": "destructive"
+    },
+    {
+      "id": "member.role.set",
+      "risk": "policy"
+    },
+    {
+      "id": "offering.edit",
+      "risk": "draft"
+    },
+    {
+      "id": "offering.list",
+      "risk": "read"
+    },
+    {
+      "id": "revision.list",
+      "risk": "read"
+    },
+    {
+      "id": "scim.token.create",
+      "risk": "policy"
+    },
+    {
+      "id": "scim.token.list",
+      "risk": "read"
+    },
+    {
+      "id": "scim.token.revoke",
+      "risk": "external"
+    },
+    {
+      "id": "scim.token.rotate",
+      "risk": "policy"
+    },
+    {
+      "id": "search.global",
+      "risk": "read"
+    },
+    {
+      "id": "secret.reveal",
+      "risk": "draft"
+    },
+    {
+      "id": "share.link.create",
+      "risk": "policy"
+    },
+    {
+      "id": "share.link.list",
+      "risk": "read"
+    },
+    {
+      "id": "share.link.revoke",
+      "risk": "draft"
+    },
+    {
+      "id": "sso.config.get",
+      "risk": "read"
+    },
+    {
+      "id": "sso.config.set",
+      "risk": "policy"
+    },
+    {
+      "id": "sso.required.set",
+      "risk": "policy"
+    },
+    {
+      "id": "sso.secret.stage",
+      "risk": "draft"
+    },
+    {
+      "id": "sso.test",
+      "risk": "test"
+    },
+    {
+      "id": "webhook.create",
+      "risk": "policy"
+    },
+    {
+      "id": "webhook.delete",
+      "risk": "destructive"
+    },
+    {
+      "id": "webhook.deliveries",
+      "risk": "read"
+    },
+    {
+      "id": "webhook.emit",
+      "risk": "draft"
+    },
+    {
+      "id": "webhook.list",
+      "risk": "read"
+    },
+    {
+      "id": "webhook.replay",
+      "risk": "external"
+    },
+    {
+      "id": "workspace.get",
+      "risk": "read"
+    },
+    {
+      "id": "webhook.events",
+      "risk": "read"
+    },
+    {
+      "id": "webhook.test",
+      "risk": "test"
+    },
+    {
+      "id": "call.record",
+      "risk": "read"
+    },
+    {
+      "id": "call.export",
+      "risk": "policy"
+    },
+    {
+      "id": "call.export.list",
+      "risk": "read"
+    },
+    {
+      "id": "notification.destination.list",
+      "risk": "read"
+    },
+    {
+      "id": "notification.destination.create",
+      "risk": "policy"
+    },
+    {
+      "id": "notification.destination.delete",
+      "risk": "destructive"
+    },
+    {
+      "id": "notification.test",
+      "risk": "test"
+    },
+    {
+      "id": "notification.deliveries",
+      "risk": "read"
+    },
+    {
+      "id": "duty.roster.get",
+      "risk": "read"
+    },
+    {
+      "id": "duty.roster.set",
+      "risk": "policy"
+    },
+    {
+      "id": "duty.override.add",
+      "risk": "policy"
+    },
+    {
+      "id": "duty.override.remove",
+      "risk": "policy"
+    },
+    {
+      "id": "knowledge.ingest_site",
+      "risk": "draft"
+    },
+    {
+      "id": "offering.import",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.fact.list",
+      "risk": "read"
+    },
+    {
+      "id": "knowledge.fact.decide",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.propose",
+      "risk": "draft"
+    }
+  ],
+  "routes": [
+    "POST /v1/invites/accept",
+    "POST /v1/uploads/knowledge",
+    "GET /v1/share/:token",
+    "POST /v1/sso/discover",
+    "GET /v1/sso/start",
+    "GET /v1/sso/callback",
+    "GET /v1/scim/members",
+    "POST /v1/scim/members",
+    "PATCH /v1/scim/members/:id",
+    "GET /v1/audit/exports/:id",
+    "GET /v1/exports/calls/:id (streamed CSV, signed-in owner/compliance, audited)"
+  ],
+  "tests": {
+    "passed": 21,
+    "total": 21,
+    "files": [
+      "workspace-team",
+      "workspace-knowledge",
+      "workspace-integrations",
+      "workspace-tenancy",
+      "workspace-identity",
+      "results-out",
+      "notifications",
+      "smtp",
+      "duty-roster",
+      "intake-hook-vault"
+    ],
+    "database": "vp_mod_workspace on the throwaway Postgres 16; run twice, files in parallel, both green"
+  },
+  "gates": {
+    "tsc": "npx tsc -p tsconfig.json clean",
+    "tests": "node --import tsx --test tests/workspace*.test.ts green"
+  },
+  "works": [
+    "Invite flow end to end: policy approval, one-time link via secret.reveal, only sha256 stored, accept route sets name and password and signs in, expiry, re-invite",
+    "Last-owner protection on role change and removal, including two owners demoting each other at the same moment (advisory lock); only an owner can grant or take ownership",
+    "API keys: token read once by the approver, only the hash stored, works as Bearer, refused after revoke",
+    "Knowledge ingest of text, a generated PDF (pdf-parse, page locations) and a generated DOCX (mammoth, paragraph locations); spans start pending; only approved spans back offering facts; never_say lint; API keys and agents cannot approve spans",
+    "Offering and brand edits keep revisions; action.undo restores them and refuses everything else with a reason",
+    "Integration credentials staged and stored AES-256-GCM bound to the workspace; never in args, results, lists, activity or action rows",
+    "Outbound webhooks signed with the runtime seam sign(); delivered, replayed (approval), retried with backoff, scoped per workspace; private addresses refused",
+    "activity.list in plain words with stable pagination and filters; audit chain verifies afterwards",
+    "search.global over contacts, agents, campaigns and calls by name or number, wildcards literal",
+    "Share links: signed, expiring, revocable, read-only, bound to one object in one workspace",
+    "Tenancy: another workspace cannot read or change any of the above (one test touches every tool family)",
+    "OIDC single sign-on (2026-10-24): authorization code + PKCE S256, state bound to an HttpOnly cookie and stored as sha256, nonce sealed; ID token checked for alg (RS256/PS256/ES256 only), a published kid (JWKS cached 1 h, one refetch per 30 s on an unknown kid), signature, iss, aud/azp, exp/iat/nbf (60 s skew) and nonce. Identity is (issuer, sub); the email domain must be allowed on every sign-in; JIT members get the admin default role (never owner); linking an existing member by email needs email_verified (or the admin's explicit not_required). Tested against an in-process fake IdP (tests/oidc-fake.ts).",
+    "SSO required: password sign-in refused (403 sso_required, only after the password matched) except one break-glass owner, whose sign-ins are audited (auth.break_glass_login, session method break_glass); turning it on ends other password sessions; invites cannot set a password while it is on.",
+    "SCIM-lite: vps_ tokens (sha256 stored, scopes members:read / members:write / roles:write, A2 create/rotate/revoke, reveal once); /v1/scim/members list/create/PATCH active+role; owners out of reach; deactivation ends sessions in the same transaction.",
+    "Audit export: audit.export (A2 policy, owner/compliance) CSV or JSON lines, date range, actionPrefix, actorId, privilegedOnly; sha256 + HMAC signature (audit.export.verify); file held 24 h, each download audited; CSV formula starters escaped. Retention purges past max(audit_logs_days, 90) nightly with an audit_anchor so verifyAudit still holds.",
+    "Results out (2026-10-24): call.ended through webhook.emit after analysis settles, keyed per call (one delivery per endpoint even if analysed twice); campaign.state_changed, contact.opted_out and hand_off.created through webhook_outbox (triggers in 1020, fanned out by deliverPending; only endpoints that existed when the event happened). Records vyakti.call.v1 / contact_opt_out.v1 / hand_off.v1 built at send time (erasure and retention respected, recording link signed for 1 h), per-endpoint contactNumber masked|full, custom HTTP bearer sign-in on its base address, webhook.test, call.record (masked for viewers), call.export (policy, owner/compliance, streamed at download, formula-escaped, without test, suppressed or erased). Settings > Webhooks tab; Integrations labelled 'Stored, not used yet' except custom HTTP. Schema: product/docs/webhooks.md.",
+    "Notifications (2026-10-24): Slack (hooks.slack.com only) and email (SMTP env) destinations, each choosing crisis / hand_off / campaign.paused / wallet.low; from the outbox (1030 adds a wallet trigger and pg_notify wake); crisis text carries no caller words; email unset is visible and recorded as skipped. Settings > Notifications. docs/notifications.md.",
+    "Duty roster (2026-10-24): weekly hours in the roster timezone plus leave and cover; email alerts with no listed addresses go to whoever is on shift, else the role rule; the Settings > Notifications card is held for the bundle budget (branch roster-ui-wip). Intake webhook secrets sealed in the vault (0109 .mjs migration; source.hook_secret.rotate with a 24 h overlap). STARTTLS path tested with a self-signed certificate."
+  ],
+  "untested": [
+    "The tool registry JSON data/workspace-tool-registry.json was not in the repo (also not at research/2026-10-21/blueprint/data/); tool ids and risk classes come from the brief and are my reading of it. Compare my risk classes with the registry when it lands: webhook.replay=external, apikey.revoke=draft, share.link.revoke=draft, knowledge.span.approve=draft, member.remove / integration.disconnect / webhook.delete=destructive",
+    "Large or hostile PDFs and DOCX (zip bombs, decompression ratios): only size (9 MB), page (300), passage (600) and 30 s caps; parsing runs in-process",
+    "Scanned PDFs (no text) are refused as unreadable; no OCR",
+    "Webhook DNS rebinding between the address check and the send; delivery from several server processes at once (claim uses SKIP LOCKED but was run from one)",
+    "The 5-second delivery timer inside routes() (switched off under NODE_ENV=test)",
+    "Browser or phone use; nothing here has a UI",
+    "Share link view of a call includes the transcript: shown only after a policy approval, but there is no redaction step",
+    "Uploads over the 9.5 MB route limit (kernel returns 413; the fetch client resets the connection, so it is not asserted); multipart forms are not parsed (send the file as the body, or JSON). Cookie sessions must still send JSON (kernel CSRF rule), so raw uploads need an API key",
+    "SSO against a real Entra ID, Okta or Google Workspace tenant (only the in-process fake IdP was used).",
+    "SAML (not built; open.2026-10-24.saml-sso).",
+    "Results out: no real receiver on the internet (tests use a 127.0.0.1 receiver with VP_WEBHOOK_ALLOW_PRIVATE); delivery throughput with many endpoints; a calls export above a few thousand rows (streamed in pages of 500, cap 200,000, not measured); several replicas fanning out at once (SKIP LOCKED by design, not exercised).",
+    "Notifications: real Slack and a real SMTP server with STARTTLS (the upgrade path is not exercised); LISTEN behind a transaction-mode pooler."
+  ],
+  "needs_from_others": [
+    "Kernel owner: Registry.approve() stores args and result in clear in action.args / action.result and GET /v1/actions returns them. Workspace works around it (secret.reveal, integration.stage_secrets); a redaction hook would let other modules hold secrets safely. Logged as risk.2026-10-21.kernel-stores-approval-args-and-results-in-clear in the inbox",
+    "Deployment: set VP_SECRET_KEY (32 bytes as 64 hex characters or base64). Without it integration.connect, webhook.create, secret holds and share links fail with a clear error. Never set VP_WEBHOOK_ALLOW_PRIVATE or VP_WEBHOOK_ALLOW_HTTP in production",
+    "Other modules: announce events by calling the webhook.emit tool with a system actor (registry.execute(pool, \"webhook.emit\", {event, data}, {workspaceId, actor: {type: \"system\"}})); server code that needs an integration credential can import integrationSecrets from the workspace module"
+  ],
+  "notes": [
+    "Migration: product/db/migrations/1001_workspace.sql (ALTERs member, brand, offering, knowledge_source; new knowledge_span, workspace_revision, secret_box, integration, webhook_endpoint, webhook_delivery, share_link)",
+    "Context proposals: context/inbox/workspace-2026-10-21.json",
+    "Follow-up after the integrator message: POST /v1/uploads/knowledge now takes raw bodies (rawBody, 9.5 MB); apikey.revoke is risk external with a card. Not adopted: ToolDef.redactResult (secret.reveal kept; reverse_if in decision.2026-10-21.workspace-secret-reveal still applies)"
+  ]
+}

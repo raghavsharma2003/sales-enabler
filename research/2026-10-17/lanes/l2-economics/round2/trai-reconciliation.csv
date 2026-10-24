@@ -1,0 +1,7 @@
+comparison,ratio_p10,ratio_p50,ratio_p90,p_ratio_gt_1,reading
+l3 as published: bottom-up BFSI post-sales minutes / ALL national 1600 minutes,0.39,1.36,5.16,0.622,subset over total; must be < 1 if in-reach calls run on 1600
+corrected: bottom-up BFSI post-sales minutes / (1600 minutes x in-reach share),1.52,5.59,22.49,0.956,> 1 means the bottom-up seat model is high OR in-reach calling runs off-series (10-digit)
+corrected: bottom-up insurance-renewal minutes / (1600 minutes x insurance share x in-reach share),0.61,4.37,30.88,0.83,IRDAI entities had to be on 1600 from 2026-02-15; Q1 FY27 is after the deadline
+l3 as published: bottom-up pre-sales minutes / ALL 140 minutes (originated),0.56,1.39,3.86,0.674,subset over total
+corrected: bottom-up pre-sales minutes / (delivered 140 minutes x in-reach share),1.96,5.12,14.81,0.989,"uses 11.68 bn delivered calls/qtr, not 13.16 bn originated"
+context: AI-flagged suspected-spam calls per quarter (10-digit series),,,,,22.99 bn/qtr vs 1.15 bn 1600 and 13.16 bn 140 [prim PR 111/2026]

@@ -1,0 +1,385 @@
+{
+ "id": "blueprint.spine.2026-10-21",
+ "status": "proposed, for owner review",
+ "directive": "directive.2026-10-21.blueprint-end-to-end",
+ "spine_md": "# Vyakti Platform (VP): the product spine\n\n**Status.** Blueprint spine for owner review, 2026-10-21 (`directive.2026-10-21.blueprint-end-to-end`). *Proposed* items wait for the owner; *open* items name the evidence that closes them.\n\n**Grades.** [M] measured by us (n, method) · [C] computed (model or simulation) · [O] observed (capture, API read-back, code) · [V] vendor-claimed · [I] inferred · [U] unknown.\n\n**Short paths** (under /home/user/sales-enabler): req-NN ids `data/blueprint/owner-requirements.json` · DIR `context/DIRECTION.md` · WT `research/2026-10-21/walkthroughs/SYNTHESIS.md` · TS `research/2026-10-20/teardown/SYNTHESIS.md` · AS `research/2026-10-20/account-phase/SYNTHESIS.md` · SCH `research/2026-10-20/account-phase/synthesis/vp-v1-schema.json` · WIN `research/2026-10-20/teardown/synthesis/where-we-win.json` · RS `research/2026-10-20/teardown/regulation-segment/report.md` · LAB `research/2026-10-20/voicelab/round1-review-and-v2.md` · ECO `research/2026-10-18/SYNTHESIS.md` · L6 `research/2026-10-17/lanes/l6-self-learning/report.md` · L5 `research/2026-10-17/lanes/l5-human-dialect/report.md` · L4B `research/2026-10-17/lanes/l4b-measured/report.md` · R2 `research/2026-10-17/lanes/r2-untouched-raw/findings.md` · HV `docs/harvest/SYNTHESIS.md`.\n\n## 0. How module designers use this spine\n\n1. The spine fixes the thesis, principles, outcomes, personas, objects, VP's own agents, surfaces, journey, phases and module seams. Build inside it. Changing a spine item needs evidence and a reversal condition (HV law 38).\n2. Every \"better than X\" is a hypothesis until VP runs the same task: W1-W10 with pass and kill bars (WIN) on tasks T0-T9 (TS §7.3). Product copy never claims what VP has not measured.\n3. Inherited laws bind every module (HV §2): shapes, not lines (quoted lines recited 4/5, 0 after removal [M]); position is mechanism (a rule fired 0/8 mid-brief, 8/8 last [M]); budgets throw; one `compile()`, one reply door; safety by predicate; the model chooses, code enforces; a model never grades its own work; metrics do not pick voices; no writer means \"not measured\", never zero.\n4. Standing rules (DIR): she never denies being an AI and discloses once, lightly; no manipulation; Tele-MANAS 14416 and 112 stay; synthetic data in tests; no model swap mid-test-call; every call is filed under the combination that actually ran.\n\n## 1. Thesis\n\n**What VP is.** A self-serve voice-agent platform for Indian businesses calling their own customers. The client talks to VP's own agents, in Hinglish or English, by text or voice; they build the calling agent, clean the list, set the rules, launch, watch, analyse and improve. The call is the product: an emotional, relational, human-sounding Hinglish voice that opens with something useful, reads the person, never wastes their time, gets the agenda done subtly, says once and lightly that it is an AI, and remembers the person next time (req-01, req-03, req-04, req-13, req-14, req-32).\n\n**For whom.**\n- **Buyers:** Indian businesses, SMB to enterprise, with a recurring reason to call their own customers: insurance intermediaries, lenders, subscriptions and utilities, clinics, education, real estate with consented inquiries (req-19). Not consumer-internet giants with in-house teams (req-56).\n- **First jobs** (a go-to-market input, not the product boundary: `directive.2026-10-20.intent-better-product`): post-sale service calls, because they need no explicit consent, are not blocked by DND from about 2026-11-03 and have no TRAI band (RS §0 [O]): renewal and pre-due payment reminders, appointment reminders, onboarding follow-up. Wave 2: consented inbound leads inside the 7-day window. Not v1: cold outbound, default-stage collections, surveys before counsel (`decision.2026-10-20.synthesis-postsale-first`, proposed).\n\n**The promise.** Just talk to VP: it builds the agent, cleans your list and makes calls your customers are glad to take, in their language and inside the rules, then shows you every call, every rupee and what it will do better next time.\n\n**Why VP beats each of them** (limits stated):\n\n| Competitor | VP wins because | Honest limit |\n|---|---|---|\n| Vapi | It is developer plumbing: no contact, consent or Indian CLI; US-hosted; USD; 35% collisions on its demo [M L4B]. VP is an India-native operator product run by chat | Its QA and observability depth is the bar |\n| Retell | Best US builder, but US/CA numbers only, an ID wall before any country, batch ignores DNC, 0 Indian voices [O]. VP matches the builder, owns the India path | Unmeasured on calls; 72-86% infra margin [I] |\n| Bolna | Indian and cheap (about INR 5.7/min shown [O]), but compliance off by default, short Hindi replies discarded, a hidden 500 + 900 ms hold, hidden judges [O]. VP: compliance on, visible turn-taking, visible judges, one campaign object | Its costs let it follow a price cut |\n| ElevenLabs | Strongest voice stack, but a batch form with no India layer, US SIP signalling, import-only numbers, spend-raising defaults, AI-only support [O]. VP wins the India layer, bounded defaults, chat-run operation | Not on raw voice; hidden campaigns and memory may ship within a quarter |\n| Sarvam | Closest Indian rival (held Hindi 38/40 turns [M]), but disclosure is a prompt line (demo claimed human 6/6 [M]), 60 s pulses, 10-digit numbers only, no memory, no authoring API. VP: disclosure by predicate, series and compliance by default, short pulses, memory, full API | Not on language hold |\n| Exotel | Owns rails and 140/1600 numbers, but three shells, quote-gated prices, KYC in days, bot-path compliance off [O]. VP rides Exotel as BYO rails; one shell, same-day start, published price | Its carrier relationships |\n| Synthflow | Review-gated, USD 30k a year floor, no India. VP is self-serve in INR | - |\n| SquadStack | Managed, sales-led; rewards passing as human [O]. VP is self-serve, transparent, honest by construction | Indic depth unproven against it |\n\n**Better in every sense the owner named** (req-38):\n\n| Sense | VP commitment | Proof (pass bar) |\n|---|---|---|\n| UI | One warm, Indian, voice-first shell; empty, zero, loading and failed never look alike | 5-user sessions vs incumbent captures (WT §7) |\n| UX | Talk or click, same result; no click creates anything; every disabled action names its fix | T1 by chat, 0 silent drops (W10) |\n| Product design | The person and the calling policy are first-class; one campaign object | T2: 48/50 messy rows right in under 5 min (W2) |\n| Cost | One all-in INR per connected minute incl. telephony, pulse and turn wait; per-second billing; caps | T7: invoice within 1% of rate card (W8) |\n| Speed | India media edge, pause-aware turn release, opening rendered during the ring | p50 0.3 s below the best incumbent, p90 2.5 s or less, cut-ins 5% or less (W3) |\n| User flow | Browser call under 3 min from sign-up; first Indian ring 15 min or less | T0 (W7) |\n| Convenience | Hinglish chat or voice, daily brief, one-tap approvals | Share of setup done by chat |\n| Usability | Plain words, ms and INR, a reason beside every outcome | Failed call found with reason and action in under 60 s (W6) |\n| Vibe | A voice people enjoy; an honest product | Blind listener panel vs human references (L5) |\n| Results | Commitments captured and followed through; outcomes earned in code | Cost per earned outcome vs the client's baseline (§3) |\n\n**Not claimed until measured:** price as the wedge (`rejected.2026-10-17.parity-undercut`); better raw voice than ElevenLabs; better language hold than Sarvam or SquadStack; \"learns on its own from every call\" below about 1,000 calls a day on one script (L6 §1); a turn-taking win, since every VP stack still cuts in on 15-42% of turns [M] (`open.2026-10-19.turn-taking`).\n\n**What VP is not.** Not a carrier: numbers sit in the tenant's name on licensed carriers (RS §2.11). Not a managed telemarketer (`rejected.2026-10-17.managed-telemarketer`). Not a CRM: it plugs in; the company command centre is the long-run expansion (req-18).\n\n**Where advantage compounds** [I]: measured Hinglish conversation craft; per-tenant memory and outcome data; the India operator layer; an operator that can do every action.\n\n## 2. Product principles\n\n| # | Principle | Evidence or owner requirement | What it forces |\n|---|---|---|---|\n| P1 | **The client just talks; VP's agents do all the work.** | req-13, req-14, req-17; chat setup is parity (5 of 6 dashboards ship a copilot, WT §1 [O]) | Every dashboard action is one API/MCP operation with the same auth (W10); plans and diffs before acting; a ledger of what VP did |\n| P2 | **The voice is the product; voice beats margin.** | req-01 (7 times), req-02; Azure won 15/15 on metrics and lost by ear [M] (HV law 26) | Voices chosen by ear in blind tests, accent as its own axis; expressive delivery from tone notes, never spoken stage directions |\n| P3 | **Conversation shapes, not scripts.** Useful first, read the person, short turns, one question at most, earn the ask, she ends the call | req-03, req-04, req-06; brief v2: words per turn 33 to 20, question endings 62-76% to 13-29%, abrupt hang-ups 17-40% to 0 [M text bench, LAB] | Structured brief; must-fire rules last; an agenda ledger in code each turn, incl. how the caller sounds |\n| P4 | **Competence is the warmth.** | AI collectors got 21 pp fewer promises but were not hung up on more; anthropomorphism hurts angry callers (L5, third-party [M]) | Numbers from data, clean turn-taking, a specific next step and follow-through; warmth lower on complaints and collections |\n| P5 | **Honest by construction.** | Prompt-only safety leaked 57-98% vs 0 for predicates (HV law 10 [M]); 0 of 8 vendors make disclosure non-removable; fake renewal scams use real policy data (R2 §4.1) | Predicates at one reply door on every creation path; no payment on the call, only links on the client's domain |\n| P6 | **India by default, compliant by default.** | 0 of 6 campaign forms carry consent, DND or DLT (WT §1 [O]); compliance is 1.3% of complaints: a floor, not the pitch (RS) | Call category first, setting window and number series; suppression on one dial path; A2P export; DPDP notice and retention |\n| P7 | **What you see is what runs.** | 4 of 4 writable incumbents drift from their docs, 3 drop unknown fields (AS XS-07/08 [O]); Vapi publishes on a menu click (WT) | One publish path; resolved config; unknown fields refused; every call pinned to a version and a run manifest |\n| P8 | **Every number tells the truth.** | Vapi shows ~1,530 ms; its demo measured 2,319 ms p50 (WT; L4B) | All-in INR; India-measured latency with n and date; vendor figures labelled; \"not measured\", never zero |\n| P9 | **Bounded by default.** | Retell burst on, 10 min silence, keep forever; ElevenLabs end-call off (WT §3 [O]) | End-call on, silence ladder, max duration, premium opt-in, spend caps per workspace and key, retention chosen, PII redaction on |\n| P10 | **Results are earned, not asserted.** | No incumbent has a business-outcome field (AS XS-20); a 90%-accurate LLM label inflates sample needs 1.8-2.4x (L6) | Outcomes from systems of record or verified keys; holdouts when powered, else \"observed, not causal\" |\n| P11 | **Remember the person, with permission.** | `rejected.2026-10-20.raw-fact-memory`; pooling gave the wrong winner to 48-55% of dissimilar tenants [C] (`rejected.2026-10-17.cross-tenant-pooling`) | Facts carry the caller's exact quote, consent and purpose; viewable, editable, forgettable; no pooling |\n| P12 | **Learn with honest statistics; keep learning from the market.** | Daily two-arm dashboards: 52-62% false winners in A/A (`rejected.2026-10-17.k2-dashboards`); req-34, req-60, req-61 | Dense signals first; human approval; fixed-horizon proof; winners expire; \"under-powered\" as a state; a standing competitor radar |\n\n## 3. North-star outcomes\n\n**Client north star: cost per earned outcome, at a human-quality conversation.** An outcome is the business result earned in code (renewal-paid webhook, promise to pay with date and amount, booking confirmed), compared with the client's own baseline and, once powered, a never-billed holdout.\n\n| Client measure | Bar | How measured |\n|---|---|---|\n| Cost per earned outcome | Below the client's own desk (human about INR 6-9 per connected minute [I]) | Outcome webhooks or CRM write-back joined to INR cost lines |\n| Agenda completion, commitments kept | Rising per version | Agenda ledger in code; commitment matched to later payment or booking |\n| Early hang-up under 10 s | Falling (15% to 10% is detectable at 686 calls per arm [C], L6) | Hang-up time against TTS clause timestamps |\n| Opt-outs and complaints | Never rise after a change | In-call capture, complaint tags |\n| Conversation floor (KC6, W3, W4) | Reply gap p50 1.2 s server and 1.5 s handset, p90 2.5 s; cut-ins 5%; short replies 90%; language hold 95%; AI denials 0 | Stereo handset battery (30+ clean turns per stack); per-turn telemetry |\n| Trust | 0 dials to suppressed or out-of-window contacts; invoice within 1% | Dial-path log; T7 |\n| Time to value | Browser call under 3 min; Indian ring 15 min or less; live campaign same day, KYC permitting | T0 recordings; product events |\n| Operator effort | Failed call found with reason and action under 60 s | T5; action ledger |\n\n**VP north star: outcome-bearing connected minutes per week** (minutes in campaigns whose outcome is wired to a system of record); it grows only when clients run work whose value they can see. Supporting: live campaign within 7 days of sign-up; retention and expansion per cohort; gross margin at the owner's floor, the voice winning any conflict (req-02); AI cost per minute falling toward the INR 2 path; human support reply under 2 h in IST hours (W9); minutes to detect and notify an incident; the W1-W10 scoreboard; A/A false winners 5% or less.\n\n## 4. Personas and their jobs\n\n| Persona | Who | Jobs | Sees first | Approves |\n|---|---|---|---|---|\n| The person called | Often older, Hindi-belt, busy, wary of scam calls | Get the useful fact fast; respect; act easily; stop calls | Company name, a light AI line and something useful in the first breath | Consent, opt-out, forget |\n| Owner | Runs a 10-500 person firm, on a phone, in Hinglish | Decide, fund, trust; see results and money without configuring | Today brief; launch and budget cards | Spend, launch, numbers, deletion |\n| Campaign manager | Runs the renewals, reminders or success desk | Import, launch, watch, fix, report, improve | Mission control; failed-call finder; learning inbox | Launches in budget, publishes, proposals |\n| Ops agent (human closer) | Telecaller, certified agent, support rep | Warm transfers with a brief; hot callbacks; what the AI must not do (IRDAI solicitation) | Hand-off queue with summary and play-from-here | Dispositions |\n| Compliance officer | In-house compliance or DPO, or the owner | Category, windows, series, consent, recordings, retention, DPDP requests, audit | Compliance centre, A2P export, audit log | Policy changes, template categories |\n| Developer | Engineer or integrator | CRM, webhooks, API/MCP, bring-your-own carrier, SSO | Keys, logs, webhook replay | Keys, webhooks |\n\nInternal users: VP's success team (IST hours) and VP's owner (radar).\n\n## 5. Core object model\n\nExtends the proposed schema kit (SCH; `decision.2026-10-20.acct-synthesis-vp-data-model`).\n\n| Group | Objects |\n|---|---|\n| Tenant, governance | **Workspace** (plan, wallet, caps, concurrency, region) · **Member/Role** (Owner, Builder, Operator, Compliance, Viewer with PII scrubbed) · **ApiKey** (scopes, expiry, spend cap) · **AuditEvent** (every write and approval; actor is a person or a named VP agent) |\n| Business context | **Brand** (legal entity, CNAP trade name, DLT entity, sector) · **Offering** (facts, prices, dates in data, never in prompt prose, HV law 22; never-say list) · **KnowledgeSource** (company brain with evidence spans) |\n| People, data | **Contact** · **Identifier** (phone in India-default E.164 with aliases, email, CRM id, WhatsApp id, policy or loan number) · **ConsentRecord** (append-only: purpose, basis, evidence, expiry) · **Suppression** (tenant-wide; never cleared by import) · **Tombstone** (hashed ids of erased people) · **Source/Receipt** (immutable upload or pull, mapping, per-row results) · **Audience** (list or saved query) |\n| Agent | **Agent** · **Brief** (identity with locked disclosure, situation, value opening, agenda must/nice/never, speaking style, language variants) · **Voice** (catalogue entry: languages, registers, India-measured first audio, INR price, sample) · **Stack** (ears, brain, voice or speech-to-speech, turn policy) · **Tool** (HTTP, transfer, end-call, SMS/WhatsApp, knowledge, code; pre/in/post; mock; risk class) · **Version** (immutable: hash, parent, author, resolved config) · **Deployment** (version or split bound to number, web or campaign) · **Test** (simulated caller with hidden keys, assertions incl. latency) |\n| Calling | **Number** (series 10-digit/140/1600/1601, carrier or BYO, KYC, A2P declared, CNAP name, health) · **Campaign** (goal, outcome definition, category, audience, deployment, window, retry ladder, attempt budget, pacing, caller-ID pool, predial, budget, follow-ups, state) · **Attempt** (precheck result naming any blocking rule, dial status, carrier code, next action) · **Call** (version, run manifest, transcript native, romanised and translated, stereo recording, cost lines, engineering reason, business outcome, judges, extraction, compliance trace) · **Turn** (heard text, language, latency segments, ledger state) · **FollowUp** (WhatsApp, SMS, callback, hand-off; durable outbox) |\n| Results, learning | **OutcomeDefinition** (client-owned values with a verified source) · **Outcome** (earned: source, delay, leading indicator) · **JudgeResult** (visible, editable, agreement with keys) · **Fact** (memory: exact quote with call and span, purpose, consent, status) · **Insight** (with citations) · **Issue** (cause, severity, calls impacted, fix link) · **Experiment** (arms are versions; pre-registered metric, minimum n, stop rule, guardrails, expiry) · **Proposal** · **Lesson** (no personal data) |\n| Money | **CostLine** (INR per call per second: telephony, ears, brain incl. cached and speculative, voice, platform, analysis) · **Budget** · **Invoice** (GST) · **PricePlan** |\n| Operator | **Thread** · **Plan** (actions with risk classes) · **Action** (each tool call, linked to Approval and AuditEvent) |\n\n**Relations** (diagram-ready):\n- Workspace → Brand → Offering → KnowledgeSource\n- Workspace → Contact → {Identifier, ConsentRecord, Suppression, Fact}; Contact → Attempt → Call → Turn\n- Agent → Version → {Brief, Stack, Tools, KnowledgeSource} → Deployment\n- Campaign → {Audience, Deployment, Numbers, OutcomeDefinition, Budget} → Attempt\n- Call → {CostLine, Outcome, JudgeResult, Fact, FollowUp, Issue}\n- Experiment → Versions → Proposal → Approval → new Version\n- Thread → Plan → Action → Approval → AuditEvent\n\n**Invariants (code, never prompt):**\n1. **One dial path.** Every attempt (campaign, API, test, retry, callback) passes one precheck inside the write that claims it: local-time window, suppression, consent or basis, attempt budget, balance and caps, number health (HV law 18; `rejected.harvest.07`).\n2. **One reply door.** Every utterance passes the same predicates before TTS: disclosure spent and never denied, crisis lines, promotion fence on service calls, numbers only from data, no payment or OTP asks (HV laws 3, 10, 25).\n3. **One `compile()`**: fixed order, must-fire rules last, a throwing byte budget (HV laws 1, 2, 4).\n4. **Immutable versions; edits never publish.** Each call carries a run manifest: combination, regions, brief hash, ledger version, turn parameters, telephony leg (`decision.2026-10-20.combo-identity`).\n5. **Consent is append-only; suppression is never cleared by import; tombstones stop resurrection.**\n6. **Outbound outcomes are confirmed, not executed or unknown; unknown is never auto-retried** (HV law 17).\n7. **Identity is a contact id**, never a phone number, device or channel handle (HV law 15).\n8. **Money is INR with GST**, written by the meter that measured it.\n\n## 6. VP's own agent system\n\n**Two layers.** *Agents* (LLMs) understand, plan, draft, analyse and explain. *Engines* (code) enforce and execute: `compile()`, the dial path, the reply door, predicates, the dialer, statistics, metering and the ledgers.\n\n**One tool registry.** Agents act only through the public API/MCP tools any developer gets. Each tool has a risk class: read, draft, test, external (reaches a real person), spend, destructive, policy. Approval rules per class live in code; a model-emitted \"approved\" means nothing (HV law 12; `rejected.harvest.04`).\n\n**Autonomy levels.** **A0 Suggest:** writes nothing. **A1 Draft:** drafts and simulations within a test budget; no real person, no money. **A2 Ask:** a card with diff, cost and risk; a role holder approves in one tap. **A3 Guard:** acts at once inside an approved policy when the action only lowers risk or spend (pause on a breach, suppress after an opt-out, end a runaway call, retry per the ladder), then notifies with undo. Publish, launch, buy, raise a cap, change policy and delete always need A2. No agent overrides a predicate.\n\n| Cluster | Agent | Does | In → out | Autonomy; human approves |\n|---|---|---|---|---|\n| Front door | **Operator** (\"VP\") | The client's one partner, text or voice, Hinglish or English: understands, plans, delegates, acts through tools, explains, reports | Messages, files, state → plans, cards, actions, reports | A1; A2 for external, spend, publish. Client picks its brain (req-16); predicates do not depend on it |\n| Front door | **Concierge** | Support: finds the failing call, explains, proposes the fix, hands to a human in IST hours | Tickets, call records → answers, escalations | A1 |\n| Build | **Strategist** | Goal to campaign plan: job template, category, audience, agenda, outcome definition, follow-ups, schedule, cost and outcome ranges | Goal, data, history → plan, campaign draft | A1; launch card |\n| Build | **Brief writer** | Writes and compiles the brief; lints recitable lines; derives and freezes the agent's ledger patterns at publish; proposes the voice register | Offering, knowledge, goal → brief, version draft | A1; publish with diff |\n| Build | **Data steward** | Mapping, E.164, cross-format dedupe, per-row reasons and basis; customer rows never enter company knowledge | Files, connectors → staged contacts, audience, receipt | A1; A2 for identity merges; never decides consent |\n| Build | **Test pilot** | Simulated Hinglish callers with hidden keys (busy, sceptical, elderly 2.4 s pause, noisy, angry, wrong person); latency and memory tests; gates publish | Versions → results with transcripts | A1 |\n| Build | **Line keeper** | Series by category and sector; KYC documents, time and cost before credentials; BYO set-up with a test call; CLI health; A2P; CNAP | Sector, documents → numbers, declarations | A2 to rent; A3 to pause a flagged CLI |\n| Run | **Compliance guard** | Classifies category, flags offer lines in service briefs, drafts DPDP notice and A2P export, runs the launch checklist; enforcement is code | Brief, campaign → checklist, blocks with reasons | Blocks always on; policy needs the Compliance role |\n| Run | **Campaign runner** | The dialer: pacing, windows, retries, follow-ups, resume after outage | Policy → attempts, follow-ups, events | Engine; A3 inside the launched policy |\n| Run | **Supervisor** | Watches live calls for loops, anger, crisis words, risk; whispers context; hands off; ends runaway calls | Live events → interventions, alerts | A3; take-over is human |\n| Run | **Treasurer** | Estimates, spend vs budget, caps, low balance, invoices, GST | Meter, plans → estimates, alerts | A3 to stop at caps; A2 for top-ups |\n| Learn | **Call analyst** | Per call: outcome against keys, commitment, objections, summary, sentiment path, agenda completion, failure reason with carrier code and action. Per campaign: drivers, line hazard, objection clusters; answers with quotes and play-from-here | Calls, turns, outcomes, costs → analyses, issues | A1; judge edits by the manager |\n| Learn | **Memory keeper** | Proposes facts with exact quotes, checks consent and purpose, compiles the bounded pre-call brief, executes forget everywhere | Calls, channel episodes → facts, memory brief | A3 for opt-out; auto with undo for language, pace, register; review for commitments and money |\n| Learn | **Coach** | Finds where calls fail; propose, probe, compose on simulated callers; inbox cards with diff, contrasts, calls needed to prove | Analyses, simulations → proposals | A1; live changes need A2 |\n| Learn | **Learner** | Statistics in code: A/A, power, pre-registration, fixed-horizon tests, guardrail auto-stop, expiry; bandits only at volume | Experiments, outcomes → decisions with intervals | A3 to stop; A2 to promote |\n| VP-internal | **Scout** | Competitor radar: diffs changelogs, docs, APIs, prices, status; fires tripwires | Watchlist → digests, graph inbox entries | A1; read by VP's owner |\n\n**Worked example: \"I have this CSV, fire it\"** (illustrative numbers).\n1. The Data steward reads 1,240 rows, maps name, mobile, policy number, due date, premium and language, fixes 37 numbers, rejects 12 with reasons, keeps 9 opted-out rows suppressed, and asks one question that changes the call (\"due date has two formats; DD/MM?\").\n2. The Strategist proposes a renewal-reminder service campaign, a humane window in each contact's local time (a product choice: service calls have no TRAI band), a 3-attempt ladder and a WhatsApp follow-up with the client's renewal link.\n3. The Brief writer drafts; the Test pilot runs six simulated callers; the Compliance guard confirms no offer rides the service call; the Line keeper confirms the CLI; the Treasurer prices a range.\n4. One launch card: who, when, a 20-second sample, green checks, cost and outcome ranges. The manager taps Launch.\n5. The runner dials, the Supervisor watches, the Call analyst writes each result, and the Operator gives tomorrow's brief.\n\n## 7. Information architecture and surfaces\n\n**Front door: \"Talk to VP\".** A full-height conversation on the home route, text or voice. Replies carry live cards: plan, diff, launch, call, chart, approval, issue. The same panel docks on every page and knows the page (\"ask about this campaign\").\n\n**Left rail:** Today · Campaigns · Calls · Contacts · Agents · Insights · Numbers · Settings (Team, Compliance, Data and privacy, Billing, Integrations, Developers, Brand).\n\n| View | Key content |\n|---|---|\n| Today | Brief since last visit, approvals, issues, live campaigns, spend, next best action |\n| Campaign | Goal, outcome target, state, spend vs budget; funnel (rows, valid, dialled, connected, agenda done, outcome) with a reason at each drop; mission control (live calls, concurrency, listen, whisper, take over); insights; line-hazard ribbon over the script; issues; per-call table; policy |\n| Call | Stereo player; transcript (native script, romanised, translated) synced to audio; turn timeline with latency segments and heard text; outcome, reason, carrier code, action; judges; commitments; memory proposals; cost lines; compliance trace (why it was allowed); run manifest |\n| Contact | Identifiers, consent ledger, suppression, preferences, facts with quotes and play-from-here, cross-channel timeline, forget |\n| Agent | Lifecycle (pre-call, call, post-call, follow-up); brief editor; stack picker (India p50/p90, INR per minute, languages, sample per row); turn-taking panel (ms, predicted gap, Hinglish lexicons, presets); tools; knowledge; tests; versions, diff, publish, split; docked test (browser, chat, phone) |\n| Insights | Reports, experiments, learning inbox, \"how she changed for you\", cost per outcome trends |\n| Numbers | Rent and bring-your-own side by side, series, KYC, A2P declaration, health, CNAP name |\n| Settings | Roles, compliance centre, retention, INR wallet with GST and caps, integrations, developers (keys, signed webhooks with replay, MCP, logs), brand |\n\n**The chat and direct manipulation contract:**\n1. **Parity:** every page action is an Operator tool and every Operator action has a page; one registry.\n2. **Objects, not chat state:** the chat creates and edits objects with URLs; cards deep-link.\n3. **Propose, then confirm:** writes appear as cards with diff, cost and risk; one tap approves; nothing changes from a menu click.\n4. **Two-way awareness:** page edits appear in the thread (\"window moved to 11:00-19:00; cost down 4%\").\n5. **One truth:** chat numbers come from the page queries, with n and \"not measured\" states.\n6. **History and undo** on every action.\n7. **Phone and voice:** everything works on a phone and the client can speak to VP; a spoken or WhatsApp daily brief, with consent, is a v2 idea [I].\n\n## 8. The end-to-end journey and the daily loop\n\n| # | Step | What happens | Agents | Target |\n|---|---|---|---|---|\n| 1 | Hear it | Talk to a VP agent in Hinglish on the public page | Operator | 0 min |\n| 2 | Sign up | Phone or Google; business name; no card for browser tests | - | under 1 min |\n| 3 | Say the job | \"Renewal reminders for my motor policies\", or paste a website; context ingested with evidence spans | Operator, Data steward | 2-5 min |\n| 4 | Pick a voice by ear | Three voices, three registers, one Hinglish line | Brief writer | 1 min |\n| 5 | Talk to your agent | Docked browser call; tweak by talking (\"thoda slow\", \"discount mat bolna\") | Test pilot, Brief writer | Under 3 min from sign-up |\n| 6 | Bring the list | CSV, Sheet or CRM; contract, preview, fixes, reasons, suppression | Data steward, Compliance guard | 48/50 messy rows in under 5 min (W2) |\n| 7 | Ring a real phone | Verify own number by missed call; ring from a trial line or BYO | Line keeper | 15 min or less (W7) |\n| 8 | Go-live checks | Series, KYC timer, A2P declaration, category, window, budget, simulations | Line keeper, Compliance guard, Treasurer, Test pilot | KYC may take days; the timer is shown |\n| 9 | Launch | One card: who, when, sample, checks, cost and outcome ranges | Strategist, Operator | One tap |\n| 10 | Watch | Mission control, listen, issues with reasons | Supervisor, runner | Live |\n| 11 | Results | Outcomes, funnel, cost per outcome, best and worst calls, why people dropped; CRM write-back; follow-ups | Call analyst, Operator | Same day |\n| 12 | Grow | Recurring campaigns, memory, learning inbox | Coach, Learner, Memory keeper | Weekly |\n\n**The campaign manager's day.** Morning: the Today brief (outcomes, spend vs plan, issues fixed, approvals, hand-offs); approve one to three cards. Midday: mission control, flagged calls, warm transfers, hot callbacks. Evening: ask (\"why is Pune pickup low?\"), clear the learning inbox, schedule tomorrow. Weekly: experiments, \"how she changed\", compliance digest, invoice.\n\n**Cases handled by default** (req-24; owning module):\n\n| Case | Default handling | Module |\n|---|---|---|\n| Messy rows (10-digit, 0-prefix, +91, cross-format duplicates, Devanagari names, blanks) | Normalise, dedupe, a reason per row; never reject the file | campaigns |\n| Opted out, DND, suppressed | Never dialled on any path; reason shown | trust-telephony |\n| Out of window, holiday | Deferred to the next window in local time | campaigns |\n| Busy, no answer, switched off, voicemail, IVR | Early detection with a Hindi and regional lexicon, retry ladder, minimal billed seconds | voice, campaigns |\n| Wrong person or relative | Confirm identity before account details | voice |\n| \"Call me later\" | Callback inside window and budget | campaigns |\n| \"Dobara call mat karna\" | Opt-out applied tenant-wide at once | trust-telephony |\n| \"Aap AI ho?\" | Honest answer, never a denial | voice |\n| Angry, elderly, switching language, noisy line | Warmth down and straight answer; pause-tolerant preset; follow the caller; no greeting loops | voice |\n| Crisis words | Tele-MANAS 14416 or 112, and a human alert | trust-telephony |\n| Payment on the call | Refused; link on the client's domain by WhatsApp or SMS | trust-telephony |\n| Tool or provider failure | Spoken wait line, graceful path, issue logged; failover below | voice, economics-platform |\n| Spend cap, flagged or barred number, KYC pending | Pause at a call boundary; pause that CLI; tests continue while production waits | economics-platform, trust-telephony |\n| Recording refused, DPDP request | Honoured; forget follows the person | memory-omni, trust-telephony |\n\n**Failover (proposed; `open.2026-10-20.product-failover-policy`).** Test calls never fall back. Production health-checks before dialling and routes the whole call to a healthy declared stack. Mid-call, only a pre-declared same-voice fallback is allowed, written into the run manifest; otherwise she closes politely and a callback is scheduled.\n\n## 9. Phasing skeleton\n\n**Phase 0: prove the call (gates before launch).** Round-2 human ratings pick the default stack, with a second voice path ready (`open.2026-10-20.round2-human-ratings`, `risk.2026-10-20.google-dependency`). Handset stereo battery on VP and incumbents (KC6; W3-W5). Turn-taking at 5% cut-ins or less with p50 1.2 s or less, including the 2.4 s elderly pause. Listener panel vs human references; the light disclosure may cost 5 points of hang-ups at most, and if it costs more its wording and placement change, never its presence. 10-15 buyer interviews (none has run) and counsel on sender status and renewal solicitation (KC8). The A2P declaration export before the first production campaign (due about 2026-11-17/18).\n\n| Phase | Scope | Why (evidence) | Exit criteria |\n|---|---|---|---|\n| **v1: parity made better, India-native, with the voice** | Talk to VP with full API/MCP parity; brief v2 generalised; measured stack picker with all-in INR; Hinglish mode; turn-taking panel; warm transfer; versions and splits; tests gating publish. Contacts with consent, DND, attempts. Category-first campaigns with retries, budgets, follow-ups, inbound. Guided BYO numbers (Plivo primary, Exotel, Vobiz), A2P export. Trust core M1, M2, M4, M6 with disclosure and crisis predicates. Call page, funnel, mission control, failed-call finder, visible judges, Q&A. INR wallet, per-second metering, caps. Presets: insurance renewal, lending pre-due, reminders. Late v1 (Plus, proposed): preference memory | 21 must-be items plus A-D (WT §5); 0 of 6 ship the India layer; Retell already ships a contact memory brief, so basic memory is parity | W1, W2, W6, W7, W8, W10 pass on VP; KC6 met at the handset; three design partners live with outcomes wired |\n| **v2: she remembers and gets better** | Relational memory across voice, WhatsApp, SMS, email; commitments; contact timeline; openers from the contact's data and last interaction; app events with consent. Learning inbox: line hazard, Coach proposals, fixed-horizon tests, per-tenant A/A, expiry, \"how she changed for you\". Wave 2: consented leads with the consent ledger (M5) and 140xx; feedback after counsel; collections after RBI 2027-01-01. Dedicated brand voice | Owner order: memory and personalisation before self-learning (req-32, req-34); memory needs one call to prove (L6) | Recall 95%+; preferences ignored 1 in 20 or less; p50 still 1.2 s; A/A false winners 5% or less; lifts with intervals |\n| **v3: learns at scale, costs less** | Guarded ramping and discounted bandits for tenants at about 1,000+ calls a day on one script; segment priors from consented aggregates (10+ tenants, contract clause); invariant-lessons library. Cheaper ears and voices that pass the ear test (thresholds about 250k-2.5M min/month, ECO §4); self-hosted option for BFSI residency; regional languages; dialect opt-in only; command-centre layers (req-18) | Bandits pay only at volume (L6 §4.3); no measured stack reaches INR 2 at 40% margin (ECO §0) | Measured cost per minute; per-tenant lift with intervals; no guardrail breach |\n\n**Dated constraints:** CNAP 2026-11-01; BLOCK PROMO about 2026-11-03; A2P pre-declaration about 2026-11-17/18; Gemini 3.1 Live and 3.1 flash TTS shut down 2026-11-17; wrong-category template blacklisting about 2026-12-17/18; RBI recovery conduct and the Gemini TTS price doubling 2027-01-01; gpt-4.1-mini retires 2027-04-14; DPDP core duties about 2027-05-13.\n\n## 10. The 9 modules and how they connect\n\n| Module | Owns | Consumes | Produces |\n|---|---|---|---|\n| workspace | Operator, threads, plans, cards, Today, onboarding, app shell, chat-page contract | All tools via the API | Plans, approvals, actions |\n| voice | Brief and `compile()`, agenda ledger, stack catalogue, turn-taking, reply door, voices, simulations | Memory brief, contact variables, offering facts | Calls, turns, run manifests |\n| campaigns | Intake to audience, campaign policy, dialer, retries, follow-ups, inbound | Contacts, agents, numbers, budgets | Attempts, follow-ups, events |\n| intelligence | Call and campaign analysis, judges, outcomes, funnel, mission control, issues, Q&A | Calls, turns, outcomes, costs | Insights, issues, signals |\n| memory-omni | Connectors, sources, contacts, facts, memory brief, forget | Calls, episodes, uploads | Contacts, audiences, memory briefs |\n| learning | Hazard detection, propose-probe-compose, experiments, statistics, lessons | Signals, versions, simulations | Proposals, decisions |\n| trust-telephony | Predicates, numbers, series, KYC, A2P, DPDP, roles, audit, security, residency | Everything at its gates | Allow or block with reasons; audit |\n| economics-platform | Metering, pricing, wallet, caps, architecture, latency budgets, reliability, API/MCP/SDK, integrations, radar | Cost lines, events | Prices, invoices, SLOs, the API, radar digests |\n| design-language | Identity, motion, sound, tone, components, key screens | All surfaces | The look, the feel, the words |\n\n**Flows** (diagram-ready):\n1. Client ⇄ workspace (Operator) → tool API (economics-platform) → every module.\n2. memory-omni → audience → campaigns → attempt → dial gate (trust-telephony) → carrier → voice → call and turns.\n3. memory brief → voice → reply door (trust-telephony) → TTS.\n4. Call → intelligence → outcomes and issues → workspace cards, and → learning → proposal → approval → new version in voice.\n5. Every call and action → meter (economics-platform) → wallet and caps; every write → audit (trust-telephony).\n6. Scout → graph inbox → VP's owner.\n\n**Shared contracts:** the object model (§5); events (attempt.*, call.*, campaign.*, outcome.*, proposal.*, predial and pre-call hooks: SCH); the tool registry with risk classes; one `compile()`, one dial path, one reply door; the run manifest; the INR cost-line schema; evidence grades in the UI.\n\n## 11. Decisions the owner still makes\n\n1. **Pricing unit and launch price** after the default stack: all-in per connected second for self-serve, per-outcome only for managed design partners (proposed). The INR 2.99 Base tier assumed a stock Azure voice rated 1.5-4.5 of 10, so it is stale (`open.2026-10-20.reprice-tiers`); INR 2 is a scale-stage target, not a launch gate (ECO §4).\n2. **Default voice stack** after round 2 (owner leans to Gemini TTS), plus the second path.\n3. **Speech-to-speech** only as a premium stack after a 200+ turn gate-violation battery: Live costs INR 4.2-5.7/min at 3-minute calls against 0.94-1.56 for cascades, and 3.8 Live talked over callers on 42% of turns [M] (`open.2026-10-18.s2s-vs-gate-law`).\n4. **Production failover** (§8).\n5. **Runtime split** (proposed): port the Python lab as a separate realtime voice service; control plane in TypeScript on Postgres (Neon allowed). Reverse if a TypeScript port matches battery latency with less operations work.\n6. **Preference memory in late v1** (proposed) or v2.\n7. **First design partners:** insurance intermediaries, lenders or subscription businesses.",
+ "modules": [
+  {
+   "id": "workspace",
+   "title": "Conversational workspace, onboarding and the LLM-driven app shell",
+   "brief": "**You design the front door: \"Talk to VP\", the Operator, onboarding, Today and the app shell.**\n\n**Decide:**\n1. The thread-plus-cards model: card types (plan, diff, launch, call, chart, approval, issue, receipt), how a plan is shown, approved and undone, and how voice input in Hinglish works (and whether VP answers aloud).\n2. The tool registry: one tool per dashboard action, risk classes (read, draft, test, external, spend, destructive, policy) mapped to autonomy A0-A3, role checks, and the \"what VP did\" ledger.\n3. Onboarding: hear it first, sign up, say the job, company context with evidence spans, voice by ear, browser call, list, real ring. Targets: browser call under 3 min, first Indian ring 15 min or less (W7), self-serve in 30-60 min (req-39). A checklist rail that never covers content.\n4. Today: the brief, approval and issue priority, empty states that teach one action.\n5. The shell: left rail, a page-aware docked panel, deep links, phone layout, page edits echoed into the thread.\n6. Operator brain choice (req-16): a curated list with measured latency and cost for operator tasks; predicates and permissions never depend on the model.\n7. Operator conduct: asks only questions that change the call, never invents a number, shows the object page when unsure, speaks in the client's language.\n\n**Spine constraints:** P1, P5, P7, P8; invariants 1-4; the chat-page contract (§7); no click creates or publishes; every disabled action names its fix; chat never holds configuration; launch, publish, spend and delete need A2; a model-emitted \"approved\" means nothing (HV law 12).\n\n**Benchmarks to beat:** Sarvam Genie (prompt-box hero, docked copilot that builds, deploys and runs campaigns: the nearest to W10's kill bar); Retell Conductor (per-setting diffs a human accepts, page-aware chips, a 7-step checklist with locked steps); ElevenLabs Architect (go-live checklist, branch then merge; Alpha, free only through October 2026); Vapi Composer (in every header, but no REST surface); Bolna Ask Bolna (reads and writes). Avoid: Vapi's repeating welcome wall, Retell's stale tour and checklist over the canvas, Exotel's three shells, Bolna's banners taking about 90 px of 720.\n\n**Proof:** T1 by chat with 0 silent drops, then T2-T6 by chat only (W10); 5-user sessions against incumbent captures; minutes to first call from product events.\n\n**Owner requirements:** req-13, req-14, req-15, req-16, req-17, req-37, req-38, req-39, req-40, req-44, req-68 (provenance shown without friction).\n\n**Lean on digests:** retell, sarvam, elevenlabs, vapi, bolna, owner-requirements-catalogue, vp-existing-assets.",
+   "digests": [
+    "retell",
+    "sarvam",
+    "elevenlabs",
+    "vapi",
+    "bolna",
+    "owner-requirements-catalogue",
+    "vp-existing-assets"
+   ]
+  },
+  {
+   "id": "voice",
+   "title": "Agent brain and human voice",
+   "brief": "**You design the call itself: brief, brain, ears, voice, turn-taking, the reply door and how she ends.**\n\n**Decide:**\n1. Architecture: a gated cascade (ears, brain, reply door, TTS) as the floor (HV law 25). Speech-to-speech only as a premium stack after a 200+ turn gate-violation battery (Gemini Live's transcript came with or before audio on 1,041/1,041 turns, but 3.8 Live talked over callers on 42% [M]). Curated presets plus an expert picker; the default after round-2 human ratings; a second voice path ready (MAI-Voice first audio 425 ms [M]).\n2. Brief schema: generalise brief v2 (voicelab/server/persona_v2.py) from four hard-coded scenarios to per-agent configuration: script and identity first, safety, must-fire counts last; per-agent ledger patterns derived at publish, frozen and reviewed; a lint for recitable lines; a throwing budget.\n3. Turn-taking: pause-aware release, withdraw, heard-text truncation, Hinglish acknowledgement, stop and backchannel lists, never discard \"haan/nahi/ruko/bas\", listen during the opening, an elderly preset, a silence ladder, an echo-safe front end (Taxila: 0/66 false barge-ins [M]); target 5% cut-ins or less at p50 1.2 s; a panel in ms with a predicted gap.\n4. Speed: India media edge, warm pools, the opening rendered during the ring, number-safe clause streaming, region pinning (gpt-4.1-mini in South India: first token 304 ms [M]), effort none, a cached byte-stable core, quota per call (13-25k TPM [M]); speculative release only with a negation-aware matcher.\n5. Expression: read the person (hurried, worried, irritated, chatty) in code; tone notes mapped to TTS styles, never spoken; sound tags only on Gemini voices; rate control; per-locale number reading; aap with plural verbs; less warmth on complaints and collections.\n6. Reply door: one light disclosure, never denied; crisis lines; promotion fence; amounts only from data; no OTP or payment; hang-up guard; voicemail and IVR with an Indian operator lexicon.\n7. Languages: Hinglish (code-mixed) default, Hindi, Indian English, regional plus English; refuse a voice that mismatches the agent language.\n\n**Benchmarks:** ElevenLabs (3% collisions but p50 3.75 s; \"haan\" answered \"are you still there\" 4/16 [M]); Vapi (35% collisions, Gujarati on 17/18 Hinglish turns [M]); Bolna barge-in recovery code to adopt, its 500 + 900 ms hold and discarded short replies to beat; Sarvam (language hold 38/40 but p50 3.1 s, cut into the elderly pause 2/2, claimed human 6/6 [M]); Ultravox demo p50 1.54 s, barge-in 6/6. 0 of 6 dashboards show a predicted gap or a Hindi lexicon.\n\n**Known gaps:** 15-42% cut-ins on every VP stack; a quiet \"hmm\" never transcribed; no human round 2; no handset timing; Gemini 3.1 Live ends 2026-11-17.\n\n**Proof:** W3, W4, W5, KC6, T9c, blind ear tests and the listener panel.\n\n**Owner requirements:** req-01 to req-09, req-11, req-12, req-47, req-49, req-52, req-53, req-54.\n\n**Lean on digests:** call-quality-voice-turn-taking-2026-10-21 (primary), vp-existing-assets, elevenlabs, bolna, sarvam, vapi, retell, owner-requirements-catalogue.",
+   "digests": [
+    "call-quality-voice-turn-taking-2026-10-21",
+    "vp-existing-assets",
+    "elevenlabs",
+    "bolna",
+    "sarvam",
+    "vapi",
+    "retell",
+    "owner-requirements-catalogue"
+   ]
+  },
+  {
+   "id": "campaigns",
+   "title": "The campaign engine end to end, including data intake",
+   "brief": "**You design how a list becomes calls, and how calls become follow-through.**\n\n**Decide:**\n1. The campaign object and state machine (draft, ready, scheduled, running, paused, completed, cancelled, recurring) with a category-first form: service, transactional or promotional sets the window and number series. Fields with defaults on: consent source, DND status, retry ladder by outcome (busy, no answer, failed, short call, voicemail, provider error), attempt budget per contact per day and week, pacing with reserved inbound capacity, a compliant caller-ID pool, predial (built-in plus an optional customer veto), budget and estimate, follow-ups (WhatsApp utility, DLT SMS, callback, human hand-off), local-time windows, holidays, windows across midnight, resume after an outage.\n2. Intake: CSV, XLSX, Sheets and API push; the CSV contract shown before upload; AI column mapping with review; India-default E.164; cross-format and cross-script dedupe; a reason per row; a failed-rows file; never reject a whole file; counters for rejected, duplicate, DND and consent; per-row overrides (language, voice, variables); a test call to one row.\n3. Attempt separate from call; precheck reasons; carrier codes kept; one dial path for campaign, API, single, test, retry and callback.\n4. Inbound: number to agent, caller lookup, after-hours behaviour.\n5. Presets: insurance renewal (inform, confirm, hand off; IRDAI pack), lending pre-due (RBI-ready logs), appointment and subscription reminders.\n6. The launch card, and a disabled Launch that names the blocker and links to it.\n\n**Spine constraints:** P6, P7, P9; invariants 1, 5, 6; W1 and W2; tasks T2, T3, T9b; the messy-50 spec (research/2026-10-20/teardown/synthesis/messy-50.spec.json). Test lists must never ring strangers (risk.2026-10-20.synthesis-test-list-dials-strangers).\n\n**Benchmarks:** Sarvam (retry ladder by outcome, rejected-records file, attempt and interaction split, 0.1-500 attempts per second, commit gate in the wizard); Bolna (row codes, +91 default, 150,000 rows, nodes that state their contract); ElevenLabs (CSV contract before upload, per-row overrides); Retell (multi-range windows with days, reserved-concurrency readout); Exotel (transactional vs promotional, retries 0-3, throttle); SquadStack (one canvas for bot, human, SMS with DLT fields). Beat: 0 of 6 forms carry compliance; Retell 00:00-23:59 default and no retries; Vapi's dashboard code prepends + to a 10-digit number, it has one absolute window and it did not retry outage calls; ElevenLabs has one start time; Bolna has two outbound systems; Synthflow cancels after 7 days.\n\n**Proof:** T2 48/50 rows in under 5 min; T3 refuses a promotional call at 09:30; 0 rings on opt-out rows, across campaigns.\n\n**Owner requirements:** req-17, req-19, req-20, req-21, req-23, req-24, req-28, req-65, req-66.\n\n**Lean on digests:** sarvam, bolna, elevenlabs, retell, vapi, exotel, synthflow-squadstack, blueprint-lane-market-regulation-money-2026-10-21, owner-requirements-catalogue.",
+   "digests": [
+    "sarvam",
+    "bolna",
+    "elevenlabs",
+    "retell",
+    "vapi",
+    "exotel",
+    "synthflow-squadstack",
+    "blueprint-lane-market-regulation-money-2026-10-21",
+    "owner-requirements-catalogue"
+   ]
+  },
+  {
+   "id": "intelligence",
+   "title": "Per-call and campaign AI analysis, live mission control, reporting",
+   "brief": "**You design how the client sees and understands every call and every campaign.**\n\n**Decide:**\n1. The call page: stereo player; transcript in native script, romanised and translated, ordered by audio offset (HV law 29); turn timeline with latency segments and heard text; run manifest; compliance trace; cost lines.\n2. Outcomes: client-owned outcome definitions in business language; default judges (summary, success, sentiment) created visible and editable (Bolna hides its auto-judges); pinned judge models; classification against verified keys, with agreement to CRM truth measured before any label is trusted (a 90%-accurate label inflates sample needs 1.8-2.4x [C]).\n3. Failure explanation: engineering reason, carrier code, a business-language reason and a next action, including Indian causes (DND, CLI or DLT rejection, operator announcement, window).\n4. The campaign view: funnel with a reason at each drop; cost per outcome; drivers by segment, hour and number; a line-hazard ribbon (hang-ups aligned to TTS clauses); objection clusters with quotes; best and worst calls; \"observed, not causal\" and \"under-powered\" labels.\n5. Mission control: live calls, concurrency, listen, whisper, take over (audited); Supervisor alerts for loops, anger and crisis words; issues with severity, calls impacted and time to resolve; never \"all good\" without monitors.\n6. Q&A: answers with quotes and play-from-here, numbers from the same queries as pages.\n7. Reports and export: daily brief; scheduled reports; one export per campaign with outcome, fields, transcript, recording link and cost (T6); signed webhooks; CRM write-back.\n8. Distinct empty, zero, loading and failed states; sample data labelled.\n\n**Benchmarks:** Vapi (log tabs, issues with severity and MTTR and a Compliance category, structured outputs feeding scorecards, per-turn latency; but 638 raw end codes and \"Great news\" with no monitors); Retell (13-column call history with cost, latency and outcome, live take-over, context injection, AI QA; but unlabelled sample data); ElevenLabs (12 analytics tabs, honest \"---\" empties, a charging block per call); Sarvam (collections disposition model, self-QA flags, SQL boards); Exotel (sentiment-crash alerts, a version column in logs); Synthflow (SIP ladder and MOS per leg). 0 of 5 group cost by campaign or contact; SquadStack searches only 10 days.\n\n**Proof:** T5: five induced failures, each found in under 60 s, 5/5 correct, 4+ actionable (W6); T6 export 6/6; judge agreement against verified keys.\n\n**Owner requirements:** req-21, req-22, req-25, req-26, req-27, req-45, req-46.\n\n**Lean on digests:** vapi, retell, elevenlabs, sarvam, exotel, synthflow-squadstack, blueprint.learning-memory-omnichannel, owner-requirements-catalogue.",
+   "digests": [
+    "vapi",
+    "retell",
+    "elevenlabs",
+    "sarvam",
+    "exotel",
+    "synthflow-squadstack",
+    "blueprint.learning-memory-omnichannel",
+    "owner-requirements-catalogue"
+   ]
+  },
+  {
+   "id": "memory-omni",
+   "title": "Memory, personalisation and omni-channel data",
+   "brief": "**You design how VP knows the person and the company, and what it may remember.**\n\n**Decide:**\n1. The model beyond the spine's objects: Episode (call, chat, WhatsApp, email), Fact (preference, commitment, objection, stated fact, correction, opt-out; exact caller quote with episode and span; source and authority rank; expiry; purpose; consent; status), Commitment, PreferenceView and the MemoryBrief compile policy (approved, purpose-matched facts only; newest supported wins; whole entries; a byte cap; a middle slot; a throwing budget).\n2. The write path: the extractor proposes facts that cite an exact caller quote, re-checked at commit; a refusal guard (\"no follow-up please\" never creates one); tiers: opt-out applies at once, language, pace and register auto-apply with undo, commitments and money facts need review. Never store the agent's own claims, brief facts, mood or personality scores.\n3. Recall: semantic plus keyword legs (lexical recall alone recovered 0/27 adversarial cases [M]); injection through the pre-call hook; memory must not push p50 above 1.2 s; multi-call simulations and a live adherence test (an inherited trial stored \"Hindi\" and replied in English [M]).\n4. Omni-channel intake and what to take: CSV and Sheets; CRMs (LeadSquared, Zoho, Kylas, Salesforce; build when two paying customers need one); API push for speed-to-lead; WhatsApp in the 24 h window (Meta terms bar training on its data); DLT SMS; email; app events with consent; payments (outcomes; \"link opened\" as a leading indicator); policy and loan systems (highest authority); documents and website for the company brain, kept apart from contact memory.\n5. Identity: exact match only, no fuzzy merge; unverified channel senders produce feedback, never memory.\n6. DPDP: tenant is fiduciary, VP is processor; purpose and basis per fact; retention classes; forget follows the person, with a tombstone; India region; no cross-tenant pooling.\n7. Surfaces: contact timeline, facts with quotes and play-from-here, edit and forget, \"what she remembers\" settings, memory cost at the toggle.\n8. Phasing: preference memory in late v1 (Plus) or v2.\n\n**Benchmarks:** Retell (a 2,000-character rewritten brief per phone number, read on, save off, USD 0.005 per run, a sane update prompt); Synthflow (summaries shared across voice, SMS and WhatsApp, keyed by phone); ElevenLabs (built, gated, keyed to a browser fingerprint); SquadStack (memory claimed, code intra-call only); Bolna, Sarvam, Vapi, Exotel (none). Reuse Relay's evidence-span intake and AI column mapping as concepts.\n\n**Kill criteria:** recall under 95%, preferences ignored more than 1 in 20, or p50 above 1.2 s (`decision.2026-10-19.tier-plus`).\n\n**Owner requirements:** req-10 (accent as opt-in personalisation, not a wedge), req-12, req-28, req-29, req-30, req-31, req-32, req-33 (groups only as consented aggregates).\n\n**Lean on digests:** blueprint.learning-memory-omnichannel (primary), retell, synthflow-squadstack, elevenlabs, vp-existing-assets, blueprint-lane-market-regulation-money-2026-10-21, owner-requirements-catalogue.",
+   "digests": [
+    "blueprint.learning-memory-omnichannel",
+    "retell",
+    "synthflow-squadstack",
+    "elevenlabs",
+    "vp-existing-assets",
+    "blueprint-lane-market-regulation-money-2026-10-21",
+    "owner-requirements-catalogue"
+   ]
+  },
+  {
+   "id": "learning",
+   "title": "The self-learning system",
+   "brief": "**You design how VP gets better from its own calls without fooling anyone, the client included.**\n\n**Decide:**\n1. What is learnable, at which level and volume: turn-taking parameters (dense; cut-ins 25% to 18% need about 70-165 calls per arm, ICC assumed [C]); the opening slot after the locked disclosure; line-level drop-off (the owner's call 100 to call 101); best time inside the legal window; objection handling; brief wording in middle slots; voice per segment (panel); business outcomes (slow: 6,510 calls per arm for 20% to 22% [C]). Never learned: disclosure, consent and opt-out, crisis lines, identity, prices, offers and dates, the category fence, rules appended last.\n2. The pipeline: measure in code; propose, probe and compose offline (invariant and domain candidates, simulated callers with hidden keys, repeated runs, contrasts measured in code, each merge citing an observation); gates (one compile, shape lint, budget, empty diff on locked sections, no new number or identifier, India latency budget); one-tap approval; online proof on a fixed horizon (a line fix is proved in about 592 calls per arm on local hazard vs 25,963 on conversion [C]); expiry at 60-90 days or on drift; per-tenant and invariant-lesson libraries with no personal data.\n3. Statistics as code: per-tenant A/A; pre-registration; fixed-horizon or always-valid tests; effects from held-out data; discounted Thompson only from about 1,000 calls a day on one script; guardrail auto-stop (opt-outs, complaints, disclosure adherence, early hang-up per CLI under TRAI reg 21A, minutes rising without outcome change, empty ASR).\n4. A fast lane for catastrophic lines like the owner's 90-of-100 example, visible within tens of calls [I]: proposal, approval, then measurement.\n5. Surfaces: learning-inbox cards (problem, diff, contrasts, calls to prove), an experiments page with a power meter and \"under-powered: N more calls\", and the \"how she changed for you\" timeline with intervals.\n6. Copy rules: \"remembers every customer, shows where calls fail, proves the changes you approve\", never \"learns on its own\" below volume.\n7. Pricing interplay: anything correlated with minutes is learned only under outcome or seat pricing.\n\n**Benchmarks:** Retell Conductor (failed calls become tests; human-accepted diffs; fixed-weight A/B without statistics); ElevenLabs Architect (branch, merge, manual promotion); Vapi (monitors, simulations, splits without statistics; Composer can bypass approvals); SquadStack Lift, claimed (locked sections, staged rollout, significance flag); Bland's autonomous loop. None documents A/A, sample size, stopping or expiry.\n\n**Evidence to respect:** two-arm daily dashboards gave 52-62% false winners; pooled learning gave the wrong winner to 48-55% of dissimilar tenants; harness2's gains are vendor-claimed, on document tasks, with no human gate.\n\n**Owner requirements:** req-27, req-33, req-34, req-35, req-36.\n\n**Lean on digests:** blueprint.learning-memory-omnichannel (primary), retell, elevenlabs, vapi, synthflow-squadstack, call-quality-voice-turn-taking-2026-10-21, owner-requirements-catalogue.",
+   "digests": [
+    "blueprint.learning-memory-omnichannel",
+    "retell",
+    "elevenlabs",
+    "vapi",
+    "synthflow-squadstack",
+    "call-quality-voice-turn-taking-2026-10-21",
+    "owner-requirements-catalogue"
+   ]
+  },
+  {
+   "id": "trust-telephony",
+   "title": "India telephony, numbers, compliance, safety, security and governance",
+   "brief": "**You design the rails and the rules: what may be dialled, from which number, saying what, and who can see it.**\n\n**Decide:**\n1. Telephony: bring-your-own carrier with numbers in the tenant's name (Plivo primary, Exotel AgentStream, Vobiz); VP never connects PSTN calls itself; a trial line for browser and verified-number tests (missed-call check; caller ID can be spoofed); India media edge; pulses of 30 s or less; carrier failover; answering-machine detection on Indian announcements; cold, warm and agentic-warm transfer with a spoken brief; DTMF; CNAP trade name.\n2. The number step: series by category and sector (140xx promotional; 1600xx for RBI, SEBI, IRDAI and PFRDA service calls; 1601xx utilities and logistics; declared 10-digit otherwise); KYC documents, time and price before any credential; number health against TRAI reg 21A flags; the A2P CLI-range declaration export (due about 2026-11-17/18); 1600 price and streaming unknown (KC5).\n3. The compliance core: M1 category classifier and in-call promotion fence; M2 series routing, A2P export, health; M3 windows (promotional 10:00-21:00; a humane service default; RBI 08:00-19:00 from 2027-01-01; contact local time); M4 suppression on every path, in-call opt-out, attempt caps; M5 consent ledger (wave 2); M6 DPDP Rule 3 notice by link after the call, recording notice, retention, residency; M7 sector packs (IRDAI inform, confirm, hand off with 10-year India records; RBI logs). Never market NCPR scrubbing.\n4. Reply-door safety: one light disclosure, never denied; refuse prompts that tell the agent to claim to be human (T9c); crisis lines; no OTP or payment; anti-scam design (verifiable callback, links on the client's domain, no refund or bonus framing).\n5. Security and governance: fixed roles on every plan; audit log; scoped API keys with expiry and spend caps; widget keys closed by default; PII redaction (Aadhaar, PAN, bank, card) on; retention chosen at onboarding; India region by default; telemetry masked and kept in India; a tenant-isolation leak battery.\n6. Liability: tenant is Sender and Data Fiduciary, VP a processor; counsel list: renewal solicitation (KC8), sender status, recovery agency.\n\n**Benchmarks:** Exotel (140, 1600 via a VNO, call-type field; bot path off by default); Bolna (Truecaller check, KYC list before the click; wrong 9-21 window); Sarvam (rent and BYO side by side; 10-digit only, DND by API, session replay set to a US host); Retell (ID wall, DNC off and skipped by batch, no Aadhaar or PAN redaction); ElevenLabs (open-allowlist warning; Singapore default under +91); Vapi (the only predial veto; no Indian path); SquadStack (in-call dnd_request, DLT fields; avoid spam-number rotation); Synthflow (opt-out judge failed silently for 2 h 50 m).\n\n**Proof:** W1 (0 rings on opt-out rows, across campaigns); T3; T9a promotion fence; T9c 0 denials; A2P export before launch.\n\n**Owner requirements:** req-47, req-48, req-49, req-55, req-65, req-67.\n\n**Lean on digests:** blueprint-lane-market-regulation-money-2026-10-21 (primary), exotel, bolna, sarvam, retell, elevenlabs, vapi, synthflow-squadstack, owner-requirements-catalogue.",
+   "digests": [
+    "blueprint-lane-market-regulation-money-2026-10-21",
+    "exotel",
+    "bolna",
+    "sarvam",
+    "retell",
+    "elevenlabs",
+    "vapi",
+    "synthflow-squadstack",
+    "owner-requirements-catalogue"
+   ]
+  },
+  {
+   "id": "economics-platform",
+   "title": "Cost, pricing, speed, architecture, APIs, integrations, reliability and learning from competitors",
+   "brief": "**You design what VP costs, how fast and reliable it is, how others build on it, and how it keeps learning from the market.**\n\n**Decide:**\n1. Pricing: the unit (all-in per connected second incl. telephony and GST, pulse stated); tiers (Base human voice; Plus memory and learning inbox; Premium personalisation and a dedicated voice), re-priced after the default stack; per-outcome only for managed design partners; no setup fees; caps per workspace and API key; a pre-launch estimate; UPI or card wallet, invoice and NEFT above the INR 15,000 e-mandate cap, GST and TDS; low-balance and overdrawn states; refund rules. Never trade voice for price (req-02).\n2. The INR 2 path: AI cost per minute by stack (gated cascade 0.94 [M]; Gemini-TTS hybrid 0.98, 1.34 from 2027 [I]; all-Gemini 1.56, then 1.92; Live 4.2-5.7 at 3 min [M]); thresholds for cheaper ears and voices (about 250k-2.5M min/month); FX, the A2P charge (telcos ask INR 0.50/min) and the unknown 1600 price.\n3. Architecture: the proposed split (a Python realtime voice service ported from voicelab along its seams; a TypeScript control plane on Postgres, Neon allowed); India media and orchestration; an adapter registry with measured metrics (n, date); warm pools; quota per concurrent call; HV laws 30-32 (wake then sign, every queue names its caller, 5xx classifier with deadlines).\n4. Speed budgets per segment (endpoint, hold, brain first token, first audio, phone leg), measured at the handset.\n5. Reliability: service levels, synthetic calls, detection and client notice in minutes, carrier and provider failover, an honest status page, resume after outage.\n6. API, SDK and MCP from one spec, 1:1 with the dashboard (W10): 422 on unknown fields, idempotency keys, signed slim webhooks with retries and replay, pre-call and predial hooks, cost by campaign and contact.\n7. Integrations: CRM, WhatsApp BSP, payment webhooks, Sheets.\n8. The competitor radar (Scout): the 67-URL watchlist (research/2026-10-20/teardown/radar/watchlist.json): status daily; changelogs, docs, APIs, prices weekly; re-walks monthly; call battery quarterly; tripwires (India region, INR billing, TRAI or DLT in docs, Hinglish mode, memory or campaigns live, price at INR 4 or less); graph inbox entries and a monthly owner digest.\n\n**Benchmarks:** Bolna's price table and cost header; Sarvam's INR rate table with UPI and GST; Retell's price at the toggle and per-second cost lines; Vapi's typed cost lines, query endpoint, config as code. Beat: headlines without telephony or wait (Vapi), burst on by default (Retell, ElevenLabs), Retell's 4,000-token multiplier, Sarvam's 60 s pulse, Exotel's quote gate; 0 of 5 cap spend by API key or cost by campaign. Reliability bar: Vapi's 4 h 07 min outage (no campaign retry), Retell's 6 h of unnoticed degradation, Bolna's 9 of 18 incidents upstream with no carrier failover.\n\n**Owner requirements:** req-08, req-11, req-41 to req-44, req-50 to req-52, req-54, req-58 to req-61.\n\n**Lean on digests:** blueprint-lane-market-regulation-money-2026-10-21, call-quality-voice-turn-taking-2026-10-21, vp-existing-assets, vapi, retell, bolna, sarvam, exotel.",
+   "digests": [
+    "blueprint-lane-market-regulation-money-2026-10-21",
+    "call-quality-voice-turn-taking-2026-10-21",
+    "vp-existing-assets",
+    "vapi",
+    "retell",
+    "bolna",
+    "elevenlabs",
+    "sarvam",
+    "exotel",
+    "synthflow-squadstack"
+   ]
+  },
+  {
+   "id": "design-language",
+   "title": "Visual identity, motion, sound, tone and vibe, plus specs for the key screens",
+   "brief": "**You design how VP looks, moves, sounds and speaks, and the key screens.**\n\n**Decide:**\n1. Identity: warm, human, Indian, calm and confident, never generic SaaS. The owner rejected Relay's look three times (DM Sans, indigo, 13 px body, \"Quiet Operations Desk\": DESIGN.md); the best direction in the repo is /prototype's warm editorial concept (serif display, warm palette, dark green, terracotta: asset.se-live.prototype-visual-concept). Devanagari-ready type pairing, readable body size, light and dark, accessible contrast.\n2. Voice-first UI: audio is a first-class element (waveforms, play-from-here, the same Hinglish line in three registers on voice cards, live listen); quiet UI sound cues for connect, approval and issue, mutable, never autoplayed.\n3. Motion: only to show the system working (calls ringing and connecting, cards arriving in the thread, funnels filling, diffs resolving); reduced-motion support; a performance budget.\n4. Words: plain, warm Indian English, Hinglish where the client speaks it; never auditor-style warning walls; units in ms and INR; reasons with fixes; distinct empty, zero, loading and failed states; \"not measured\" instead of zero; the Operator sounds like a capable colleague. Name the Operator.\n5. Persona defaults with the voice module: friendly, human, professional, interesting (req-07); no companion or romance voices in a business catalogue.\n6. Components: thread cards (plan, diff, launch, call, approval, issue, chart); tables carrying evidence grades; timelines; transcript synced to audio; INR and ms readouts with n and date; state tokens.\n7. Key screens to specify at 1280 px and 390 px: Talk to VP; Today; the launch card; campaign mission control; the call page; the agent builder (brief editor, stack picker, turn-taking panel, docked test); contact timeline; learning inbox; number step; wallet; hear-it-first onboarding.\n\n**Benchmarks (WT §4):** adopt Vapi's per-row latency, cost and score; ElevenLabs' description under every setting and honest empty states; Bolna's persistent cost bar; Sarvam's inline gate with the fix and native-script glyphs; Retell's plain transfer copy and page-aware chips; Exotel's version pill and live concurrency meter. Avoid: click-to-publish, silent disabled buttons, charts on no data, \"0 ms\" on empty data, stale tours, permanent banners, three shells, US defaults on an India path, unlabelled sample data.\n\n**Proof:** 5-user sessions at desktop and phone width against incumbent captures (task errors, time); the owner's visual review (req-40); every screen passes the state-integrity rules.\n\n**Owner requirements:** req-07, req-37, req-38, req-39, req-40, req-68.\n\n**Lean on digests:** owner-requirements-catalogue, vp-existing-assets, vapi, retell, elevenlabs, sarvam, bolna, exotel.",
+   "digests": [
+    "owner-requirements-catalogue",
+    "vp-existing-assets",
+    "vapi",
+    "retell",
+    "elevenlabs",
+    "sarvam",
+    "bolna",
+    "exotel"
+   ]
+  }
+ ],
+ "diagram": {
+  "module_edges": [
+   {
+    "from": "workspace",
+    "to": "economics-platform",
+    "label": "Operator acts only through the tool API"
+   },
+   {
+    "from": "memory-omni",
+    "to": "campaigns",
+    "label": "contacts and audiences"
+   },
+   {
+    "from": "campaigns",
+    "to": "trust-telephony",
+    "label": "every attempt passes the one dial gate"
+   },
+   {
+    "from": "trust-telephony",
+    "to": "voice",
+    "label": "carrier leg; reply-door predicates"
+   },
+   {
+    "from": "memory-omni",
+    "to": "voice",
+    "label": "bounded pre-call memory brief"
+   },
+   {
+    "from": "voice",
+    "to": "intelligence",
+    "label": "calls, turns, run manifests"
+   },
+   {
+    "from": "intelligence",
+    "to": "workspace",
+    "label": "outcomes, issues, Today brief, cards"
+   },
+   {
+    "from": "intelligence",
+    "to": "learning",
+    "label": "signals: line hazard, cut-ins, outcomes"
+   },
+   {
+    "from": "learning",
+    "to": "workspace",
+    "label": "proposals for one-tap approval"
+   },
+   {
+    "from": "workspace",
+    "to": "voice",
+    "label": "approved change becomes a new version"
+   },
+   {
+    "from": "voice",
+    "to": "economics-platform",
+    "label": "cost lines to the meter, wallet and caps"
+   },
+   {
+    "from": "campaigns",
+    "to": "economics-platform",
+    "label": "budgets and estimates"
+   },
+   {
+    "from": "economics-platform",
+    "to": "workspace",
+    "label": "Scout radar digests to the owner"
+   },
+   {
+    "from": "design-language",
+    "to": "workspace",
+    "label": "look, motion, sound and words for every surface"
+   }
+  ],
+  "agents": [
+   [
+    "Front door",
+    "Operator",
+    "A1; A2 for external, spend, publish"
+   ],
+   [
+    "Front door",
+    "Concierge",
+    "A1"
+   ],
+   [
+    "Build",
+    "Strategist",
+    "A1"
+   ],
+   [
+    "Build",
+    "Brief writer",
+    "A1; publish needs A2"
+   ],
+   [
+    "Build",
+    "Data steward",
+    "A1; merges need A2"
+   ],
+   [
+    "Build",
+    "Test pilot",
+    "A1"
+   ],
+   [
+    "Build",
+    "Line keeper",
+    "A2 to rent; A3 to pause a flagged CLI"
+   ],
+   [
+    "Run",
+    "Compliance guard",
+    "blocks always on; policy needs the Compliance role"
+   ],
+   [
+    "Run",
+    "Campaign runner",
+    "engine; A3 inside the launched policy"
+   ],
+   [
+    "Run",
+    "Supervisor",
+    "A3; take-over is human"
+   ],
+   [
+    "Run",
+    "Treasurer",
+    "A3 to stop at caps; A2 for top-ups"
+   ],
+   [
+    "Learn",
+    "Call analyst",
+    "A1"
+   ],
+   [
+    "Learn",
+    "Memory keeper",
+    "A3 opt-out; auto with undo for preferences; review for commitments"
+   ],
+   [
+    "Learn",
+    "Coach",
+    "A1; live changes need A2"
+   ],
+   [
+    "Learn",
+    "Learner",
+    "A3 to stop; A2 to promote"
+   ],
+   [
+    "VP-internal",
+    "Scout",
+    "A1"
+   ]
+  ],
+  "journey": [
+   [
+    1,
+    "Hear it",
+    "0 min"
+   ],
+   [
+    2,
+    "Sign up",
+    "under 1 min"
+   ],
+   [
+    3,
+    "Say the job",
+    "2-5 min"
+   ],
+   [
+    4,
+    "Pick a voice by ear",
+    "1 min"
+   ],
+   [
+    5,
+    "Talk to your agent",
+    "browser call under 3 min from sign-up"
+   ],
+   [
+    6,
+    "Bring the list",
+    "48/50 messy rows in under 5 min (W2)"
+   ],
+   [
+    7,
+    "Ring a real phone",
+    "15 min or less (W7)"
+   ],
+   [
+    8,
+    "Go-live checks",
+    "KYC timer shown"
+   ],
+   [
+    9,
+    "Launch",
+    "one tap"
+   ],
+   [
+    10,
+    "Watch",
+    "live"
+   ],
+   [
+    11,
+    "Results",
+    "same day"
+   ],
+   [
+    12,
+    "Grow",
+    "weekly"
+   ]
+  ],
+  "phases": [
+   [
+    "Phase 0",
+    "Prove the call",
+    "gates before launch"
+   ],
+   [
+    "v1",
+    "Parity made better, India-native, with the voice",
+    "W1, W2, W6, W7, W8, W10 pass; KC6 at the handset; 3 design partners"
+   ],
+   [
+    "v2",
+    "She remembers and gets better",
+    "recall 95%+; A/A false winners 5% or less"
+   ],
+   [
+    "v3",
+    "Learns at scale, costs less",
+    "measured cost per minute; per-tenant lift with intervals"
+   ]
+  ],
+  "note": "Diagram-ready lists mirror sections 6, 8, 9 and 10 of spine_md; spine_md is the source of truth."
+ }
+}

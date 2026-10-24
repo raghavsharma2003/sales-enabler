@@ -1,0 +1,52 @@
+{
+ "nodes": [
+  {
+   "id": "component.2026-10-24.sample-packs",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Use-case sample packs on Import: seven synthetic contact lists, one per starter agent. Each goes through the real preview, verdicts and receipt. 'Add me as a test contact' puts the member's own verified phone in the list and marks it contact.test_member_id when saved.",
+   "path": "product/server/modules/intake/samples.ts",
+   "details": "Packs: insurance renewal, loan EMI reminder, COD confirmation, admissions follow-up, clinic appointment reminder, rooftop solar lead qualification, AC service feedback. 12 rows each. Numbers 9000000000-9000000099 only, never shared between packs. Names and cities across regions, at least 4 languages per pack, and the per-contact facts the template's agent says (dates relative to the day loaded). Each pack has one duplicate (the number written another way), one or two opt-outs, and one missing consent. Tools source.sample.list (read) and source.sample.load (draft); migration 0109. Web: From a sample tab (lazy chunk). Tests: intake-samples 3/3 (every pack fills every fact its agent says; only a verified phone; only the caller's own; re-checked at save; a file can never set the mark); e2e flow and axe screen; screenshots at 1440 and 390."
+  },
+  {
+   "id": "decision.2026-10-24.test-contact-flag",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A test contact is contact.test_member_id: the member whose own verified phone it is. Only the sample flow's 'Add me' sets it, for the caller's own verified_test_phone, re-checked when the upload is saved. No file, CRM or webhook column can set it. Telephony checks verified_test_phone again at dial time.",
+   "rationale": "On staging a campaign must be able to ring the owner and nobody else. A flag that only the member's own verified phone can earn, and that the dial gate re-checks, cannot be forged from imported data.",
+   "reverse_if": "Telephony prefers to key the staging allowlist on verified_test_phone alone; the flag then stays only for the UI and for keeping test contacts out of analytics."
+  },
+  {
+   "id": "measure.2026-10-24.sample-packs-tests",
+   "type": "measurement",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Sample packs: 7 of 7 packs fill every per-contact fact of an agent made from their template (0 missing). Each has 1 duplicate in the file and at least 1 opt-out counted as not callable. The test contact is marked only for a verified phone of the caller (4 refusal paths held). e2e 82/82.",
+   "n": "7 packs x 12 rows; 4 refusal cases; e2e 82 flows",
+   "method": "node:test on a fresh Postgres (intake-samples.test.ts, source.map with agentId per template); Playwright via e2e/run.sh",
+   "not_verified": "A real staging call to the owner's phone: telephony is not live, and the allowlist rule is telephony's to build."
+  },
+  {
+   "id": "open.2026-10-24.staging-allowlist-test-contact",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Will telephony's staging allowlist key on contact.test_member_id plus verified_test_phone at dial time (proposed to session_01EMpetZaBqaoTD8i89vtAx9), or on verified_test_phone alone?",
+   "closes_when": "Telephony answers and the dial gate enforces the agreed rule with a test."
+  }
+ ],
+ "edges": [
+  { "from": "component.2026-10-24.sample-packs", "to": "decision.2026-10-24.test-contact-flag", "relation": "implements" },
+  { "from": "measure.2026-10-24.sample-packs-tests", "to": "component.2026-10-24.sample-packs", "relation": "tests" },
+  { "from": "component.2026-10-24.sample-packs", "to": "open.2026-10-24.staging-allowlist-test-contact", "relation": "leaves-open" }
+ ],
+ "events": [
+  { "date": "2026-10-24", "event": "sample-packs", "details": "Use-case sample packs and 'Add me as a test contact' built in intake, for the owner's staging tests (directive.2026-10-24.calling-first-build-all). Verified: tsc clean; intake-samples 3/3; e2e 82/82; screenshots looked at. Test-contact rule proposed to telephony." }
+ ]
+}

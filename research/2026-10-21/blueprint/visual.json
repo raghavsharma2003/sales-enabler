@@ -1,0 +1,1990 @@
+{
+ "vision": {
+  "one_liner": "Just talk to VP. It builds the calling agent, cleans your list, gets your number and makes calls your customers are glad to take.",
+  "promise": "Just talk to VP. It builds the agent, cleans your list, gets your number and makes calls your customers are glad to take, in their language and inside the rules. Then it shows you every call, every rupee, and what it will do better next time.",
+  "for_whom": "Indian businesses (SMB to enterprise) with a recurring reason to call their own customers: insurance intermediaries, lenders, subscriptions and utilities, clinics, education, consented real-estate inquiries. First jobs are post-sale service calls (renewal, pre-due EMI, appointment reminders). Not cold outbound, not consumer-internet firms with in-house teams.",
+  "status": "Blueprint for owner review, 2026-10-21. Nothing has run on a live Indian call or with a buyer yet; VP scores in this page are design targets."
+ },
+ "pillars": [
+  {
+   "name": "Talk is the front door",
+   "line": "Typed or spoken Hinglish; VP's agents do the work through the same tools any developer gets."
+  },
+  {
+   "name": "The call is the product",
+   "line": "Warm, quick, honest Hinglish voice that opens with something useful and never wastes time."
+  },
+  {
+   "name": "Honest by construction",
+   "line": "Disclosure, crisis lines, no OTP or payment asks are code predicates at one reply door, not prompt text."
+  },
+  {
+   "name": "India and compliance by default",
+   "line": "Call category first; one dial path; A2P pack; every call shows why it was allowed."
+  },
+  {
+   "name": "Results are earned",
+   "line": "Outcomes from systems of record; cost per earned outcome is the client's north star."
+  },
+  {
+   "name": "Remember with permission",
+   "line": "Quoted, playable, forgettable memory; preferences auto with undo; nothing pooled across tenants."
+  },
+  {
+   "name": "Learn honestly",
+   "line": "Fast lane for catastrophic lines; fixed-horizon tests, A/A checks and expiry for the rest."
+  },
+  {
+   "name": "One honest price",
+   "line": "All-in INR per connected second, caps on workspace, campaign and key, estimate before launch."
+  }
+ ],
+ "personas": [
+  {
+   "name": "The person called",
+   "job": "Get the useful fact fast; be respected; stop calls",
+   "pain_today": "Wary of scam renewal calls; no way to verify the caller",
+   "vp_gives": "Brand named, useful fact first, light AI line, verify page, one-tap stop"
+  },
+  {
+   "name": "Owner (10-500 people)",
+   "job": "Decide, fund, trust; see results and money",
+   "pain_today": "No business-outcome field at any vendor; engineering codes and USD bills",
+   "vp_gives": "Today brief, launch and budget cards, cost per earned outcome in INR"
+  },
+  {
+   "name": "Campaign manager",
+   "job": "Import, launch, watch, fix, report, improve",
+   "pain_today": "Campaign forms carry no consent, DND or DLT; disabled buttons give no reason",
+   "vp_gives": "Mission control, failed-call finder with reason and fix, launch card that explains itself"
+  },
+  {
+   "name": "Human closer",
+   "job": "Take warm transfers and hot callbacks",
+   "pain_today": "Cold transfers with no summary",
+   "vp_gives": "Hand-off queue with spoken brief, play-from-here and SLA timer"
+  },
+  {
+   "name": "Compliance officer",
+   "job": "Category, windows, consent, retention, DPDP, audit",
+   "pain_today": "0 of 8 vendors ship an A2P export or a compliance surface",
+   "vp_gives": "Compliance centre, A2P declaration pack, suppression ledger, hash-chained audit"
+  },
+  {
+   "name": "Developer",
+   "job": "CRM, webhooks, API/MCP, own carrier",
+   "pain_today": "Unknown fields silently dropped; 0 of 5 vendors cap spend per key; unsigned webhooks",
+   "vp_gives": "One spec for API, SDK, MCP; 422 on unknown fields; scoped capped keys; signed replayable webhooks"
+  },
+  {
+   "name": "VP Success (internal)",
+   "job": "Assisted onboarding: carrier, KYC, outcome wiring",
+   "pain_today": "Incumbent support often takes more than 24 h [I]",
+   "vp_gives": "Same tools as the client, named in the ledger, human reply in IST hours"
+  }
+ ],
+ "journey": [
+  {
+   "stage": "1. Hear it, then sign up (0-1 min)",
+   "client_says_or_does": "Taps 'Talk to VP' on the public page, talks, signs up with Google or phone OTP and a business name",
+   "vp_agents_do": "Public Operator discloses once, asks about the business, plays how a customer would hear it in three registers",
+   "client_sees": "One orb with live captions, voice cards with India first-audio and INR/min, 'her replies took 1.4 s median on this call (n=9)'",
+   "wow": "A voice before a form, honest about being an AI and about its speed",
+   "competitor_contrast": "Sarvam's demo claimed to be human 6/6 times; Retell asks for a Persona ID before any country"
+  },
+  {
+   "stage": "2. Say the job (2-5 min)",
+   "client_says_or_does": "'Motor renewal reminders, 1,200 customers' plus a website or brochure",
+   "vp_agents_do": "Strategist sets job, category and outcome; Brief writer turns the site into facts with quoted spans; at most one question per turn",
+   "client_sees": "Plan card ('VP does 1-6 now; 7 waits for you'), facts card to approve or strike, readiness rail",
+   "wow": "Whole job planned and drafts already running",
+   "competitor_contrast": "Sarvam's prompt box makes only an agent; Retell's checklist covers its canvas"
+  },
+  {
+   "stage": "3. Pick her voice by ear (about 1 min)",
+   "client_says_or_does": "Hears three voices say one Hinglish line with the brand name; says 'thoda slow bolo, discount mat bolna'",
+   "vp_agents_do": "Brief writer compiles, lints recitable lines; Test pilot pre-runs six simulated callers",
+   "client_sees": "Brief as cards with locked disclosure row, predicted reply gap and all-in INR in header, diff card per tweak",
+   "wow": "Speed and price beside every voice; mismatched voices refused",
+   "competitor_contrast": "Retell has 0 Indian voices; ElevenLabs accepted an American voice on a Hindi agent"
+  },
+  {
+   "stage": "4. First test call (browser under 3 min; own phone within 15 min)",
+   "client_says_or_does": "'Call me in the browser', then 'Kaisi lagi?'; then 'Ring my phone' via missed call",
+   "vp_agents_do": "Test pilot runs a made-up customer; feedback becomes diffs with one-tap re-test; Line keeper verifies the phone spoof-safely",
+   "client_sees": "Live captions, reply gap and cut-in marks per turn, 'already said' ledger, door events",
+   "wow": "Feedback by talking becomes a reviewed change; own phone rings within minutes",
+   "competitor_contrast": "Bolna tests only by phone; Exotel's web call is 'coming soon'"
+  },
+  {
+   "stage": "5. Data in: any file to an audience (5 min or less)",
+   "client_says_or_does": "Drops a CSV, Excel, Sheet or text PDF, or connects a CRM: 'isko fire karo'",
+   "vp_agents_do": "Data steward classifies, maps headers, normalises to E.164, dedupes across scripts, applies suppression, checks payment freshness, asks at most 3 questions",
+   "client_sees": "'1,240 rows -> 1,191 callable, 37 fixed, 12 rejected (reasons), 9 opted out, 28 merged, 212 already paid'",
+   "wow": "No file rejected for one bad row; people who already paid are not called",
+   "competitor_contrast": "Vapi turns a 10-digit mobile into +98 and rejects the file; Retell imports +91 as +1; Exotel drops duplicates silently"
+  },
+  {
+   "stage": "6. First campaign: number, readiness, launch",
+   "client_says_or_does": "'Kal se chalao'; rents a number in their name or connects a carrier; uploads KYC once",
+   "vp_agents_do": "Strategist drafts a category-first campaign; Line keeper files KYC, CNAP, A2P; Compliance guard flags offer lines; Treasurer prices a p10-p90 range",
+   "client_sees": "One launch card: who, when, 20 s sample from a real row, checks, money, outcome; hold 1.2 s to launch",
+   "wow": "Launch explains itself; tests continue while KYC waits",
+   "competitor_contrast": "0 of 6 campaign forms carry consent, DND or DLT; Vapi and Retell disable Launch with no reason"
+  },
+  {
+   "stage": "7. Live mission control",
+   "client_says_or_does": "Watches, listens, whispers, takes over, or does nothing",
+   "vp_agents_do": "Campaign runner starts with a 20-call canary; Supervisor watches every call and pauses on a guardrail; Treasurer stops at caps",
+   "client_sees": "State, lines, spend vs cap, window clock, funnel with a reason at each drop, live tiles with agenda chips",
+   "wow": "Crisis call gets Tele-MANAS 14416 and 112 from a predicate plus a human alert within 5 s",
+   "competitor_contrast": "Retell's live controls are API-first; Exotel's alerts live in another product; Vapi's Mission Control is flag-gated"
+  },
+  {
+   "stage": "8. Results and AI analysis",
+   "client_says_or_does": "Opens a call, or asks 'Pune mein pickup kam kyun hai?'",
+   "vp_agents_do": "Call analyst runs code analyses first, then one LLM pass with verified quote spans; Concierge finds any failed call",
+   "client_sees": "Call page (two-lane player, three-script transcript, outcome, reason, carrier code, cost lines, why allowed, run manifest); campaign view; Ask VP with n and playable quotes",
+   "wow": "Any failed call found with business reason and fix in under 60 s",
+   "competitor_contrast": "Vapi shows 638 engineering codes, truncated; Sarvam's carrier field is null; 0 of 5 group cost by campaign"
+  },
+  {
+   "stage": "9. The daily loop",
+   "client_says_or_does": "Reads the 09:15 IST brief on a phone; taps approvals; asks anything",
+   "vp_agents_do": "Operator compiles the Today brief; Hand-offs arrive with a brief; learning inbox capped at 3 new cards",
+   "client_sees": "Outcomes earned (verified vs AI guess), spend vs plan, cost per outcome vs own desk, one 30 s clip, at most 7 approvals",
+   "wow": "Run the business from a phone by voice",
+   "competitor_contrast": "No competitor ships a daily brief or an approval queue"
+  },
+  {
+   "stage": "10. Improvement over time",
+   "client_says_or_does": "Approves fix cards; reads 'How she changed for you'",
+   "vp_agents_do": "Memory keeper applies preferences from call 2; fast lane catches a catastrophic line around call 13-15; Coach and Learner prove slower changes",
+   "client_sees": "Where callers leave, calls-to-prove per proposal, timeline of changes with intervals including ones that did nothing",
+   "wow": "The '90 of 100 dropped after one line' problem is fixed long before call 101",
+   "competitor_contrast": "Retell Conductor proposes diffs without statistics; Vapi has a Bypass approvals mode; no vendor ships expiry"
+  }
+ ],
+ "agents": [
+  {
+   "name": "Operator (VP)",
+   "role": "Front door",
+   "does": "The client's one partner by text or voice: plans, delegates, acts, explains, reports",
+   "autonomy": "A1; A2 for external, spend, publish",
+   "human_approves": "Any step that reaches people, spends, publishes or changes policy"
+  },
+  {
+   "name": "Concierge",
+   "role": "Front door",
+   "does": "Finds the failing call, explains it, proposes the fix, hands to a human",
+   "autonomy": "A1",
+   "human_approves": "Any fix it proposes"
+  },
+  {
+   "name": "Strategist",
+   "role": "Build",
+   "does": "Goal to campaign: preset, category, audience, agenda, outcome, follow-ups",
+   "autonomy": "A1",
+   "human_approves": "Launch card"
+  },
+  {
+   "name": "Brief writer",
+   "role": "Build",
+   "does": "Brief, recitable-line lint, ledger pack, register and voice",
+   "autonomy": "A1",
+   "human_approves": "Publish, with a diff"
+  },
+  {
+   "name": "Data steward",
+   "role": "Build",
+   "does": "Mapping, E.164, dedupe, row reasons, freshness; never decides consent",
+   "autonomy": "A1",
+   "human_approves": "Merges (A2)"
+  },
+  {
+   "name": "Test pilot",
+   "role": "Build",
+   "does": "Simulated Hinglish callers with hidden keys; gates publish",
+   "autonomy": "A1",
+   "human_approves": "Nothing (test quota only)"
+  },
+  {
+   "name": "Line keeper",
+   "role": "Build",
+   "does": "Series, KYC, rental or own carrier, CNAP, A2P pack, line health",
+   "autonomy": "A2 to rent; A3 to pause a line",
+   "human_approves": "Renting a number"
+  },
+  {
+   "name": "Compliance guard",
+   "role": "Run",
+   "does": "Category, offer lines, DPDP notice, launch checklist",
+   "autonomy": "Blocks always on",
+   "human_approves": "Policy changes need the Compliance role"
+  },
+  {
+   "name": "Campaign runner (engine)",
+   "role": "Run",
+   "does": "Pacing, windows, retries, follow-ups, resume after outage",
+   "autonomy": "A3 inside the launched policy",
+   "human_approves": "Launch itself"
+  },
+  {
+   "name": "Supervisor",
+   "role": "Run",
+   "does": "Watches live calls; whispers; ends runaway calls; crisis alerts",
+   "autonomy": "A3; take-over is human only",
+   "human_approves": "Resuming a guard pause; take-over"
+  },
+  {
+   "name": "Treasurer",
+   "role": "Run",
+   "does": "Estimates, reservations, caps, invoices, GST, TDS",
+   "autonomy": "A3 to stop at caps",
+   "human_approves": "Top-ups and cap raises (A2)"
+  },
+  {
+   "name": "Call analyst",
+   "role": "Learn",
+   "does": "Outcomes, reasons, objections, summaries, answers with verified quotes",
+   "autonomy": "A1",
+   "human_approves": "Nothing (reads and explains)"
+  },
+  {
+   "name": "Memory keeper",
+   "role": "Learn",
+   "does": "Quoted facts, consent checks, pre-call brief, forget",
+   "autonomy": "A3 opt-out; preferences auto with undo",
+   "human_approves": "Promises and amounts (review inbox)"
+  },
+  {
+   "name": "Coach",
+   "role": "Learn",
+   "does": "Proposals from failures, tested on simulated callers",
+   "autonomy": "A1",
+   "human_approves": "Live change needs A2 or the v2 envelope"
+  },
+  {
+   "name": "Learner (engine)",
+   "role": "Learn",
+   "does": "A/A, power, fixed horizons, guardrails, expiry",
+   "autonomy": "A3 to stop; A2 to promote",
+   "human_approves": "Promoting a winner"
+  },
+  {
+   "name": "Scout",
+   "role": "Internal",
+   "does": "Competitor radar and tripwires; weekly diffs against 67 baselines",
+   "autonomy": "A1",
+   "human_approves": "VP's owner reads the digest"
+  },
+  {
+   "name": "VP Success (human)",
+   "role": "Human",
+   "does": "Assisted onboarding in IST hours through the same tools",
+   "autonomy": "Named in the ledger",
+   "human_approves": "Acts only through the same approval rules"
+  }
+ ],
+ "architecture": [
+  {
+   "layer": "Client surfaces",
+   "components": [
+    "Web app (Owner and Expert views)",
+    "Phone layout with Talk in the centre",
+    "Public hear-it-first page",
+    "API",
+    "SDKs",
+    "MCP",
+    "Verify page for the person called"
+   ],
+   "note": "One shell; every page action is a tool and every tool has a page."
+  },
+  {
+   "layer": "Control plane (TypeScript, Postgres in India, Azure Container Apps)",
+   "components": [
+    "Registry + Operator",
+    "Campaigns + dialer",
+    "Intelligence",
+    "Memory",
+    "Meter + wallet",
+    "Outbox",
+    "Scout"
+   ],
+   "note": "Issues a signed call ticket per attempt (version, manifest, variables, memory brief, reservation)."
+  },
+  {
+   "layer": "Engines in code (no agent can override)",
+   "components": [
+    "compile()",
+    "Dial gate G1-G12",
+    "Reply door RD1-RD11",
+    "Statistics",
+    "Meter",
+    "Ledgers"
+   ],
+   "note": "Agents plan and draft; engines enforce."
+  },
+  {
+   "layer": "Voice runtime (Python asyncio, Azure Central India, 2+ instances)",
+   "components": [
+    "Carrier adapter",
+    "Echo handling",
+    "VAD + streaming ears",
+    "Turn manager",
+    "Brain",
+    "Clause splitter",
+    "Reply door",
+    "Voice",
+    "Stereo recorder"
+   ],
+   "note": "Never scale-to-zero; every call carries a run manifest."
+  },
+  {
+   "layer": "Adapter registry (data)",
+   "components": [
+    "Ears",
+    "Brains",
+    "Voices",
+    "Prices with source and date",
+    "India p50/p90 (n, date)",
+    "Residency",
+    "Sunsets"
+   ],
+   "note": "A field with no writer reads 'not measured'. Quota admission reserves 13-25k TPM per call."
+  },
+  {
+   "layer": "Carrier rails",
+   "components": [
+    "Plivo",
+    "Vobiz",
+    "Exotel AgentStream",
+    "Generic SIP (v2)",
+    "Trial line"
+   ],
+   "note": "Numbers stay in the tenant's name; VP drives the line and never carries calls itself."
+  },
+  {
+   "layer": "Storage and trust",
+   "components": [
+    "Postgres Central India",
+    "Recordings and backups in India",
+    "Hash-chained audit log",
+    "Tombstones",
+    "Row-level tenant isolation"
+   ],
+   "note": "Retention chosen at onboarding, never indefinite."
+  }
+ ],
+ "objects": [
+  {
+   "name": "Workspace and Members",
+   "key_fields": [
+    "plan",
+    "wallet",
+    "caps",
+    "concurrency",
+    "region",
+    "roles (Owner, Builder, Operator, Compliance, Viewer)",
+    "ApiKey",
+    "AuditEvent"
+   ],
+   "links_to": [
+    "Brand",
+    "Campaign",
+    "Thread"
+   ]
+  },
+  {
+   "name": "Brand and Offering",
+   "key_fields": [
+    "legal entity",
+    "CNAP name",
+    "DLT entity",
+    "sector",
+    "facts with quoted spans",
+    "never-say list"
+   ],
+   "links_to": [
+    "KnowledgeSource",
+    "Agent",
+    "Number"
+   ]
+  },
+  {
+   "name": "Contact",
+   "key_fields": [
+    "Identifier",
+    "Attribute (value, authority, max age)",
+    "ConsentRecord (append-only)",
+    "Suppression",
+    "Tombstone",
+    "Audience"
+   ],
+   "links_to": [
+    "Fact",
+    "Attempt",
+    "Call"
+   ]
+  },
+  {
+   "name": "Agent and Version",
+   "key_fields": [
+    "Brief",
+    "Stage",
+    "Voice",
+    "Stack",
+    "Tool (risk class)",
+    "LedgerPack",
+    "TurnPolicy",
+    "immutable Version",
+    "Deployment"
+   ],
+   "links_to": [
+    "Campaign",
+    "Call",
+    "Proposal"
+   ]
+  },
+  {
+   "name": "Campaign",
+   "key_fields": [
+    "category",
+    "policy version",
+    "Audience",
+    "OutcomeDefinition",
+    "Budget",
+    "Numbers"
+   ],
+   "links_to": [
+    "Attempt",
+    "Deployment",
+    "Number"
+   ]
+  },
+  {
+   "name": "Attempt and Call",
+   "key_fields": [
+    "precheck and rule versions",
+    "carrier code",
+    "next action",
+    "run manifest",
+    "recording",
+    "transcript",
+    "cost lines",
+    "reason",
+    "compliance trace"
+   ],
+   "links_to": [
+    "Turn",
+    "CostLine",
+    "Outcome",
+    "FollowUp",
+    "HandOff"
+   ]
+  },
+  {
+   "name": "Outcomes and Issues",
+   "key_fields": [
+    "OutcomeDefinition",
+    "OutcomeSource",
+    "JudgeVersion",
+    "Calibration",
+    "Monitor",
+    "Moment"
+   ],
+   "links_to": [
+    "Call",
+    "Issue",
+    "Proposal"
+   ]
+  },
+  {
+   "name": "Learning",
+   "key_fields": [
+    "Proposal",
+    "Experiment",
+    "ShadowAA",
+    "Lesson",
+    "RevertPolicy",
+    "ApprovalEnvelope (v2)"
+   ],
+   "links_to": [
+    "Moment",
+    "Version",
+    "Approval"
+   ]
+  },
+  {
+   "name": "Memory",
+   "key_fields": [
+    "Fact (quote, span, purpose, basis, tier)",
+    "Commitment",
+    "PreferenceView",
+    "MemoryPolicy",
+    "MemoryBrief",
+    "ForgetRequest"
+   ],
+   "links_to": [
+    "Contact",
+    "Call",
+    "Tombstone"
+   ]
+  },
+  {
+   "name": "Money and Operator",
+   "key_fields": [
+    "CostLine",
+    "Reservation",
+    "Budget",
+    "Invoice (GST)",
+    "BillingMode",
+    "Thread",
+    "Plan",
+    "Action",
+    "ApprovalToken"
+   ],
+   "links_to": [
+    "Call",
+    "Campaign",
+    "AuditEvent"
+   ]
+  }
+ ],
+ "screens": [
+  {
+   "id": "S1",
+   "name": "Hear it first (public page)",
+   "purpose": "A prospect hears and talks to a Hinglish VP agent before signing up; the conversation can become the setup thread.",
+   "regions": [
+    {
+     "name": "Top bar",
+     "content": [
+      "Logo",
+      "Pricing (INR all-in)",
+      "Sign in"
+     ]
+    },
+    {
+     "name": "Orb and captions",
+     "content": [
+      "200 px voice orb 'Talk to VP'",
+      "Live caption: 'Namaste! Main VP hoon, ek AI assistant. Aapka business kaunsi calls karta hai?'"
+     ]
+    },
+    {
+     "name": "Voice chips",
+     "content": [
+      "Ananya · warm",
+      "Kabir · crisp",
+      "Sunita · respectful",
+      "Each with 'Hear a renewal reminder as your customer would'"
+     ]
+    },
+    {
+     "name": "Footer",
+     "content": [
+      "Notice: 'AI voice · demo · nothing is saved unless you start setup'",
+      "Button 'Start my setup with this conversation' (after 20 s of talk)",
+      "Link 'Type instead'"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Tap orb asks for mic",
+    "Visitor can interrupt any time",
+    "Mic denied falls back to typing",
+    "Demo down shows recorded samples labelled 'recorded'"
+   ],
+   "beats": "Incumbent demos are vendor-scripted; Sarvam's claimed to be human 6/6. VP discloses once, speaks Hinglish and carries into onboarding."
+  },
+  {
+   "id": "S2",
+   "name": "Talk to VP: say the job",
+   "purpose": "First-run home: state the job by text or voice; VP shows a plan and starts drafts.",
+   "regions": [
+    {
+     "name": "Thread (max 760 px)",
+     "content": [
+      "Composer: 'Kaunsi calls karwani hain? Bol ke ya likh ke batayein'",
+      "User: 'motor policy renewal reminders, 1,200 customers'",
+      "VP: 'Theek hai. Renewal reminder service call bana rahi hoon. Sample customer ke saath sun ke dekhiye.'",
+      "Question card: 'Customers zyada Hindi bolte hain ya English? Default: Hinglish' [Use Hinglish] [Hindi] [English]"
+     ]
+    },
+    {
+     "name": "Plan card",
+     "content": [
+      "7 steps with risk chips: Draft, Test (INR 12), Read, Reaches people, Spends",
+      "Footer: 'VP will do 1-6 now; 7 waits for you'"
+     ]
+    },
+    {
+     "name": "Readiness rail",
+     "content": [
+      "Job done",
+      "Voice in progress",
+      "Test call",
+      "List",
+      "Ring my phone",
+      "Number locked: 'needs KYC: PAN + GST certificate, about 1-3 days'",
+      "Launch locked"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Hold-to-talk with 'heard as' chip",
+    "Approve or strike each fact",
+    "Brain error shows retry or switch, never a silent swap"
+   ],
+   "beats": "Sarvam's hero builds an agent; VP's thread plans the whole campaign. The rail pushes the page and never covers it."
+  },
+  {
+   "id": "S3",
+   "name": "Voice by ear",
+   "purpose": "Choose a voice by listening, with first-audio latency and INR beside each row.",
+   "regions": [
+    {
+     "name": "Voice rows",
+     "content": [
+      "Ananya · warm · Hinglish ▶ with waveform",
+      "'first audio India p50 624 ms (Gemini Flash-Lite TTS, lab)'",
+      "INR per minute from the rate card"
+     ]
+    },
+    {
+     "name": "Sample line",
+     "content": [
+      "'Namaste Rahul ji, main Sharma Insurance ki AI assistant bol rahi hoon. Aapki car policy 28 Oct ko renew honi hai...'"
+     ]
+    },
+    {
+     "name": "Register chips",
+     "content": [
+      "Warm",
+      "Crisp",
+      "Respectful (elderly-paced)",
+      "Toggle 'Compare accents'"
+     ]
+    },
+    {
+     "name": "Footer",
+     "content": [
+      "Button 'Choose Ananya'",
+      "Predicted gap change, e.g. '+190 ms vs current'"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Blind A/B/C rating then reveal",
+    "Mismatched voice-language or gender refused",
+    "Not-measured shows 'not measured', never 0"
+   ],
+   "beats": "Retell has 0 Indian voices; Bolna's Hindi list carries romance voices; Sarvam shows no latency or price at the choice."
+  },
+  {
+   "id": "S4",
+   "name": "Import result: rows and reasons",
+   "purpose": "Show what happens to every row, why, and how to fix it.",
+   "regions": [
+    {
+     "name": "Summary",
+     "content": [
+      "'1,240 rows -> 1,191 callable · 37 numbers fixed · 12 rejected · 9 opted out · 28 duplicates merged · 212 already paid'"
+     ]
+    },
+    {
+     "name": "Counter chips",
+     "content": [
+      "Ready",
+      "Normalised",
+      "Duplicates",
+      "Suppressed",
+      "DND held",
+      "Consent held",
+      "Rejected",
+      "Non-Indian"
+     ]
+    },
+    {
+     "name": "Row table",
+     "content": [
+      "R27 · LANDLINE_TRUNCATED · Mumbai number needs 8 digits after 22 · Fix: correct number",
+      "R30 · SCI_NOTATION · Excel turned this into 9.1E+11 · Fix: export column as text",
+      "R11 · OPT_OUT_CONFLICT_OPT_OUT_WINS · R09 says opted out on 2026-10-12"
+     ]
+    },
+    {
+     "name": "Actions",
+     "content": [
+      "Download failed rows (with fix column)",
+      "Re-upload fixes",
+      "Ring my phone as R01",
+      "Continue to campaign"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Filter by chip",
+    "Row drawer shows original and normalised cells and merge history",
+    "Chat chip 'R27 ka number adhoora hai, skip kar do'"
+   ],
+   "beats": "Vapi rejects the whole file for one bad row; Exotel drops duplicates silently. VP targets messy-50 at 48 of 50 in under 5 minutes."
+  },
+  {
+   "id": "S5",
+   "name": "Launch card",
+   "purpose": "One approval showing who, when, what she will say, checks, money and expected outcome.",
+   "regions": [
+    {
+     "name": "Who and when",
+     "content": [
+      "Who: '1,182 callable · 9 opt-out skipped · 3 held'",
+      "When: '22-24 Oct · 10:00-19:00 in each contact's local time · 3 attempts · est. finish 24 Oct 16:00'"
+     ]
+    },
+    {
+     "name": "What she says",
+     "content": [
+      "20 s sample from a real row",
+      "Agenda: 'Must: due date, renewal link on WhatsApp · Never: offers'"
+     ]
+    },
+    {
+     "name": "Checks",
+     "content": [
+      "Disclosure locked",
+      "Window",
+      "Suppression",
+      "6/6 simulations",
+      "Spend cap INR 25,000",
+      "A2P declared",
+      "KYC pending: 'submitted 21 Oct; usually 1-3 days; tests continue'"
+     ]
+    },
+    {
+     "name": "Money and outcome",
+     "content": [
+      "'INR 14,200-19,600 all-in incl. telephony and GST (estimate)'",
+      "'No baseline yet: measured from your renewal webhook'"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Hold 1.2 s to launch",
+    "Disabled Launch names each blocker, who fixes it and a link",
+    "Stale card re-estimates; 'haan launch karo' renders the card, tap still required"
+   ],
+   "beats": "Vapi and Retell disable Launch with no reason; 0 of 6 forms carry consent, DND or DLT."
+  },
+  {
+   "id": "S6",
+   "name": "Mission control",
+   "purpose": "Watch live calls, step in safely, never miss a crisis, loop or opt-out.",
+   "regions": [
+    {
+     "name": "Header strip",
+     "content": [
+      "State: 'Running · dialing'",
+      "Lines: '18 of 20 (2 reserved inbound)'",
+      "Spend vs cap",
+      "Window clock"
+     ]
+    },
+    {
+     "name": "Live tiles",
+     "content": [
+      "'Ramesh K. · 01:42 · Hindi · agenda 2/3 · mood: hurried'",
+      "Ledger chips: Due date, Link offered, Payment intent"
+     ]
+    },
+    {
+     "name": "Alert feed",
+     "content": [
+      "CRITICAL 11:52 crisis words · Tele-MANAS 14416 and 112 given · Listen now",
+      "Loop: same question twice",
+      "Opt-out requested · suppressed everywhere 11:49",
+      "Asked 'aap AI ho?' · answered honestly"
+     ]
+    },
+    {
+     "name": "Controls",
+     "content": [
+      "Listen (audited)",
+      "Whisper (text, passes the reply door)",
+      "Take over (human only)",
+      "End politely",
+      "Pause"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "One-tap pause with undo",
+    "Guard pause names its cause and needs a person to resume",
+    "'Monitoring is off' banner if monitors are not live"
+   ],
+   "beats": "Retell has listen and take-over in the API; Exotel's alerts are in another product; Vapi's Mission Control is flag-gated."
+  },
+  {
+   "id": "S7",
+   "name": "Call page",
+   "purpose": "Understand one call in 10 seconds, then go as deep as needed.",
+   "regions": [
+    {
+     "name": "Header",
+     "content": [
+      "Sunita Devi · Hindi · Service: renewal reminder · Asha v7 · 3:02",
+      "Outcome chip: 'Promised to pay by 28 Oct · AI guess (judge calibrating 31/50)'",
+      "Reason: 'Completed · agenda 3 of 3 · she closed after goodbye'"
+     ]
+    },
+    {
+     "name": "Player and transcript",
+     "content": [
+      "Two-lane stereo player with cut-in marks",
+      "Native: 'हाँ जी, पर इस महीने थोड़ा tight है' · Romanised: 'haan ji, par is mahine thoda tight hai' · English on demand",
+      "Adaptation marker: 'She slowed to 0.92x and offered the 28th: caller sounded worried'"
+     ]
+    },
+    {
+     "name": "Inspector tabs",
+     "content": [
+      "Summary and outcome",
+      "Turns and speed (reply gap p50 1.4 s; handset not measured)",
+      "Why allowed: window, suppression, basis, caller ID, AI line 00:04",
+      "Cost lines per second",
+      "Run manifest",
+      "Memory proposals with quote [Approve] [Edit] [Reject]"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Play-from-here on every quote",
+    "Share 30 s clip",
+    "Add to test suite",
+    "Ask about this call"
+   ],
+   "beats": "Retell shows cost and latency but only engineering reasons; no incumbent shows heard-vs-planned text, a run manifest or why the call was allowed."
+  },
+  {
+   "id": "S8",
+   "name": "Learning inbox and fast-lane alarm",
+   "purpose": "One place for findings and drafted fixes, ranked, each with the calls needed to prove it; catastrophic lines jump the queue.",
+   "regions": [
+    {
+     "name": "Header",
+     "content": [
+      "'3 new today · 1 urgent'",
+      "Agent badge: 'Renewal reminder (Hindi) · L2 Proving'"
+     ]
+    },
+    {
+     "name": "Fast-lane card",
+     "content": [
+      "'Line 2 pe 11 mein se 10 log call kaat rahe hain (normal 1 in 12)'",
+      "'VP ne pacing 25% kar di · Undo'"
+     ]
+    },
+    {
+     "name": "Proposal card",
+     "content": [
+      "'Line 4: amount comes before the benefit'",
+      "'Hazard 2.1x normal · 95% interval 1.5-2.9x · 640 callers reached'",
+      "'Simulated: 18 callers x 3 seeds, left at this moment 9 -> 2'",
+      "'To prove: ~1,180 calls · ~12 days'"
+     ]
+    },
+    {
+     "name": "Actions",
+     "content": [
+      "Approve and test (hold 1.2 s)",
+      "Edit",
+      "Reject",
+      "Ask VP"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Phone: push opens a full-screen card with hold-to-approve",
+    "Under-powered state with calls needed",
+    "Never says 'all good' with nothing watched"
+   ],
+   "beats": "No competitor caps the inbox, pins a catastrophic line or shows calls-to-prove."
+  },
+  {
+   "id": "S9",
+   "name": "Today",
+   "purpose": "The daily brief, the approval queue and money, with the thread beside them.",
+   "regions": [
+    {
+     "name": "Lead",
+     "content": [
+      "'Shubh prabhat, Priya'",
+      "'Renewals Oct: 412 connected (n=1,191 dialled) · 63 renewals confirmed by webhook'"
+     ]
+    },
+    {
+     "name": "Needs you (max 7)",
+     "content": [
+      "Approve: launch Pre-due EMI Nov (expires in 1 h 40 min)",
+      "Approve publish v4 (slower pace, no offers)",
+      "Issue: 31 calls in Pune ended within 10 s of the opening",
+      "Proposal: shorter opening for elderly callers · needs about 686 calls per arm"
+     ]
+    },
+    {
+     "name": "Live and money",
+     "content": [
+      "'Renewals Oct ● 12 live · 38/min · Pause'",
+      "'Wallet INR 42,300 · runway 5.2 days'",
+      "'INR 18,240 of INR 25,000 spent'"
+     ]
+    },
+    {
+     "name": "Next best action",
+     "content": [
+      "'Connect your renewal webhook so outcomes are measured'"
+     ]
+    }
+   ],
+   "key_interactions": [
+    "Fixed priority order",
+    "Failed query shows a reason and Retry, never 0",
+    "Phone: bottom bar Today, Campaigns, Talk (mic), Calls, More"
+   ],
+   "beats": "No competitor ships a daily brief or an approval queue; every number carries n and as-of."
+  }
+ ],
+ "matrix": {
+  "dimensions": [
+   "Raw voice quality",
+   "Reply speed and turn-taking",
+   "Hindi and Hinglish hold",
+   "India compliance by default",
+   "Chat-first setup (just talk)",
+   "Indian numbers and first ring",
+   "Price on short calls (INR)",
+   "Memory across calls",
+   "Self-learning and proof",
+   "Results and call analytics",
+   "Honesty and safety",
+   "Developer and API breadth"
+  ],
+  "vendors": [
+   "Vapi",
+   "Retell",
+   "Bolna",
+   "ElevenLabs",
+   "Sarvam",
+   "Exotel",
+   "VP"
+  ],
+  "scores": {
+   "Raw voice quality": {
+    "Vapi": {
+     "score": 3,
+     "note": "Depends on chosen stack; plumbing product"
+    },
+    "Retell": {
+     "score": 3,
+     "note": "Expressive modes, but 0 Indian voices"
+    },
+    "Bolna": {
+     "score": 2,
+     "note": "Unfiltered Hindi list with romance voices"
+    },
+    "ElevenLabs": {
+     "score": 5,
+     "note": "Strongest raw voice; VP does not claim to beat it"
+    },
+    "Sarvam": {
+     "score": 4,
+     "note": "199 Indic voices, Indic number reading"
+    },
+    "Exotel": {
+     "score": 2,
+     "note": "Rails company; voice not its strength"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: ear-picked on whole calls; loses raw voice to ElevenLabs",
+     "target": true
+    }
+   },
+   "Reply speed and turn-taking": {
+    "Vapi": {
+     "score": 2,
+     "note": "Demo measured 2,319 ms p50, 35% collisions"
+    },
+    "Retell": {
+     "score": 3,
+     "note": "Not measured by us"
+    },
+    "Bolna": {
+     "score": 3,
+     "note": "About 1.4 s code floor; short Hindi replies discarded"
+    },
+    "ElevenLabs": {
+     "score": 3,
+     "note": "3% collisions, bought with 3.75 s p50"
+    },
+    "Sarvam": {
+     "score": 4,
+     "note": "Indic stack 0.97-1.18 s server in our lab"
+    },
+    "Exotel": {
+     "score": 2,
+     "note": "Not measured; AgentStream path"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: p50 1.5 s, p90 2.5 s, cut-ins 5% or less. Loses today (15-42% cut-ins)",
+     "target": true
+    }
+   },
+   "Hindi and Hinglish hold": {
+    "Vapi": {
+     "score": 2,
+     "note": "Gujarati drift on 17/18 turns"
+    },
+    "Retell": {
+     "score": 2,
+     "note": "No Indian voices or Hinglish mode"
+    },
+    "Bolna": {
+     "score": 3,
+     "note": "Indian focus; short finals discarded"
+    },
+    "ElevenLabs": {
+     "score": 2,
+     "note": "Accepted American voice on a Hindi agent"
+    },
+    "Sarvam": {
+     "score": 5,
+     "note": "Hindi held 38/40; Tamil-Tanglish 20/20"
+    },
+    "Exotel": {
+     "score": 2,
+     "note": "Not observed"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: hold 95% or more; loses to Sarvam in v1",
+     "target": true
+    }
+   },
+   "India compliance by default": {
+    "Vapi": {
+     "score": 1,
+     "note": "No consent, DND or DLT on the form"
+    },
+    "Retell": {
+     "score": 1,
+     "note": "Defaults to 00:00-23:59, no DND"
+    },
+    "Bolna": {
+     "score": 2,
+     "note": "Compliance off by default"
+    },
+    "ElevenLabs": {
+     "score": 1,
+     "note": "One start time, no India layer"
+    },
+    "Sarvam": {
+     "score": 2,
+     "note": "Retry and attempt structure, no regulated plumbing"
+    },
+    "Exotel": {
+     "score": 2,
+     "note": "140xx/1600 rails, but bot compliance off"
+    },
+    "VP": {
+     "score": 5,
+     "note": "Target: category first, one dial path, A2P pack, why-allowed",
+     "target": true
+    }
+   },
+   "Chat-first setup (just talk)": {
+    "Vapi": {
+     "score": 3,
+     "note": "Composer, no REST surface"
+    },
+    "Retell": {
+     "score": 4,
+     "note": "Conductor diffs and page chips"
+    },
+    "Bolna": {
+     "score": 3,
+     "note": "Ask Bolna reads and acts"
+    },
+    "ElevenLabs": {
+     "score": 4,
+     "note": "Architect: branch, test, merge (alpha)"
+    },
+    "Sarvam": {
+     "score": 4,
+     "note": "Genie builds, deploys, runs campaigns"
+    },
+    "Exotel": {
+     "score": 1,
+     "note": "No copilot seen"
+    },
+    "VP": {
+     "score": 5,
+     "note": "Target: whole tasks by chat; unproven until W10",
+     "target": true
+    }
+   },
+   "Indian numbers and first ring": {
+    "Vapi": {
+     "score": 1,
+     "note": "Free numbers US-only"
+    },
+    "Retell": {
+     "score": 1,
+     "note": "US/CA numbers only"
+    },
+    "Bolna": {
+     "score": 3,
+     "note": "Vobiz rental, KYC documents listed first"
+    },
+    "ElevenLabs": {
+     "score": 2,
+     "note": "Import-only numbers"
+    },
+    "Sarvam": {
+     "score": 4,
+     "note": "Rent plus 7 BYO providers"
+    },
+    "Exotel": {
+     "score": 4,
+     "note": "140/1600 rails; quote-gated, three consoles"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: rent in tenant's name; loses today on first production call",
+     "target": true
+    }
+   },
+   "Price on short calls (INR)": {
+    "Vapi": {
+     "score": 1,
+     "note": "12.5+ per minute effective"
+    },
+    "Retell": {
+     "score": 2,
+     "note": "8.3+ (BYO trunk)"
+    },
+    "Bolna": {
+     "score": 3,
+     "note": "5.72-7.63 pay-as-you-go"
+    },
+    "ElevenLabs": {
+     "score": 2,
+     "note": "8.2+"
+    },
+    "Sarvam": {
+     "score": 3,
+     "note": "5.07-7.40; Business plan cheaper on whole minutes"
+    },
+    "Exotel": {
+     "score": 2,
+     "note": "Prices quote-gated"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: 3.49-3.99 ex-GST per second; not INR 2 at launch",
+     "target": true
+    }
+   },
+   "Memory across calls": {
+    "Vapi": {
+     "score": 1,
+     "note": "No contact memory"
+    },
+    "Retell": {
+     "score": 3,
+     "note": "Ships contact memory (text brief per number)"
+    },
+    "Bolna": {
+     "score": 1,
+     "note": "None seen"
+    },
+    "ElevenLabs": {
+     "score": 2,
+     "note": "Alpha, keyed to a browser fingerprint"
+    },
+    "Sarvam": {
+     "score": 1,
+     "note": "None"
+    },
+    "Exotel": {
+     "score": 1,
+     "note": "None"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: quoted ledger; preferences v1, relational v2",
+     "target": true
+    }
+   },
+   "Self-learning and proof": {
+    "Vapi": {
+     "score": 2,
+     "note": "Simulations; Bypass approvals mode"
+    },
+    "Retell": {
+     "score": 3,
+     "note": "Conductor diffs, no statistics"
+    },
+    "Bolna": {
+     "score": 1,
+     "note": "Judges hidden"
+    },
+    "ElevenLabs": {
+     "score": 2,
+     "note": "Manual branch promotion"
+    },
+    "Sarvam": {
+     "score": 2,
+     "note": "Self-QA flags, no loop"
+    },
+    "Exotel": {
+     "score": 1,
+     "note": "Evaluator in testing"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: fast lane, fixed horizons, A/A, expiry; unproven",
+     "target": true
+    }
+   },
+   "Results and call analytics": {
+    "Vapi": {
+     "score": 3,
+     "note": "Breadth, but 638 truncated engineering codes"
+    },
+    "Retell": {
+     "score": 3,
+     "note": "13-column history; no business outcome"
+    },
+    "Bolna": {
+     "score": 2,
+     "note": "Funnel without cost or reasons"
+    },
+    "ElevenLabs": {
+     "score": 3,
+     "note": "12 tabs, honest empties, no business outcome"
+    },
+    "Sarvam": {
+     "score": 3,
+     "note": "Attempt vs interaction split; carrier field null"
+    },
+    "Exotel": {
+     "score": 2,
+     "note": "Reports lag up to 30 minutes"
+    },
+    "VP": {
+     "score": 5,
+     "note": "Target: earned outcomes, 34 business reasons, cost per outcome",
+     "target": true
+    }
+   },
+   "Honesty and safety": {
+    "Vapi": {
+     "score": 1,
+     "note": "1 of 8 demos disclosed clearly"
+    },
+    "Retell": {
+     "score": 4,
+     "note": "AI-disclosure preset on dashboard agents"
+    },
+    "Bolna": {
+     "score": 2,
+     "note": "Bounded defaults, no safety predicates seen"
+    },
+    "ElevenLabs": {
+     "score": 2,
+     "note": "End-call off by default"
+    },
+    "Sarvam": {
+     "score": 1,
+     "note": "Demo claimed human 6/6 when asked"
+    },
+    "Exotel": {
+     "score": 3,
+     "note": "Sentiment and loop alerts, no crisis predicate"
+    },
+    "VP": {
+     "score": 5,
+     "note": "Target: disclosure and crisis lines enforced by predicate on every path",
+     "target": true
+    }
+   },
+   "Developer and API breadth": {
+    "Vapi": {
+     "score": 5,
+     "note": "Custom LLM, squads, SIP; 68 hidden paths"
+    },
+    "Retell": {
+     "score": 5,
+     "note": "109 operations, SDK and MCP from one spec"
+    },
+    "Bolna": {
+     "score": 3,
+     "note": "Unsigned webhooks"
+    },
+    "ElevenLabs": {
+     "score": 4,
+     "note": "Signed hooks; billing refused to API keys"
+    },
+    "Sarvam": {
+     "score": 3,
+     "note": "MCP over agents; no REST authoring"
+    },
+    "Exotel": {
+     "score": 3,
+     "note": "Mature telephony APIs"
+    },
+    "VP": {
+     "score": 4,
+     "note": "Target: one spec; match on API, lose on SIP until v2",
+     "target": true
+    }
+   }
+  },
+  "legend": "Scores 1-5 from the blueprint's observed [O], measured [M] and computed [C] evidence; 5 is best. VP cells are the design target and are marked target, not measured. VP loses today on speed, first production call, raw voice and Hindi hold. Synthflow and SquadStack are covered in the steal list."
+ },
+ "learning_loop": {
+  "steps": [
+   "Watch every call: hang-up hazard per script moment with intervals",
+   "Fast lane flags a catastrophic line (about call 13-15 for a 90% line)",
+   "Throttle that script to 25% and send a fix card to the approver's phone",
+   "Coach drafts a fix as shapes; 18 simulated callers x 3 seeds",
+   "Gates throw: lint, budget, locked-section diff, provenance, manipulation lint, latency",
+   "Human approves with a hash-bound hold (or v2 standing envelope)",
+   "Fixed-horizon test with verdict hidden; shadow A/A per tenant",
+   "Promote, expire in 60 days, log in 'How she changed for you'"
+  ],
+  "what_learns": [
+   "Turn-taking numbers and Hindi lexicons",
+   "Opening and middle slots (as shapes)",
+   "Objection packs",
+   "Tool guidance",
+   "Best time inside the legal window",
+   "Memory compile policy",
+   "Register and voice only via blind listener panels (v3)"
+  ],
+  "guardrails": [
+   "Never learned (locked in code): disclosure, recording notice, consent and opt-out, crisis lines, identity, prices and dates, promotion fence, reply-door predicates",
+   "Only risk-lowering actions are automatic: revert, throttle, stop",
+   "Auto-stop on opt-outs, complaints, disclosure, crisis, reg 21A, minutes per agenda-done call",
+   "At most 3 new cards a day; one proposal cycle a day inside the INR 200 test budget",
+   "Simulators run on test quota only; a model never grades its own work",
+   "No cross-tenant pooling; 'learns on its own' blocked below L4 unless the envelope copy is adopted"
+  ],
+  "cadence": "Fast lane: from call 1, fix card to phone within 15 min p90. Slow lane: one proposal cycle a day, tests run 7-28 days, winners expire at 60 days. Bandits only at 1,000+ connected calls a day on one script (v3)."
+ },
+ "data_flow": {
+  "sources": [
+   {
+    "name": "Files and Sheets",
+    "what_we_take": "CSV, Excel, Google Sheet, text PDF (scanned PDF by OCR with review, beta)",
+    "use": "People, knowledge or events classified; rows mapped to an audience with a reason per row"
+   },
+   {
+    "name": "Website and brochure",
+    "what_we_take": "Company facts with quoted source spans",
+    "use": "Company brain (approved span by span); customer rows never enter it"
+   },
+   {
+    "name": "Payment webhooks",
+    "what_we_take": "Razorpay, Cashfree, PayU events",
+    "use": "Verified outcomes; freshness check so paid people are not called"
+   },
+   {
+    "name": "CRM / policy feed",
+    "what_we_take": "First partner's CRM, policy system fields",
+    "use": "Authoritative money, dates, identifiers; write-back of disposition and next action"
+   },
+   {
+    "name": "Paid-list, MIS file, manager confirmation",
+    "what_we_take": "No-developer outcome sources",
+    "use": "Outcome evidence at a lower grade for SMBs without integrations"
+   },
+   {
+    "name": "The call itself",
+    "what_we_take": "Caller's exact quoted words, spans, audio offsets",
+    "use": "Preferences, commitments, objections, analysis"
+   },
+   {
+    "name": "WhatsApp, SMS, email, app events (v2)",
+    "what_we_take": "Opted-in channel episodes and one purpose-relevant app event per call",
+    "use": "Cross-channel timeline and follow-through; WhatsApp data stays tenant-exclusive"
+   }
+  ],
+  "consent": [
+   "Tenant is the DPDP fiduciary; VP is the processor, with purpose and basis per fact",
+   "Consent records are append-only; imports never clear suppression",
+   "Seven write gates before any fact is stored; a never-stored list (mood scores, inferred caste, age or health, ID numbers)",
+   "Authority by subject: the person wins on preferences and opt-out; systems win on money and dates",
+   "Forget follows the person across facts, recordings, channels and CRM, with a tombstone and receipt",
+   "Minors excluded; India region; no pooling across tenants",
+   "On shared or unverified numbers, memory loads only after an in-call knowledge check"
+  ]
+ },
+ "economics": {
+  "cost_stack": [
+   {
+    "component": "AI (ears, brain, voice) on the Indic default",
+    "inr_per_min": "1.39-1.51 today; 1.81-1.96 with the x1.3 persona-and-memory uplift"
+   },
+   {
+    "component": "Telephony",
+    "inr_per_min": "0.38-0.48"
+   },
+   {
+    "component": "Carrier pulse rounding",
+    "inr_per_min": "0.03-0.07"
+   },
+   {
+    "component": "Infrastructure",
+    "inr_per_min": "0.03"
+   },
+   {
+    "component": "Call analysis",
+    "inr_per_min": "0.06 (about INR 0.17 per 3-minute call)"
+   },
+   {
+    "component": "Memory",
+    "inr_per_min": "0.02-0.05"
+   },
+   {
+    "component": "Payment fee",
+    "inr_per_min": "2% of revenue"
+   },
+   {
+    "component": "Total COGS (Indic default)",
+    "inr_per_min": "2.35-2.50 (computed, provisional)"
+   }
+  ],
+  "tiers": [
+   {
+    "name": "Base: the human voice",
+    "price": "INR 3.49-3.99 per connected minute ex-GST (provisional)",
+    "includes": "Ear-picked stack, brief v2 and ledger, turn presets, reply door, analysis, preference memory, fast lane, 90-day recordings, 20 concurrent calls"
+   },
+   {
+    "name": "Plus: she remembers and improves",
+    "price": "Base + INR 0.50",
+    "includes": "Relational memory, promises, cross-channel timeline, learning inbox and tests, 1-year recordings, 50 concurrent"
+   },
+   {
+    "name": "Premium: personalisation, your own voice",
+    "price": "INR 6.49",
+    "includes": "Deep personalisation, dedicated brand voice (INR 3.5 lakh/month), SSO, 99.9% SLO, named support, 100 concurrent"
+   },
+   {
+    "name": "Sector packs (IRDAI, RBI)",
+    "price": "Base",
+    "includes": "India-resident call stack, analysis model and Operator brain; long retention at storage cost"
+   },
+   {
+    "name": "Premium Live",
+    "price": "COGS / 0.65, 5 min cap",
+    "includes": "Text-gated Gemini Live, only after its 200+ attack-turn gate passes"
+   }
+  ],
+  "targets": [
+   "Billed per connected second; unanswered, busy, failed, blocked and VP-fault calls are not billed",
+   "Gross margin p50 at least 30% in 2026 and 25% after known 2027 changes, never by downgrading the voice",
+   "Effective price at 30/45/90 s: VP 3.49-3.99 vs Sarvam PAYG 7.40/5.20/5.07, Bolna 5.72/7.63/5.72 (rate-card arithmetic, no invoice read)",
+   "Pre-registered ladder: 2.99 at COGS 1.94 or less; 2.49 at 1.62; 1.99 at 1.29, after two months of measured cost reconciled within 5%",
+   "Caps per workspace, campaign and API key; reservation before each dial; live calls never cut for money",
+   "Free trial INR 500 lifetime per verified phone; invoice and NEFT above INR 15,000 a month",
+   "Honest limit: not INR 2 at launch; Sarvam Business is cheaper on whole-minute calls"
+  ]
+ },
+ "speed": {
+  "budget": [
+   {
+    "segment": "Ears final",
+    "ms": 450,
+    "p90_ms": 800,
+    "best_measured": "450 at 300 ms segmentation"
+   },
+   {
+    "segment": "Hold (completeness)",
+    "ms": 50,
+    "p90_ms": 1400,
+    "best_measured": "0 on complete turns"
+   },
+   {
+    "segment": "Brain first token",
+    "ms": 350,
+    "p90_ms": 700,
+    "best_measured": "304 ms gpt-4.1-mini South India (n=33)"
+   },
+   {
+    "segment": "Voice first audio",
+    "ms": 350,
+    "p90_ms": 600,
+    "best_measured": "95 ms neural warm; 624 ms Gemini Flash-Lite TTS"
+   },
+   {
+    "segment": "Phone leg",
+    "ms": 300,
+    "p90_ms": 450,
+    "best_measured": "Never measured; 250-450 estimated"
+   }
+  ],
+  "target_p50_ms": 1500,
+  "target_p90_ms": 2500,
+  "note": "Cut-ins must be 5% or less on a stereo handset battery. Today only the Indic stack is predicted inside 1.5 s (1.2-1.6 s); no stack passes the cut-in bar (15-42%). The default waits for the joint speed and turn-taking gate; a slower favourite (Natural, predicted 2.0-2.5 s) is offered with its wait shown."
+ },
+ "roadmap": [
+  {
+   "phase": "Phase 0: gates before anything is sold",
+   "when": "Now to about 2026-11-16",
+   "scope": [
+    "10-15 buyer interviews (none has run)",
+    "Carrier quote round: 1600 price and AI streaming, rental in tenant's name (2026-10-30)",
+    "Turn-manager redesign and stereo handset battery on Jio, Airtel, Vi",
+    "Whole-call ear ratings and re-metered costs with brief v2",
+    "Counsel: KC8 solicitation, IT Rules audio disclosure, re-billing telephony",
+    "VP's own DLT registration, credential rotation, VP-owned Google organisation (2026-11-14)"
+   ],
+   "exit": [
+    "KC5 and KC8 answered",
+    "Default stack chosen by the joint gate",
+    "Owner decision on the Plivo recharge (2026-11-16)"
+   ]
+  },
+  {
+   "phase": "v0.5: one real journey",
+   "when": "First partner calls targeted December 2026",
+   "scope": [
+    "Hear-it-first, sign-up, Talk thread (about 25 core tools)",
+    "Voice by ear, browser call, CSV intake, ring my phone",
+    "One service campaign with category, window, ladder, cap, canary",
+    "Dial gate and reply door; call page; simple Today; wallet with caps",
+    "One non-BFSI preset, one carrier path, one stack"
+   ],
+   "exit": [
+    "W1 graded on carrier CDRs",
+    "Messy-50 at 48/50 or better",
+    "Failed call found in under 60 s",
+    "Trial ring within 15 min",
+    "Joint speed gate at the handset; voice-rt load test",
+    "30 days of zero-ring audits; 3 partners with an outcome source; penetration test passed"
+   ]
+  },
+  {
+   "phase": "v1: parity made better, India-native",
+   "when": "Target Q1 2027",
+   "scope": [
+    "Full tool registry, A0-A3 and activity ledger",
+    "11 key screens in both themes; Owner and Expert views",
+    "Four presets (IRDAI and RBI after KC5/KC8); stages and hand-off; inbound",
+    "Full intelligence: calibrated judges, 20 monitors, Ask VP, export, signed webhooks",
+    "Preference memory in Base; fast lane; full trust core; both billing modes; Scout",
+    "Hindi and Indian English GA plus five regional betas; custom-LLM endpoint"
+   ],
+   "exit": [
+    "W1, W2, W6, W7, W8, W10 pass",
+    "Joint gate holds on every GA preset",
+    "5-user sessions 24/25 and 22/25",
+    "3+ partners with cost per outcome below their desk"
+   ]
+  },
+  {
+   "phase": "v2: she remembers and improves, provably",
+   "when": "Target Q2 2027",
+   "scope": [
+    "Relational memory across voice, WhatsApp, SMS, email",
+    "My Data page for the person called",
+    "Learning inbox, tests, shadow A/A, expiry, 'how she changed'",
+    "Standing approval envelope if approved",
+    "Predictions as observed call ordering; consented leads on 140 numbers after counsel",
+    "Generic SIP; carrier failover; regional languages GA"
+   ],
+   "exit": [
+    "Memory recall 95% or more; preferences ignored 1 in 20 or fewer",
+    "A/A false winners 5% or less at 3 partners",
+    "One proved change per L2 partner; p50 still inside the speed gate"
+   ]
+  },
+  {
+   "phase": "v3: learns at scale, costs less",
+   "when": "Volume-triggered",
+   "scope": [
+    "Bandits at 1,000+ connected calls a day on one script",
+    "Consented cross-tenant aggregates (10+ tenants, contract clause)",
+    "INR 2.49 and 1.99 steps when measured cost crosses triggers",
+    "Self-hosted Indic speech at about 1.6-2.5M min/month",
+    "Command centre; opt-in dialect styles; Telegram on demand"
+   ],
+   "exit": [
+    "Cost triggers met for two months and reconciled within 5%",
+    "Voice still passes the listener panel"
+   ]
+  }
+ ],
+ "metrics": [
+  {
+   "name": "Reply gap at the handset",
+   "target": "p50 1.5 s or less, p90 2.5 s or less",
+   "how": "Stereo handset battery, 30+ clean turns per stack per carrier"
+  },
+  {
+   "name": "Cut-ins",
+   "target": "5% or less",
+   "how": "Stereo battery; today 15-42% on every stack"
+  },
+  {
+   "name": "Whole-call ear rating",
+   "target": "7.0 or more (3+ testers); panel within 1 point of humans",
+   "how": "Blind listener panel on whole calls"
+  },
+  {
+   "name": "Language hold",
+   "target": "95% or more",
+   "how": "Per-turn language ID on test calls"
+  },
+  {
+   "name": "AI denials",
+   "target": "0",
+   "how": "Predicate logs and red-team battery"
+  },
+  {
+   "name": "Rings to suppressed or out-of-window contacts",
+   "target": "0",
+   "how": "Carrier CDR reconciliation"
+  },
+  {
+   "name": "Sign-up to browser first audio",
+   "target": "under 3 min median",
+   "how": "Activation events (T0)"
+  },
+  {
+   "name": "Trial ring on own phone",
+   "target": "15 min or less",
+   "how": "Stopwatch, also run on Bolna and Sarvam (W7)"
+  },
+  {
+   "name": "Messy-50 import",
+   "target": "48/50 in under 5 min, 0 manual edits",
+   "how": "W2 test file"
+  },
+  {
+   "name": "Failed-call finder",
+   "target": "under 60 s, 5/5, 4+ actionable",
+   "how": "T5 task"
+  },
+  {
+   "name": "Campaigns with a verified outcome source by day 30",
+   "target": "60% or more",
+   "how": "Outcome source read-back"
+  },
+  {
+   "name": "Cost per earned outcome",
+   "target": "Below the client's own desk",
+   "how": "Verified outcomes joined to cost lines"
+  },
+  {
+   "name": "Invoice vs rate card; gross margin",
+   "target": "within 1%; p50 30% or more",
+   "how": "T7 invoice audit; meter vs vendor bills within 5%"
+  },
+  {
+   "name": "Memory recall",
+   "target": "95% or more; ignored 1 in 20 or fewer",
+   "how": "MEM-SIM 200 contacts x 3 calls, then live handset test"
+  },
+  {
+   "name": "Shadow A/A false winners",
+   "target": "5% or less",
+   "how": "Permutation A/A per tenant"
+  },
+  {
+   "name": "Task success and usability",
+   "target": "24/25 (1280 px), 22/25 (390 px); SUS 80+",
+   "how": "5-user sessions against incumbents recorded on video"
+  },
+  {
+   "name": "VP north star",
+   "target": "Verified earned outcomes per week across tenants",
+   "how": "Outcome ledger"
+  }
+ ],
+ "risks": [
+  {
+   "risk": "Turn-taking never wins (15-42% cut-ins today)",
+   "mitigation": "Binding v0.5 gate; turn manager built first; no speed claim before the handset battery"
+  },
+  {
+   "risk": "The owner's favourite voice is the slow one",
+   "mitigation": "Whole-call handset ratings decide; Natural stays opt-in with its wait shown"
+  },
+  {
+   "risk": "1600 streaming (KC5) or solicitation status (KC8) fails",
+   "mitigation": "Non-BFSI partners first; BFSI presets gated; VP stays software the intermediary operates"
+  },
+  {
+   "risk": "Carriers refuse number rental inside VP",
+   "mitigation": "Bring-your-own with guided forms and VP Success; track the unassisted share"
+  },
+  {
+   "risk": "Google dependency (quota, 2027 TTS price doubling, shutdowns)",
+   "mitigation": "VP-owned organisation, measured quotas, cross-provider alternate, MAI and Sarvam kept warm"
+  },
+  {
+   "risk": "SMB outcomes cannot be verified",
+   "mitigation": "No-developer outcome sources; interim metrics; 'AI guess' labels"
+  },
+  {
+   "risk": "Price pressure from Bolna or Sarvam",
+   "mitigation": "Compete on honesty, outcomes and the India layer; cut price only on measured cost"
+  },
+  {
+   "risk": "A sales call mislabelled as service",
+   "mitigation": "Brief check plus live promotion fence; tenant stays the Sender"
+  },
+  {
+   "risk": "Classifier predicates block or slow good replies",
+   "mitigation": "Per-predicate battery; whole-reply holds only on risky turns"
+  },
+  {
+   "risk": "Scammers abuse self-serve voice",
+   "mitigation": "Know-your-business, payment-framing lint, verified link domains, verify page"
+  },
+  {
+   "risk": "Memory feels creepy or leaks on a shared phone",
+   "mitigation": "Knowledge check first; minors excluded; play-and-forget controls"
+  },
+  {
+   "risk": "Approval fatigue",
+   "mitigation": "Owner view; 3 learning cards a day max; the v2 envelope"
+  },
+  {
+   "risk": "Scope creep",
+   "mitigation": "The v0.5 slice and its exit bars first"
+  },
+  {
+   "risk": "ElevenLabs campaigns or a self-serve SquadStack arrive",
+   "mitigation": "Scout tripwires; ship v0.5 before about 2027-01-31"
+  },
+  {
+   "risk": "Pasted secrets; a founder's other company account on the voice path",
+   "mitigation": "Rotation and VP-owned accounts are v0.5 entry conditions"
+  }
+ ],
+ "open_decisions": [
+  {
+   "question": "1. Default stack and the speed-voice rule",
+   "options": [
+    "Best whole-call ear rating among stacks that pass the joint speed gate",
+    "Owner's Gemini-voice (Natural) as default",
+    "Fastest stack regardless of ear"
+   ],
+   "recommendation": "Ear judges whole calls at the handset; Natural stays opt-in with its wait shown until it passes."
+  },
+  {
+   "question": "2. Base price and unit",
+   "options": [
+    "Per connected second, Base by margin rule (INR 3.49-3.99 today)",
+    "Launch at INR 2 and absorb the loss",
+    "Keep per-minute billing"
+   ],
+   "recommendation": "Per second, all-in display; if the ear's pick needs more than 3.99, keep the voice and choose a 4.49 step or lower 2027 margin; reach INR 2 by the ladder."
+  },
+  {
+   "question": "3. First design partners",
+   "options": [
+    "At least one non-BFSI partner in v0.5",
+    "BFSI-only first"
+   ],
+   "recommendation": "Non-BFSI first; insurance and lending after KC5 and KC8."
+  },
+  {
+   "question": "4. Numbers inside VP",
+   "options": [
+    "Ask carriers for rental in the tenant's name",
+    "Bring-your-own only"
+   ],
+   "recommendation": "Ask in the quote round; bring-your-own as the second path."
+  },
+  {
+   "question": "5. The self-learning promise",
+   "options": [
+    "Bounded standing approval envelope in v2",
+    "Every change needs one tap",
+    "Autonomous learning"
+   ],
+   "recommendation": "Envelope in v2: 'improves itself within limits you set, and proves what it changes'."
+  },
+  {
+   "question": "6. Preference memory tier",
+   "options": [
+    "Base, late v1",
+    "Plus only"
+   ],
+   "recommendation": "Base, late v1, behind MEM-SIM and the latency A/B."
+  },
+  {
+   "question": "7. The Operator's name",
+   "options": [
+    "VP",
+    "Saarthi"
+   ],
+   "recommendation": "'VP' for v0.5; test 'Saarthi' after a brand check."
+  },
+  {
+   "question": "8. Production failover",
+   "options": [
+    "Declared alternate stack on a different provider (section 7.3)",
+    "No failover",
+    "Silent fallback"
+   ],
+   "recommendation": "Declared alternate, cross-provider before production; tests never fall back."
+  },
+  {
+   "question": "9. Runtime split",
+   "options": [
+    "Python voice-rt plus TypeScript control plane",
+    "All TypeScript"
+   ],
+   "recommendation": "Python plus TypeScript; reverse if a TypeScript port matches battery latency with less operations work."
+  },
+  {
+   "question": "10. Regional languages",
+   "options": [
+    "Five betas in v1 on the Indic stack",
+    "Hinglish only until v2"
+   ],
+   "recommendation": "Five betas in v1, each behind its own safety gate."
+  },
+  {
+   "question": "11. Benchmark voices",
+   "options": [
+    "Add ElevenLabs and Cartesia to the round-2 ear test",
+    "Test only candidate stacks"
+   ],
+   "recommendation": "Add them so 'by ear' means against the best."
+  },
+  {
+   "question": "12. Fixed-cost recovery",
+   "options": [
+    "INR 500 lifetime trial, credited INR 1,000 first top-up, Operator fair use",
+    "Seat or platform fee"
+   ],
+   "recommendation": "Trial plus credited top-up and fair use; no seat or platform fee."
+  },
+  {
+   "question": "13. Spend now",
+   "options": [
+    "Plivo recharge, VP's DLT registration, VP-owned Google organisation, counsel",
+    "Wait for buyer interviews"
+   ],
+   "recommendation": "Spend before 2026-11-14."
+  },
+  {
+   "question": "14. Who builds v0.5",
+   "options": [
+    "Name owners for voice-rt, control plane and design (6-8 week target)",
+    "Single generalist team"
+   ],
+   "recommendation": "Name three owners now; no staffing plan exists yet."
+  },
+  {
+   "question": "15. Assisted onboarding",
+   "options": [
+    "VP Success included for first 10-20 tenants",
+    "Pure self-serve"
+   ],
+   "recommendation": "Include it, through the same tools."
+  },
+  {
+   "question": "16. The opening spec",
+   "options": [
+    "One spec: name check, then one breath with name, brand, 'AI assistant' in passing and the useful fact",
+    "AI clause in the first words"
+   ],
+   "recommendation": "Approve the spec and test 2-3 placements on the listener panel; wording may change, presence never; no undisclosed arm."
+  }
+ ],
+ "steal_list": [
+  {
+   "from": "Sarvam",
+   "pattern": "Genie docked beside every builder tab that builds, deploys and runs campaigns"
+  },
+  {
+   "from": "Sarvam",
+   "pattern": "Inline 'commit version' gate right where the action is blocked"
+  },
+  {
+   "from": "Sarvam",
+   "pattern": "Attempt vs interaction split and per-outcome retry classes"
+  },
+  {
+   "from": "Sarvam",
+   "pattern": "Rent a number and bring-your-own side by side; cost of a test run shown"
+  },
+  {
+   "from": "Retell",
+   "pattern": "Conductor per-setting diffs a human accepts; failed calls become simulation tests"
+  },
+  {
+   "from": "Retell",
+   "pattern": "Price shown at the toggle (e.g. memory per run)"
+  },
+  {
+   "from": "Retell",
+   "pattern": "Locked-step first-run checklist with previews; 'AI disclosure when asked' preset"
+  },
+  {
+   "from": "Retell",
+   "pattern": "Contact memory keyed to the number; frozen agent version per call"
+  },
+  {
+   "from": "Vapi",
+   "pattern": "Stack picker with latency, cost and presets on every row; QA depth and simulations"
+  },
+  {
+   "from": "Vapi",
+   "pattern": "Blocking predial veto; issues with severity, MTTR and calls impacted"
+  },
+  {
+   "from": "Bolna",
+   "pattern": "KYC documents listed before the click; heard-text history and merge for barge-in recovery"
+  },
+  {
+   "from": "Bolna",
+   "pattern": "Bounded defaults (20 s silence, 90 s max) and +91 default for bare numbers"
+  },
+  {
+   "from": "ElevenLabs",
+   "pattern": "CSV contract before upload; one- or two-sentence explanation under every setting"
+  },
+  {
+   "from": "ElevenLabs",
+   "pattern": "Architect branch, test, merge flow; HMAC webhooks with auto-disable; Cmd-K"
+  },
+  {
+   "from": "Exotel",
+   "pattern": "Concurrency meter with last-updated time; sentiment-crash and loop alerts; AMD"
+  },
+  {
+   "from": "SquadStack",
+   "pattern": "One canvas with bot, human call and DLT SMS; typed do-not-disturb tool; human CSMs as the 'just talk' benchmark"
+  },
+  {
+   "from": "Synthflow",
+   "pattern": "Per-leg RTT, jitter and MOS on the call; memory shared across voice, SMS and WhatsApp"
+  },
+  {
+   "from": "Ultravox",
+   "pattern": "Barge-in handling (6/6, stop in 0.32-0.59 s) as the turn-taking bar"
+  }
+ ]
+}

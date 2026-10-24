@@ -1,0 +1,68 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.telephony-one-dial-path",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The voice runtime is the one caller of Plivo's Call API for every agent call (test ring, single, API, campaign, retry, callback); the control plane's PlivoTelephony never places an agent call and calls Plivo only for account work (numbers, the inbound application, CDRs) and the fixed verification announcement (systemCall)",
+   "rationale": "The runtime owns the answer, hang-up, stream, transfer and machine endpoints and already needs the credentials for transfer, keys and hang-up; the lab rang real phones exactly this way (voicelab/server/phone.py). Moving the dial to the control plane would split the call's carrier state across two processes. Shapes checked 2026-10-24 against plivo.com/docs/voice/api/call/make-a-call and docs.plivo.com/docs/account/api/application.",
+   "reverse_if": "a second runtime trunk (Exotel outbound) or a carrier needs a dial the runtime cannot make, or the control plane must place calls while no runtime is up (then one CarrierDialer used by both, still behind the allowlist)"
+  },
+  {
+   "id": "decision.2026-10-24.telephony-allowlist",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "VP_TELEPHONY_ALLOWED_TO is checked on every number that can reach the carrier: the dial gate's G2 (person dialled on every attempt kind, and the agent's hand-off number), inbound answering (hand-off number), phone verification, and PlivoTelephony.systemCall as the last wall. A server that can reach a carrier (VP_TELEPHONY_LIVE=1 or VP_RUNTIME_URL set) with no list refuses every number; VP_TELEPHONY_ALLOWLIST=off is the only open switch, never on staging",
+   "rationale": "Owner directive 2026-10-24: live calls on private staging to the owner's own phone. A wrong number rung by a test build is the worst first-call failure; failing closed costs nothing.",
+   "reverse_if": "production launch with the owner's go: set VP_TELEPHONY_ALLOWLIST=off on production only"
+  },
+  {
+   "id": "measure.2026-10-24.telephony-allowlist-tests",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "tests/telephony-allowlist.test.ts 6/6 on a fresh Postgres 16: 6 attempt kinds x (unlisted refused, never handed to the runtime, no hold; listed dialled with exactly that number), closed-without-list and 'off', 6 kinds x unlisted hand-off number refused, verification refused before counting, the Plivo adapter refuses with zero requests at a fake Plivo",
+   "n": 6,
+   "method": "node:test against a throwaway Postgres 16 and a local fake Plivo HTTP server; FakeRuntime records tickets",
+   "path": "product/tests/telephony-allowlist.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.telephony-runtime-asks",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Runtime half of the live phone path, asked of the voice builder: VP_PLIVO_API_BASE (loopback only) for a cross-process fake-Plivo test; the same allowlist in plivo_dial and transfer; X-Plivo-Signature-V3 with nonce on answer/hangup/transfer/machine/inbound; a short-lived stream token; call.ended.carrier (CallUUID, Duration, BillDuration, HangupCause*, answeredBy, dial error); recording both legs on s2s phone calls",
+   "closes_when": "the voice builder lands each ask with tests, or says why not"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.telephony-one-dial-path",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.telephony-allowlist",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.telephony-allowlist-tests",
+   "to": "decision.2026-10-24.telephony-allowlist",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "telephony builder: dial path decided (runtime dials), allowlist on every path",
+   "details": "runtime asks sent to the voice builder"
+  }
+ ]
+}

@@ -1,0 +1,418 @@
+[
+ {
+  "date": "2026-4-1",
+  "items": 11,
+  "agents_items": 8,
+  "agents_titles": [
+   "MCP tool scoping in agent workflows",
+   "Conversation file uploads",
+   "Re-run conversation analysis",
+   "Tool response mocking for tests",
+   "Text search sort order",
+   "mTLS auth connections",
+   "Max duration message",
+   "Branch and environment in conversation initiation"
+  ]
+ },
+ {
+  "date": "2026-4-7",
+  "items": 8,
+  "agents_items": 6,
+  "agents_titles": [
+   "Scoped conversation analysis",
+   "Agent test folder management",
+   "Tool and knowledge base overrides in workflows",
+   "Response filter `hide_all` mode",
+   "Visited agents in conversation history",
+   "Multimodal message support in hooks"
+  ]
+ },
+ {
+  "date": "2026-4-13",
+  "items": 6,
+  "agents_items": 5,
+  "agents_titles": [
+   "Conversation topic discovery",
+   "Knowledge base content search",
+   "Flexible branch merging",
+   "Secret dependency management",
+   "New LLM options"
+  ]
+ },
+ {
+  "date": "2026-4-20",
+  "items": 10,
+  "agents_items": 6,
+  "agents_titles": [
+   "Workflow starting node override",
+   "Post-call analysis LLM configuration",
+   "New LLM options",
+   "Null literal in workflow expressions",
+   "Get secret by ID",
+   "Searchable phone numbers in batch calling"
+  ]
+ },
+ {
+  "date": "2026-4-27",
+  "items": 13,
+  "agents_items": 11,
+  "agents_titles": [
+   "`agent_response_complete` WebSocket event",
+   "Pre-tool speech mode",
+   "Tool dispatch respects execution mode",
+   "MCP response timeout",
+   "Agent trust context",
+   "Source attribution toggle",
+   "Test sharing mode filter",
+   "Tool icons and execution metadata",
+   "Procedure compiler default",
+   "RAG and knowledge base attribution metadata",
+   "Dynamic variable refactor"
+  ]
+ },
+ {
+  "date": "2026-5-4",
+  "items": 11,
+  "agents_items": 7,
+  "agents_titles": [
+   "Conversation tags",
+   "Conversation list filters",
+   "Model options",
+   "Contextual update metadata",
+   "Batch calling filter",
+   "Test invocation listing",
+   "MCP response timeout"
+  ]
+ },
+ {
+  "date": "2026-5-13",
+  "items": 9,
+  "agents_items": 4,
+  "agents_titles": [
+   "SIP logs",
+   "Knowledge base document updates",
+   "SMS conversation metadata",
+   "Agent configuration updates"
+  ]
+ },
+ {
+  "date": "2026-5-18",
+  "items": 9,
+  "agents_items": 5,
+  "agents_titles": [
+   "Agent version metadata",
+   "Conversation filtering",
+   "Procedure loading",
+   "Agent configuration updates",
+   "Custom LLM temperature"
+  ]
+ },
+ {
+  "date": "2026-5-25",
+  "items": 9,
+  "agents_items": 5,
+  "agents_titles": [
+   "Text behavior overrides",
+   "Integration sources",
+   "OTLP conversation traces",
+   "ASR keyword overrides",
+   "Webhook auth metadata"
+  ]
+ },
+ {
+  "date": "2026-6-1",
+  "items": 11,
+  "agents_items": 6,
+  "agents_titles": [
+   "Exotel telephony integration",
+   "Workflow-aware agent transfers",
+   "Agent test repeat runs",
+   "Conversation filtering",
+   "Agent versioning query parameters deprecated",
+   "Procedure compiler mode"
+  ]
+ },
+ {
+  "date": "2026-6-8",
+  "items": 13,
+  "agents_items": 7,
+  "agents_titles": [
+   "Turn model configuration",
+   "Soft timeout filler messages",
+   "ASR provider default",
+   "Conversation product field",
+   "Knowledge base external sync",
+   "Tool schema omit overrides",
+   "Procedure guardrails"
+  ]
+ },
+ {
+  "date": "2026-6-15",
+  "items": 22,
+  "agents_items": 15,
+  "agents_titles": [
+   "Run conversation evaluation",
+   "Workflow entry behavior",
+   "End procedure system tool",
+   "Transfer TTS overrides",
+   "Interaction budget enum",
+   "Custom guardrail model selection",
+   "Phone number list filters",
+   "WhatsApp account filtering",
+   "Topic time range filters",
+   "SIP codec configuration",
+   "Memory tool types",
+   "Agent test batch limits",
+   "Phoneme tag support",
+   "Array schema omit overrides",
+   "Transfer error context"
+  ]
+ },
+ {
+  "date": "2026-6-22",
+  "items": 18,
+  "agents_items": 12,
+  "agents_titles": [
+   "Branch rebase",
+   "Conversation product filtering",
+   "Conversation termination filtering",
+   "Per-agent topic discovery",
+   "Background sound configuration",
+   "Turn interruption ignore terms",
+   "Soft timeout filler randomization",
+   "Transcript user identifiers",
+   "Simulation success conditions",
+   "Agent test repeat limit",
+   "Tool schema dynamic allowed values",
+   "Widget signed URL docs"
+  ]
+ },
+ {
+  "date": "2026-6-29",
+  "items": 13,
+  "agents_items": 8,
+  "agents_titles": [
+   "Branch merge and rebase previews",
+   "Branch usage metrics",
+   "Auth connection status",
+   "Tool response filtering",
+   "Workflow phone transfers",
+   "Telephony agent assignment",
+   "Turn transcription on disabled interruptions",
+   "Conversation sentiment"
+  ]
+ },
+ {
+  "date": "2026-7-6",
+  "items": 12,
+  "agents_items": 8,
+  "agents_titles": [
+   "Simulate conversation deprecation",
+   "Tool interruption mode",
+   "Numeric evaluation scoring",
+   "Conversation reasoning",
+   "Conversation platform billing",
+   "Conversation cost metadata",
+   "Unredacted webhook events",
+   "Workflow phone transfer UUI limit"
+  ]
+ },
+ {
+  "date": "2026-7-13",
+  "items": 14,
+  "agents_items": 11,
+  "agents_titles": [
+   "Per-agent sentiment analysis",
+   "Auto-translate transcripts",
+   "Nested agent transfers",
+   "Backchannel detection",
+   "Auxiliary conversation audio",
+   "MCP environment scoping",
+   "Tool call sound override",
+   "Twilio SMS routing",
+   "User sentiment sorting",
+   "Knowledge base external sync",
+   "TTS latency setting deprecation"
+  ]
+ },
+ {
+  "date": "2026-7-20",
+  "items": 21,
+  "agents_items": 13,
+  "agents_titles": [
+   "Resolve external conversation references",
+   "Query agent knowledge bases",
+   "Knowledge base content formats",
+   "Agent voice configuration",
+   "Faster backup LLM cascade",
+   "Tool parameter value sources",
+   "Full-response guardrails",
+   "Twilio call recording",
+   "Widget file-upload text",
+   "Knowledge base sync status",
+   "Conversation text search filters",
+   "LLM options",
+   "WhatsApp typing indicators"
+  ]
+ },
+ {
+  "date": "2026-7-27",
+  "items": 13,
+  "agents_items": 10,
+  "agents_titles": [
+   "WhatsApp branch and environment overrides",
+   "Procedure APIs",
+   "Knowledge base crawl jobs",
+   "Bulk knowledge base management",
+   "Batch call result export",
+   "Conversation filters and analysis data",
+   "Referenced analysis configuration",
+   "Procedure dependency metadata",
+   "WebRTC token response",
+   "Knowledge base RAG results"
+  ]
+ },
+ {
+  "date": "2026-8-3",
+  "items": 11,
+  "agents_items": 8,
+  "agents_titles": [
+   "Test-specific tool mocks",
+   "Translated workflow messages",
+   "Conversation version filters",
+   "Knowledge base system tool",
+   "Agent voice activity detection",
+   "WebSocket custom LLMs",
+   "File memory controls",
+   "DTMF input redaction"
+  ]
+ },
+ {
+  "date": "2026-8-10",
+  "items": 5,
+  "agents_items": 4,
+  "agents_titles": [
+   "Conversation guardrail filters",
+   "Branch divergence status",
+   "Conversation and tool controls",
+   "Post-call analysis usage"
+  ]
+ },
+ {
+  "date": "2026-8-17",
+  "items": 7,
+  "agents_items": 5,
+  "agents_titles": [
+   "Lightweight conversation summaries",
+   "Conversation topic pagination and sorting",
+   "Concurrency wait queues",
+   "Turn and workflow controls",
+   "Background audio defaults"
+  ]
+ },
+ {
+  "date": "2026-8-22",
+  "items": 1,
+  "agents_items": 0,
+  "agents_titles": []
+ },
+ {
+  "date": "2026-8-24",
+  "items": 2,
+  "agents_items": 2,
+  "agents_titles": [
+   "Conversation triage tickets",
+   "Conversation observability"
+  ]
+ },
+ {
+  "date": "2026-8-31",
+  "items": 6,
+  "agents_items": 4,
+  "agents_titles": [
+   "Phone keypad input",
+   "Conversation attachment history",
+   "Agent tag filtering",
+   "Batch campaign context"
+  ]
+ },
+ {
+  "date": "2026-9-7",
+  "items": 8,
+  "agents_items": 7,
+  "agents_titles": [
+   "Workspace-wide conversation tickets",
+   "Dynamic variable conversation filters",
+   "Twilio answering machine detection",
+   "Data collection value constraints",
+   "Agent metadata",
+   "Knowledge base source URLs",
+   "Agent response attachments"
+  ]
+ },
+ {
+  "date": "2026-9-11",
+  "items": 0,
+  "agents_items": 0,
+  "agents_titles": []
+ },
+ {
+  "date": "2026-9-14",
+  "items": 4,
+  "agents_items": 3,
+  "agents_titles": [
+   "Call queueing and hold audio",
+   "Test version metadata",
+   "Model and account metadata"
+  ]
+ },
+ {
+  "date": "2026-9-21",
+  "items": 7,
+  "agents_items": 4,
+  "agents_titles": [
+   "Parallel tool calls",
+   "Agent models",
+   "Alerting",
+   "Phone number search"
+  ]
+ },
+ {
+  "date": "2026-9-23",
+  "items": 2,
+  "agents_items": 0,
+  "agents_titles": []
+ },
+ {
+  "date": "2026-9-28",
+  "items": 6,
+  "agents_items": 2,
+  "agents_titles": [
+   "Agent models",
+   "Agent test usage"
+  ]
+ },
+ {
+  "date": "2026-10-5",
+  "items": 3,
+  "agents_items": 3,
+  "agents_titles": [
+   "Structured procedures compile on save and publish",
+   "Compile procedures endpoint is legacy",
+   "Merge proposals"
+  ]
+ },
+ {
+  "date": "2026-10-12",
+  "items": 11,
+  "agents_items": 6,
+  "agents_titles": [
+   "Merge and search triage tickets",
+   "Workflow End node outcomes",
+   "Call queueing enabled for new agents",
+   "Post-call audio webhook retries",
+   "Strict tool overrides",
+   "Widget end confirmation"
+  ]
+ }
+]

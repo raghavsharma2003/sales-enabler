@@ -1,0 +1,292 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-21.intake-module",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Intake module: chunked or one-shot 20 MB uploads, mapping with per-row preview, one write path by authority and freshness, signed idempotent contacts webhook, append-only consent, suppression, DPDP erase with tombstones, DND seam, audiences",
+      "path": "product/server/modules/intake/",
+      "details": "21 tools, 2 raw routes, migration 0101. 18/18 tests (node:test, throwaway Postgres 16). Not verified: XLSX/Sheets, unmerge, conflict resolution, real NCPR lookup, concurrent overlapping commits, a full 20 MB commit, erasure of transcripts and recordings."
+    },
+    {
+      "id": "measure.2026-10-21.intake-50k-import",
+      "type": "measurement",
+      "status": "measured",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "A 50,000-row CSV (2.94 MB, 7 columns, 50 Excel-mangled rows) imports in one transaction in 18.9-21.7 s alone (n=9) and re-imports in 7.7-13.0 s; inside the full product suite at concurrency 4 the same commit took 16.1-80.6 s (n=8). A measurement, not a CI gate (VP_PERF=1 asserts 60 s)",
+      "n": 17,
+      "method": "product/tests/intake-scale.test.ts: upload in 4 parts over HTTP, source.map, then source.commit via registry.execute; throwaway Postgres 16 on the coding sandbox (4 vCPU, 15 GB); wall-clock around the commit call; 9 solo runs, 8 full-suite runs (one of them failed the old 60 s budget at 74.4 s). Sampling pg_stat_activity during a slow full run showed no lock waits. Dates: all 2026-10-21.",
+      "path": "product/server/modules/intake/STATUS.json"
+    },
+    {
+      "id": "decision.2026-10-21.intake-upload-lineage",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "A tenant's own file uploads count as one lineage: a newer upload replaces an older upload's value at equal authority; only different systems at equal rank go to review",
+      "rationale": "The blueprint's rule (equal authorities with different values go to review) applied literally to uploads sent every row of a monthly re-upload to review. Uploads are one asserter, the tenant.",
+      "reverse_if": "Tenants keep several independent lists (different branches or vendors) whose values for the same person legitimately disagree, and review is wanted between them; then make lineage per source and ask at commit."
+    },
+    {
+      "id": "rejected.2026-10-21.intake-equal-upload-review",
+      "type": "rejection",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Sending equal-authority disagreements between two uploads to review",
+      "tried": "decide(): equal authority from a different source_id means conflict_review, applied to every source including file uploads.",
+      "broke": "The 50k re-import test: 49,950 rows went to review and 0 updated, because each upload is its own source."
+    },
+    {
+      "id": "decision.2026-10-21.intake-erase-in-place",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "DPDP erase_me keeps the contact row as a husk (e164 'erased:<id>', no name or attributes) instead of deleting it",
+      "rationale": "consent_record and suppression cascade on contact delete (0002). Deleting the person would delete the consent history and the suppression the erasure must keep. The tombstone (HMAC of the number, per-workspace salt) blocks re-creation; suppressions are re-keyed to the hash.",
+      "reverse_if": "The consent and suppression ledgers stop referencing contact with ON DELETE CASCADE (e.g. they key on e164_hash), so the row can be deleted outright."
+    },
+    {
+      "id": "decision.2026-10-21.intake-stale-loses-authority",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "A value past its max age loses its authority: a newer observation from a lower authority replaces it",
+      "rationale": "Freshness bounds authority (blueprint §2, DataAuthorityClaim max_age). A month-old CRM amount should not beat today's upload of the same field.",
+      "reverse_if": "A record subject from the system of record (rank 100) is overwritten by a stale-but-correct case in practice; then exempt rank 100 or mark the replacement for review."
+    },
+    {
+      "id": "decision.2026-10-21.intake-dnd-fail-closed",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "DND unknown, never checked, or checked more than 7 days ago is 'unknown', and contact.dial_facts blocks promotional calls on it; service calls are not blocked by DND",
+      "rationale": "Task brief: unknown DND is a fact the dial gate treats as fail-closed for promotional. On 140xx the operator scrubs too (trust-telephony M4). The real NCPR adapter stays disabled until a licensed lookup is contracted.",
+      "reverse_if": "Counsel or the carrier contract says service calls must also respect NCPR, or a fresher bound than 7 days is required."
+    },
+    {
+      "id": "open.2026-10-21.intake-scale-contention",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Under the full product suite the 50k import intermittently runs 3-4x slower (up to 81 s) with Postgres mostly idle and no lock waits; cause unknown. It did NOT cause the campaigns/e2e failures seen alongside it (those were an unscoped dispatcher in a WIP e2e test, rejected.2026-10-21.unscoped-dispatcher-in-tests). CI now runs 5,000 rows; 50k only with VP_PERF=1",
+      "closes_when": "A profile of a slow full-suite run shows where the time goes (Node CPU, a sibling test, or I/O), or ten full runs stay under 30 s."
+    },
+    {
+      "id": "open.2026-10-21.intake-hook-secret-vault",
+      "type": "open-question",
+      "status": "open",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Webhook HMAC secrets sit in plaintext in intake_source.hook_secret until a vault exists",
+      "closes_when": "Secrets move to the workspace vault with a rotate tool, and the column is dropped."
+    },
+    {
+      "id": "decision.2026-10-21.intake-suppress-draft-until-a3",
+      "type": "decision",
+      "status": "superseded",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "contact.suppress is registered as draft (runs at once), not the registry's external, until the kernel's A3 list carries it",
+      "rationale": "The blueprint registry gives contact.suppress class external with an 'A3 (risk-lowering)' override. The kernel turns external into an approval card unless the verb is in shared/approval.ts A3_VERBS, and contact.suppress is not. Registering it as external now would make a member's 'stop calling this person' wait for approval, the opposite of the override's intent.",
+      "reverse_if": "contact.suppress is added to A3_VERBS; then intake registers it as external and it still runs at once."
+    },
+    {
+      "id": "component.2026-10-21.intake-retention",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "policy.retention.set/get (policy, versioned, Owner or Compliance) and the nightly intake.retention job: purges uploaded file text and receipt row issues; consent, suppression and tombstones are never subject to retention",
+      "path": "product/server/modules/intake/retention.ts",
+      "details": "Defaults: upload files 30 d, receipt issues 180 d, recordings 90 d, transcripts 180 d, audit logs 365 d. Intake enforces only the first two; calls and memory read policy.retention.get for theirs (not wired). 1 test (approval roles, version voiding, purge, audit row)."
+    },
+    {
+      "id": "decision.2026-10-21.intake-suppress-external",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "contact.suppress is registered as external, the blueprint registry's class; it runs at once because the kernel added it to A3_VERBS (779068d)",
+      "rationale": "The reverse_if of the draft decision happened. Tested: a member's contact.suppress returns confirmed, mode A3.",
+      "reverse_if": "contact.suppress leaves A3_VERBS; then it must not be external, or members wait for a card to stop calls."
+    },
+    {
+      "id": "decision.2026-10-21.intake-suppression-source-codes",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "suppression.source is a stable code (in_call, manual, upload, crm, api_push, form, whatsapp, dpdp); the ids behind it go in suppression.evidence (0104)",
+      "rationale": "The dial gate reports suppressed:<source>; 'call:<uuid>' made an unstable reason code (e2e finding F6).",
+      "reverse_if": "The gate stops deriving its code from source, or the UI needs per-source codes; then keep codes stable and add a separate field."
+    },
+    {
+      "id": "decision.2026-10-21.intake-canonical-age-keys",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Intake writes age-like columns under three canonical keys (date_of_birth, age, is_minor) and exports the rule (AGE_KEY_SYNONYMS, canonicalAgeKey) for memory's children's-data gate",
+      "rationale": "Memory's gate matched whole keys, so 'Customer DOB' -> customer_dob slipped past. One list, owned where headers are mapped, cannot drift. 'age' maps only when it names the person (Age, Customer Age, Age (years), Umar), so Vehicle Age or Policy Age keep their own keys.",
+      "reverse_if": "A tenant needs two different person-age columns kept apart, or the gate moves to typed attributes with a declared meaning."
+    },
+    {
+      "id": "rejected.2026-10-21.intake-keys-drop-devanagari-marks",
+      "type": "rejection",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Attribute keys built with [^\\p{L}\\p{N}] split Devanagari words",
+      "tried": "Snake-casing headers by keeping only Unicode letters and numbers.",
+      "broke": "Vowel signs and the virama are marks (\\p{M}), so 'उम्र' became 'उम_र' (caught by the age-key test). Keys now keep \\p{M}."
+    },
+    {
+      "id": "decision.2026-10-21.intake-consent-effective-time",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Consent is ordered by its effective time (when it was given or withdrawn), not insert time; an older or undated imported grant after a withdrawal is history only",
+      "rationale": "Review WGC-06: re-importing an old consent=yes file became the latest record and undid a newer withdrawal. consent_record.effective_at (0105) is the source's stated time, else the insert time, clamped so a source can never post-date its claim; latest = (effective_at DESC, created_at DESC). Undated grants following a withdrawal are stored just before it.",
+      "reverse_if": "Counsel says a tenant's re-assertion of consent (undated) must count as a fresh grant; then require an explicit dated consent.record for it instead."
+    },
+    {
+      "id": "decision.2026-10-21.intake-birth-year-age-group-keys",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Two more canonical age keys: birth_year (Year of Birth, Birth Year, YoB, जन्म वर्ष) and age_group (Age Group/Band/Range/Bracket, आयु वर्ग), person-noun prefix allowed",
+      "rationale": "Review WGC-09: these headers fell through as no age data, so memory ran for a 14-year-old. Memory reads birth_year as the younger possible age and fails closed on an age_group with any bound under 18.",
+      "reverse_if": "The gate moves to typed attributes with a declared meaning."
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-upload-lineage",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-erase-in-place",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-stale-loses-authority",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-dnd-fail-closed",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-21.intake-upload-lineage",
+      "to": "rejected.2026-10-21.intake-equal-upload-review",
+      "relation": "supersedes"
+    },
+    {
+      "from": "measure.2026-10-21.intake-50k-import",
+      "to": "component.2026-10-21.intake-module",
+      "relation": "tests"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "open.2026-10-21.intake-hook-secret-vault",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "open.2026-10-21.intake-scale-contention",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "evidence.2026-10-21.vp-blueprint",
+      "relation": "derived-from"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-suppress-draft-until-a3",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-retention",
+      "to": "component.2026-10-21.intake-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-21.intake-suppress-external",
+      "to": "decision.2026-10-21.intake-suppress-draft-until-a3",
+      "relation": "supersedes"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-suppression-source-codes",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-canonical-age-keys",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-consent-effective-time",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-21.intake-module",
+      "to": "decision.2026-10-21.intake-birth-year-age-group-keys",
+      "relation": "implements"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-21",
+      "event": "intake-module-built",
+      "details": "Intake module pushed: 21 tools, uploads and a signed contacts webhook, migration 0101; 18/18 intake tests and 233/233 product tests on the rebased head (2 of 3 full runs; the other hit the then 60 s scale budget at 74.4 s) on the throwaway Postgres. Verified: phone edge cases, authority and dedupe, append-only consent, suppression on re-import, DPDP tombstone and suppression, webhook signature and idempotency, tenancy, DND fail-closed, 50k rows in 19.4-21.7 s alone (n=7), 16-74 s under the full suite (n=6). Not verified: XLSX, real NCPR, concurrent overlapping commits, a 20 MB commit, transcript erasure."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-retention-built",
+      "details": "policy.retention.set/get and the intake.retention nightly job added (migration 0103); store.ts uses server/identity.ts; 18/18 intake tests. Not verified: calls/memory honouring the recordings/transcripts days."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-scale-test-not-a-gate",
+      "details": "The 50k intake test now always checks correctness (rows, dedupe, verdicts) and asserts the 60 s bound only with VP_PERF=1; requested by the integrator after a 2-core CI runner failed the wall-clock gate. Measurement stays measure.2026-10-21.intake-50k-import."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-integration-fixes",
+      "details": "contact.suppress external (A3 via A3_VERBS); stable suppression source codes with evidence (0104); audience text comparisons COLLATE \"C\"; DPDP uses memory's forgetContactMemory; STATUS states dial-time attribute authority and freshness. 18/18 intake tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-scale-default-5k",
+      "details": "intake-scale defaults to 5,000 rows (same correctness checks, ~2 s commit) so it no longer loads a shared CI database during timing-sensitive worker tests; VP_PERF=1 runs 50,000 rows with the 60 s bound (passed at 17.8 s alone). measure.2026-10-21.intake-50k-import (n=17) stays the record."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-age-keys",
+      "details": "Canonical age keys (date_of_birth, age, is_minor) at mapping and in webhooks, exported for memory; Devanagari marks kept in attribute keys. 18/18 intake tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "intake-review-wgc-06-09",
+      "details": "WGC-06: consent_record.effective_at (0105), import reports consent_older_than_latest, dial_facts orders by effect; WGC-09: birth_year and age_group canonical keys. 19/19 intake tests; full tree 286 pass, 9 todo (review tests pending campaigns' G5 and memory's minorStatus). WGC-07 (cancel queued attempts on erasure) waits on campaigns exporting a function."
+    }
+  ]
+}

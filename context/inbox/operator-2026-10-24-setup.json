@@ -1,0 +1,58 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.operator-whole-flow-intents",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "The Operator recognises three whole-flow intents (set up from one conversation, what went wrong on a call, reset) and offers each one's tool chain ahead of the page's tools; set-up steps whose tools are not registered are named to the model as NOT AVAILABLE",
+      "rationale": "Owner directive 2026-10-24 (calling first, then the whole product end to end through the assistant). Naming the missing steps keeps the model from improvising a capability (reading a website) or claiming a step it cannot do.",
+      "reverse_if": "The op8 bench shows the intent note crowding out page tools the turn needed, or the intent words firing on requests that are not a whole flow"
+    },
+    {
+      "id": "decision.2026-10-24.question-turn-holds-writes",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "A turn asking what went wrong on a call holds writes the member did not ask for: the assistant explains with the turn quoted and offers the fix as a proposal",
+      "rationale": "The directive says the diagnosis is read-only until the member approves a fix.",
+      "reverse_if": "Members routinely ask for the fix in the same message in words the action match misses"
+    },
+    {
+      "id": "decision.2026-10-24.passage-approval-is-member-tap",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "knowledge.span.approve and fact.approve from the Operator are always approval cards: the member's tap approves what the agent may state",
+      "rationale": "The knowledge tool already refuses any actor but a signed-in person; a card is the only path that can succeed, and it keeps fact approval the member's act.",
+      "reverse_if": "never: approving what the agent states as fact stays a person's act"
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.operator-whole-flow-intents",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.question-turn-holds-writes",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.passage-approval-is-member-tap",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "operator-setup-diagnose-reset",
+      "details": "Operator step 1 (set-up from one conversation) and the Operator side of steps 2 and 3: whole-flow intents in toolset.ts; a set-up note listing the chain with NOT AVAILABLE steps (no website ingest tool yet; ring the member's phone is registered); diagnosis turns hold unasked writes and get a read-first note; passage and fact approval always a card; reset words offer the reset tools as they register (workspace start-over and agent archive/restore not registered yet; names asked of workspace and agents). 4 op8 bench tasks (setup-oneshot, setup-website-only, diag-cutoff, diag-price) with categories setup and diagnose. tests/operator-setup.test.ts 4/4, each failing on the previous code; operator, MCP and SDK suites 89/89. Not run on a real model (op8)."
+    }
+  ]
+}

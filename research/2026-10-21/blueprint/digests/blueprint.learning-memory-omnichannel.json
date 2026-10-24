@@ -1,0 +1,202 @@
+{
+ "key_facts": [
+  {
+   "fact": "Per-contact memory needs one call, not a sample; VP may claim 'remembers every customer, shows where calls fail, proves the changes you approve' but not 'learns on its own from every call' below ~1,000 calls/day on one script.",
+   "grade": "computed",
+   "evidence": "research/2026-10-17/lanes/l6-self-learning/report.md s.1, s.10"
+  },
+  {
+   "fact": "A line that doubles the hang-up hazard is flagged with probability 0.19 / 0.67 / 0.94 at 100 / 500 / 1,000 calls (false flags <=2.6%); a fix is proved with ~592 calls/arm on the local hazard vs 4,028 on completion vs 25,963 on conversion.",
+   "grade": "computed",
+   "evidence": "l6 report s.4.8; verify.md item 6 (weakened 'hundreds' to >=500)"
+  },
+  {
+   "fact": "Outcome tests are expensive: 20%->22% (+10% rel) needs 6,510 connected calls per arm; 20%->25% needs 1,094; 10%->11% needs 14,751.",
+   "grade": "computed",
+   "evidence": "l6 report s.4.1, data/power-n-per-arm.csv"
+  },
+  {
+   "fact": "Daily-checked 'winner at P(best)>=0.95' dashboards declare false winners in A/A by day 90 at ~52-62% with K=2 (the split every vendor ships), ~20-24% at K=3, ~4-14% at K=4; naive daily z-test 16% by day 7, 36-37% by day 90.",
+   "grade": "computed",
+   "evidence": "l6 verify.md item 4; l6 report L03; rejected.2026-10-17.k2-dashboards"
+  },
+  {
+   "fact": "Thompson sampling at 1,000 calls/day picks the right of 4 variants (+10% rel on 20%) 86% by day 7 and 99% by day 30 with 0.9% regret; at 100/day only 49/72/91% by day 7/30/90 and 29% declare by day 90.",
+   "grade": "computed",
+   "evidence": "l6 report s.4.3 (400 runs per config), verify item 3 confirmed"
+  },
+  {
+   "fact": "After a best-arm switch at day 60, plain Thompson still picked the old winner on day 90 in 56% of runs; discounted (gamma 0.97) and 21-day window reached 0.985/0.983 correct; novelty variants were falsely declared in 82% of Thompson runs.",
+   "grade": "computed",
+   "evidence": "l6 report s.4.6"
+  },
+  {
+   "fact": "One segment policy pooled across dissimilar tenants handed the wrong winner to 48-55% of tenants; partial pooling cut A/A false winners from ~21% to 2.5%.",
+   "grade": "computed",
+   "evidence": "l6 report s.4.7; rejected.2026-10-17.cross-tenant-pooling"
+  },
+  {
+   "fact": "An LLM outcome label at 90% accuracy inflates required calls 1.8-2.4x (80%: 3.6-5.5x); a judge 3 points biased to one variant 'finds' it better in 57.5% of A/A tests; our judge failures were on preference judging, not outcome extraction.",
+   "grade": "computed",
+   "evidence": "l6 report L09; verify.md item 8"
+  },
+  {
+   "fact": "Extra power numbers for learnable targets: early hang-up 15%->10% needs 686 calls/arm, 15%->12% needs 2,036; connect rate 50%->55% needs 1,565 dials/arm, 30%->36% needs 963; cut-in 25%->18% needs 540 turns/arm unclustered, ~70-165 calls/arm at 8-12 turns/call with ICC 0.05-0.2 (ICC assumed).",
+   "grade": "computed",
+   "evidence": "this step, same two-proportion formula as l6 power.py (reproduces 1,565 for 50->45); data/blueprint/learning-memory-omnichannel.json"
+  },
+  {
+   "fact": "Retell contact memory is one rewritten text brief of at most 2,000 characters per phone number; dashboard default read ON, save OFF at USD 0.005 per memory run; web calls don't save.",
+   "grade": "observed",
+   "evidence": "research/2026-10-21/walkthroughs/retell/report.md l.77,103; research/2026-10-20/account-phase/retell/report.md l.84"
+  },
+  {
+   "fact": "ElevenLabs user memory is built but gated (403 'User memories are not available for this workspace'), with a Memory (Alpha) tab now visible in the dashboard; widget user_id defaults to a browser fingerprint (device-keyed).",
+   "grade": "observed",
+   "evidence": "evidence.2026-10-20.acct-elevenlabs-memory-gated; walkthroughs/elevenlabs/report.md l.175; evidence.2026-10-20.elevenlabs-v2-memory-loop"
+  },
+  {
+   "fact": "Bolna, Sarvam, Vapi and Exotel have no cross-call memory; SquadStack markets Persistent Memory and Lift but its code shows intra-call memory only; Synthflow injects per-contact summaries keyed by phone across voice, SMS and WhatsApp.",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/SYNTHESIS.md l.359-364; evidence.2026-10-20.squadstack-v2-learning-memory; evidence.2026-10-20.synthflow-v2-memory-learning"
+  },
+  {
+   "fact": "Every competitor learning loop is human-gated with no documented statistics, except Vapi Composer's 'Bypass approvals' mode (2026-09-28) and Bland's autonomous Tornado test-fix loop.",
+   "grade": "observed",
+   "evidence": "teardown SYNTHESIS l.363; evidence.2026-10-20.vapi-v2-loop; l6 verify.md item 7"
+  },
+  {
+   "fact": "harness2 (arXiv 2610.14224, 2026-10-09) optimises 8 harness components with fixed weights via Propose-Probe-Compose (invariant + domain candidates, behavioural contrasts with no ground truth, composer must cite observations) plus a lesson library kept only on contrast evidence; single-step gains up to +11.5 (WorkBuddy), +4.5 (JobBench), +11.8 pp (LAB); removing the library costs 3.1/1.8 points.",
+   "grade": "vendor-claimed",
+   "evidence": "https://github.com/google-research/harness2 README; arxiv.org/html/2610.14224v1 (fetched 2026-10-21); evidence.2026-10-20.harness2-tool"
+  },
+  {
+   "fact": "harness2 reports its own limits: contrast evidence is noisy and shares model bias, gains are non-monotonic in k, 9 regressions from poor selection (one 54->26), propagated false premises (-2 to -11) and noise; it discusses no human-in-the-loop and no production deployment.",
+   "grade": "vendor-claimed",
+   "evidence": "arxiv.org/html/2610.14224v1 appendices E.6, F, G"
+  },
+  {
+   "fact": "Our own raw-fact memory (store whatever the call said) accumulated brief facts, contradictions and gender errors and re-injected them each call; replaced by preference-only memory.",
+   "grade": "measured",
+   "evidence": "rejected.2026-10-20.raw-fact-memory; decision.2026-10-20.preference-only-memory"
+  },
+  {
+   "fact": "Inherited memory: recall@8 went 73.9% -> 95.7%; consolidation costs ~USD 0.0007 per person per night; lexical-only recall failed 0/27 adversarial cases; the only live preference trial stored Hindi and replied entirely in English.",
+   "grade": "measured",
+   "evidence": "docs/harvest/hp-main.md l.217; docs/harvest/SYNTHESIS.md l.109, l.240-241; docs/harvest/hp-handoffs.md l.36"
+  },
+  {
+   "fact": "Retell's CRM stored '9000000001' as +19000000001 and kept '+919000000003' and '09000000003' as two contacts, so messy Indian lists yield wrong-country numbers and duplicates.",
+   "grade": "measured",
+   "evidence": "measure.2026-10-20.acct-retell-contact-number-handling"
+  },
+  {
+   "fact": "VP already has offline-tested exact-quote learning: proposals must cite an exact caller quote and span, re-checked in the commit transaction; anonymous or unverified channel senders are feedback-only; opt-in autoLearning is frozen per deployment revision with 25/day per deployment and 100/day per workspace caps.",
+   "grade": "observed",
+   "evidence": "docs/learning-source-port.md; docs/learning-automation-v7.md; scripts/learning-worker.ts"
+  },
+  {
+   "fact": "Customer-specific context lifts outcomes in field experiments (goal-specific reminders +16% savings; name in subject +31% leads; two-way bank-agent call +34.4 pp timely repayment, n=3,448), but no rigorous study exists for AI voice with CRM context.",
+   "grade": "observed",
+   "evidence": "research/2026-10-17/lanes/l4c-incumbents-distribution/report.md H8; data/h8-context-evidence.csv"
+  },
+  {
+   "fact": "Meta terms s.4.7: WhatsApp Platform Data may not train or improve AI except a model for the business's exclusive use, so WhatsApp data can never feed cross-tenant learning.",
+   "grade": "observed",
+   "evidence": "l6 report L34 (via l1 S30)"
+  },
+  {
+   "fact": "DPDP Rules Gazette dated 2025-11-13: consent managers from ~2026-11-13, core obligations ~2027-05-13; Rule 3 notice itemised with withdraw link; Rule 6 one-year log retention and processor-contract safeguards; no general localisation, but IRDAI records stay in India for >=10 years.",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/teardown/regulation-segment/report.md s.2.7 RS-27..RS-32; research/2026-10-17/lanes/l1-regulation/round2/findings.md l.310-311"
+  },
+  {
+   "fact": "Service calls to existing customers rest on DPDP s.7(a) and TCCCPR inferred consent for the contract's life; pre-sale needs inquiry (7 days) or application (3 months) evidence; DND needs CRF consent that only 11 pilot banks can upload.",
+   "grade": "observed",
+   "evidence": "regulation-segment/report.md RS-12, RS-13, RS-32"
+  },
+  {
+   "fact": "Number series cannot pick a dialect (MNP keeps the series; Bihar LSA ~1.35%/month porting) and LID labelled only 2 of 6 Bhojpuri clips correctly, so dialect matching must be opt-in or stated, not inferred.",
+   "grade": "measured",
+   "evidence": "research/2026-10-17/lanes/l5-human-dialect/report.md l.128-137, E21, E29"
+  },
+  {
+   "fact": "TRAI reg 21A: telco AI flags 10-digit CLIs with short calls and high recipient diversity; 5 flags in 10 days trigger KYC re-verification and a 15-day bar (140/1600/1601 exempt), so any exploration must stop if the early hang-up ratio per CLI rises.",
+   "grade": "observed",
+   "evidence": "l6 report L35 (via l1 S03)"
+  },
+  {
+   "fact": "Trusting a model-emitted marker to delete caused 44 irrecoverably deleted rows; deletion and outbound actions must be triggered by verified human intent checked in code.",
+   "grade": "measured",
+   "evidence": "rejected.harvest.04; docs/harvest/SYNTHESIS.md l.254"
+  }
+ ],
+ "requirements": [
+  {
+   "id": "lm-01",
+   "theme": "self-learning",
+   "requirement": "Learning runs as measure-in-code, then Propose-Probe-Compose offline, then code gates, then one-click human approval, then a fixed-horizon online proof, then expiry. No autonomous publish mode.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-02",
+   "theme": "self-learning",
+   "requirement": "Show the A/A status, a power meter, an 'under-powered' verdict and winner expiry on every experiment. Report effects with intervals from held-out or AIPW read-outs.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-03",
+   "theme": "self-learning",
+   "requirement": "Line-level hang-up hazard comes from TTS clause timestamps aligned with telephony hang-ups. This needs clause events from the production telephony path.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-04",
+   "theme": "self-learning",
+   "requirement": "Locked sections (disclosure, recording notice, consent and opt-out, crisis lines, identity, prices and offers, category fence, appended-last rules) cannot be edited by any learner. This is enforced by an empty-diff check in code.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-05",
+   "theme": "self-learning",
+   "requirement": "Thompson sampling is opt-in only, for tenants at 1,000 or more calls/day on one script with an outcome delay of 7 days or less. It is discounted or windowed, keeps an exploration floor, and stops on a rise in early hang-ups per CLI.",
+   "priority": "strong"
+  },
+  {
+   "id": "lm-06",
+   "theme": "personalisation and memory",
+   "requirement": "Memory is a ledger of Facts. Each Fact has an exact caller quote, episode and span, a purpose, a consent record and an authority rank. It is compiled per call into a bounded, purpose-matched brief, and contradictions are stored as new rows.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-07",
+   "theme": "personalisation and memory",
+   "requirement": "A live multi-call adherence test (language, opt-out, promise recall) gates memory release. Kill if recall is below 95% or preferences are ignored more than 1 time in 20.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-08",
+   "theme": "omni-channel data",
+   "requirement": "Every source (CSV, CRM, telephony, WhatsApp, SMS, email, web/app, payment, policy systems) lands as immutable receipts, Episodes and Facts with provenance. Identity merges use exact match only, and conflicts go to review.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-09",
+   "theme": "omni-channel data",
+   "requirement": "Outcomes are written back from CRM, payment and booking systems as code-earned outcomes and leading indicators.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-10",
+   "theme": "compliance and trust",
+   "requirement": "Forget follows the person across channels, writes a tombstone so re-imports cannot resurrect the data, and is triggered only by verified intent checked in code. Retention is set per class (recording, transcript, facts, logs, aggregates), with sector overrides.",
+   "priority": "must"
+  },
+  {
+   "id": "lm-11",
+   "theme": "compliance and trust",
+   "requirement": "No cross-tenant pooling of personal data or WhatsApp data. Segment priors use aggregate counts only, under each tenant's contract, from v1.5.",
+   "priority": "must"
+  }
+ ]
+}

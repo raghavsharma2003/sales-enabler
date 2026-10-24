@@ -1,0 +1,61 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.floor-lookalike-dev10",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor look-alike false positives on the new DEV slice (sets/dev-lookalike-10.json: 56 ordinary lines, written by the builder knowing the rules, using the floor's own risky terms) fell from 30/56 to 1/56. The fix is guarded, sentence-scoped exemptions in cs.crisis.bengali, telugu, recall, self_harm and tamil. Crisis recall is unchanged: cases.json crisis vectors 215/215, dev-7 100/100, dev-lookalike-9 30/75. 8 guard probes (a strong crisis cue beside an exempted word) all still fire. TS and Python agree (tests in both doors).",
+   "n": "56 DEV look-alikes; 215 crisis vectors; 190 + 225 DEV lines; 8 guard probes",
+   "method": "callerSignals (TS) and caller_signals (Python)",
+   "not_verified": "Generalisation to unseen look-alikes is unknown: this slice targets the terms the builder knew were risky. BLIND 10 (sets/heldout-10.json; 60 crisis, 140 look-alikes, written by a separate agent, unread) measures it, scored once by the integrator. The one remaining DEV false positive ('ami na thakle ghor ta ke samlabe') is kept on purpose: it can be a goodbye."
+  },
+  {
+   "id": "open.2026-10-24.floor-tiers-checkin",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Proposal: split the floor into tiers. Explicit, high-precision crisis phrases take the full crisis path at once; ambiguous terms (the look-alike-prone ones exempted today) route to the same gentle check-in as a judge-only raise. BLIND 9 shows the floor adds only 0/100 recall over the judge (judge 97/100) but costs 6/100 false positives. Tiering would cut what a floor false alarm costs without removing a term. Needs the owner's view, since the check-in is still off by default.",
+   "closes_when": "The owner chooses tiers or keeps one floor."
+  },
+  {
+   "id": "asset.2026-10-24.blind-set-10",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND 10 (sets/heldout-10.json): 60 crisis and 140 hard look-alikes across ta/bn/mr/te/gu-en, Hinglish and Hindi, written by a separate agent with no repo access, checked by script (counts, 0 duplicates, 0 overlap with earlier sets), never read. For one scoring of the floor's look-alike FP by the integrator.",
+   "paths": [
+    "product/shared/safety/sets/heldout-10.json"
+   ],
+   "value": "blind floor look-alike FP after the DEV10 exemptions",
+   "effort": "one agent run"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.floor-lookalike-dev10",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "supports"
+  },
+  {
+   "from": "asset.2026-10-24.blind-set-10",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-24.floor-tiers-checkin",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-floor-lookalikes",
+   "details": "Floor DEV look-alike FP 30/56 to 1/56 with every crisis vector kept; BLIND 10 written (unread); prompt B prepared but not shipped (waiting for the integrator's opt-out DEV confirmation). Gates: tsc and web tsc clean, fresh-DB 602/602, ui-contract strict 180/180, voice unittest OK."
+  }
+ ]
+}

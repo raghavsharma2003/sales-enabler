@@ -1,0 +1,66 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-21.agents-module",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Agents module: one compile() generalising persona v2, recitable-line lint, 16 industry templates, draft/test/publish/split tools",
+      "path": "product/server/modules/agents/",
+      "details": "21/21 tests (node:test, throwaway Postgres 16, fake LLM). Templates compile to 6.9-8.2 KB of a 12 KB core cap. Not verified: real-model simulation, any live call, the generalised brief's quality on non-renewal jobs."
+    },
+    {
+      "id": "decision.2026-10-21.brief-budget-per-section",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "The brief budget is per section as well as total (core 12,000 bytes; e.g. FACTS_ROWS 2,500, CORE 3,200), and the error names the section to cut",
+      "rationale": "The voice blueprint fixes a 12,000-byte core and 1,900-byte tail and says an over-cap section names itself. Per-section caps stop one runaway field (usually facts) from starving the rest and tell the user exactly what to trim. Caps were set with headroom over the 16 templates (largest section 1,856 bytes).",
+      "reverse_if": "Real agents routinely hit a section cap while the total is far below 12,000 bytes, or the runtime's measured prompt-cache or latency behaviour argues for a different core size."
+    },
+    {
+      "id": "decision.2026-10-21.recitable-line-lint-rules",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Shape fields refuse quotes, first person (English and Hindi), greetings, trailing questions, Devanagari, romanised Hindi, digits and bracketed directions; facts refuse only scripted-line patterns",
+      "rationale": "Inherited law: quoted lines were recited 4/5 and 0 after removal. Numbers belong in facts where they can be checked; Hindi or romanised Hindi in a shape is a line in waiting. The lint runs at compile, so an LLM draft is stored and shown with its findings but cannot be tested or published until fixed.",
+      "reverse_if": "A labelled set of business-written notes shows the lint refusing more than about 1 in 10 harmless notes, or simulations show a shape pattern this lint passes being recited."
+    },
+    {
+      "id": "decision.2026-10-21.publish-bound-to-draft-hash",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "version.publish is bound to the draft hash the card showed (version() = draft hash, and the args carry it); deployment.split is bound to the current split",
+      "rationale": "Kernel A2 approvals are void when version() changes; using the canonical draft hash (excluding version bookkeeping) means any edit between showing and approving voids the card, and a card for an older draft can never publish the newer one.",
+      "reverse_if": "Owners find re-approving after trivial edits too costly and ask for a narrower binding (e.g. only fields that change the compiled brief)."
+    },
+    {
+      "id": "open.2026-10-21.generalised-brief-quality",
+      "type": "open-question",
+      "status": "open",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "Does the generalised compile() keep brief v2's measured gains on jobs other than renewal (EMI, COD, appointment, inbound)?",
+      "closes_when": "A text-bench run of the 16 templates against scripted simulated callers on two brains reports words per turn, question endings and abrupt hang-ups per job, compared with the lab's renewal numbers (33 to 20 words; 62-76% to 13-29% question endings; 0 abrupt hang-ups)."
+    }
+  ],
+  "edges": [
+    { "from": "component.2026-10-21.agents-module", "to": "decision.2026-10-21.brief-budget-per-section", "relation": "implements" },
+    { "from": "component.2026-10-21.agents-module", "to": "decision.2026-10-21.recitable-line-lint-rules", "relation": "implements" },
+    { "from": "component.2026-10-21.agents-module", "to": "decision.2026-10-21.publish-bound-to-draft-hash", "relation": "implements" },
+    { "from": "component.2026-10-21.agents-module", "to": "open.2026-10-21.generalised-brief-quality", "relation": "leaves-open" }
+  ],
+  "events": [
+    {
+      "date": "2026-10-21",
+      "event": "agents-module-built",
+      "details": "Agents module pushed: compile(), lint, 16 templates, 14 tools; 21/21 tests on the throwaway Postgres with a fake LLM. Verified: determinism, throwing budgets, lint refuse/drop, no default stack, approval bound to the draft, tenancy. Not verified: real-model simulations, any live call, brief quality on non-renewal jobs."
+    }
+  ]
+}

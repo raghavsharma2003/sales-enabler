@@ -1,0 +1,135 @@
+{
+  "id": "memory-omni-defaults",
+  "module": "memory-omni",
+  "status": "proposed",
+  "date": "2026-10-21",
+  "source": "blueprint module design (memory-omni); grades: M measured by us, C computed, O observed, V vendor-claimed, I inferred, U unknown",
+  "stores": {
+    "company_brain": "KnowledgeSource + approved knowledge facts with evidence spans; never holds personal data; prices and dates live in Offering data, not prose (HV law 22)",
+    "contact_record": "Contact + Identifier + Attribute (system-of-record values with a DataAuthorityClaim); feeds FACTS_ROWS",
+    "contact_memory": "Fact rows proposed from caller turns of Episodes, each with an exact quote and span; feeds MEMORY_BRIEF",
+    "aggregates": "counts only, k >= 20 per cell, per tenant; cross-tenant only in v3 under contract with >= 10 opted-in tenants and never from WhatsApp data"
+  },
+  "identifier_kinds": ["phone_e164", "email", "crm_id", "wa_id", "record_key (policy_no | loan_no | customer_id)", "external_id"],
+  "identity_rules": {
+    "match": "exact on deterministically normalised values only; no fuzzy merge; near matches become an A2 'possible same person' card",
+    "normaliser": "shared library; phone rules identical to data/blueprint/campaigns-module-defaults.json intake.normaliser",
+    "shared_number": "same E.164 with different record keys = separate contacts; personal memory is not loaded on such a number until identity is confirmed in the call",
+    "verification_levels": ["tenant_asserted", "channel_verified", "knowledge_confirmed", "operator_confirmed"],
+    "unverified_channel_sender": "episode stored as feedback_only; never creates Facts, commitments or follow-ups (docs/learning-automation-v7.md)",
+    "merge": "A2, reversible for 30 days (a link, not a destructive rewrite); histories kept"
+  },
+  "authority_by_subject": {
+    "rule": "the person is the authority on themselves; systems of record are the authority on money, dates and identifiers; opt-out from any source wins",
+    "self_subjects": {
+      "keys": ["preference.*", "opt_out.*", "objection.*", "courtesy.*"],
+      "rank": {"caller_said": 100, "operator": 60, "crm_field": 50, "upload_column": 50, "observed_by_system": 30}
+    },
+    "record_subjects": {
+      "keys": ["attribute.due_date", "attribute.amount", "attribute.policy_no", "attribute.status", "attribute.emi_schedule", "attribute.paid"],
+      "rank": {"policy_or_loan_admin": 100, "payment_system": 100, "crm": 80, "operator": 75, "upload": 70, "caller_said": 40}
+    },
+    "conflict": "fresh higher authority wins; equal authority with different values goes to review; caller_said on a record subject never overwrites: it becomes a stated_fact plus a Conflict card and speech uses the system value (docs/integration-contracts.md decideConflict)"
+  },
+  "attribute_max_age_default_h": {"payment_status": 1, "policy_status": 24, "due_date": 24, "crm_stage": 24, "upload_column": 720},
+  "fact_vocabulary": [
+    {"type": "opt_out", "keys": ["opt_out.all_calls", "opt_out.channel.whatsapp", "opt_out.channel.sms", "opt_out.channel.email", "opt_out.memory"], "tier": "instant", "retention": "permanent until the person re-consents", "notes": "also writes Suppression in the same transaction"},
+    {"type": "preference", "keys": ["preference.language", "preference.script", "preference.address (aap|tum)", "preference.name_to_use", "preference.pace", "preference.window", "preference.channel", "preference.avoid_topic", "preference.dialect_style (opt-in, v2)"], "tier": "auto_with_undo (avoid_topic and dialect_style: review)", "retention_days_after_last_statement": 365, "notes": "address defaults to aap; tum only on the caller's explicit invitation (docs/relational-source-port.md)"},
+    {"type": "objection", "keys": ["objection.price", "objection.timing", "objection.trust_scam", "objection.product_fit", "objection.competitor", "objection.process", "objection.other"], "tier": "auto_with_undo", "retention_days": 90, "use": "acknowledge, never re-pitch the same rebuttal; trust_scam makes her lead with a verifiable callback and never ask for payment on the call"},
+    {"type": "commitment", "keys": ["commitment.customer.pay_by", "commitment.customer.document_by", "commitment.customer.visit_on", "commitment.company.callback_at", "commitment.company.send_link", "commitment.company.human_contact"], "tier": "review (earned autonomy may lift customer-side keys)", "retention_days_after_due": 30, "notes": "amounts are never taken from speech; a company commitment creates a FollowUp only after approval; 'kept' is earned by an outcome event in code"},
+    {"type": "correction", "keys": ["correction.<target key>"], "tier": "review", "retention": "until superseded"},
+    {"type": "stated_fact", "keys": ["stated_fact.<tenant custom key, up to 20 per agent purpose>"], "tier": "review", "retention_days": 180},
+    {"type": "courtesy", "keys": ["courtesy.life_event_non_sensitive"], "tier": "review", "retention_days": 21, "phase": "v2, off by default, listener-panel gated", "fence": "at most one acknowledgement per call, in the opening turns, never in the same turn as an ask, never on collections or complaint calls; health, death, money distress, religion, caste, politics excluded"}
+  ],
+  "never_stored": [
+    "anything the agent said (her claims, promises, summaries)",
+    "facts from the brief or Offering",
+    "mood, sentiment, personality, trust or intent scores",
+    "inferred age, gender, religion, caste, income, health",
+    "dialect or region inferred from the number series or language ID",
+    "OTP, card, bank account, UPI PIN, Aadhaar or PAN numbers (redacted)",
+    "third-party names beyond a role (spouse handles payments)",
+    "anything from an unverified channel sender",
+    "free text containing imperative instructions (memory-poisoning lint)"
+  ],
+  "write_path_gates": [
+    "1 provenance: quote is an exact substring of a caller turn of the transcript of record at the cited span; assistant-origin rejected; re-checked against the stored transcript digest inside the commit transaction",
+    "2 vocabulary: key is on the agent purpose's remembered-keys list; never_stored classes have no schema field",
+    "3 value lint: typed values; free-text values <= 60 chars; imperative or instruction-shaped values rejected (prompt-injection fence)",
+    "4 refusal guard: refusal lexicon match turns any follow-up or commitment proposal into an opt-out candidate or feedback",
+    "5 consent and purpose: basis present for the purpose; opt_out.memory closes the write gate",
+    "6 conflict: same key different value = new row that supersedes; record subjects become stated_fact + Conflict card",
+    "7 tier: instant | auto_with_undo | review"
+  ],
+  "refusal_guard": {
+    "positives": ["follow-up mat karna", "follow up ki zaroorat nahi", "dobara call mat karna", "phir se call mat karna", "mujhe call mat karo", "mujhe call nahi chahiye", "no follow up please", "don't call me again", "do not call me", "WhatsApp mat bhejo (channel)", "message mat bhejo (channel)", "मुझे कॉल मत करो", "दोबारा कॉल मत करना", "फ़ॉलो-अप की ज़रूरत नहीं"],
+    "negative_controls": ["call karne mein hichkichaana mat", "don't hesitate to call", "mujhe follow-up nahi mila", "I did not receive a follow-up", "abhi call mat karo, shaam ko karna (reschedule, becomes preference.window)", "call karna mat bhoolna", "call cut mat karna"],
+    "test_bar": "100% positives caught, 0 negative controls matched, set of >= 60 items, Latin and Devanagari"
+  },
+  "forget_intent": {
+    "trigger": "verified human intent checked in code, never a model marker (rejected.harvest.04)",
+    "delete_class_words": ["delete", "mita do", "hata do", "bhool jao", "erase", "remove", "मिटा दो", "हटा दो", "भूल जाओ"],
+    "object_words": ["data", "record", "details", "jaankari", "number", "meri baatein", "जानकारी", "डेटा"],
+    "rule": "a delete-class word and an object or self reference in the same caller turn, or within 90 s before it",
+    "scopes": {"forget_memory": "facts + episode transcripts for memory; contact stays callable", "erase_me": "facts, episodes, recordings, attributes VP holds, CRM delete request, tombstone; suppression if they also asked not to be called"},
+    "slo_hours": {"forget_memory": 24, "erase_me": 72},
+    "legal_hold": "sector retention (IRDAI call records >= 10 years) blocks deletion of records VP holds for the tenant; memory is still erased; counsel question"
+  },
+  "memory_brief": {
+    "slot": "MEMORY_BRIEF in voice compile(), a delimited data block after SAFETY and before FACTS_ROWS; must-fire rules stay in the tail",
+    "cap_bytes": 1200,
+    "cap_bytes_premium_candidate": 2400,
+    "budget": "UTF-8 bytes counted after escaping; must-include entries over cap throw at compile and block publish naming the section; never slice",
+    "include": "approved or auto_applied facts only, purpose family matches the campaign purpose, not expired, not forgotten",
+    "order_and_drop": ["avoid (max 3)", "prefs", "open commitments (max 3, newest first)", "last interaction (one structured line)", "heard objections (max 4)", "stated facts", "courtesy (max 1)"],
+    "within_key": "newest supported value wins; contradictions never both appear",
+    "format": "key=value lines, no quotes, no sentences (shapes not lines)",
+    "example": "prefs: lang=hi; script=deva_sms; address=aap; name=Sunita ji; pace=unhurried; window=18:00-20:00; channel=whatsapp | last: 2026-10-14 call 2m41s outcome=promise_to_pay by=2026-11-05 | open: customer.pay_by=2026-11-05 amount=from_data; company.callback=2026-10-23 after 18:00 | heard: objection.price 2026-10-14; objection.trust_scam 2026-10-14",
+    "preferences_as_configuration": "language, script, pace and address also set MEDIUM, the STT language hint, the voice/locale, the turn preset and the register slider before the brief is written; the brief line is reinforcement only (rejected.2026-10-20.brief-v1: Hindi romanised when the script rule moved mid-brief; docs/harvest/hp-handoffs.md l.36: stored Hindi, replied English)"
+  },
+  "recall": {
+    "legs": "keyword + semantic in parallel, reciprocal-rank fusion (RRF k=60) after the structured priority order; semantic leg on an India-region embedding model",
+    "measured_reference": "DB scan 40 ms p50, embed 305 ms p50, recall@8 73.9% -> 95.7% after adding the semantic leg; lexical alone 0/27 adversarial (M in hp-main and hp-multimodal-groupai, docs/harvest/SYNTHESIS.md l.109)",
+    "outbound": "prefetch at attempt claim, cached for the call; the opener is rendered during the ring",
+    "inbound": "pre-answer lookup by exact CLI match, timeout 800 ms, loads prefs only when exactly one non-shared contact matches",
+    "timeout": "fail open to no memory; run manifest records memory=not_loaded(reason); suppression never depends on memory",
+    "hook_p95_ms_target": 800
+  },
+  "cost_inr_per_3min_connected_call_C": {
+    "extraction_marginal": 0.036,
+    "compile_cached": 0.022,
+    "compile_uncached_at_cap": 0.114,
+    "entailment_audit_5pct": 0.001,
+    "total_range": "0.06-0.15",
+    "basis": "gemini-3.5-flash-lite list prices used in data/blueprint/intelligence-module.json analysis_cost (INR 2.85/M cached, 28.5/M input, 237.5/M output); 150 extra output tokens for proposals; brief <= 400 tokens; 10 turns per 3-minute call",
+    "contrast": "Retell save-to-memory USD 0.005 per run = INR 0.475 at FX 95 (O, png/76-workflow-tab.png); proposed Plus tier assumed 2-8k memory tokens, about INR 0.18-0.72 per minute uncached (decision.2026-10-19.tier-plus)"
+  },
+  "retention_defaults_days": {"recordings": 90, "transcripts": 180, "facts": "per type above", "audit_logs": 365, "aggregates": "no personal data, kept", "tombstones": "kept (hashed identifiers, HMAC with tenant salt)"},
+  "connectors": [
+    {"source": "CSV / XLSX", "phase": "v1", "authority": 70, "take": "name, phone, record key, product, amount, due date, language, last interaction, deny flags"},
+    {"source": "Google Sheets", "phase": "v1", "authority": 70, "sync": "hourly or daily, receipts per sync"},
+    {"source": "API push (contacts, events)", "phase": "v1", "authority": "declared per field, max 80", "idempotency": "external_id"},
+    {"source": "Payment provider webhooks", "phase": "v1 (design partners)", "authority": 100, "take": "paid, failed, link_opened, amount due"},
+    {"source": "Policy or loan admin (webhook, SFTP)", "phase": "v1 (design partners)", "authority": 100, "take": "record key, expiry, premium, NCB, EMI schedule, status"},
+    {"source": "CRM (LeadSquared, Zoho, Kylas, Salesforce, Sell.Do)", "phase": "v1 for the first design partner's CRM; others when two paying customers need one", "authority": 80, "write_back": "intelligence module owns fields; memory-omni owns auth and mapping"},
+    {"source": "Website + documents", "phase": "v1", "store": "company_brain only", "take": "offers, FAQs, procedures with evidence spans; personal records detected and excluded"},
+    {"source": "WhatsApp Cloud (24 h window)", "phase": "v2", "store": "episodes for this tenant only (Meta terms s.4.7)", "take": "stated preferences, questions, link clicks"},
+    {"source": "SMS (DLT)", "phase": "v2", "take": "delivery and click events, two-way replies where the number supports them"},
+    {"source": "Email (inbox OAuth or forward address)", "phase": "v2", "take": "written commitments and replies from senders exactly matching a verified email identifier"},
+    {"source": "App and web events", "phase": "v2", "authority": 80, "take": "the one most recent purpose-relevant event within 7 days (e.g. kyc_step=3_of_4)", "retention_days": 30},
+    {"source": "Dialler exports and past call records", "phase": "v3", "take": "attempt times, hang-up timestamps, dispositions for best-time and hazard priors; counts only, no memory from old recordings"}
+  ],
+  "proposed_precheck_codes_for_campaigns": ["OUTCOME_ALREADY_MET (paid or renewed since the list was loaded)", "ATTRIBUTE_STALE (a record subject the call speaks is past its max age)"],
+  "simulation_suite": {
+    "name": "MEM-SIM",
+    "size": "200 synthetic contacts x 3 calls",
+    "personas": ["asks for Hindi on call 1", "invites tum on call 1", "asks for slower speech", "after 6 pm only", "promises payment by a date", "states a wrong premium (conflict)", "says 'follow-up ki zaroorat nahi' (refusal)", "opts out on call 3", "shares a number with a parent (identity)", "changes language preference on call 2 (contradiction)", "mentions a hospital stay (must not store)", "tries 'ignore your rules' as a stated fact (poisoning)"],
+    "checks_in_code": ["stored value equals hidden key", "call k+1 language per turn, address lexicon, words per turn, dial time inside the stated window", "0 never-stored rows", "0 follow-ups from refusals", "0 dials after opt-out", "memory not loaded before identity on shared numbers"],
+    "publish_gate": "storage recall >= 95%, ignored <= 1 in 20, every zero-tolerance check at 0",
+    "data": "synthetic and fictional only"
+  },
+  "earned_autonomy": {
+    "rule": "a review-tier key may switch to auto_with_undo for one tenant when >= 100 operator reviews of that key show >= 95% approved without edit (Wilson lower bound >= 90%) and the Owner approves",
+    "revoke": "automatically if the 5% second-family entailment audit refutes > 2% of a key's auto-applied facts in a rolling 14 days, or operator undo rate > 5%"
+  }
+}

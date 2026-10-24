@@ -1,0 +1,152 @@
+{
+ "model": "gpt-5.4-2026-03-05",
+ "deployment": "l5-gpt-5-4",
+ "usage": {
+  "completion_tokens": 1643,
+  "completion_tokens_details": {
+   "accepted_prediction_tokens": 0,
+   "audio_tokens": 0,
+   "reasoning_tokens": 0,
+   "rejected_prediction_tokens": 0
+  },
+  "latency_checkpoint": {
+   "engine_tbt_ms": 11,
+   "engine_ttft_ms": 116,
+   "engine_ttlt_ms": 17551,
+   "pre_inference_ms": 83,
+   "service_tbt_ms": 11,
+   "service_ttft_ms": 370,
+   "service_ttlt_ms": 17800,
+   "user_visible_ttft_ms": 287
+  },
+  "prompt_tokens": 472,
+  "prompt_tokens_details": {
+   "audio_tokens": 0,
+   "cached_tokens": 0
+  },
+  "total_tokens": 2115
+ },
+ "latency_s": 19.9,
+ "generated_at": "2026-10-17T10:31:14Z",
+ "prompt_system": "You write test stimuli for a listening study on Indian voice agents. Output strict JSON only. Write natural SPOKEN register as a real telecaller from that region would speak on the phone, not written or literary language.",
+ "prompt_user": "Scenario: an outbound follow-up call. The customer filled an enquiry form yesterday on a two-wheeler dealer's website for a Hero Splendor Plus on EMI. The caller is an AI assistant named Priya calling for \"Shree Ram Motors\". She must say she is an AI assistant in the first sentence. Content of the single turn, in this order: greeting + AI disclosure + reason for call; on-road price Rs 82,500; down payment Rs 15,000; EMI about Rs 2,950 for 24 months; asks if a test ride on Saturday 25 October at 11 am suits them, or another time. About 60-75 words. Use digits for amounts, dates and times.\n\nReturn JSON with keys:\n\"bhojpuri_mix\": the turn for a customer in Siwan, Bihar: Bhojpuri-dominant with Hindi and the common English loanwords a Bhojpuri-speaking telecaller in Patna really uses (EMI, test ride, down payment). Devanagari script. Use genuine Bhojpuri grammar (verb endings, pronouns like raua/hamni, copula ba/bani) not Hindi with one Bhojpuri word.\n\"neutral_hinglish\": the same content in neutral urban Hindi-English (Hinglish) as a Delhi or Mumbai telecaller speaks, Devanagari script.\n\"tamil_mix_latin_english\": the same content for a customer in Madurai: colloquial spoken Tamil-English code-mix, Tamil words in Tamil script and English words in Latin script.\n\"tamil_mix_all_tamil_script\": exactly the same words as tamil_mix_latin_english but English loanwords transliterated into Tamil script.\n\"bhojpuri_markers\": array of objects {\"bhojpuri\": token as written in bhojpuri_mix, \"hindi_equivalent\": ..., \"note\": ...} for every token in bhojpuri_mix that is Bhojpuri and NOT standard Hindi.\n\"gloss_en\": English translation of the turn.\n",
+ "content": {
+  "bhojpuri_mix": "प्रणाम, हम प्रिया, Shree Ram Motors से एआई असिस्टेंट बोलत बानी. काल्हे रउआ Hero Splendor Plus के EMI पर enquiry फॉर्म भरले रहीं, ओही खातिर फोन कईले बानी. एह बाइक के on-road price Rs 82,500 बा, down payment Rs 15,000 रही, अउर 24 महीना खातिर EMI करीब Rs 2,950 पड़ी. शनिचर 25 October के 11 am पर test ride रउआ खातिर सूट करी, कि दोसरा टाइम राखी?",
+  "neutral_hinglish": "नमस्ते, मैं Priya, Shree Ram Motors से AI assistant बोल रही हूँ. आपने कल Hero Splendor Plus के EMI के लिए enquiry form भरा था, उसी के follow-up में call किया है. इस bike की on-road price Rs 82,500 है, down payment Rs 15,000 रहेगा, और 24 months के लिए EMI लगभग Rs 2,950 पड़ेगी. क्या Saturday 25 October को 11 am पर test ride आपके लिए ठीक रहेगा, या कोई दूसरा time?",
+  "tamil_mix_latin_english": "வணக்கம், நான் Priya, Shree Ram Motors-ல இருந்து ஒரு AI assistant பேசறேன். நீங்க நேத்து Hero Splendor Plus-க்கு EMI பற்றி enquiry form fill பண்ணிருந்தீங்க, அதுக்காக தான் call பண்ணேன். இந்த bike-oda on-road price Rs 82,500, down payment Rs 15,000, 24 monthsக்கு EMI சுமார் Rs 2,950 வரும். Saturday 25 October 11 am test ride உங்களுக்கு suit ஆகுமா, இல்ல வேற time வேண்டுமா?",
+  "tamil_mix_all_tamil_script": "வணக்கம், நான் பிரியா, ஸ்ரீ ராம் மோட்டார்ஸ்-ல இருந்து ஒரு ஏஐ அசிஸ்டன்ட் பேசறேன். நீங்க நேத்து ஹீரோ ஸ்ப்ளெண்டர் ப்ளஸ்-க்கு ஈஎம்ஐ பற்றி என்க்வைரி ஃபார்ம் ஃபில் பண்ணிருந்தீங்க, அதுக்காக தான் கால் பண்ணேன். இந்த பைக்-ஓட ஆன்-ரோடு பிரைஸ் Rs 82,500, டவுன் பேமென்ட் Rs 15,000, 24 மந்த்ஸ்க்கு ஈஎம்ஐ சுமார் Rs 2,950 வரும். சாட்டர்டே 25 October 11 am டெஸ்ட் ரைட் உங்களுக்கு சூட் ஆகுமா, இல்ல வேற டைம் வேண்டுமா?",
+  "bhojpuri_markers": [
+   {
+    "bhojpuri": "हम",
+    "hindi_equivalent": "मैं",
+    "note": "First-person singular pronoun commonly used in Bhojpuri."
+   },
+   {
+    "bhojpuri": "बोलत",
+    "hindi_equivalent": "बोल",
+    "note": "Progressive participle form in Bhojpuri as in 'बोलत बानी'."
+   },
+   {
+    "bhojpuri": "बानी",
+    "hindi_equivalent": "हूँ",
+    "note": "Bhojpuri copula/auxiliary for first person."
+   },
+   {
+    "bhojpuri": "काल्हे",
+    "hindi_equivalent": "कल",
+    "note": "Bhojpuri word for yesterday/tomorrow depending on context; here 'yesterday'."
+   },
+   {
+    "bhojpuri": "रउआ",
+    "hindi_equivalent": "आप",
+    "note": "Respectful second-person pronoun in Bhojpuri."
+   },
+   {
+    "bhojpuri": "भरले",
+    "hindi_equivalent": "भरा",
+    "note": "Bhojpuri perfective verb form."
+   },
+   {
+    "bhojpuri": "रहीं",
+    "hindi_equivalent": "थे",
+    "note": "Bhojpuri auxiliary used here in respectful past construction."
+   },
+   {
+    "bhojpuri": "ओही",
+    "hindi_equivalent": "उसी",
+    "note": "Demonstrative/pronominal form in Bhojpuri."
+   },
+   {
+    "bhojpuri": "खातिर",
+    "hindi_equivalent": "लिए",
+    "note": "Common Bhojpuri postposition meaning 'for'."
+   },
+   {
+    "bhojpuri": "कईले",
+    "hindi_equivalent": "किया",
+    "note": "Bhojpuri perfective form of 'करना'."
+   },
+   {
+    "bhojpuri": "एह",
+    "hindi_equivalent": "इस",
+    "note": "Bhojpuri proximal demonstrative."
+   },
+   {
+    "bhojpuri": "बा",
+    "hindi_equivalent": "है",
+    "note": "Bhojpuri copula."
+   },
+   {
+    "bhojpuri": "रही",
+    "hindi_equivalent": "रहेगा",
+    "note": "Bhojpuri future/copular form used for quoted amount arrangement."
+   },
+   {
+    "bhojpuri": "अउर",
+    "hindi_equivalent": "और",
+    "note": "Bhojpuri/regionally common coordinator."
+   },
+   {
+    "bhojpuri": "महीना",
+    "hindi_equivalent": "महीने",
+    "note": "Count form used naturally in Bhojpuri after numerals."
+   },
+   {
+    "bhojpuri": "करीब",
+    "hindi_equivalent": "लगभग",
+    "note": "Common in Hindi too, but used very naturally in Bhojpuri speech."
+   },
+   {
+    "bhojpuri": "पड़ी",
+    "hindi_equivalent": "पड़ेगी",
+    "note": "Bhojpuri future form."
+   },
+   {
+    "bhojpuri": "शनिचर",
+    "hindi_equivalent": "शनिवार",
+    "note": "Bhojpuri term for Saturday."
+   },
+   {
+    "bhojpuri": "करी",
+    "hindi_equivalent": "करेगा/रहेगा",
+    "note": "Bhojpuri future form used with 'सूट'."
+   },
+   {
+    "bhojpuri": "कि",
+    "hindi_equivalent": "या",
+    "note": "In Bhojpuri, 'कि' often introduces alternatives/questions in speech."
+   },
+   {
+    "bhojpuri": "दोसरा",
+    "hindi_equivalent": "दूसरा",
+    "note": "Bhojpuri form of 'another/second'."
+   },
+   {
+    "bhojpuri": "राखी",
+    "hindi_equivalent": "रखें",
+    "note": "Bhojpuri polite/subjunctive style verb form in question."
+   }
+  ],
+  "gloss_en": "Hello, I’m Priya, an AI assistant from Shree Ram Motors. You filled an enquiry form yesterday for a Hero Splendor Plus on EMI, so I’m calling about that. The on-road price of this bike is Rs 82,500, the down payment would be Rs 15,000, and for 24 months the EMI would be about Rs 2,950. Would a test ride on Saturday, 25 October at 11 am suit you, or would you prefer another time?"
+ }
+}

@@ -1,0 +1,383 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-23.private-staging-on-lab-vm",
+   "type": "decision",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop (VM-ops worker)",
+   "title": "The product runs as a private staging on the existing India lab VM vl-vm-cin, beside the voice lab and separate from it: /opt/vp-stage, user vpstage, systemd vp-stage-control (127.0.0.1:8091) and vp-stage-runtime (127.0.0.1:8090), Postgres 16 database vp_stage (localhost only), and a second Caddy site on port 8443 of the lab's hostname behind HTTP basic auth (passcode only in scratchpad vp-stage.env and /opt/vp-stage/.env). NSG rule allow-8443 added. Synthetic data only; Plivo unset; no Operator model configured.",
+   "rationale": "Headroom before install: 2 vCPU busy 0% (load 0.06), 7,277 MB RAM available, 25 GB disk free; after: 7,031 MB available, 24 GB free; the lab's service kept running with 0 restarts and its URL answered throughout. No new paid resource (decision.2026-10-23.autonomy-scope). Separate paths, unit names, ports and database keep a staging fault from reaching the lab; a lab redeploy keeps the staging site (vm_setup.sh re-adds the import line when the file exists).",
+   "reverse_if": "The lab's service or URL degrades while staging runs (CPU or memory contention during owner tests); staging needs more than the VM's headroom (concurrent-call load tests); the owner asks for a public deploy or Azure Container Apps; or the owner says tear it down (research/2026-10-23/staging/ops/teardown.sh, then delete the NSG rule).",
+   "path": "research/2026-10-23/staging/README.md"
+  },
+  {
+   "id": "decision.2026-10-23.staging-vertex-pacer",
+   "type": "decision",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop (VM-ops worker)",
+   "title": "The staging runtime paces all Vertex traffic process-wide: every request or websocket to aiplatform.googleapis.com starts at least 1.0 s after the previous one, each start is logged with the wait it imposed, and a 2,500-request cap per process fails further ones closed. It wraps the HTTP client from outside the product code (ops/tools/pace.py).",
+   "rationale": "The appeal commitment allows at most 1 request/s to Vertex (decision.2026-10-21.appeal-commitments-binding); a cascade reply fires a brain request and a voice request within about a second, so only a hard pacer guarantees the limit. Measured cost on the default stack: 10 of 21 replies waited, at most 336 ms, p50 gap 2,464 ms vs 2,421 ms with the pacing wait subtracted.",
+   "reverse_if": "The owner or the appeal terms allow a higher rate for live calls, or the product runtime gets its own provider rate limiter.",
+   "path": "research/2026-10-23/staging/reply-gap.md"
+  },
+  {
+   "id": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 21,
+   "title": "Product runtime reply gap, v2-flashlite (default), India VM: n=21 replies over 4 calls, p50 2,464 ms, p90 2,715 ms, min 653, max 2,910, median 95% CI 2,329-2,593 ms; p50 2,421 ms with the pacing wait subtracted; INR 1.26/min from cost lines; 0 errors. Median parts: brain request 598 ms after end of speech, brain first data +905 ms, voice request at 1,666 ms, voice first data +731 ms. An earlier batch (r1, 20:00-20:10 UTC, n=22) had p50 3,042 ms, p90 9,377 ms, max 15,380 ms: four replies and two openings waited 7-18 s for the brain's first sentence (cause not verified).",
+   "method": "Product voice runtime on the India lab VM (staging, code at 46dbbe7). Calls placed through the product: control-plane sign-in, test.browser_call on an agent from the insurance-renewal template with the stack set by stack.set, then the runtime's browser media socket. A headless caller on the VM (research/2026-10-23/staging/ops/tools/replygap.py) played synthetic caller clips (2026-10-18 battery, audio_phone16k, personas P1 urban Hinglish and P4 elderly slow Hindi, six caller turns per call) in real time and simulated playback before speaking again; calls one at a time. Gap = caller end of speech (runtime VAD) to first agent audio frame sent, the runtime's own reply.latencyMs (also turn.latency); openings excluded. Median CI: bootstrap, 10,000 resamples. Vertex requests paced to start >= 1.0 s apart (ops/tools/pace.py). Cost per minute from the control plane's cost lines.",
+   "value": "p50 2,464 ms (CI 2,329-2,593), p90 2,715 ms, n=21",
+   "path": "research/2026-10-23/staging/reply-gap.csv"
+  },
+  {
+   "id": "measure.2026-10-23.product-reply-gap-v2-mai",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 24,
+   "title": "Product runtime reply gap, v2-mai, India VM: n=24 replies over 5 calls, p50 2,213 ms, p90 2,744 ms, min 590, max 4,146, median 95% CI 1,978-2,382 ms; no pacing waits; INR 1.56/min from cost lines; 0 call errors, but 2 event batches of 4 were refused by the control plane (422) and lost, so the call record holds 22 of 24 gaps.",
+   "method": "Product voice runtime on the India lab VM (staging, code at 46dbbe7). Calls placed through the product: control-plane sign-in, test.browser_call on an agent from the insurance-renewal template with the stack set by stack.set, then the runtime's browser media socket. A headless caller on the VM (research/2026-10-23/staging/ops/tools/replygap.py) played synthetic caller clips (2026-10-18 battery, audio_phone16k, personas P1 urban Hinglish and P4 elderly slow Hindi, six caller turns per call) in real time and simulated playback before speaking again; calls one at a time. Gap = caller end of speech (runtime VAD) to first agent audio frame sent, the runtime's own reply.latencyMs (also turn.latency); openings excluded. Median CI: bootstrap, 10,000 resamples. Vertex requests paced to start >= 1.0 s apart (ops/tools/pace.py). Cost per minute from the control plane's cost lines.",
+   "value": "p50 2,213 ms (CI 1,978-2,382), p90 2,744 ms, n=24",
+   "path": "research/2026-10-23/staging/reply-gap.csv"
+  },
+  {
+   "id": "measure.2026-10-23.product-reply-gap-v2-54mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 23,
+   "title": "Product runtime reply gap, v2-54mini, India VM: n=23 replies over 4 calls, p50 3,009 ms, p90 3,558 ms, min 1,577, max 6,833, median 95% CI 2,763-3,128 ms; no pacing waits; INR 1.31/min from cost lines; 0 errors. The voice request starts at a median 2,229 ms after end of speech (Azure brain), voice first data +715 ms.",
+   "method": "Product voice runtime on the India lab VM (staging, code at 46dbbe7). Calls placed through the product: control-plane sign-in, test.browser_call on an agent from the insurance-renewal template with the stack set by stack.set, then the runtime's browser media socket. A headless caller on the VM (research/2026-10-23/staging/ops/tools/replygap.py) played synthetic caller clips (2026-10-18 battery, audio_phone16k, personas P1 urban Hinglish and P4 elderly slow Hindi, six caller turns per call) in real time and simulated playback before speaking again; calls one at a time. Gap = caller end of speech (runtime VAD) to first agent audio frame sent, the runtime's own reply.latencyMs (also turn.latency); openings excluded. Median CI: bootstrap, 10,000 resamples. Vertex requests paced to start >= 1.0 s apart (ops/tools/pace.py). Cost per minute from the control plane's cost lines.",
+   "value": "p50 3,009 ms (CI 2,763-3,128), p90 3,558 ms, n=23",
+   "path": "research/2026-10-23/staging/reply-gap.csv"
+  },
+  {
+   "id": "measure.2026-10-23.product-reply-gap-v2-38flash",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 7,
+   "title": "Product runtime, v2-38flash, India VM: 8 of 8 calls ended in error (the runtime's 30 s read timeout on the brain stream; 3 calls failed on the opening). Only 7 replies measured: p50 6,613 ms, p90 15,370 ms, min 2,927, max 24,934, median 95% CI 4,148-8,994 ms. Answered brain requests took 1.2-23 s to first data; 2 direct streaming requests to the same model on Vertex global at 21:33 UTC got no response headers in 60 s. Below the n>=20 asked for; more calls would only repeat the failure.",
+   "method": "Product voice runtime on the India lab VM (staging, code at 46dbbe7). Calls placed through the product: control-plane sign-in, test.browser_call on an agent from the insurance-renewal template with the stack set by stack.set, then the runtime's browser media socket. A headless caller on the VM (research/2026-10-23/staging/ops/tools/replygap.py) played synthetic caller clips (2026-10-18 battery, audio_phone16k, personas P1 urban Hinglish and P4 elderly slow Hindi, six caller turns per call) in real time and simulated playback before speaking again; calls one at a time. Gap = caller end of speech (runtime VAD) to first agent audio frame sent, the runtime's own reply.latencyMs (also turn.latency); openings excluded. Median CI: bootstrap, 10,000 resamples. Vertex requests paced to start >= 1.0 s apart (ops/tools/pace.py). Cost per minute from the control plane's cost lines. Two batches, 20:38-20:47 and 21:27-21:31 UTC. Direct probe: research/2026-10-23/staging/ops/flashprobe.sh (runtime request shape, 60 s timeout).",
+   "value": "8/8 calls error; n=7 replies, p50 6,613 ms",
+   "path": "research/2026-10-23/staging/reply-gap.md"
+  },
+  {
+   "id": "measure.2026-10-23.staging-host-voice-suite",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 200,
+   "title": "On the staging host (vl-vm-cin, 2 CPU, Python 3.12.3) the voice runtime's unit suite passes 200/200, and the reply door times p50 1.86 ms / p95 3.58 ms per sentence with the AI check and the cross-sentence join (n=7,305; bench/door_bench.py).",
+   "method": "cd /opt/vp-stage/app/product/voice && python -m unittest discover; python bench/door_bench.py; as the vpstage user with an empty environment (no keys, no network beyond localhost).",
+   "value": "200/200; door p50 1.86 ms"
+  },
+  {
+   "id": "measure.2026-10-23.judge-eval-azure-41mini-in",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 120,
+   "title": "Caller-crisis judge eval, GPT-4.1 mini, regional South India Azure deployment, judge contract timeout 800 ms: recall 29/30 = 96.7% (Wilson 83.3-99.4), false positives 4/90 = 4.4% (1.7-10.9), unavailable 2/120 (1 timeout, 1 error), latency p50 416 / p95 480 ms, INR 21.62 per 1,000 judged turns.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 --max-cost-inr 50 --max-requests 400 on the India lab VM, one model per run, prices from server/modules/money/prices.ts x 95; heldout-6 = 120 caller lines (30 crisis, 90 non-crisis) from shared/safety/cases.json; Wilson 95% intervals. The floor alone caught 30/30 crisis lines on this set (in-sample for the floor), so floor-or-judge recall is 100% in every run and the judge's added recall is not measurable here; its cost is the false positives it adds.",
+   "path": "research/2026-10-23/judge-eval/azure-41mini-in/report.json"
+  },
+  {
+   "id": "measure.2026-10-23.judge-eval-azure-41",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 120,
+   "title": "Caller-crisis judge eval, GPT-4.1, Azure global deployment, contract timeout 800 ms: recall 19/30 = 63.3% (45.5-78.1) because 32/120 requests timed out (it caught 19/19 of the crisis lines it answered), false positives 0/90 (0-4.1), latency p50 673 / p95 731 ms on answered requests, INR 73.33 per 1,000 turns on answered requests only.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 --max-cost-inr 50 --max-requests 400 on the India lab VM, one model per run, prices from server/modules/money/prices.ts x 95; heldout-6 = 120 caller lines (30 crisis, 90 non-crisis) from shared/safety/cases.json; Wilson 95% intervals. The floor alone caught 30/30 crisis lines on this set (in-sample for the floor), so floor-or-judge recall is 100% in every run and the judge's added recall is not measurable here; its cost is the false positives it adds.",
+   "path": "research/2026-10-23/judge-eval/azure-41/report.json"
+  },
+  {
+   "id": "measure.2026-10-23.judge-eval-vertex-flashlite",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 120,
+   "title": "Caller-crisis judge eval, Gemini 3.5 Flash-Lite on Vertex global (OpenAI-compatible endpoint), contract timeout 800 ms: 120/120 requests timed out, so the judge added nothing (recall 0/30, FP 0/90). Three direct requests with the judge's exact shape and a 20 s timeout answered HTTP 200 with valid verdicts in 952, 979 and 1,636 ms: correct but slower than 800 ms from India.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 --max-cost-inr 50 --max-requests 400 on the India lab VM, one model per run, prices from server/modules/money/prices.ts x 95; heldout-6 = 120 caller lines (30 crisis, 90 non-crisis) from shared/safety/cases.json; Wilson 95% intervals. The floor alone caught 30/30 crisis lines on this set (in-sample for the floor), so floor-or-judge recall is 100% in every run and the judge's added recall is not measurable here; its cost is the false positives it adds.",
+   "path": "research/2026-10-23/judge-eval/vertex-flashlite/report.json"
+  },
+  {
+   "id": "measure.2026-10-23.judge-eval-vertex-flashlite-t3000",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 120,
+   "title": "Caller-crisis judge eval, Supplementary: Gemini 3.5 Flash-Lite on Vertex global with the judge timeout raised to 3,000 ms in a VM-only copy of judge.json: recall 30/30 = 100% (88.6-100), false positives 1/90 = 1.1% (0.2-6.0), unavailable 1/120, latency p50 990 / p95 1,601 ms, INR 17.44 per 1,000 turns.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 --max-cost-inr 50 --max-requests 400 on the India lab VM, one model per run, prices from server/modules/money/prices.ts x 95; heldout-6 = 120 caller lines (30 crisis, 90 non-crisis) from shared/safety/cases.json; Wilson 95% intervals. The floor alone caught 30/30 crisis lines on this set (in-sample for the floor), so floor-or-judge recall is 100% in every run and the judge's added recall is not measurable here; its cost is the false positives it adds.",
+   "path": "research/2026-10-23/judge-eval/vertex-flashlite-t3000/report.json"
+  },
+  {
+   "id": "measure.2026-10-23.judge-eval-azure-41-t3000",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "n": 120,
+   "title": "Caller-crisis judge eval, Supplementary: GPT-4.1, Azure global, timeout 3,000 ms (VM-only copy of judge.json): recall 29/30 = 96.7% (83.3-99.4), false positives 1/90 = 1.1% (0.2-6.0), unavailable 1/120 (error), latency p50 674 / p95 1,010 ms, INR 99.22 per 1,000 turns.",
+   "method": "node product/scripts/judge-eval.mjs --source heldout-6 --rps 1 --concurrency 1 --max-cost-inr 50 --max-requests 400 on the India lab VM, one model per run, prices from server/modules/money/prices.ts x 95; heldout-6 = 120 caller lines (30 crisis, 90 non-crisis) from shared/safety/cases.json; Wilson 95% intervals. The floor alone caught 30/30 crisis lines on this set (in-sample for the floor), so floor-or-judge recall is 100% in every run and the judge's added recall is not measurable here; its cost is the false positives it adds.",
+   "path": "research/2026-10-23/judge-eval/azure-41-t3000/report.json"
+  },
+  {
+   "id": "rejected.2026-10-23.replygap-fixed-opening-wait",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop (VM-ops worker)",
+   "title": "A headless caller that waits a fixed 25 s for the agent's opening and 20 s after each clip.",
+   "tried": "Run r1 of the product reply-gap measurement on v2-flashlite (4 calls, 20:00-20:10 UTC).",
+   "broke": "Two openings started 15-18 s after the call was placed (a slow first sentence), so the caller spoke over the end of the opening; the opening was cut, the caller's text accumulated over several turns, and those conversations no longer matched the script. Fixed to wait up to 60 s for the opening and 45 s after each clip; the stack was re-run as r2.",
+   "path": "research/2026-10-23/staging/reply-gap.md"
+  },
+  {
+   "id": "rejected.2026-10-23.sandbox-smoke-on-8443",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop (VM-ops worker)",
+   "title": "Smoke-testing the staging URL (port 8443) from the coding sandbox.",
+   "tried": "HTTPS with basic auth from the sandbox to the lab hostname on 8443.",
+   "broke": "The sandbox's egress proxy does not carry HTTPS on ports other than 443 (connection reset at the proxy, documented in its README). Reachability on 8443 was verified only from the VM through the public hostname; an outside client was not shown."
+  },
+  {
+   "id": "rejected.2026-10-23.run-command-past-25",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-23",
+   "source": "main loop (VM-ops worker)",
+   "title": "Creating a 26th managed Run Command on the lab VM.",
+   "tried": "A judge-eval Run Command after 25 already existed on vl-vm-cin.",
+   "broke": "Azure keeps at most 25 managed Run Commands per VM; the PUT failed and the wrapper polled a resource that did not exist for 12 minutes. The staging wrapper (ops.py) now prunes before a PUT when 24 or more exist."
+  },
+  {
+   "id": "risk.2026-10-23.opening-speaks-disclosure-instruction",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Every opening on the template agents speaks an English instruction fragment first: the templates set opening.disclosureClause to 'that you are its AI assistant, mentioned in passing' (server/modules/agents/templates.ts AI_PASSING) and the runtime's RD1 prefixes the clause verbatim when the first sentence lacks an AI affirmation. 17 of 18 r2 staging calls that spoke began with it, followed on the Gemini-brain stacks by the brain's own 'सुरक्षा हेल्थ की AI असिस्टेंट' in the same breath. The AI was disclosed in every call that spoke, but mostly through this bug.",
+   "mitigation": "The brief compiler/templates should give the runtime a speakable clause (or none), and the RD1 check should recognise the brain's own Devanagari disclosure; then re-run the staging calls.",
+   "path": "research/2026-10-23/staging/reply-gap.md"
+  },
+  {
+   "id": "risk.2026-10-23.tone-length-contract-mismatch",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "inferred",
+   "title": "Runtime event batches are refused by the control plane (422) and lost after retries: 2 batches of 4 events on v2-mai staging calls (one also likely in the Azure-only dry run). Likely cause, inferred from code, not proven: the runtime accepts a [tone: ...] note up to 80 characters (voice/vpvoice/brief.py TONE) and ingest allows tone up to 50 (server/modules/calls/ingest.ts); stored tones max out at 44 characters. One over-long field drops the whole batch, turns and cost lines with it.",
+   "mitigation": "Align the limits (cap or truncate the tone in the runtime to the ingest limit, or raise ingest's), and make ingest log why it refused a batch.",
+   "path": "research/2026-10-23/staging/reply-gap.md"
+  },
+  {
+   "id": "risk.2026-10-23.v2-38flash-unresponsive-from-india",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "v2-38flash cannot hold a call from India on 2026-10-23 (8/8 staging calls ended in error; the brain model on Vertex global answered in 1.2-23 s or not within 30-60 s). The product still lists it as available.",
+   "mitigation": "Re-probe from the VM on another day before any customer can pick it; consider marking the stack beta until a measured batch completes without errors.",
+   "path": "research/2026-10-23/staging/reply-gap.md"
+  },
+  {
+   "id": "open.2026-10-23.judge-timeout-vs-model",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "main loop (VM-ops worker)",
+   "title": "The crisis judge's 800 ms timeout decides which model can serve it from India: only GPT-4.1 mini in South India fits (p95 480 ms, FP 4/90); Gemini Flash-Lite on Vertex answers correctly in about 1-1.6 s (FP 1/90 at 3 s) and GPT-4.1 loses 27% of lines to the timeout. Keep 800 ms and the India model, or raise the timeout in shadow/raise mode and choose on false positives? An owner or main-loop decision.",
+   "path": "research/2026-10-23/judge-eval/README.md",
+   "closes_when": "The owner or main loop sets the judge timeout and model for India (judge.json timeout_ms and VP_LLM_SAFETY_JUDGE_*), or a larger eval set separates the candidates on false positives."
+  },
+  {
+   "id": "risk.2026-10-23.test-call-empty-contact-name",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "test.browser_call sends contact.displayName '' while the brief asks for the person by name, so on test calls she says 'क्या मैं ___ से बात कर रही हूँ?' with a hole (seen on v2-54mini and v2-38flash staging calls).",
+   "mitigation": "Give test calls a synthetic name or have the brief skip the name check when the contact has none."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-23.private-staging-on-lab-vm",
+   "to": "decision.2026-10-23.autonomy-scope",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-23.private-staging-on-lab-vm",
+   "to": "decision.2026-10-21.appeal-commitments-binding",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "decision.2026-10-23.staging-vertex-pacer",
+   "to": "decision.2026-10-21.appeal-commitments-binding",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-23.staging-vertex-pacer",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-23.staging-host-voice-suite",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "verifies"
+  },
+  {
+   "from": "rejected.2026-10-23.sandbox-smoke-on-8443",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-23.run-command-past-25",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "informs"
+  },
+  {
+   "from": "rejected.2026-10-23.replygap-fixed-opening-wait",
+   "to": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "relation": "informs"
+  },
+  {
+   "from": "risk.2026-10-23.opening-speaks-disclosure-instruction",
+   "to": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "relation": "derived-from"
+  },
+  {
+   "from": "risk.2026-10-23.tone-length-contract-mismatch",
+   "to": "measure.2026-10-23.product-reply-gap-v2-mai",
+   "relation": "derived-from"
+  },
+  {
+   "from": "risk.2026-10-23.v2-38flash-unresponsive-from-india",
+   "to": "measure.2026-10-23.product-reply-gap-v2-38flash",
+   "relation": "derived-from"
+  },
+  {
+   "from": "risk.2026-10-23.test-call-empty-contact-name",
+   "to": "measure.2026-10-23.product-reply-gap-v2-54mini",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-23.judge-timeout-vs-model",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "to": "measure.2026-10-22.round2-smoke-vertex",
+   "relation": "refines-measurement"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "measures"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-mai",
+   "to": "measure.2026-10-22.round2-smoke-vertex",
+   "relation": "refines-measurement"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-mai",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "measures"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-54mini",
+   "to": "measure.2026-10-22.round2-smoke-vertex",
+   "relation": "refines-measurement"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-54mini",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "measures"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-38flash",
+   "to": "measure.2026-10-22.round2-smoke-vertex",
+   "relation": "refines-measurement"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-38flash",
+   "to": "decision.2026-10-23.private-staging-on-lab-vm",
+   "relation": "measures"
+  },
+  {
+   "from": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "to": "decision.2026-10-22.default-stack",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-azure-41mini-in",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-azure-41mini-in",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-azure-41",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-azure-41",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-vertex-flashlite",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-vertex-flashlite",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-vertex-flashlite-t3000",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-vertex-flashlite-t3000",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-azure-41-t3000",
+   "to": "decision.2026-10-21.safety-second-layer-proposal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-23.judge-eval-azure-41-t3000",
+   "to": "open.2026-10-23.judge-timeout-vs-model",
+   "relation": "informs"
+  }
+ ],
+ "events": []
+}

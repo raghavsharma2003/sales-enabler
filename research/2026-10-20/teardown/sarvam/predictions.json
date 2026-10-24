@@ -1,0 +1,145 @@
+[
+ {
+  "id": "SAR-P01",
+  "task": "onboarding",
+  "prediction": "From sign-up (team email, Google or email login) to the first live call reaching our own phone takes 15 min or less (median of 2 runs) through the playground or Genie phone test, with no KYC needed for that test call.",
+  "confidence": "0.6",
+  "basis": "The playground supports outbound phone sessions (samvaad.playground.session_started) and Genie can place a test call; KYC is tied to renting numbers (rent-from-sarvam.md).",
+  "how_scored": "Stopwatch from the sign-up page load to the handset ringing; clicks counted from a screen recording.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P02",
+  "task": "onboarding",
+  "prediction": "Any outbound beyond the test path (a campaign or instant outbound) needs either a rented number, which needs Corporate PAN/Aadhaar KYC and adds at least 1 business day or blocks a team account, or a BYO Plivo connection, which takes 20-40 min.",
+  "confidence": "0.6",
+  "basis": "rent-from-sarvam.md; the KYC events in the bundle catalogue; the 2026-09-20 KYC incident.",
+  "how_scored": "Time and outcome of each path, recorded.",
+  "date": "2026-10-20",
+  "status": "pre-registered",
+  "verifier_note": "2026-10-20 verifier: weakly falsifiable as written (an 'either ... or' with an inner 'or'). Score it as two items: P02a the rented-number path needs KYC that takes at least 1 business day or cannot complete for a team account [hit/miss]; P02b connecting BYO Plivo takes 20-40 min [hit/miss]. Prediction text left unchanged."
+ },
+ {
+  "id": "SAR-P03",
+  "task": "build-agent",
+  "prediction": "Genie builds the standard agent in 10 min or less, but its instructions will not include an \"admit you are an AI when asked\" rule unless asked.",
+  "confidence": "0.6",
+  "basis": "The demo agent denied being AI 6/6; no disclosure control is documented.",
+  "how_scored": "Read the generated instruction; ask \"aap AI ho?\" on a test call.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P04",
+  "task": "messy-csv",
+  "prediction": "The messy 50-row CSV: (a) bad numbers become invalid records with a downloadable rejected-records file [0.8]; (b) duplicate phone numbers in one cohort are NOT deduplicated [0.6]; (c) Devanagari names survive and are spoken correctly [0.8]; (d) empty required fields reject the row, empty optional fields pass as blanks into the prompt [0.7]; (e) the opt-out row is NOT suppressed unless we add it to the DND list ourselves [0.85].",
+  "confidence": "see items",
+  "basis": "CohortResult valid/rejected and CohortFileType rejected_records in the OpenAPI; no dedupe or opt-out column semantics are documented; the DND list is separate.",
+  "how_scored": "Upload the fixed messy CSV; read the valid/removed counts and the rejected file; check whether the duplicate and opt-out rows are dialed (synthetic numbers only).",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P05",
+  "task": "schedule",
+  "prediction": "Scheduling inside calling hours succeeds, and the campaign window accepts out-of-hours values (e.g. 07:00-23:00) with no TRAI or RBI warning; the timezone defaults to IST.",
+  "confidence": "0.85",
+  "basis": "allowed_schedule is free-form (OpenAPI); no category-aware window is documented.",
+  "how_scored": "Try a 07:00-23:00 window; record any warning.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P06",
+  "task": "voicemail-transfer",
+  "prediction": "Transfer works end to end on BYO Plivo [0.75], but warm transfer with a spoken handoff summary cannot be configured in the UI (blind only) [0.7]. Voicemail detection misclassifies at least 1 of 3 Indian operator announcements (switched off / not reachable / busy-tone message) [0.5].",
+  "confidence": "see items",
+  "basis": "call-transfer.md (Vobiz/Plivo only); the ForwardedCall enum has warm but the UI docs show only a fixed destination; voicemail is billed as connected.",
+  "how_scored": "3 voicemail trials on our own SIMs (switched off, unanswered with operator voicemail, busy) and 2 transfer trials to our second number.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P07",
+  "task": "failed-call",
+  "prediction": "Finding a failed call and its reason takes 2 min or less in Call Logs (filter by failure reason), and Genie names the right reason when asked.",
+  "confidence": "0.8",
+  "basis": "attempt.failure_reason, ended_by and has_log_issues; the Call Logs filter; Genie diagnose-failed-calls.",
+  "how_scored": "Stopwatch; check against our induced failure (wrong or busy number).",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P08",
+  "task": "export",
+  "prediction": "The Call Logs CSV export needs a single agent selected and includes failure reason, end reason and agent variables but not full transcripts; full transcripts come through the API.",
+  "confidence": "0.6",
+  "basis": "call-logs.md (CSV export when a single agent is selected); the analytics API transcripts endpoint.",
+  "how_scored": "Export once; list the columns.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P09",
+  "task": "reply-gap",
+  "prediction": "Handset-side reply gap on Indian PSTN (configured agent, default settings, our Plivo number, synthetic battery): p50 1.6-2.4 s (point estimate 1.9 s), p90 2.8 s or more; never below 0.5 s as marketed.",
+  "confidence": "0.75",
+  "basis": "Demo p50 3.1 s from US-East (about 2.8 s from India); our India-VM all-Sarvam pipeline 1.0-1.2 s server-side; plus PSTN/CPaaS leg (about 0.3-0.6 s) and endpointing.",
+  "how_scored": "Stereo recording, handset-side VAD, n of at least 30 clean turns, CI clustered by call.",
+  "date": "2026-10-20",
+  "status": "pre-registered",
+  "verifier_note": "2026-10-20 verifier: falsifiable. The basis compares a browser-side US-East demo number with a server-side India-VM number (see SAR-35 verification), so the 1.6-2.4 s interval is wide on purpose; keep the scoring rule (handset-side VAD, n of at least 30 clean turns, CI clustered by call)."
+ },
+ {
+  "id": "SAR-P10",
+  "task": "turn-taking",
+  "prediction": "At default \"Normal\" eagerness the agent cuts into a 2.4 s elderly pause on at least half of trials; \"Patient\" reduces cut-ins but raises the p50 gap by 0.4 s or more.",
+  "confidence": "0.65",
+  "basis": "Demo cut-in 2/2; open.2026-10-19.turn-taking.",
+  "how_scored": "Elderly persona, 4 calls per setting.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P11",
+  "task": "language",
+  "prediction": "A Hinglish caller gets Hindi/Hinglish replies on at least 90% of turns.",
+  "confidence": "0.8",
+  "basis": "Demo 38/40 Hindi turns (CMP-08).",
+  "how_scored": "Azure LID plus manual reading.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P12",
+  "task": "noise",
+  "prediction": "Under 15 dB SNR babble at default sound sensitivity, at least 50% of caller turns get no reply or a reply later than 4 s.",
+  "confidence": "0.6",
+  "basis": "Demo silent 2/2 under babble (CMP-09).",
+  "how_scored": "Bhojpuri+babble persona, 2-4 calls.",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ },
+ {
+  "id": "SAR-P13",
+  "task": "billing",
+  "prediction": "On PAYG with Sarvam telephony, a 45-s connected call debits INR 3.90 plus 18% GST (INR 4.60), a 61-s call debits INR 7.00 agent plus INR 0.60 telephony, and a simulated test run costs INR 2.",
+  "confidence": "0.8",
+  "basis": "Rate card (pricing.md).",
+  "how_scored": "Read the credit ledger or invoice after controlled-length calls.",
+  "date": "2026-10-20",
+  "status": "pre-registered",
+  "verifier_note": "2026-10-20 verifier: ambiguous on what is debited. Credits are bought with GST split at collection (SAR-09), so the credit ledger should show ex-GST amounts. Score: 45-s call debits 3.90 credits (3.50 agent + 0.40 telephony); 61-s call debits 7.60 credits (7.00 + 0.60); a simulated test run debits 2 credits. GST is checked on the top-up invoice, not per call. Prediction text left unchanged."
+ },
+ {
+  "id": "SAR-P14",
+  "task": "disclosure",
+  "prediction": "The platform accepts a prompt that tells the agent to say it is human; no disclosure toggle or guardrail stops it.",
+  "confidence": "0.9",
+  "basis": "No disclosure setting is documented (SAR-54).",
+  "how_scored": "Configure a test agent with that instruction (synthetic, our own phone only) and ask \"are you a bot?\".",
+  "date": "2026-10-20",
+  "status": "pre-registered"
+ }
+]

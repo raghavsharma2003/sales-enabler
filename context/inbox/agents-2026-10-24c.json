@@ -1,0 +1,36 @@
+{
+  "nodes": [
+    {
+      "id": "measure.2026-10-24.vendor-language-lists",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
+      "title": "Vendor docs language check, 21 parts, 22 pages saved: 7 parts list all 11 VP locales (Azure and Sarvam ears, the three Gemini brains, Sarvam-105B, and Azure TTS), Gemini voices and Live on Vertex list only en/hi/mr/ta/te as available (Kannada, Malayalam, Gujarati, Punjabi, Odia preview; Bengali only bn-BD), Bulbul v4 lacks Malayalam and Odia, OpenAI and Kimi publish no per-language list",
+      "n": 21,
+      "method": "WebFetch and WebSearch of public vendor pages on 2026-10-24 by a research subagent; each page saved with URL, date and verbatim excerpt under research/2026-10-24/language-lists/ (lists.json); two excerpts spot-checked by the main loop. Caveat: the fetch tool passes pages through a small model and several long pages were read in chunks, so excerpts are as the tool returned them.",
+      "path": "research/2026-10-24/language-lists/lists.json"
+    },
+    {
+      "id": "decision.2026-10-24.language-matrix-follows-docs",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "components.ts language lists now follow the saved vendor docs; Bengali, Kannada, Gujarati, Malayalam and Odia are not claimed for Gemini voices or Live on Vertex, so the default stack serves Hindi, English, Hinglish, Tamil, Telugu and Marathi only",
+      "rationale": "matrix.json records what VP adopts per part and why it deviates from the docs: Vertex is VP's route, so the Vertex pages win over the Gemini API pages; preview languages and bn-BD-only Bengali are not claimed; the Azure voice part keeps Hindi and English because VP offers only those voices; Azure HD keeps English only (the OmniIndic Hindi voices VP lists were not found); Bulbul v4 drops Malayalam and Odia. One judgement call: OpenAI publishes no language list, so English and Hindi are claimed (English on every model page, Hindi named in its MMMLU evaluation) and no other Indian language; gpt-oss and Kimi claim English only. tests/languages-docs.test.ts holds components.ts equal to matrix.json and matrix.json to the docs plus explained deviations. Consequence: a Bengali agent now needs the Sarvam stack, which is beta, so Bengali contacts on a campaign fall back to the primary language until a non-beta stack serves Bengali.",
+      "reverse_if": "A vendor moves a preview language to generally available or lists bn-IN (update lists.json and matrix.json, then components.ts), OpenAI publishes a language list, or a test call in a language contradicts its entry.",
+      "path": "research/2026-10-24/language-lists/matrix.json"
+    },
+    {
+      "id": "decision.2026-10-24.static-files-revalidate",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Static files: only hashed build assets are immutable; everything else (index, samples manifest, sample clips) is no-cache with an ETag, and audio answers byte ranges",
+      "rationale": "server/app.ts sent every static file as immutable for a year with no Range support, so a re-recorded sample or new manifest needed query-string workarounds in the web, and audio could not seek. Now 304 on a matching ETag, 206 for one byte range, 416 for an impossible one, HEAD supported; the web's '?t=' and '?v=' are removed (commit 8d2fc69).",
+      "reverse_if": "Sample traffic grows enough that revalidation costs matter (then content-hashed sample names and immutable caching)."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.language-matrix-follows-docs", "to": "measure.2026-10-24.vendor-language-lists", "relation": "derived-from" },
+    { "from": "decision.2026-10-24.language-matrix-follows-docs", "to": "decision.2026-10-24.language-capability-matrix", "relation": "extends" },
+    { "from": "decision.2026-10-24.language-matrix-follows-docs", "to": "open.2026-10-24.languages-runtime-and-disclosure", "relation": "informs" },
+    { "from": "decision.2026-10-24.static-files-revalidate", "to": "open.2026-10-24.static-cache-for-samples", "relation": "implements" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "agents-language-docs-and-static-cache", "details": "Docs half of the language work: 22 vendor pages saved, components.ts corrected to the docs with every deviation explained in matrix.json and a test holding them together; the default stack no longer claims Bengali. Static files: no-cache + ETag except hashed assets, byte ranges for audio, web cache workarounds removed. Gates green: 591 pass, 0 fail, 4 skipped; ui-contract 179/179; browser flows 54/0/2. Open: voice half (per-language ears and voices, Tamil call), disclosure lines for kn/te/ml/mr/gu/pa/or." }
+  ]
+}

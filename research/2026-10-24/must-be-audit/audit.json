@@ -1,0 +1,1083 @@
+{
+ "audit": "must-be audit of the current tree",
+ "date": "2026-10-24",
+ "sha": "87187d7e50987007173ea33159782e92c80490c7",
+ "branch": "claude/serene-franklin-9w7f1v",
+ "worktree": "/dev/shm/wt-mustbe",
+ "origin_moved_to": {
+  "sha": "fc5cac5",
+  "commits": [
+   "6245d4e analysis r6 outcome-first contract",
+   "fc5cac5 safety lint owns T-L6/T-L7"
+  ],
+  "reaudited": false,
+  "status_impact": "none found from the diff stat"
+ },
+ "method": "Read-only. The 21 Kano must-be items (research/2026-10-20/teardown/SYNTHESIS.md §3) judged against their sharpened forms (research/2026-10-21/walkthroughs/SYNTHESIS.md §5), plus A-D and the disclosure promotion (decision.2026-10-21.wt-synthesis-must-be-changes) and the 10 defining decisions (BLUEPRINT.md §1). Code read with file:line; every cited test opened and its assertions read; no test run; React screens read; screenshots named not opened; walkthroughs 1 and 2 re-checked against code. A tool, table or switch nothing consumes counts as not built.",
+ "status_rules": {
+  "done": "built, with a test that would fail without it",
+  "partial": "built in part; gap says what is missing",
+  "missing": "nothing a buyer can use exists",
+  "blocked": "the next step needs an owner decision named by its node"
+ },
+ "counts": {
+  "done": 5,
+  "partial": 12,
+  "missing": 5,
+  "blocked": 4
+ },
+ "items": [
+  {
+   "id": "1",
+   "name": "Test call from the builder",
+   "sharpened": "Browser voice and text test with no phone number and no KYC, docked beside the editor",
+   "status": "done",
+   "evidence": {
+    "code": [
+     "product/server/modules/calls/tools.ts:109-140 test.browser_call",
+     "product/web/src/test-panel.tsx:40-47",
+     "product/web/src/operator.tsx:94 (test panel in the assistant dock)",
+     "product/server/modules/agents/index.ts:585 test.simulate"
+    ],
+    "tests": [
+     "product/tests/calls.test.ts:277 'test.browser_call dispatches a test ticket; test calls stay out of outcomes, search, funnels and monitors'",
+     "product/tests/calls.test.ts:322 'a draft test call compiles the real agents draft through brief.compile and is filed under the draft hash'",
+     "product/tests/agents-tools.test.ts:313"
+    ],
+    "flows": [
+     "product/web/e2e/flows.test.mjs:256 'Browser call: she calls you in the browser...' (skips without devsim)",
+     "flows.test.mjs:237 practice callers",
+     "flows.test.mjs:1134 hearing her first"
+    ],
+    "shots": [
+     "agent-test-d.png",
+     "agent-test-m.png",
+     "browser-call-live.png"
+    ]
+   },
+   "gap": "No typed chat where the buyer plays the caller (text testing is LLM practice callers only); the live browser-call flow skips in CI (no devsim); ringing the buyer's own phone needs PlivoTelephony.systemCall, which throws 'not wired' (campaigns/telephony.ts:105).",
+   "lanes": [
+    "web",
+    "voice"
+   ]
+  },
+  {
+   "id": "2",
+   "name": "List/CSV campaign with per-row variables",
+   "sharpened": "CSV contract shown before upload; per-row overrides (language, voice, first message); row preview with reasons; cross-format dedupe",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/intake/sources.ts:23, :188, :221-228",
+     "product/server/modules/intake/mapping.ts:26-41",
+     "product/server/modules/intake/store.ts:66-73",
+     "product/server/modules/campaigns/worker.ts:115-117 (language routing), :153-217 (per-row facts)",
+     "product/web/src/pages/contacts.tsx:103-174"
+    ],
+    "tests": [
+     "product/tests/intake.test.ts:121",
+     "product/tests/intake.test.ts:175",
+     "product/tests/campaigns.test.ts:764 F3",
+     "product/tests/agents-languages.test.ts:142",
+     "product/tests/agents-walkthrough-r2.test.ts:88"
+    ],
+    "flows": [
+     "flows.test.mjs:1197 keyboard-only import"
+    ],
+    "shots": [
+     "contacts-import-d.png",
+     "contacts-import-m.png"
+    ]
+   },
+   "gap": "No Excel/XLSX ('Excel: save as CSV first', contacts.tsx:143) and a 900 KB web limit (:127); the web import never passes agentId to source.map, so the agent's per-contact column contract is not shown; no per-row voice or first-message override.",
+   "lanes": [
+    "intake",
+    "web"
+   ]
+  },
+  {
+   "id": "3",
+   "name": "Recurring calling window with days",
+   "sharpened": "Window derived from call category; never 00:00-23:59 by default",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/campaigns/defaults.ts:19-30",
+     "product/server/modules/campaigns/index.ts:231",
+     "product/server/modules/campaigns/gate.ts:257 G6"
+    ],
+    "tests": [
+     "product/tests/campaigns-units.test.ts:28, :39, :48, :57",
+     "product/tests/campaigns.test.ts:310 T3"
+    ],
+    "flows": [
+     "flows.test.mjs:843"
+    ],
+    "shots": [
+     "campaign-new-d.png",
+     "campaign-new-m.png",
+     "campaign-draft-d.png"
+    ]
+   },
+   "gap": "The web form always sends 10:00-19:00 Mon-Sat (campaigns.tsx:50, :62), so the server's category default never applies from the UI. Never wider, so low risk.",
+   "lanes": [
+    "web"
+   ]
+  },
+  {
+   "id": "4",
+   "name": "Retries by outcome",
+   "sharpened": "On the campaign form, not a separate workflow product",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/campaigns/defaults.ts:55-71",
+     "product/server/modules/campaigns/index.ts:734-770",
+     "product/server/modules/calls/followups.ts:26-38, :57-58"
+    ],
+    "tests": [
+     "product/tests/campaigns.test.ts:467 'retry ladder: steps by outcome, unknown never retried, idempotent'",
+     "product/tests/calls.test.ts:620"
+    ],
+    "flows": [],
+    "shots": []
+   },
+   "gap": "Ladder is one global constant, not on the form or editable; the form's 'Retry pattern' select (campaigns.tsx:78) has no effect because the form always sends budgets and campaign.draft reads i.budgets first (campaigns/index.ts:255), and the preset only sets attempt counts anyway; a stated callback time is never passed (followups.ts:58), so it retries at +2 h (index.ts:165).",
+   "lanes": [
+    "campaigns",
+    "web"
+   ]
+  },
+  {
+   "id": "5",
+   "name": "Inbound: number to agent, caller lookup",
+   "sharpened": null,
+   "status": "missing",
+   "evidence": {
+    "code": [
+     "product/db/migrations/0004_calling.sql:121 inbound_route (no tool writes it)",
+     "product/server/modules/campaigns/gate.ts:370 (only reader)",
+     "product/voice/vpvoice/server.py:154",
+     "product/server/modules/campaigns/index.ts:777-779 and calls/index.ts:13-15 (the only hooks)"
+    ],
+    "tests": [],
+    "flows": [],
+    "shots": []
+   },
+   "gap": "No number-to-agent binding, no carrier answer hook, no caller lookup, no Numbers UI for inbound.",
+   "lanes": [
+    "voice",
+    "campaigns"
+   ]
+  },
+  {
+   "id": "6",
+   "name": "Transfer to a human",
+   "sharpened": "Warm context",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/voice/vpvoice/session.py:178-206",
+     "product/voice/vpvoice/server.py:409-419",
+     "product/voice/vpvoice/transports.py:142",
+     "product/server/modules/calls/ingest.ts:206-210",
+     "product/web/src/pages/calls.tsx:112"
+    ],
+    "tests": [
+     "product/voice/tests/test_sim.py:190 test_wants_human_hands_off",
+     "product/voice/tests/test_sim.py:199"
+    ],
+    "flows": [
+     "flows.test.mjs:1086"
+    ],
+    "shots": [
+     "agent-builder-d.png"
+    ]
+   },
+   "gap": "Queue and callback targets go nowhere (the queued hand_off row has no reader, screen, task or notification); warmSummary (shared/agent-config.ts:65, toggle agent-builder.tsx:208) is never read by the runtime; the Plivo bridge has no test; no human alert on a crisis hand-off; bridge line Hindi only.",
+   "lanes": [
+    "voice",
+    "calls",
+    "safety",
+    "web"
+   ]
+  },
+  {
+   "id": "7",
+   "name": "Voicemail / IVR detection",
+   "sharpened": "Indian operator announcements",
+   "status": "missing",
+   "evidence": {
+    "code": [
+     "product/voice/vpvoice/session.py:10 (end reason only)",
+     "product/voice/vpvoice/transports.py:127-130 (no machine detection)",
+     "product/voice/vpvoice/server.py:392-398 (never yields switched_off)"
+    ],
+    "tests": [],
+    "flows": [],
+    "shots": []
+   },
+   "gap": "No answering-machine or operator-announcement detection; the 'voicemail' and 'switched_off' ladder classes are never produced.",
+   "lanes": [
+    "voice"
+   ]
+  },
+  {
+   "id": "8",
+   "name": "DTMF",
+   "sharpened": null,
+   "status": "missing",
+   "evidence": {
+    "code": [
+     "grep -ri dtmf product/ finds 0 matches"
+    ],
+    "tests": [],
+    "flows": [],
+    "shots": []
+   },
+   "gap": "Send DTMF (IVR navigation, 'press 1') and receive keypad input.",
+   "lanes": [
+    "voice"
+   ]
+  },
+  {
+   "id": "9",
+   "name": "Knowledge base",
+   "sharpened": null,
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/workspace/knowledge.ts:1-40",
+     "product/server/modules/workspace/offering.ts",
+     "product/web/src/pages/settings.tsx:115"
+    ],
+    "tests": [
+     "product/tests/workspace-knowledge.test.ts:15, :50, :88"
+    ],
+    "flows": [],
+    "shots": [
+     "settings-knowledge-d.png",
+     "settings-knowledge-m.png"
+    ]
+   },
+   "gap": "Nothing carries knowledge or offering facts to an agent or a call: no agent references an offering, compile() never reads them, kb_query is inert, and agents/compile.ts:32 tells users to 'move long facts to knowledge'.",
+   "lanes": [
+    "agents",
+    "workspace"
+   ]
+  },
+  {
+   "id": "10",
+   "name": "HTTP tools in-call",
+   "sharpened": null,
+   "status": "missing",
+   "evidence": {
+    "code": [
+     "product/server/modules/agents/index.ts:153-156, :532-553",
+     "product/voice/vpvoice/conversation.py:445-449 (emits status 'requested' only)",
+     "product/server/modules/calls/ingest.ts:201-204",
+     "product/web/src/catalog.ts:39-46",
+     "product/web/src/pages/agent-builder.tsx:233-235"
+    ],
+    "tests": [
+     "product/tests/agents-tools.test.ts:277 (grant only)"
+    ],
+    "flows": [],
+    "shots": []
+   },
+   "gap": "No tool definition (URL, auth, schema, timeout), no execution, no result back to her. 'Look up an order', 'Book a slot', 'Send a link on WhatsApp' and 'Note a callback time' are switches that do nothing, the same fault as rejected.2026-10-24.tools-tab-endcall-transfer-switches.",
+   "lanes": [
+    "voice",
+    "agents"
+   ]
+  },
+  {
+   "id": "11",
+   "name": "Post-call judge, typed extraction",
+   "sharpened": "Visible, editable defaults (summary, success, sentiment)",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/calls/analysis.ts:1-7, :326, :431",
+     "product/server/modules/calls/tools.ts:311 outcome.define, :379 judge.edit, :392 judge.calibrate"
+    ],
+    "tests": [
+     "product/tests/calls.test.ts:205",
+     "product/tests/calls.test.ts:404",
+     "product/tests/calls-analysis-tier.test.ts:117"
+    ],
+    "flows": [],
+    "shots": [
+     "call-d.png",
+     "insights-d.png"
+    ]
+   },
+   "gap": "No screen shows or edits the outcome definition or judge (the web reads only analysis.settings.get, settings.tsx:154); no sentiment; no buyer-defined typed fields.",
+   "lanes": [
+    "calls",
+    "web"
+   ]
+  },
+  {
+   "id": "12",
+   "name": "Post-call webhook (full record)",
+   "sharpened": "Signed",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/workspace/webhooks.ts:136-147, :103, :197-208",
+     "product/server/modules/workspace/index.ts:110",
+     "product/server/modules/workspace/integrations.ts:14-23, :27 (integrationSecrets: no caller)"
+    ],
+    "tests": [
+     "product/tests/workspace-integrations.test.ts:81",
+     "product/tests/workspace-integrations.test.ts:153"
+    ],
+    "flows": [],
+    "shots": [
+     "settings-integrations-d.png"
+    ]
+   },
+   "gap": "No module calls webhook.emit (only tests do); no call.ended payload; no webhook screen in Settings; integrations are stored but never used.",
+   "lanes": [
+    "workspace",
+    "calls"
+   ]
+  },
+  {
+   "id": "13",
+   "name": "Call log: recording, transcript, cost, reason",
+   "sharpened": "Business outcome beside engineering reason; cost; end-to-end latency; version",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/web/src/pages/calls.tsx:30-33",
+     "product/web/src/pages/call-review.tsx:11-27",
+     "product/server/modules/calls/tools.ts:30-33, :201, :250"
+    ],
+    "tests": [
+     "product/tests/calls-log-agent.test.ts:24",
+     "product/tests/calls-live.test.ts:178"
+    ],
+    "flows": [
+     "flows.test.mjs:1107",
+     "flows.test.mjs:920",
+     "flows.test.mjs:961"
+    ],
+    "shots": [
+     "calls-d.png",
+     "calls-m.png",
+     "call-d.png",
+     "call-m.png"
+    ]
+   },
+   "gap": "The web ignores the agent/version the server sends (web/src/types.ts:71 CallRow has no agent); no per-call latency in the list.",
+   "lanes": [
+    "web"
+   ]
+  },
+  {
+   "id": "14",
+   "name": "Export with extracted fields",
+   "sharpened": null,
+   "status": "missing",
+   "evidence": {
+    "code": [
+     "product/server/modules/intake/contacts.ts:325-345 contact.export (contacts only)",
+     "product/server/modules/calls/tools.ts:459-484 report.create (aggregate)"
+    ],
+    "tests": [
+     "product/tests/intake.test.ts:476 (contact export)"
+    ],
+    "flows": [
+     "flows.test.mjs:638 (contacts)"
+    ],
+    "shots": [
+     "contacts-export-d.png"
+    ]
+   },
+   "gap": "No per-call export with outcome, grade, reason, extracted fields, cost, version and recording link.",
+   "lanes": [
+    "calls",
+    "web"
+   ]
+  },
+  {
+   "id": "15",
+   "name": "Agent versions and publish",
+   "sharpened": "Explicit publish with a diff; version shown in the call log",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/agents/index.ts:607 version.publish"
+    ],
+    "tests": [
+     "product/tests/agents-tools.test.ts:194",
+     "product/tests/agents-walkthrough-r2.test.ts:104 'R8: the publish card names the agent, the stack, the last practice call and the field changes, with no ids'",
+     "product/tests/agents-restore.test.ts:42",
+     "product/tests/describe-labels.test.ts:63"
+    ],
+    "flows": [],
+    "shots": [
+     "approval-d.png",
+     "agent-builder-d.png"
+    ]
+   },
+   "gap": "Version not shown in the web call log (same web fix as item 13).",
+   "lanes": [
+    "web"
+   ]
+  },
+  {
+   "id": "16",
+   "name": "Indian CLI path",
+   "sharpened": "Number types, KYC documents, time and price stated before any credential",
+   "status": "blocked",
+   "evidence": {
+    "code": [
+     "product/server/modules/campaigns/telephony.ts:20-26 series router",
+     "product/server/modules/campaigns/telephony.ts:103-105 (Plivo KYC, BYO, system call 'not wired yet')",
+     "product/server/modules/campaigns/index.ts:523, :613-624, :629"
+    ],
+    "tests": [
+     "product/tests/campaigns.test.ts:222",
+     "product/tests/campaigns.test.ts:626",
+     "product/tests/campaigns.test.ts:718",
+     "product/tests/campaigns.test.ts:750"
+    ],
+    "flows": [
+     "flows.test.mjs:1064"
+    ],
+    "shots": [
+     "numbers-d.png",
+     "numbers-m.png"
+    ]
+   },
+   "gap": "KYC adapter, BYO and the real dial path wait on the owner's 'go'; no KYC checklist, time or price per series before search.",
+   "lanes": [
+    "campaigns"
+   ],
+   "blocked_on": [
+    "campaigns 'go' (context/DIRECTION.md open threads)",
+    "decision.2026-10-23.autonomy-scope",
+    "open.2026-10-24.numbers-kyc-before-search",
+    "open.2026-10-21.blueprint-owner-decisions (KC5)"
+   ]
+  },
+  {
+   "id": "17",
+   "name": "Hindi/Hinglish + major Indic",
+   "sharpened": "An explicit Hinglish mode; voices filterable by language with counts",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/shared/agent-config.ts:25",
+     "product/shared/stacks.ts:174-197",
+     "product/server/modules/agents/index.ts:143",
+     "product/server/modules/campaigns/languages.ts:32-41",
+     "product/web/src/stack-picker.tsx:68, :98",
+     "product/voice/vpvoice/session.py:15-26",
+     "product/voice/vpvoice/cascade.py:559"
+    ],
+    "tests": [
+     "product/tests/agents-languages.test.ts:33, :88, :117, :142"
+    ],
+    "flows": [],
+    "shots": [
+     "agent-stack-d.png"
+    ]
+   },
+   "gap": "Stack cards never show languages and filter only by kind; the runtime's fixed lines (hand-off bridge, limit, take-over, silence) are Hindi on every agent; 7 new lexicons not native-reviewed.",
+   "lanes": [
+    "voice",
+    "web"
+   ]
+  },
+  {
+   "id": "18",
+   "name": "Suppression/DNC on every outbound path",
+   "sharpened": "One DNC list on batch, campaign, API and single call; in-call opt-out on by default",
+   "status": "done",
+   "evidence": {
+    "code": [
+     "product/server/modules/campaigns/gate.ts:2, :199-216",
+     "product/server/modules/intake/contacts.ts:207"
+    ],
+    "tests": [
+     "product/tests/campaigns.test.ts:300 'every attempt kind goes through the same gate'",
+     "product/tests/campaigns.test.ts:167",
+     "product/tests/intake.test.ts:242",
+     "product/tests/intake.test.ts:283",
+     "product/tests/campaigns-review.test.ts:176",
+     "product/tests/calls.test.ts:388",
+     "product/tests/safety-optout-e2e.test.ts:162 (skips without voice Python)",
+     "product/voice/tests/test_sim.py:184"
+    ],
+    "flows": [
+     "flows.test.mjs:612",
+     "flows.test.mjs:156"
+    ],
+    "shots": [
+     "contact-suppressed-d.png",
+     "call-optout-d.png"
+    ]
+   },
+   "gap": "Real NCPR lookup is a stand-in (owner).",
+   "lanes": [
+    "intake"
+   ]
+  },
+  {
+   "id": "19",
+   "name": "INR billing with GST (UPI)",
+   "sharpened": "INR rate table with pulse units; pulse at most 30 s and stated",
+   "status": "blocked",
+   "evidence": {
+    "code": [
+     "product/server/modules/money/money.ts:14, :215",
+     "product/server/modules/money/prices.ts:63-64",
+     "product/server/modules/money/gateway.ts:1-3"
+    ],
+    "tests": [
+     "product/tests/money.test.ts:308",
+     "product/tests/money.test.ts:222",
+     "product/tests/money.test.ts:296",
+     "product/tests/money-wallet.test.ts:69, :76"
+    ],
+    "flows": [
+     "flows.test.mjs:1051"
+    ],
+    "shots": [
+     "settings-billing-d.png",
+     "settings-billing-m.png"
+    ]
+   },
+   "gap": "Customer price, tax invoice, GSTIN, receipts, live UPI gateway and trial credit wait on the owner; the only wired carrier pulses at 60 s.",
+   "lanes": [
+    "money"
+   ],
+   "blocked_on": [
+    "decision.2026-10-21.pricing-deferred",
+    "open.2026-10-20.reprice-tiers",
+    "open.2026-10-24.enterprise-billing-documents",
+    "open.2026-10-22.trial-credit-amount",
+    "open.2026-10-24.test-spend-vs-empty-wallet"
+   ]
+  },
+  {
+   "id": "20",
+   "name": "Team roles",
+   "sharpened": "Fixed roles on every plan including trial",
+   "status": "done",
+   "evidence": {
+    "code": [
+     "product/server/modules/workspace/members.ts:68",
+     "product/server/tools.ts (role checks)"
+    ],
+    "tests": [
+     "product/tests/workspace-team.test.ts:73",
+     "product/tests/workspace-team.test.ts:90",
+     "product/tests/workspace-team.test.ts:107",
+     "product/tests/kernel.test.ts:118",
+     "product/tests/web.test.ts:56"
+    ],
+    "flows": [
+     "flows.test.mjs:1153"
+    ],
+    "shots": [
+     "settings-team-d.png",
+     "settings-team-m.png"
+    ]
+   },
+   "gap": "Outside the item: no SSO or SCIM.",
+   "lanes": [
+    "enterprise"
+   ]
+  },
+  {
+   "id": "21",
+   "name": "India data residency option",
+   "sharpened": "Architecture and contract item: India call path by default; residency terms in the BFSI contract",
+   "status": "blocked",
+   "evidence": {
+    "code": [
+     "product/shared/components.ts:18 (processedIn per part)",
+     "product/ops/STAGING.md:36"
+    ],
+    "tests": [],
+    "flows": [],
+    "shots": []
+   },
+   "gap": "The default stack's brain and voice are Gemini processed globally (directive.2026-10-22.processing-anywhere), so 'India call path by default' is false; BFSI terms unwritten.",
+   "lanes": [
+    "voice",
+    "enterprise"
+   ],
+   "blocked_on": [
+    "directive.2026-10-22.processing-anywhere",
+    "open.2026-10-17.kc6-vs-kc10",
+    "counsel KC8 (open.2026-10-21.blueprint-owner-decisions)"
+   ]
+  },
+  {
+   "id": "A",
+   "name": "Price and India-measured latency at every stack choice; all-in INR per minute",
+   "sharpened": "Includes telephony, pulse and the turn wait",
+   "status": "blocked",
+   "evidence": {
+    "code": [
+     "product/server/modules/agents/index.ts:486 stack.list",
+     "product/shared/stacks.ts:32, :44-97",
+     "product/web/src/stack-picker.tsx:123, :186, :202"
+    ],
+    "tests": [
+     "product/tests/agents-tools.test.ts:146",
+     "product/tests/money-parts.test.ts:39, :64, :75",
+     "product/tests/shared.test.ts:93"
+    ],
+    "flows": [
+     "flows.test.mjs:310",
+     "flows.test.mjs:443"
+    ],
+    "shots": [
+     "agent-stack-d.png",
+     "agent-stack-m.png"
+    ]
+   },
+   "gap": "Mechanics done; the headline is 'Provider cost per minute', not the buyer's price; figures are server-side, not at the handset.",
+   "lanes": [
+    "money"
+   ],
+   "blocked_on": [
+    "decision.2026-10-21.pricing-deferred",
+    "open.2026-10-20.reprice-tiers"
+   ]
+  },
+  {
+   "id": "B",
+   "name": "Contacts with India-default E.164, DND status and attempt history",
+   "sharpened": "Memory slot reserved",
+   "status": "done",
+   "evidence": {
+    "code": [
+     "product/shared/phone.ts",
+     "product/server/modules/intake/contacts.ts:110-132, :239",
+     "product/web/src/pages/contacts.tsx:183-201"
+    ],
+    "tests": [
+     "product/tests/shared.test.ts:8-27",
+     "product/tests/intake.test.ts:402",
+     "product/tests/e2e.test.ts:321, :556"
+    ],
+    "flows": [
+     "flows.test.mjs:612",
+     "flows.test.mjs:1074",
+     "flows.test.mjs:887"
+    ],
+    "shots": [
+     "contact-d.png",
+     "contacts-d.png"
+    ]
+   },
+   "gap": "Real DND provider (owner: open.2026-10-22.dnd-provider).",
+   "lanes": [
+    "intake"
+   ]
+  },
+  {
+   "id": "C",
+   "name": "Bounded call and spend defaults",
+   "sharpened": "End-call on, silence hang-up bounded, max duration set, burst opt-in, spend cap per workspace and API key",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/server/modules/agents/templates.ts:27",
+     "product/voice/vpvoice/session.py:92",
+     "product/voice/vpvoice/cascade.py:556-560",
+     "product/server/ledger.ts:46-55",
+     "product/server/modules/workspace/apikeys.ts:23",
+     "product/server/modules/campaigns/defaults.ts:101"
+    ],
+    "tests": [
+     "product/voice/tests/test_sim.py:218",
+     "product/voice/tests/test_sim.py:224",
+     "product/tests/money.test.ts:108",
+     "product/tests/workspace-review.test.ts:40",
+     "product/tests/campaigns.test.ts:557"
+    ],
+    "flows": [
+     "flows.test.mjs:861"
+    ],
+    "shots": [
+     "campaign-cap-d.png",
+     "campaign-cap-m.png"
+    ]
+   },
+   "gap": "Silence hang-up has no test, does not exist on the speech-to-speech path (s2s.py) and says goodbye in Hindi only; no default workspace cap; burst opt-in not modelled.",
+   "lanes": [
+    "voice",
+    "money"
+   ]
+  },
+  {
+   "id": "D",
+   "name": "State integrity",
+   "sharpened": "No click creates or publishes; unsaved marker; reason and fix link beside every disabled primary action; distinct empty, zero, loading and failed",
+   "status": "partial",
+   "evidence": {
+    "code": [
+     "product/web/src/ui.tsx:14-18, :177, :182-189",
+     "product/web/src/pages/agent-builder.tsx:31-41, :65, :74-75"
+    ],
+    "tests": [
+     "product/tests/web.test.ts:128 'no page writes from a menu'"
+    ],
+    "flows": [
+     "flows.test.mjs:722",
+     "flows.test.mjs:429",
+     "flows.test.mjs:371"
+    ],
+    "shots": []
+   },
+   "gap": "Fix link optional (4 uses); in-app navigation from an unsaved draft not guarded; four controls show something that does not run (tool switches, Retry pattern, warm summary, connected integrations).",
+   "lanes": [
+    "web"
+   ]
+  },
+  {
+   "id": "E",
+   "name": "AI disclosure on every creation path",
+   "sharpened": "Templates and copilot output included",
+   "status": "done",
+   "evidence": {
+    "code": [
+     "product/server/modules/agents/guard.ts:62",
+     "product/server/modules/agents/index.ts:40, :430, :663, :754, :808",
+     "product/server/modules/agents/draft.ts:55",
+     "product/shared/safety/disclosure.ts"
+    ],
+    "tests": [
+     "product/tests/agents-guard.test.ts:59",
+     "product/tests/agents-guard.test.ts:82",
+     "product/tests/safety-disclosure.test.ts:41",
+     "product/tests/safety.test.ts:85",
+     "product/voice/tests/test_disclosure.py:44, :80",
+     "product/tests/agents-restore.test.ts:83",
+     "product/tests/learning.test.ts:641",
+     "measure.2026-10-24.staging-openings-e9fdde3 (6/6)"
+    ],
+    "flows": [],
+    "shots": [
+     "call-d.png",
+     "settings-compliance-d.png"
+    ]
+   },
+   "gap": "Disclosure lines in kn, te, ml, mr, gu, pa, or need native review (owner).",
+   "lanes": [
+    "safety"
+   ]
+  }
+ ],
+ "ranked_gaps": [
+  {
+   "rank": 1,
+   "items": [
+    "12",
+    "14"
+   ],
+   "lanes": [
+    "workspace",
+    "calls"
+   ],
+   "gap": "Results never leave Vyakti: no webhook fires, integrations are inert, no call export",
+   "brief": "Emit call.ended (and campaign/contact/hand-off events) through webhook.emit after analysis settles, with one versioned full-record payload; a Settings Webhooks tab (create, test, deliveries, replay); call.export as a policy tool streaming the calls-list filter as CSV; wire one integration (Sheets append or custom HTTP) or label integrations as stored only. Tests: one signed delivery per ended call, none for test calls, no cross-tenant delivery, export escapes formulas and omits suppressed/erased."
+  },
+  {
+   "rank": 2,
+   "items": [
+    "16",
+    "19"
+   ],
+   "lanes": [
+    "campaigns",
+    "money"
+   ],
+   "blocked": true,
+   "gap": "No real line and no money on it",
+   "brief": "Owner: campaigns 'go', trial credit, live gateway. Buildable now: number.search returns KYC checklist, time and monthly price per series even with telephony off; PlivoTelephony.systemCall for phone verification; decide and state what test spend draws on."
+  },
+  {
+   "rank": 3,
+   "items": [
+    "10"
+   ],
+   "lanes": [
+    "voice",
+    "agents"
+   ],
+   "gap": "In-call tools are switches that do nothing",
+   "brief": "Now: label the four inert switches 'Not available yet'. Then a workspace tool definition (schema, URL, method, integration secret, <= 2.5 s timeout, risk class); the runtime executes requested tools with a hold line, returns data to the brain, checks numbers at the reply door, ends gracefully on failure; mark_callback feeds the ladder's stated time; WhatsApp/SMS go through consent and DLT checks. Tests against a local HTTP stub."
+  },
+  {
+   "rank": 4,
+   "items": [
+    "9"
+   ],
+   "lanes": [
+    "agents"
+   ],
+   "gap": "Knowledge and offerings never reach a call",
+   "brief": "AgentConfig gains offeringIds; compile() pulls approved offering facts into FACTS by purpose (T-L3 fence and budget throw still hold); offering never_say joins the door; fix the 'move long facts to knowledge' message; make kb_query real or remove it. Test: linked span fact appears in the brief, an offer never in a service brief."
+  },
+  {
+   "rank": 5,
+   "items": [
+    "7"
+   ],
+   "lanes": [
+    "voice"
+   ],
+   "gap": "Voicemail, IVR and operator announcements undetected",
+   "brief": "Plivo machine detection on plivo_dial; HangupCause mapped to switched_off/voicemail; an Indian operator-announcement lexicon on the first caller audio ends the call before her opening, with no analysis model run; feed followups.retryClass. Tests with canned announcement transcripts."
+  },
+  {
+   "rank": 6,
+   "items": [
+    "6"
+   ],
+   "lanes": [
+    "voice",
+    "calls",
+    "safety",
+    "web"
+   ],
+   "gap": "Hand-offs dead-end",
+   "brief": "handoff.list/claim over hand_off rows with a queue screen and notifications (webhook, email or Slack); callback targets create due tasks with the stated time; the runtime honours warmSummary with a whisper to the bridged leg; crisis hand-offs alert on-duty members within 5 s; bridge lines in the agent's language. Tests: Plivo bridge with a fake plivo_request; queue shows the row; crisis notifies."
+  },
+  {
+   "rank": 7,
+   "items": [
+    "11"
+   ],
+   "lanes": [
+    "calls",
+    "web"
+   ],
+   "gap": "Judge and extraction not visible or editable",
+   "brief": "An 'Outcomes and checks' screen over outcome.define/judge.edit (draft, audited) showing values, instructions, model and calibration; typed extraction fields on the outcome definition with quote-backed values; sentiment as a coded scale with a quote. Tests: unquoted field dropped and counted; 'uncalibrated' shown until calibration passes."
+  },
+  {
+   "rank": 8,
+   "items": [
+    "5"
+   ],
+   "lanes": [
+    "voice",
+    "campaigns"
+   ],
+   "gap": "Inbound does not exist",
+   "brief": "inbound.route.set (policy) binds a number to a published version; a signed POST /hooks/telephony/inbound looks up the caller (contact, suppression, memory), mints an inbound ticket and returns the stream URL; binding shown on Numbers. Build against FakeTelephony now; the Plivo side waits on the campaigns 'go'."
+  },
+  {
+   "rank": 9,
+   "items": [
+    "2"
+   ],
+   "lanes": [
+    "intake",
+    "web"
+   ],
+   "gap": "Import of a buyer's real file",
+   "brief": "Accept .xlsx server-side and raise the web limit to the 20 MB the upload route allows; pass agentId from the import screen so source.map lists unmatched per-contact facts before saving; per-row voice and first-message attributes the ticket honours inside the brief's rules. Test: an xlsx with Devanagari digits imports like its CSV."
+  },
+  {
+   "rank": 10,
+   "items": [
+    "17"
+   ],
+   "lanes": [
+    "voice",
+    "web"
+   ],
+   "gap": "Hindi-only fixed lines; no language on stack cards",
+   "brief": "Move bridge, limit, take-over and silence lines into the per-language tables in shared/safety, rendered for languages.primary; render stack.list languages with grades on cards and add a language filter with counts. Tests: a Tamil-English agent's hand-off line is not Devanagari; the filter shows only stacks that speak the chosen language."
+  },
+  {
+   "rank": 11,
+   "items": [
+    "8"
+   ],
+   "lanes": [
+    "voice"
+   ],
+   "gap": "DTMF"
+  },
+  {
+   "rank": 12,
+   "items": [
+    "A",
+    "19"
+   ],
+   "lanes": [
+    "money"
+   ],
+   "blocked": true,
+   "gap": "Price, GST tax invoice, GSTIN; 60 s pulse on the only carrier"
+  },
+  {
+   "rank": 13,
+   "items": [
+    "21"
+   ],
+   "lanes": [
+    "voice",
+    "enterprise"
+   ],
+   "blocked": true,
+   "gap": "Default stack processed outside India"
+  },
+  {
+   "rank": 14,
+   "items": [
+    "4"
+   ],
+   "lanes": [
+    "campaigns",
+    "web"
+   ],
+   "gap": "Retries: inert form select, fixed ladder, stated callback time lost"
+  },
+  {
+   "rank": 15,
+   "items": [
+    "13",
+    "15"
+   ],
+   "lanes": [
+    "web"
+   ],
+   "gap": "Call log hides version and per-call latency"
+  },
+  {
+   "rank": 16,
+   "items": [
+    "D"
+   ],
+   "lanes": [
+    "web"
+   ],
+   "gap": "Optional fix links; unguarded in-app navigation"
+  },
+  {
+   "rank": 17,
+   "items": [
+    "C"
+   ],
+   "lanes": [
+    "voice",
+    "money"
+   ],
+   "gap": "No silence test or s2s silence; no default workspace cap; no burst"
+  },
+  {
+   "rank": 18,
+   "items": [
+    "3"
+   ],
+   "lanes": [
+    "web"
+   ],
+   "gap": "Campaign form ignores the category window"
+  },
+  {
+   "rank": 19,
+   "items": [
+    "1"
+   ],
+   "lanes": [
+    "web"
+   ],
+   "gap": "No typed text test chat"
+  }
+ ],
+ "defining_decision_contradictions": [
+  {
+   "decision": 4,
+   "what": "A provisional default (v2-flashlite, staging p50 2.30 s; cut-ins 15-42% on every stack) and five 'available' stacks run production campaigns although none passes the <=1.5 s / <=5% gate; the gate is not in code (G10 refuses only beta); no human round 2. Owner-sanctioned as provisional (decision.2026-10-22.default-stack).",
+   "evidence": [
+    "product/shared/stacks.ts:62-92, :103",
+    "product/server/modules/campaigns/gate.ts:344"
+   ]
+  },
+  {
+   "decision": 7,
+   "what": "outcome.record_verified has no caller; integrations are never read; no upload path for verified outcomes; every outcome is an AI guess or a manager label.",
+   "evidence": [
+    "product/server/modules/calls/tools.ts:357",
+    "product/server/modules/workspace/integrations.ts:27"
+   ]
+  },
+  {
+   "decision": 1,
+   "what": "HTTP tool endpoint and generated catalog exist; no MCP server and no SDK (MCP only in comments); in-call tools sit outside the registry and do nothing.",
+   "evidence": [
+    "product/server/tools.ts:1",
+    "product/scripts/tool-catalog.ts"
+   ]
+  },
+  {
+   "decision": 5,
+   "what": "The gate trace is on attempt.precheck and the contact's attempt list, not on the call page, call.get or call.explain.",
+   "evidence": [
+    "product/web/src/pages/contacts.tsx:201",
+    "product/server/modules/calls/tools.ts:257-283"
+   ]
+  },
+  {
+   "decision": 9,
+   "what": "Live fast lane is a 50-call-window early-hang-up rate monitor (35%, min 20 calls); no per-moment detection; nothing throttles a script to 25%; only experiment arms have a harm stop.",
+   "evidence": [
+    "product/server/modules/calls/analysis.ts:473",
+    "product/server/modules/learning/index.ts:536"
+   ]
+  },
+  {
+   "decision": 10,
+   "what": "Price not set (owner); the only wired carrier has a 60 s pulse and the estimate adds half a pulse per call, against the <=30 s rule for recommended paths.",
+   "evidence": [
+    "product/server/modules/money/prices.ts:63-64, :110"
+   ]
+  },
+  {
+   "decision": "P7 (principle)",
+   "what": "What you see is not what runs: four inert tool switches, the Retry pattern select, the warm-summary toggle, integrations shown as connected.",
+   "evidence": [
+    "items 4, 6, 10, 12"
+   ]
+  }
+ ],
+ "consistent_decisions": [
+  2,
+  3,
+  6,
+  8
+ ],
+ "outside_must_be": [
+  {
+   "gap": "Reply gap 2.05-2.30 s p50 on staging; cut-ins 15-42% on every stack",
+   "lane": "voice"
+  },
+  {
+   "gap": "No SSO, SCIM or audit export (hash-chained audit exists, not exportable)",
+   "lane": "enterprise"
+  }
+ ],
+ "not_verified": [
+  "No test was run and no CI log was read.",
+  "Voice-runtime e2e tests (safety-optout-e2e, calls-live, browser-call flow flows.test.mjs:256, devsim call page :997) probably skip in CI: neither the control-plane nor the web-e2e job installs aiohttp and numpy (rejected.2026-10-23.e2e-verified-with-devsim-only).",
+  "Screenshots were named, not opened.",
+  "Nothing real was exercised: no voice heard, no carrier call, no machine detection, no DND answer, no payment.",
+  "Whether a memory fact can be played (decision 8); whether s2s.py ends silence by another route (searched for silence_s, maxSilence, silence_timeout and found none).",
+  "Commits 6245d4e and fc5cac5 were read only as a diff stat."
+ ]
+}

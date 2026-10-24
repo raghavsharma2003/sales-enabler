@@ -1,0 +1,1794 @@
+[
+ {
+  "persona": "d2c-d",
+  "step": "01-signup",
+  "ms": 220,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "02-today-first-run",
+  "ms": 983,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "03-describe-job",
+  "ms": 137,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "04-describe-asked",
+  "ms": 4170,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "05-templates",
+  "ms": 1033,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "06-template-chosen",
+  "ms": 181,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "07-agent-created",
+  "ms": 1862,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "08-agent-persona",
+  "ms": 855,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=persona"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "09-agent-job",
+  "ms": 909,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=job"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "10-agent-rules",
+  "ms": 859,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=rules"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "11-agent-tools",
+  "ms": 831,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=tools"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "12-agent-versions",
+  "ms": 806,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=versions"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "13-brief-edit",
+  "ms": 1271,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=job"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "14-brief-saved",
+  "ms": 267,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=job"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "15-stack",
+  "ms": 1154,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=voice"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "16-stack-sample-playing",
+  "ms": 1246,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=voice"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "17-stack-build-own",
+  "ms": 1346,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=voice"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "18-test-panel",
+  "ms": 1101,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "19-practice-run",
+  "ms": 1004,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "20-browser-call",
+  "ms": 8156,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?test=1"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "21-browser-call-ended",
+  "ms": 2721,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?test=1"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "22-publish-sheet",
+  "ms": 1106,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "23-published",
+  "ms": 3572,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "24-second-change",
+  "ms": 1119,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=persona"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "25-publish-sheet-2",
+  "ms": 1002,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=persona"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "26-published-2",
+  "ms": 3496,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=persona"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "27-versions",
+  "ms": 910,
+  "error": null,
+  "url": "/agents/8f560e49-38eb-44d8-8d7f-14b87bb4fc07?tab=versions"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "28-import",
+  "ms": 1131,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "29-import-checked",
+  "ms": 297,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "30-import-saved",
+  "ms": 301,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "31-contacts",
+  "ms": 1211,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "32-contact",
+  "ms": 190,
+  "error": null,
+  "url": "/contacts/051f44ce-6de4-457f-8406-1ff6bd49b1e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "33-contact-dnd",
+  "ms": 1678,
+  "error": null,
+  "url": "/contacts/051f44ce-6de4-457f-8406-1ff6bd49b1e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "34-campaign-new",
+  "ms": 1049,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "35-campaign-draft",
+  "ms": 1535,
+  "error": null,
+  "url": "/campaigns/c297bf62-4f2c-465a-a52a-c5cd7a88e9e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "36-campaign-cap",
+  "ms": 1083,
+  "error": null,
+  "url": "/campaigns/c297bf62-4f2c-465a-a52a-c5cd7a88e9e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "37-test-call-page",
+  "ms": 2544,
+  "error": null,
+  "url": "/calls/81e57fa5-a0c0-4cc3-a6c7-a003848a3e4a"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "38-campaign-launch-checks",
+  "ms": 1033,
+  "error": null,
+  "url": "/campaigns/c297bf62-4f2c-465a-a52a-c5cd7a88e9e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "39-numbers",
+  "ms": 1141,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "40-numbers-search",
+  "ms": 1659,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "41-insights",
+  "ms": 1217,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "42-insights-improve",
+  "ms": 2766,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "43-privacy",
+  "ms": 948,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "44-billing",
+  "ms": 1150,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "45-op-page-question",
+  "ms": 3754,
+  "error": null,
+  "url": "/campaigns/c297bf62-4f2c-465a-a52a-c5cd7a88e9e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "46-op-topup",
+  "ms": 3739,
+  "error": null,
+  "url": "/campaigns/c297bf62-4f2c-465a-a52a-c5cd7a88e9e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "47-op-plan",
+  "ms": 3668,
+  "error": null,
+  "url": "/campaigns/c297bf62-4f2c-465a-a52a-c5cd7a88e9e2"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "48-today-after",
+  "ms": 1365,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "49-approval-from-today",
+  "ms": 195,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-d",
+  "step": "50-activity",
+  "ms": 1172,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "uni-m",
+  "step": "01-signup",
+  "ms": 256,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "uni-m",
+  "step": "02-today-first-run",
+  "ms": 929,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "03-describe-job",
+  "ms": 95,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "04-describe-asked",
+  "ms": 4074,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "05-templates",
+  "ms": 997,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "06-template-chosen",
+  "ms": 231,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "07-agent-created",
+  "ms": 1779,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca"
+ },
+ {
+  "persona": "uni-m",
+  "step": "08-languages-english",
+  "ms": 30153,
+  "error": "locator.click: Timeout 30000ms exceeded.",
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca"
+ },
+ {
+  "persona": "uni-m",
+  "step": "09-agent-persona",
+  "ms": 822,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=persona"
+ },
+ {
+  "persona": "uni-m",
+  "step": "10-agent-job",
+  "ms": 858,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=job"
+ },
+ {
+  "persona": "uni-m",
+  "step": "11-agent-rules",
+  "ms": 805,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=rules"
+ },
+ {
+  "persona": "uni-m",
+  "step": "12-agent-tools",
+  "ms": 816,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=tools"
+ },
+ {
+  "persona": "uni-m",
+  "step": "13-agent-versions",
+  "ms": 787,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=versions"
+ },
+ {
+  "persona": "uni-m",
+  "step": "14-brief-edit",
+  "ms": 1212,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=job"
+ },
+ {
+  "persona": "uni-m",
+  "step": "15-brief-saved",
+  "ms": 193,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=job"
+ },
+ {
+  "persona": "uni-m",
+  "step": "16-stack",
+  "ms": 1072,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=voice"
+ },
+ {
+  "persona": "uni-m",
+  "step": "17-stack-sample-playing",
+  "ms": 1092,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=voice"
+ },
+ {
+  "persona": "uni-m",
+  "step": "18-stack-build-own",
+  "ms": 1169,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=voice"
+ },
+ {
+  "persona": "uni-m",
+  "step": "19-test-panel",
+  "ms": 963,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca"
+ },
+ {
+  "persona": "uni-m",
+  "step": "20-practice-run",
+  "ms": 896,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca"
+ },
+ {
+  "persona": "uni-m",
+  "step": "21-browser-call",
+  "ms": 7917,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?test=1"
+ },
+ {
+  "persona": "uni-m",
+  "step": "22-browser-call-ended",
+  "ms": 2602,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?test=1"
+ },
+ {
+  "persona": "uni-m",
+  "step": "23-publish-sheet",
+  "ms": 1078,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca"
+ },
+ {
+  "persona": "uni-m",
+  "step": "24-published",
+  "ms": 3490,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca"
+ },
+ {
+  "persona": "uni-m",
+  "step": "25-second-change",
+  "ms": 1013,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=persona"
+ },
+ {
+  "persona": "uni-m",
+  "step": "26-publish-sheet-2",
+  "ms": 935,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=persona"
+ },
+ {
+  "persona": "uni-m",
+  "step": "27-published-2",
+  "ms": 3434,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=persona"
+ },
+ {
+  "persona": "uni-m",
+  "step": "28-versions",
+  "ms": 895,
+  "error": null,
+  "url": "/agents/9862517c-b410-4d13-8eda-5769f42f40ca?tab=versions"
+ },
+ {
+  "persona": "uni-m",
+  "step": "29-import",
+  "ms": 917,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "uni-m",
+  "step": "30-import-checked",
+  "ms": 187,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "uni-m",
+  "step": "31-import-saved",
+  "ms": 130,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "uni-m",
+  "step": "32-contacts",
+  "ms": 1005,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "uni-m",
+  "step": "33-contact",
+  "ms": 175,
+  "error": null,
+  "url": "/contacts/0030db63-23a4-449d-9266-bf27d7c46cb6"
+ },
+ {
+  "persona": "uni-m",
+  "step": "34-contact-dnd",
+  "ms": 1602,
+  "error": null,
+  "url": "/contacts/0030db63-23a4-449d-9266-bf27d7c46cb6"
+ },
+ {
+  "persona": "uni-m",
+  "step": "35-campaign-new",
+  "ms": 994,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "uni-m",
+  "step": "36-campaign-draft",
+  "ms": 1419,
+  "error": null,
+  "url": "/campaigns/5d7d7a6f-8d8d-4950-b0c8-2d42cbc79925"
+ },
+ {
+  "persona": "uni-m",
+  "step": "37-campaign-cap",
+  "ms": 943,
+  "error": null,
+  "url": "/campaigns/5d7d7a6f-8d8d-4950-b0c8-2d42cbc79925"
+ },
+ {
+  "persona": "uni-m",
+  "step": "38-test-call-page",
+  "ms": 2472,
+  "error": null,
+  "url": "/calls/339492bb-fd6f-46e8-9371-02ac4b6875db"
+ },
+ {
+  "persona": "uni-m",
+  "step": "39-campaign-launch-checks",
+  "ms": 1743,
+  "error": null,
+  "url": "/campaigns/5d7d7a6f-8d8d-4950-b0c8-2d42cbc79925"
+ },
+ {
+  "persona": "uni-m",
+  "step": "40-numbers",
+  "ms": 1123,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "uni-m",
+  "step": "41-numbers-search",
+  "ms": 1622,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "uni-m",
+  "step": "42-insights",
+  "ms": 1154,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "uni-m",
+  "step": "43-insights-improve",
+  "ms": 2645,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "uni-m",
+  "step": "44-privacy",
+  "ms": 891,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "uni-m",
+  "step": "45-billing",
+  "ms": 1108,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "uni-m",
+  "step": "46-op-page-question",
+  "ms": 3653,
+  "error": null,
+  "url": "/campaigns/5d7d7a6f-8d8d-4950-b0c8-2d42cbc79925"
+ },
+ {
+  "persona": "uni-m",
+  "step": "47-op-topup",
+  "ms": 3548,
+  "error": null,
+  "url": "/campaigns/5d7d7a6f-8d8d-4950-b0c8-2d42cbc79925"
+ },
+ {
+  "persona": "uni-m",
+  "step": "48-op-plan",
+  "ms": 3550,
+  "error": null,
+  "url": "/campaigns/5d7d7a6f-8d8d-4950-b0c8-2d42cbc79925"
+ },
+ {
+  "persona": "uni-m",
+  "step": "49-today-after",
+  "ms": 1307,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "50-approval-from-today",
+  "ms": 132,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-m",
+  "step": "51-activity",
+  "ms": 1137,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "uni-d",
+  "step": "01-signup",
+  "ms": 218,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "uni-d",
+  "step": "02-today-first-run",
+  "ms": 974,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "03-describe-job",
+  "ms": 161,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "04-describe-asked",
+  "ms": 4175,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "05-templates",
+  "ms": 1051,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "06-template-chosen",
+  "ms": 193,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "07-agent-created",
+  "ms": 1843,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047"
+ },
+ {
+  "persona": "uni-d",
+  "step": "08-languages-english",
+  "ms": 1125,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047"
+ },
+ {
+  "persona": "uni-d",
+  "step": "09-agent-persona",
+  "ms": 860,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=persona"
+ },
+ {
+  "persona": "uni-d",
+  "step": "10-agent-job",
+  "ms": 955,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=job"
+ },
+ {
+  "persona": "uni-d",
+  "step": "11-agent-rules",
+  "ms": 878,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=rules"
+ },
+ {
+  "persona": "uni-d",
+  "step": "12-agent-tools",
+  "ms": 846,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=tools"
+ },
+ {
+  "persona": "uni-d",
+  "step": "13-agent-versions",
+  "ms": 811,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=versions"
+ },
+ {
+  "persona": "uni-d",
+  "step": "14-brief-edit",
+  "ms": 1292,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=job"
+ },
+ {
+  "persona": "uni-d",
+  "step": "15-brief-saved",
+  "ms": 267,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=job"
+ },
+ {
+  "persona": "uni-d",
+  "step": "16-stack",
+  "ms": 1145,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=voice"
+ },
+ {
+  "persona": "uni-d",
+  "step": "17-stack-sample-playing",
+  "ms": 1222,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=voice"
+ },
+ {
+  "persona": "uni-d",
+  "step": "18-stack-build-own",
+  "ms": 1347,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=voice"
+ },
+ {
+  "persona": "uni-d",
+  "step": "19-test-panel",
+  "ms": 1087,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047"
+ },
+ {
+  "persona": "uni-d",
+  "step": "20-practice-run",
+  "ms": 496,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047"
+ },
+ {
+  "persona": "uni-d",
+  "step": "21-browser-call",
+  "ms": 8059,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?test=1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "22-browser-call-ended",
+  "ms": 2707,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?test=1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "23-publish-sheet",
+  "ms": 1098,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047"
+ },
+ {
+  "persona": "uni-d",
+  "step": "24-published",
+  "ms": 3557,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047"
+ },
+ {
+  "persona": "uni-d",
+  "step": "25-second-change",
+  "ms": 1073,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=persona"
+ },
+ {
+  "persona": "uni-d",
+  "step": "26-publish-sheet-2",
+  "ms": 1001,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=persona"
+ },
+ {
+  "persona": "uni-d",
+  "step": "27-published-2",
+  "ms": 3488,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=persona"
+ },
+ {
+  "persona": "uni-d",
+  "step": "28-versions",
+  "ms": 914,
+  "error": null,
+  "url": "/agents/ad4bbcdb-44ba-47a1-88b0-9b02f9eb8047?tab=versions"
+ },
+ {
+  "persona": "uni-d",
+  "step": "29-import",
+  "ms": 991,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "uni-d",
+  "step": "30-import-checked",
+  "ms": 281,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "uni-d",
+  "step": "31-import-saved",
+  "ms": 184,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "uni-d",
+  "step": "32-contacts",
+  "ms": 1194,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "uni-d",
+  "step": "33-contact",
+  "ms": 209,
+  "error": null,
+  "url": "/contacts/04e63cb2-486d-4161-bff9-e2cbdfeb66ca"
+ },
+ {
+  "persona": "uni-d",
+  "step": "34-contact-dnd",
+  "ms": 1685,
+  "error": null,
+  "url": "/contacts/04e63cb2-486d-4161-bff9-e2cbdfeb66ca"
+ },
+ {
+  "persona": "uni-d",
+  "step": "35-campaign-new",
+  "ms": 1521,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "uni-d",
+  "step": "36-campaign-draft",
+  "ms": 1519,
+  "error": null,
+  "url": "/campaigns/edcc1617-1fcc-492e-be8a-6999b5f3a0c1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "37-campaign-cap",
+  "ms": 1009,
+  "error": null,
+  "url": "/campaigns/edcc1617-1fcc-492e-be8a-6999b5f3a0c1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "38-test-call-page",
+  "ms": 2491,
+  "error": null,
+  "url": "/calls/571966f7-95d5-4a59-b2b8-08d1f35233ba"
+ },
+ {
+  "persona": "uni-d",
+  "step": "39-campaign-launch-checks",
+  "ms": 1024,
+  "error": null,
+  "url": "/campaigns/edcc1617-1fcc-492e-be8a-6999b5f3a0c1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "40-numbers",
+  "ms": 1154,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "uni-d",
+  "step": "41-numbers-search",
+  "ms": 1663,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "uni-d",
+  "step": "42-insights",
+  "ms": 1215,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "uni-d",
+  "step": "43-insights-improve",
+  "ms": 2741,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "uni-d",
+  "step": "44-privacy",
+  "ms": 941,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "uni-d",
+  "step": "45-billing",
+  "ms": 1159,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "uni-d",
+  "step": "46-op-page-question",
+  "ms": 3819,
+  "error": null,
+  "url": "/campaigns/edcc1617-1fcc-492e-be8a-6999b5f3a0c1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "47-op-topup",
+  "ms": 3693,
+  "error": null,
+  "url": "/campaigns/edcc1617-1fcc-492e-be8a-6999b5f3a0c1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "48-op-plan",
+  "ms": 3666,
+  "error": null,
+  "url": "/campaigns/edcc1617-1fcc-492e-be8a-6999b5f3a0c1"
+ },
+ {
+  "persona": "uni-d",
+  "step": "49-today-after",
+  "ms": 1362,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "50-approval-from-today",
+  "ms": 170,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "uni-d",
+  "step": "51-activity",
+  "ms": 1176,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "01-signup",
+  "ms": 202,
+  "error": null,
+  "url": "/signup"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "02-today-first-run",
+  "ms": 912,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "03-describe-job",
+  "ms": 89,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "04-describe-asked",
+  "ms": 4089,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "05-templates",
+  "ms": 1008,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "06-template-chosen",
+  "ms": 245,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "07-agent-created",
+  "ms": 1810,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "08-agent-persona",
+  "ms": 824,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=persona"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "09-agent-job",
+  "ms": 837,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=job"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "10-agent-rules",
+  "ms": 816,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=rules"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "11-agent-tools",
+  "ms": 799,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=tools"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "12-agent-versions",
+  "ms": 772,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=versions"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "13-brief-edit",
+  "ms": 1182,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=job"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "14-brief-saved",
+  "ms": 176,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=job"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "15-stack",
+  "ms": 1071,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=voice"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "16-stack-sample-playing",
+  "ms": 1118,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=voice"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "17-stack-build-own",
+  "ms": 1157,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=voice"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "18-test-panel",
+  "ms": 945,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "19-practice-run",
+  "ms": 364,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "20-browser-call",
+  "ms": 7934,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?test=1"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "21-browser-call-ended",
+  "ms": 2600,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?test=1"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "22-publish-sheet",
+  "ms": 1028,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "23-published",
+  "ms": 3475,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "24-second-change",
+  "ms": 1019,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=persona"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "25-publish-sheet-2",
+  "ms": 933,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=persona"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "26-published-2",
+  "ms": 3470,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=persona"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "27-versions",
+  "ms": 895,
+  "error": null,
+  "url": "/agents/db8cab34-fca6-4e93-a706-15f8841c1831?tab=versions"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "28-import",
+  "ms": 1135,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "29-import-checked",
+  "ms": 234,
+  "error": null,
+  "url": "/contacts/import"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "30-import-saved",
+  "ms": 295,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "31-contacts",
+  "ms": 1034,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "32-contact",
+  "ms": 161,
+  "error": null,
+  "url": "/contacts/00b2089a-e13f-4377-9c73-395360039c2f"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "33-contact-dnd",
+  "ms": 1609,
+  "error": null,
+  "url": "/contacts/00b2089a-e13f-4377-9c73-395360039c2f"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "34-campaign-new",
+  "ms": 1479,
+  "error": null,
+  "url": "/campaigns/new"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "35-campaign-draft",
+  "ms": 1439,
+  "error": null,
+  "url": "/campaigns/facade09-8702-4a2a-8d54-fada5ea1f351"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "36-campaign-cap",
+  "ms": 950,
+  "error": null,
+  "url": "/campaigns/facade09-8702-4a2a-8d54-fada5ea1f351"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "37-test-call-page",
+  "ms": 2494,
+  "error": null,
+  "url": "/calls/dc7be147-2047-4ad1-ace4-678f0a14186a"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "38-campaign-launch-checks",
+  "ms": 1823,
+  "error": null,
+  "url": "/campaigns/facade09-8702-4a2a-8d54-fada5ea1f351"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "39-numbers",
+  "ms": 1101,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "40-numbers-search",
+  "ms": 1620,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "41-insights",
+  "ms": 1135,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "42-insights-improve",
+  "ms": 2667,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "43-privacy",
+  "ms": 926,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "44-billing",
+  "ms": 1134,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "45-op-page-question",
+  "ms": 3658,
+  "error": null,
+  "url": "/campaigns/facade09-8702-4a2a-8d54-fada5ea1f351"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "46-op-topup",
+  "ms": 3549,
+  "error": null,
+  "url": "/campaigns/facade09-8702-4a2a-8d54-fada5ea1f351"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "47-op-plan",
+  "ms": 3553,
+  "error": null,
+  "url": "/campaigns/facade09-8702-4a2a-8d54-fada5ea1f351"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "48-today-after",
+  "ms": 1330,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "49-approval-from-today",
+  "ms": 148,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "d2c-m",
+  "step": "50-activity",
+  "ms": 1176,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "review-d",
+  "step": "01-today",
+  "ms": 1528,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "review-d",
+  "step": "02-calls",
+  "ms": 1418,
+  "error": null,
+  "url": "/calls"
+ },
+ {
+  "persona": "review-d",
+  "step": "03-call",
+  "ms": 1438,
+  "error": null,
+  "url": "/calls/436ea526-0b9e-4d5e-9b70-d4c3e2e6dfbf"
+ },
+ {
+  "persona": "review-d",
+  "step": "04-call-2",
+  "ms": 1488,
+  "error": null,
+  "url": "/calls/9f43c425-216d-43b0-a916-a026f9602ec4"
+ },
+ {
+  "persona": "review-d",
+  "step": "05-call-3",
+  "ms": 1478,
+  "error": null,
+  "url": "/calls/160ed78c-8a41-42c4-a4d4-724c56123906"
+ },
+ {
+  "persona": "review-d",
+  "step": "06-campaigns",
+  "ms": 1433,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "review-d",
+  "step": "07-campaign",
+  "ms": 1547,
+  "error": null,
+  "url": "/campaigns/4bb028df-3fde-4f67-9d09-4e48b19c4e5d"
+ },
+ {
+  "persona": "review-d",
+  "step": "08-agents",
+  "ms": 1414,
+  "error": null,
+  "url": "/agents"
+ },
+ {
+  "persona": "review-d",
+  "step": "09-insights",
+  "ms": 1616,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review-d",
+  "step": "10-contacts",
+  "ms": 1750,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "review-d",
+  "step": "11-audiences",
+  "ms": 1483,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "review-d",
+  "step": "12-numbers",
+  "ms": 1458,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "review-d",
+  "step": "13-settings",
+  "ms": 1405,
+  "error": null,
+  "url": "/settings"
+ },
+ {
+  "persona": "review-d",
+  "step": "14-settings-team",
+  "ms": 1399,
+  "error": null,
+  "url": "/settings/team"
+ },
+ {
+  "persona": "review-d",
+  "step": "15-settings-keys",
+  "ms": 1425,
+  "error": null,
+  "url": "/settings/keys"
+ },
+ {
+  "persona": "review-d",
+  "step": "16-settings-brand",
+  "ms": 1408,
+  "error": null,
+  "url": "/settings/brand"
+ },
+ {
+  "persona": "review-d",
+  "step": "17-settings-knowledge",
+  "ms": 1455,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "review-d",
+  "step": "18-settings-billing",
+  "ms": 1455,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "review-d",
+  "step": "19-settings-compliance",
+  "ms": 1475,
+  "error": null,
+  "url": "/settings/compliance"
+ },
+ {
+  "persona": "review-d",
+  "step": "20-settings-privacy",
+  "ms": 1460,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "review-d",
+  "step": "21-settings-operator",
+  "ms": 1412,
+  "error": null,
+  "url": "/settings/operator"
+ },
+ {
+  "persona": "review-d",
+  "step": "22-settings-integrations",
+  "ms": 1479,
+  "error": null,
+  "url": "/settings/integrations"
+ },
+ {
+  "persona": "review-d",
+  "step": "23-settings-activity",
+  "ms": 1537,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "review-d",
+  "step": "24-call-play",
+  "ms": 30116,
+  "error": "locator.click: Timeout 30000ms exceeded.",
+  "url": "/calls/436ea526-0b9e-4d5e-9b70-d4c3e2e6dfbf"
+ },
+ {
+  "persona": "review-d",
+  "step": "25-op-insight-question",
+  "ms": 3838,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review-d",
+  "step": "26-op-launch-plan",
+  "ms": 3796,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review-d",
+  "step": "27-approval-sheet",
+  "ms": 30269,
+  "error": "locator.click: Timeout 30000ms exceeded.",
+  "url": "/insights"
+ },
+ {
+  "persona": "review-m",
+  "step": "01-today",
+  "ms": 1465,
+  "error": null,
+  "url": "/"
+ },
+ {
+  "persona": "review-m",
+  "step": "02-calls",
+  "ms": 1406,
+  "error": null,
+  "url": "/calls"
+ },
+ {
+  "persona": "review-m",
+  "step": "03-call",
+  "ms": 1398,
+  "error": null,
+  "url": "/calls/436ea526-0b9e-4d5e-9b70-d4c3e2e6dfbf"
+ },
+ {
+  "persona": "review-m",
+  "step": "04-call-2",
+  "ms": 1440,
+  "error": null,
+  "url": "/calls/9f43c425-216d-43b0-a916-a026f9602ec4"
+ },
+ {
+  "persona": "review-m",
+  "step": "05-call-3",
+  "ms": 1430,
+  "error": null,
+  "url": "/calls/160ed78c-8a41-42c4-a4d4-724c56123906"
+ },
+ {
+  "persona": "review-m",
+  "step": "06-campaigns",
+  "ms": 1367,
+  "error": null,
+  "url": "/campaigns"
+ },
+ {
+  "persona": "review-m",
+  "step": "07-campaign",
+  "ms": 1450,
+  "error": null,
+  "url": "/campaigns/4bb028df-3fde-4f67-9d09-4e48b19c4e5d"
+ },
+ {
+  "persona": "review-m",
+  "step": "08-agents",
+  "ms": 1405,
+  "error": null,
+  "url": "/agents"
+ },
+ {
+  "persona": "review-m",
+  "step": "09-insights",
+  "ms": 1482,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review-m",
+  "step": "10-contacts",
+  "ms": 1553,
+  "error": null,
+  "url": "/contacts"
+ },
+ {
+  "persona": "review-m",
+  "step": "11-audiences",
+  "ms": 1429,
+  "error": null,
+  "url": "/audiences"
+ },
+ {
+  "persona": "review-m",
+  "step": "12-numbers",
+  "ms": 1412,
+  "error": null,
+  "url": "/numbers"
+ },
+ {
+  "persona": "review-m",
+  "step": "13-settings",
+  "ms": 1390,
+  "error": null,
+  "url": "/settings"
+ },
+ {
+  "persona": "review-m",
+  "step": "14-settings-team",
+  "ms": 1410,
+  "error": null,
+  "url": "/settings/team"
+ },
+ {
+  "persona": "review-m",
+  "step": "15-settings-keys",
+  "ms": 1408,
+  "error": null,
+  "url": "/settings/keys"
+ },
+ {
+  "persona": "review-m",
+  "step": "16-settings-brand",
+  "ms": 1401,
+  "error": null,
+  "url": "/settings/brand"
+ },
+ {
+  "persona": "review-m",
+  "step": "17-settings-knowledge",
+  "ms": 1401,
+  "error": null,
+  "url": "/settings/knowledge"
+ },
+ {
+  "persona": "review-m",
+  "step": "18-settings-billing",
+  "ms": 1410,
+  "error": null,
+  "url": "/settings/billing"
+ },
+ {
+  "persona": "review-m",
+  "step": "19-settings-compliance",
+  "ms": 1445,
+  "error": null,
+  "url": "/settings/compliance"
+ },
+ {
+  "persona": "review-m",
+  "step": "20-settings-privacy",
+  "ms": 1410,
+  "error": null,
+  "url": "/settings/privacy"
+ },
+ {
+  "persona": "review-m",
+  "step": "21-settings-operator",
+  "ms": 1400,
+  "error": null,
+  "url": "/settings/operator"
+ },
+ {
+  "persona": "review-m",
+  "step": "22-settings-integrations",
+  "ms": 1410,
+  "error": null,
+  "url": "/settings/integrations"
+ },
+ {
+  "persona": "review-m",
+  "step": "23-settings-activity",
+  "ms": 1467,
+  "error": null,
+  "url": "/settings/activity"
+ },
+ {
+  "persona": "review-m",
+  "step": "24-call-play",
+  "ms": 30078,
+  "error": "locator.click: Timeout 30000ms exceeded.",
+  "url": "/calls/436ea526-0b9e-4d5e-9b70-d4c3e2e6dfbf"
+ },
+ {
+  "persona": "review-m",
+  "step": "25-op-insight-question",
+  "ms": 30197,
+  "error": "locator.fill: Timeout 30000ms exceeded.",
+  "url": "/insights"
+ },
+ {
+  "persona": "review-m",
+  "step": "26-op-launch-plan",
+  "ms": 3592,
+  "error": null,
+  "url": "/insights"
+ },
+ {
+  "persona": "review-m",
+  "step": "27-approval-sheet",
+  "ms": 30037,
+  "error": "locator.click: Timeout 30000ms exceeded.",
+  "url": "/insights"
+ }
+]

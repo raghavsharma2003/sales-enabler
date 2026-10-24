@@ -1,0 +1,38 @@
+{
+  "id": "blueprint.learning-memory-omnichannel",
+  "date": "2026-10-21",
+  "note": "Design-grade summary for the VP blueprint. Grades: measured | observed | vendor-claimed | inferred | computed (this step, two-proportion normal approximation, alpha 0.05 two-sided, power 0.8, same formula as l6 power.py; reproduces l6's 1,565 for 50->45).",
+  "learnable_targets": [
+    {"target": "Contact facts and preferences (language, script, aap/tum, pace, stated best time, promised date, objections heard, opt-out)", "level": "per contact", "signal": "exact caller quote with episode id and span", "volume": "1 call", "method": "proposal -> predicate gate -> auto-apply (opt-out, language) or review", "grade": "measured (harvest recall@8 95.7%; live adherence trial FAILED once)", "evidence": "research/2026-10-17/lanes/l6-self-learning/report.md s.5, docs/harvest/hp-handoffs.md"},
+    {"target": "Turn-taking parameters (endpointing hold, interruption sensitivity, backchannel timing) per segment", "level": "per tenant segment, later per contact pace", "signal": "cut-in and reply-gap events measured in code per turn", "volume": "cut-in 25%->18%: 540 turns/arm unclustered; ~70-165 calls/arm at 8-12 turns/call and ICC 0.05-0.2", "method": "fixed-horizon two-arm on local metric, reply-gap guardrail", "grade": "computed (ICC assumed)", "evidence": "context/DIRECTION.md (15-42% cut-ins), research/2026-10-21/walkthroughs/SYNTHESIS.md line 145"},
+    {"target": "Opening (the useful-first slot after the locked disclosure)", "level": "per tenant script", "signal": "early hang-up (<10 s) from telephony + TTS clause timestamps", "volume": "15%->10%: 686 calls/arm; 15%->12%: 2,036 calls/arm", "method": "fixed-horizon two-arm; disclosure is locked and never a variant", "grade": "computed", "evidence": "l6 report s.4.8 hazard curve (first turn 0.15 assumed)"},
+    {"target": "Line-level drop-off (owner's 'line where 90 of 100 dropped')", "level": "per script version", "signal": "hang-up time aligned to TTS clause timestamps, no LLM label", "volume": "2x line found 19% / 67% / 94% at 100 / 500 / 1,000 calls; fix confirmed ~592 calls/arm on local hazard; a catastrophic line (most callers leaving at one line) is visible within tens of calls", "method": "Bayesian hazard flag P(>1.25x curve)>=0.99, then L3 fix test", "grade": "computed (l6; catastrophic case inferred)", "evidence": "l6 report s.4.8, verify.md item 6"},
+    {"target": "Best time to call", "level": "per segment (connect rate); per contact only as stated preference plus pickup history prior", "signal": "connect / answered events from telephony, no outcome delay", "volume": "connect 50%->55%: 1,565 dials/arm; 30%->36%: 963", "method": "Beta posterior per hour bucket inside the legal window; discounted for drift", "grade": "computed", "evidence": "regulation-segment report s.2.6 windows"},
+    {"target": "Objection handling replies", "level": "per tenant", "signal": "LLM clusters objections (proposal only); variant judged on 'call continues past objection' then outcome", "volume": "local metric ~600-1,200 calls per test", "method": "Propose-Probe-Compose offline, L3 online", "grade": "inferred from l6 L3/L4", "evidence": "l6 report s.5"},
+    {"target": "Voice per segment", "level": "per segment, at volume only", "signal": "early hang-up, completion, human panel", "volume": "effects likely small: TTS vendor choice moved intro hang-up only 87.9-90.3% over ~99,400 calls", "method": "listener panel + language matching; dialect matching opt-in only", "grade": "vendor-claimed (Rime/Miravoice) + measured LID 2/6 Bhojpuri", "evidence": "l6 L32, l5 report E21/E29"},
+    {"target": "Business outcome (renewal paid, promise-to-pay, site visit)", "level": "per tenant cohort", "signal": "earned in code: CRM disposition, payment webhook, booking", "volume": "20%->22%: 6,510/arm; 20%->25%: 1,094/arm; Thompson only from ~1,000 calls/day on one script", "method": "fixed horizon or always-valid; held-out AIPW readout; winners expire 60-90 d", "grade": "computed (l6)", "evidence": "l6 report s.4.1, s.4.3"}
+  ],
+  "never_learned": ["AI disclosure", "recording notice", "consent and opt-out handling", "crisis lines (Tele-MANAS 14416, 112)", "identity", "prices, offers, amounts, dates (data, not prose)", "call category and promotion fence", "the rules appended last"],
+  "harness2_mapping": {
+    "system_prompt": "brief v2 shape + agenda ledger (middle slots only are editable)",
+    "guardrails": "locked sections + code predicates (disclosure, crisis, opt-out, category fence, hang-up guard); diff must be empty",
+    "memory": "compiled contact memory slot (bounded, whole entries, source ids)",
+    "tool_guidance": "when to look up policy/payment, talk-while-waiting fillers",
+    "subagents": "post-call extractor, objection clusterer, compliance classifier, summariser",
+    "skills": "on-demand playbooks: objection packs, segment packs, language/register packs (cost nothing until loaded)",
+    "scripts": "deterministic code: date and EMI math, window engine, number formatting",
+    "plugins": "turn-taking middleware: endpointing, barge-in, backchannel, filler, silence nudges"
+  },
+  "data_model": ["Contact", "Identifier", "ConsentRecord", "Suppression", "Episode", "Fact", "PreferenceView", "Commitment", "Attempt", "Outcome", "MemoryBrief", "ExperimentVersion", "Lesson", "Tombstone"],
+  "omnichannel_sources": [
+    {"source": "CSV / Google Sheet", "take": "name, phone, policy/loan id, product, amount, due date, language, last interaction, deny flags", "grade": "observed (l3/l4c: renewal lists arrive as spreadsheets)"},
+    {"source": "CRM (LeadSquared, Zoho, Kylas, Salesforce, Sell.Do)", "take": "contact fields, stage, owner, last activity, new-lead webhook; write back dispositions and outcomes", "grade": "inferred (l4c H8)"},
+    {"source": "Telephony / past calls", "take": "attempt history, hang-up timestamps, dispositions, recordings -> hazard priors, best time, objection corpus", "grade": "inferred"},
+    {"source": "WhatsApp", "take": "inbound questions and stated preferences inside the 24 h window, link clicks; never train beyond the business's exclusive model (Meta s.4.7)", "grade": "observed (terms)"},
+    {"source": "SMS", "take": "delivery and click events, DLT template ids, post-call Rule 3 notice link", "grade": "inferred"},
+    {"source": "Email", "take": "written commitments and replies as episodes", "grade": "inferred"},
+    {"source": "Web / app events", "take": "the one recent action that makes the opener useful (e.g. stopped at KYC step 3); consent-checked", "grade": "inferred"},
+    {"source": "Payment systems", "take": "paid / link opened (leading indicator), due amount; outcome earned in code", "grade": "inferred (l6 s.4.5)"},
+    {"source": "Policy / loan admin systems", "take": "policy number, expiry, premium, NCB; highest authority rank; India residency", "grade": "observed (IRDAI 10-year India records)"}
+  ]
+}

@@ -1,0 +1,848 @@
+[
+ {
+  "id": "SQS-01",
+  "dimension": "surface",
+  "claim": "SquadStack sells a managed engagement, not a self-serve product, on its marketing site: every CTA is 'Book a Demo'/'Get Proposal', the vs-Bolna page says 'You're hiring a partner to deliver sales conversion outcomes, not a platform for your team to build on', and campaigns are created by SquadStack ('Reach out to voicesales@squadstack.com to create your campaign').",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_squadstack-vs-bolna.txt ; data/teardown/squadstack/apidocs/collection.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-02",
+  "dimension": "surface",
+  "claim": "Marketing describes four pillars (AI Lead Manager, Humanoid AI Agent, AI+Human Supervisor, ROI Optimizer) surfaced as seven modules: Lead Intelligence, Humanoid AI Agent, Omnichannel (call, WhatsApp, SMS, in-app), Quality Monitoring (23 parameters), ROI Optimizer, Voice of Customer Insights, Control Tower.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/site/www.squadstack.ai_llms.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-03",
+  "dimension": "surface",
+  "claim": "The customer portal (portal.app.squadstack.com, Next.js) exposes 61 routes in its public build manifest: agents (human telecaller hiring/persona), analytics, api-integration, billing, call-details/[botCallId], campaigns (create/edit/leads/lead journey/FAQs/script/workflow/ImportHistory/PaymentContract), lead-prioritization (auto, custom grouping, rules, select logic), logs, realtime-logs, observability, reports, intel-assist, downloads, settings (account, integrations, subscriptions, teams), plug-n-play (campaign create/edit, payment-success), auth/signup and a customer-specific route /parul-live.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/routes-resolved.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-04",
+  "dimension": "surface",
+  "claim": "A separate AI agent builder exists at ai-platform.squadstack.ai ('Welcome to squadstack.ai: Build, deploy, and optimize personalized AI voice agents in minutes'; email or Google sign-in). Its bundle defines routes for Agents, Call Details, Agent Evals, QA Config (old/new engine), Leads, Analytics, Reports, Import History, Knowledge Base, Observability (infra/application/outcome/call-quality), Voice Library, Text-to-Speech, Sales/In-App demo pages, Try Entity Extraction, Onboarding and Account. It is not linked from the marketing site.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/har/ai-platform.png ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Routes and auth copy re-observed. Addition: both this build and app.osno.ai gate sign-in to an allowlist (SQS-70)."
+  }
+ },
+ {
+  "id": "SQS-05",
+  "dimension": "surface",
+  "claim": "The workflow builder in the portal composes Voice Bot, Lead Router, Call (human), multi-level IVR, SMS (Sender ID + DLT Entity ID) and Email blocks; router blocks may connect only to Voice Bot or Call blocks; rescheduled calls can be served by the bot or by human agents.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-06",
+  "dimension": "surface",
+  "claim": "A 'Plug-N-Play' SME path exists in the portal: industry templates, Shopify/Shiprocket lead sync, auto-generated script and FAQs pending approval, caller-type selection by CEFR level (human telecallers), a pricing package with 'Price per min' and free SMS credits, GSTIN verification, proforma invoice, wallet balance, subscription and top-up plans.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/portal-js/all/1682-0a5d6bc77fc997bc.js",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-07",
+  "dimension": "surface",
+  "claim": "Lead prioritisation is a rule engine with a data-science script that mines past conversions for metadata rules (min converted leads per rule, 7-day simulation) plus TAT-based auto-prioritisation (live leads, rescheduled, un-attempted first).",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/portal-js/all/5746-fcc3c1708ddaf65d.js",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-08",
+  "dimension": "surface",
+  "claim": "Human telecalling is still a live product line: the portal hires 'players' (get-player-hiring-request, player persona), and the partner app 'SquadStack Telesales Partner' (com.squad.run) has 10L+ installs, 15,007 ratings, 3.85 stars, updated 18 Apr 2026.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/all/pages__agents-712978194fb963c3.js ; data/teardown/squadstack/complaints/play.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-09",
+  "dimension": "surface",
+  "claim": "The In-App Voice AI Assistant ships as a hosted JS SDK (d1iba7cd9se7zf.cloudfront.net/main.js, last modified 2026-10-06) supporting voice and omnichannel bot types with chat box and call timer.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/inapp-sdk/main.js ; data/teardown/squadstack/dns/http-headers-deploy-dates.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-10",
+  "dimension": "surface",
+  "claim": "Warm transfer: the l4a row \"warm_transfer: yes\" (2026-10-17) is confirmed in marketing only as a managed \"Human Advisors - trained pod for handoffs\". In code, the AI platform's prompt builder offers a transfer_call() trigger for positive call closings, and custom scenarios such as \"Live Seller Transfer\". Whether a customer can point it at an arbitrary number was not seen. The old source page /fully-managed-telecalling-for-sales-operations-teams 301-redirects to / (re-checked 2026-10-20).",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_pricing.txt ; data/teardown/squadstack/pages/fetchlog.csv ; research/2026-10-17/lanes/l4a-competitors/parity.csv ; data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js ; data/teardown/squadstack/verify-headers/www.squadstack.ai_fully-managed-telecalling-for-sales-operations-teams.headers.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "refuted-in-part",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "The agent-editor page chunk (downloaded by the verifier) has call-closing scenarios whose triggers include transfer_call() (also send_link(), hangup_call(), dnd_request(), schedule_callback()) and a \"Live Seller Transfer\" placeholder, plus a server-populated Tools section. So an agent-level transfer tool exists. Its destination (an arbitrary PSTN number or the managed pod) is not visible.",
+   "claim_before": "The parity row 'warm_transfer: yes' (l4a parity.csv, 2026-10-17) is confirmed only as a managed 'Human Advisors - trained pod for handoffs'; no self-serve transfer-to-number control was found in the public bundles. The earlier source page (/fully-managed-telecalling-for-sales-operations-teams) now 301-redirects to the homepage."
+  }
+ },
+ {
+  "id": "SQS-11",
+  "dimension": "surface",
+  "claim": "Voicemail handling: the AI platform's default post-call outcome prompt classifies 'Voicemail' from transcript keywords (e.g. 'leave a message', 'sandesh record karein'), i.e. after the call; no media-level AMD setting appears in the public bundles. In the portal 'VM' means 'Voice Mission' (a question set), not voicemail. This contradicts nothing in l4a (voicemail_amd: unknown) and fills it.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js ; data/teardown/squadstack/portal-js/ui-strings.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Strengthened: the verifier's agent-editor page chunk (518 KB) and new shared chunks have 0 matches for voicemail, answering machine or AMD; the only voicemail logic is the post-call transcript keyword list in chunk 8449."
+  }
+ },
+ {
+  "id": "SQS-12",
+  "dimension": "docs-api",
+  "claim": "No developer docs or llms.txt for docs exist: docs.squadstack.ai has no A record (its name is a CNAME to an ACM validation target), as is status.squadstack.ai; the 2026-10-17 502 was this. The marketing llms.txt (49.7 KB) is marketing copy with 'canonical facts'.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/dns/doh_docs.squadstack.ai_A.json ; data/teardown/squadstack/site/www.squadstack.ai_llms.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-13",
+  "dimension": "docs-api",
+  "claim": "The only public API (Postman documenter at apidocs.squadstack.com, published 2024-05-31) is lead ingestion: per-campaign endpoints api.squadstack.com/voice/crm-integration-v2/<ref_id>/lead-{created,updated,upserted,converted,disabled,deleted}, single and bulk (100 leads/request), basic auth, 100 requests/min default, IP whitelisting mandatory. There is no agent, call, campaign or analytics API.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/apidocs/collection.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-14",
+  "dimension": "docs-api",
+  "claim": "Outbound data is disposition webhooks built per customer: call events (phone_number, lead_id, recording_url, campaign_id, called_at, call_outcome like 'Connected : Objective Met', call_attempt_number) and a 'judgement' event when the lead journey ends (lead_outcome, latest_recording_url); S3 drop as an alternative; HubSpot via workflows or Airbyte hosted by SquadStack; LeadSquared via LAPP.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/apidocs/collection.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-15",
+  "dimension": "docs-api",
+  "claim": "The data model is lead-and-campaign centric with a 'judgement' (final lead outcome) separate from per-call outcomes, bucket-to-outcome mapping tables, redial counts, IVR interaction, 'unjudge reason', and an SE (sales executive) transcript next to the lead transcript: a BPO data model extended to bots, not an agent-first model.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/apidocs/collection.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-16",
+  "dimension": "docs-api",
+  "claim": "The AI platform's agent object carries llm_config (temperature default 0.5, max_tokens 100, provider/model, router with region, hedging, cross-model fallback, hot-swap after N turns), stt_config, tts_config (provider, voice, gender, speed 0.6-1.5, volume 0.5-2.0, emotion), call_config (max_session_time default 240 s, deterministic language switching on, user-idle 10 s x 3 retries, lead confirmation), context_summarization (turn threshold 5, summary 256 tokens, compaction keeps 3 turns), entity_config, word_replacements, rag_enabled, prompt caching stats and prompt-version history.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Defaults re-observed in chunk 8449. Note: enable_deterministic_language_switching is initialised as (value || true), so the form cannot load it as false. Editor validation: max_tokens <= 250, and exactly 1000 when State Management is on."
+  }
+ },
+ {
+  "id": "SQS-17",
+  "dimension": "docs-api",
+  "claim": "The AI platform API (v1/v2) covers voice-agents create/update/clone, prompt-version-history, agent-history, rag-config and rag-documents (semantic lookup on Qdrant), import history and blacklist import history, credits-usage, accounts, and 'create/osno-user'.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-18",
+  "dimension": "docs-api",
+  "claim": "Call details in the portal filter by date (max 10-day window), Call SID(s), VPM IDs, Offer ID, campaign and outcome; rows show recording, offer id, created at, duration and outcome name. Technical failure classes (STT, LLM, TTS) appear only as aggregate counts and latency charts on /observability (stt, responseTime, warmup).",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/all/pages__call-details-952bbf597b7996e3.js ; data/teardown/squadstack/portal-js/all/pages__observability-97c97456a6fe01de.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Portal call-details date presets end at \"Last 10 days\"; observability shows stt/response_time/warmup p50 and failure counts."
+  }
+ },
+ {
+  "id": "SQS-19",
+  "dimension": "architecture",
+  "claim": "Marketing claims the speech stack is 'owned, not orchestrated': in-house Arth ASR, an in-house Sales LLM and in-house TTS with 1,000+ voices cloned from top agents, all models hosted in India on AWS Mumbai.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/site/www.squadstack.ai_llms.txt ; data/teardown/squadstack/pages/txt/www.squadstack.ai_squadstack-vs-bolna.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-20",
+  "dimension": "architecture",
+  "claim": "SquadStack's own engineering blog contradicts 'owned': TTS is 'powered by ElevenLabs and our in-house proprietary TTS engine', 'we use multiple LLMs based on use cases', 20+ voices; in-house STT then covered Hindi, English and Hinglish only, with 'vernacular languages in progress'.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_inside-the-humanoid-ai-agent-stack.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-21",
+  "dimension": "architecture",
+  "claim": "The AI platform bundles name TTS providers ElevenLabs (the fallback default provider; default model constant eleven_flash_v2_5; eleven_multilingual_v2 is on a hide-list shown only to agents already using it; India data-residency endpoint api.in.residency.elevenlabs.io), Cartesia (sonic-3.5, sonic-3.5-2026-05-04, sonic-3.6) and Sarvam. A list [sarvam, cartesia, squadstack_ws, arc_stt] is hidden from non-internal users in the TTS and STT pickers. arc_stt is an STT router with routing strategies fallback / best-latency / load-balance, a fallback chain, strict mode and load-balance weights. Language labels cover 11 languages (hi, en, ta, te, kn, ml, mr, bn, gu, pa, ur). Actual provider option lists come from the server.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "refuted-in-part",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Re-read chunk 8449 and the agent-editor page chunk (downloaded by the verifier). h=[\"eleven_multilingual_v2\"] is a HIDE list (fT: a model is hidden unless the agent already uses it), not a default. The TTS module default model constant is eleven_flash_v2_5. f=[\"sarvam\",\"cartesia\",\"squadstack_ws\",\"arc_stt\"] is an internal-only provider list (pj: hidden from users without view_internal_voice_options) used by both the TTS and STT pickers, so it is not an STT-provider enumeration. arc_stt (jG) is the STT router: only its params carry routing_strategy (fallback / best-latency / load-balance), fallback_chain, strict, load_balance_weights, backend_params. Provider option lists themselves are server-supplied (llm/stt/tts/voice_options).",
+   "claim_before": "The AI platform's public bundle enumerates TTS providers ElevenLabs (default; model eleven_multilingual_v2; ElevenLabs India data-residency endpoint api.in.residency.elevenlabs.io), Cartesia (sonic-3.5, sonic-3.5-2026-05-04, sonic-3.6) and Sarvam; STT providers sarvam, cartesia, squadstack_ws and arc_stt with routing strategies fallback / best-latency / load-balance; 11 languages (hi, en, ta, te, kn, ml, mr, bn, gu, pa, ur)."
+  }
+ },
+ {
+  "id": "SQS-22",
+  "dimension": "architecture",
+  "claim": "The agent editor defaults post-call entity extraction to OpenRouter google/gemini-2.5-flash, with retry on Google gemini-2.5-flash (switch after 1 retry); the RAG model also defaults to gemini-2.5-flash. The UI links to OpenRouter for live per-token pricing and to a voice-bot-prompt-assistant on chat.squadstack.ai.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Observed as the default entity-extraction config in the agent editor (constant s9), not as the extraction that production runs. Wording changed from \"runs on\" to \"defaults to\". The editor also defaults RAG to gemini-2.5-flash.",
+   "claim_before": "Default post-call entity extraction runs on OpenRouter google/gemini-2.5-flash with retry on Google gemini-2.5-flash; the UI links to OpenRouter for live per-token pricing and a 'voice-bot-prompt-assistant' on chat.squadstack.ai."
+  }
+ },
+ {
+  "id": "SQS-23",
+  "dimension": "architecture",
+  "claim": "Orchestration is Pipecat: the in-app SDK bundles @pipecat-ai/client-js 1.13.1 and @pipecat-ai/daily-transport 1.6.9 with daily-js 0.90.0, and starts sessions by POST <base>/bot/connect (bot_profile, conversation_id, prompt_id, agent_config_id, use_priority_tier); the AI platform's Sarvam language-code link points to Sarvam's 'build voice agent with Pipecat' page.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/inapp-sdk/main.js ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "downgraded",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "The SDK facts are observed (main.js embeds the package.json of @pipecat-ai/client-js 1.13.1 and @pipecat-ai/daily-transport 1.6.9, daily-js 0.90.0, and builds POST <base>/bot/connect with bot_profile, conversation_id, prompt_id, agent_config_id, use_priority_tier). That the server-side orchestration is Pipecat is an inference from the client protocol; no server code or response was seen. The Sarvam link is only a language-codes anchor.",
+   "grade_before": "observed"
+  }
+ },
+ {
+  "id": "SQS-24",
+  "dimension": "architecture",
+  "claim": "The PSTN runtime is plausibly the same Pipecat-style server as the in-app path. The trust centre lists Exotel and Ozonetel as telephony subprocessors (India) and Plivo (USA) \"to build Human-like Voice AI Agents\"; web and in-app sessions use Daily WebRTC. Server code and PSTN signalling were not seen.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/inapp-sdk/main.js ; data/teardown/squadstack/trust/trust-rendered.api.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Pipecat serializers for Ozonetel were not checked and may not exist; nothing observed shows serializers. The trust centre gives Plivo the purpose \"to build Human-like Voice AI Agents\" with a Plivo AI Agent Platform description, not telephony, so Plivo-as-telephony is itself an inference.",
+   "claim_before": "The PSTN runtime is very likely also Pipecat (server side), with telephony through Exotel, Ozonetel and Plivo serializers; web and in-app sessions use Daily WebRTC. Server code was not seen."
+  }
+ },
+ {
+  "id": "SQS-25",
+  "dimension": "architecture",
+  "claim": "SquadStack's Vanta trust centre lists subprocessors: AWS (India), Exotel and Ozonetel (telephony, India), Infobip and Gupshup (WhatsApp), OpenAI (USA, 'AI-powered features'), Google Gemini (India) and Plivo (USA, 'to build Human-like Voice AI Agents'). ElevenLabs, Cartesia, Sarvam, Daily, OpenRouter, Sentry, PostHog, Mixpanel, Datadog and Microsoft Clarity, all referenced by its own front-ends, are not listed.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/trust/trust-rendered.api.json ; data/teardown/squadstack/ai-platform-js/ ; data/teardown/squadstack/har/portal-login.requests.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Re-read trust-rendered.api.json: all eight subprocessors, locations and purposes match. Additions: the OpenAI and Google Gemini entries say data \"is stored exclusively in India\"; Plivo is described as its AI Agent Platform. The portal login page also loads a Supabase-hosted tracking snippet (har/portal-login.requests.json) that is not a listed subprocessor."
+  }
+ },
+ {
+  "id": "SQS-26",
+  "dimension": "architecture",
+  "claim": "Hosting is AWS ap-south-1 (Mumbai): app/api ALB, integrations.squadstack.ai, demo.voicebot.squadstack.com, careers and beta-ai-platform all resolve to ap-south-1 EC2 ranges; the portal, AI platform and app.osno.ai are CloudFront SPAs; lens.agents.squadstack.com and chat.squadstack.ai resolve to private 10.x addresses (VPN-only); status.squadstack.com resolves to private 192.168.x addresses.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/dns/aws-ip-region-matches.json ; data/teardown/squadstack/dns/",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Re-read DoH answers and aws-ip-region-matches.json: app/api ALB (app-alb-squadstack ... ap-south-1.elb), integrations, demo.voicebot, careers, beta-ai-platform and docs.squadstack.com resolve to ap-south-1 EC2 ranges; lens/chat to 10.x; status.squadstack.com to 192.168.x. \"VPN-only\" is an inference from private addresses in public DNS."
+  }
+ },
+ {
+  "id": "SQS-27",
+  "dimension": "architecture",
+  "claim": "Backend is Django (DRF, Celery beat, Redis cache, OAuth toolkit forks), Postgres (pghero), AWS via Terraform modules (EC2, S3, SQS, SNS, autoscaling), Label Studio forks (incl. label-studio-voicebot) for annotation, and Open WebUI + Pipelines forks (consistent with chat.squadstack.ai's '?model=' URL); 82 public repos in github.com/SquadRun.",
+  "grade": "inferred",
+  "evidence": "https://github.com/orgs/SquadRun/repositories (read 2026-10-20) ; data/teardown/squadstack/portal-js/all/ ; https://github.com/orgs/SquadRun/repositories (re-read 2026-10-20 via WebFetch; no local copy) ; data/teardown/squadstack/portal-js/chunks_pages__app-8197a4d79c7c94cf.js (csrftoken, x-csrftoken)",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "downgraded",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "The GitHub listing has no saved artifact (sdk/gh-org-*.json are proxy refusals). Re-read via WebFetch 2026-10-20: 82 repositories; page 1 shows django-squadstack, django-latest, django-rest-framework, django-celery-beat, django-redis-cache, django-oauth-toolkit, pghero, terraform-aws-{ec2-instance,s3-bucket,sqs,sns,autoscaling}, label-studio, label-studio-voicebot, squadrun-open-webui, squadrun-pipelines. Public copies of libraries show what the org maintains, not what production runs. The portal sends a csrftoken cookie / x-csrftoken header (Django defaults), which supports but does not prove a Django backend.",
+   "grade_before": "observed"
+  }
+ },
+ {
+  "id": "SQS-28",
+  "dimension": "architecture",
+  "claim": "Internal call observability 'Lens' stores per-call spans, latency breakdowns by provider/model, tool outcomes, transcripts, entities, prompts and trace logs, with retention of 90 days (aggregates), 30 (spans, prompts/configs), 7 (extraction logs) and 4 (trace logs); an MCP server (squadrun/lens-mcp, MIT) exposes it to Claude Code.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/github-lens-mcp/README-main.md",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "README re-read; the repo page (WebFetch 2026-10-20) shows Public and an MIT LICENSE."
+  }
+ },
+ {
+  "id": "SQS-29",
+  "dimension": "architecture",
+  "claim": "Auth: the portal uses its own login/OTP endpoints plus AWS Cognito SSO; the AI platform uses Firebase Auth on project 'squadstack-ai-paas'. Front-end telemetry: Sentry, Datadog RUM, Mixpanel, Microsoft Clarity, Usetiful tours, Zoho SalesIQ chat (portal); PostHog (US), Sentry, Clarity, Usetiful (AI platform).",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/chunks_pages__app-8197a4d79c7c94cf.js ; data/teardown/squadstack/har/ai-platform.requests.json ; data/teardown/squadstack/dns/doh_squadstack.com_TXT.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Portal bundle: /auth/cognito/callback, password/OTP/SSO login modes, Datadog RUM, Mixpanel, Clarity, Usetiful, Zoho SalesIQ, Sentry. AI platform HAR: PostHog us.i.posthog.com, Sentry tunnel with r=us, Clarity, Usetiful."
+  }
+ },
+ {
+  "id": "SQS-30",
+  "dimension": "architecture",
+  "claim": "The public AI-platform bundle embeds a static API key for the internal Lens service (guarded only by a hostname check) and a demo-voicebot API key; this is a client-side secret-handling weakness. The values are not reproduced here and were not used.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Key constant and hostname guard re-observed in chunk 6772 (value not reproduced). The code refuses the key only on app.osno.ai. Mitigation (inferred): lens.agents.squadstack.com resolves to private 10.x addresses, so the key is usable only from inside their network."
+  }
+ },
+ {
+  "id": "SQS-31",
+  "dimension": "architecture",
+  "claim": "Arth V2 (announced 2026-10-13): claimed 67 ms finalize-to-response on 80% of turns and 8.85% semantic WER on an 863-call Hindi-English benchmark, ahead of Sarvam, Deepgram, Google, OpenAI, Cartesia and ElevenLabs and level with Soniox; claimed live on 80% of daily calls. The benchmark on Hugging Face (Squadstack/conversational-streaming-asr-benchmark, created 2026-10-09) is gated behind login and terms, not open.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_arth-v2-speech-recognition-india.txt ; data/teardown/squadstack/hf/dataset-api.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-32",
+  "dimension": "architecture",
+  "claim": "The architecture is a provider-routed cascade: third-party TTS (ElevenLabs for customers; Cartesia and Sarvam internal-only), an STT router (arc_stt) with fallback chains, and in-call LLMs from OpenAI, SimpliSmart, AWS Bedrock or OpenRouter behind an LLM router (region, hedging, cross-model fallback, hot-swap). It is not a fully owned stack. Ownership is plausible for ASR (Arth) and possibly for an LLM hosted on SimpliSmart or Bedrock; no in-house TTS provider appears in any bundle constant.",
+  "grade": "inferred",
+  "evidence": "claims SQS-19..SQS-31 ; data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "\"Owned at most for ASR\" overreaches: provider option lists are server-supplied, and the editor names in-call LLM providers OpenAI, SimpliSmart, AWS Bedrock and OpenRouter, any of which could host an in-house Sales LLM. No in-house TTS constant appears, but one cannot be excluded.",
+   "claim_before": "The architecture is a provider-routed cascade on Pipecat with in-house ASR as one STT option and ElevenLabs/Cartesia/Sarvam TTS, not a fully owned stack; the 'owned' claim is true at most for ASR."
+  }
+ },
+ {
+  "id": "SQS-33",
+  "dimension": "architecture",
+  "claim": "REA gave no usable evidence on SquadStack. \"rea inspect\" rejected the Playwright HAR (\"unsupported binary format\"). \"analyze-web-bundle\" over CDP ran past the 280 s timeout and wrote a complete result about 308 s after start: 34 scripts parsed, but only framework fingerprints, 1 route and 1 endpoint, with source maps \"not_requested\" despite --fetch-source-maps. Every architecture finding came from the fallback: the public Next.js chunks, the HAR and string extraction.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/rea/rea-status.json ; data/teardown/squadstack/rea/rea-doctor.json ; data/teardown/squadstack/rea/rea-ai-platform-web-bundle.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "refuted-in-part",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "rea-ai-platform-web-bundle.json (written 18:32:51Z, 28 s after the 280 s timeout fired and 9 s after rea-status.json) is a complete analyze-web-bundle result: 34 scripts observed and parsed, 0 parse failures, 502,083 AST nodes. So the CDP path did produce output, late (the orphaned npx child kept running after timeout killed its parent). Its evidence value was near zero: 25 inferences, all Next.js/React fingerprints or low-confidence endpoint candidates, 1 route (/_next/image), 1 endpoint (/__cookies__), and source maps \"not_requested\" despite --fetch-source-maps. It found none of the provider strings the grep fallback found.",
+   "claim_before": "REA could not analyse SquadStack: 'rea inspect' rejected the Playwright HAR ('unsupported binary format') and 'analyze-web-bundle' over CDP produced no output before a 280 s timeout; fallback was Playwright HAR plus direct reading of the public Next.js chunks listed in the build manifest."
+  }
+ },
+ {
+  "id": "SQS-34",
+  "dimension": "pricing",
+  "claim": "/pricing publishes no rate: per live-call minute (billed on seconds in conversation), no seat or platform fee, rate set by language mix, call complexity and volume; one-time setup fee per use case; engagements Pilot (single use case, 90-day commitment), Scale, Strategic. The FAQ on the same page says pilots run 3-8 weeks: the 90-day vs 3-8-week contradiction found on 2026-10-17 is still there.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_pricing.txt ; research/2026-10-17/lanes/l4a-competitors/pricing-history.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Pricing text re-read: per live-call minute, no seat/platform fee, rate factors, one-time setup fee per use case, Pilot 90-day commitment vs FAQ \"Pilots run between 3 and 8 weeks\". All match."
+  }
+ },
+ {
+  "id": "SQS-35",
+  "dimension": "pricing",
+  "claim": "The homepage FAQ and its JSON-LD still say voice AI in India is 'typically between INR 2 and 5 a minute', dialer and telephony included, and that SquadStack 'prices against outcomes'. This confirms the 2026-10-17 correction (verify.md): a generic market statement, not a rate card.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai.txt ; research/2026-10-17/lanes/l4a-competitors/verify.md",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Homepage FAQ line 745 re-read: \"typically between ₹2 and ₹5 a minute\", dialer and telephony included, \"prices against outcomes\"."
+  }
+ },
+ {
+  "id": "SQS-36",
+  "dimension": "pricing",
+  "claim": "Revenue-linked pricing launched 2026-09-14 for BFSI: low fixed base plus a success fee per business outcome (e.g. per loan disbursed), split set per customer after 'design days'.",
+  "grade": "vendor-claimed",
+  "evidence": "https://cxotoday.com/media-coverage/squadstack-ai-launches-revenue-linked-pricing-model-for-voice-ai-sales-agents/ (read 2026-10-20 via search) ; research/2026-10-17/lanes/l4c-incumbents-distribution/data/h8-context-evidence.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-37",
+  "dimension": "pricing",
+  "claim": "In the Plug-N-Play flow, '50% of the first month's billing will be utilized as one-time platform setup & caller training fee'; billing has monthly usages, invoices, payments, additional costs, wallet top-ups and recurring payment consent.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/portal-js/all/pages__billing-f02ca272ab3e2002.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "tooltipOneTimeSetupFee re-read; billing chunk has getMonthlyUsage/getInvoices/getPayments/getAdditionalCosts; chunk 1682 has getTopupPlans, getWalletBalance and createFreeTrialSubscription (Pabbly plan ids). Addition: the Plug-N-Play flow is for human tele-callers (Select Caller Type, CEFR, Caller Go-Live, telecaller training), see SQS-76."
+  }
+ },
+ {
+  "id": "SQS-38",
+  "dimension": "pricing",
+  "claim": "SquadStack's own SEO comparison lists itself at '$0' setup fee and 'Custom (performance-based)', contradicting the per-use-case setup fee on /pricing; the same table lists 'Osno AI' at $0.04-0.08/min advertised and $0.08-0.18 all-in.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_voicebot_ai-outbound-calling-cost.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Comparison table re-read: SquadStack.ai \"Custom pricing / Custom (performance-based) / $0\" setup; Osno AI \"$0.04-$0.08/min\" advertised, \"$0.08-$0.18/min\" all-in, $0 setup."
+  }
+ },
+ {
+  "id": "SQS-39",
+  "dimension": "pricing",
+  "claim": "The ROI calculator is three hard-coded multipliers (conversions x1.4, CAC / 3, connectivity to 90%) plus a fixed 15% yearly compounding, whatever the inputs; projected spend is always 46.7% of current spend.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/raw/www.squadstack.ai_pricing.html",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Pricing page script re-read: CL=1.4, CD=3, SC=90; S1 = (S/C0/3)*(C0*1.4) = 0.467*S; y2 = y1 + ag*1.15, y3 = y2 + ag*1.3225."
+  }
+ },
+ {
+  "id": "SQS-40",
+  "dimension": "pricing",
+  "claim": "An all-in INR/min for a SquadStack outbound call is not derivable from public material. The numbers in public are the generic INR 2-5 per live-conversation minute incl. telephony (= USD 0.021-0.053 at FX 95), setup fees and BFSI success fees, plus SquadStack's own cost page listing Osno AI at $0.04-0.08/min advertised and $0.08-0.18 all-in (INR 3.8-17 at FX 95).",
+  "grade": "inferred",
+  "evidence": "claims SQS-34..SQS-38 ; data/teardown/squadstack/blog/txt/www.squadstack.ai_voicebot_ai-outbound-calling-cost.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "There is a second public number: SquadStack's own cost page lists Osno AI at $0.04-0.08/min advertised and $0.08-0.18 all-in. If Osno is SquadStack's brand (SQS-68), that is the only per-minute figure SquadStack publishes for an AI-platform product.",
+   "claim_before": "An all-in INR/min for an Indian outbound call is not derivable from public material; the only number is the generic INR 2-5 per live-conversation minute incl. telephony (= USD 0.021-0.053 at FX 95), plus setup fees and, for BFSI, success fees."
+  }
+ },
+ {
+  "id": "SQS-41",
+  "dimension": "pricing",
+  "claim": "Reconstructed COGS per connected minute (ex GST, desk computation over 15 stack combinations of the observed providers). With ElevenLabs Flash v2.5 at PAYG (the likely customer default) it is INR 1.95-3.58: a loss at INR 2 and a 23-34% mid margin at INR 3.5. With legacy Multilingual v2 it is INR 3.3-5.3; Cartesia Sonic-3.6, INR 1.9-3.5; Sarvam Bulbul, INR 1.2-2.7; self-hosted TTS, INR 0.7-2.1. The in-call LLM is a flash-lite proxy because the actual model was not observed. The INR 2 floor needs Sarvam or own TTS, or a deep ElevenLabs discount.",
+  "grade": "inferred",
+  "evidence": "research/2026-10-20/teardown/squadstack/cogs.csv ; research/2026-10-20/teardown/squadstack/code/cogs.py",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "refuted-in-part",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Arithmetic re-checked against cogs.py and g4 prices.csv: all 15 rows reproduce. But the headline frame is wrong: eleven_multilingual_v2 is on the editor's hide-list (legacy), not \"the bundle default\"; the TTS default constant is eleven_flash_v2_5, billed at the Flash/Turbo rate ($40 per 1M chars). With that, COGS is INR 1.95-3.58 (mid 2.30-2.71): a 15-36% loss at INR 2 and a 23-34% margin at INR 3.5. Also the LLM line is a Gemini flash-lite proxy, while the editor names OpenAI, SimpliSmart, AWS Bedrock and OpenRouter as in-call providers; the in-call LLM and its price were not observed.",
+   "claim_before": "Reconstructed COGS per connected minute (ex GST, desk computation over 15 stack combinations of the observed providers): ElevenLabs Multilingual v2 at PAYG makes COGS about INR 3.3-5.3, a loss at INR 2 and roughly break-even at 3.5; Cartesia Sonic-3.6 gives INR 1.9-3.5; Sarvam Bulbul gives INR 1.2-2.7; a self-hosted TTS gives INR 0.7-2.1. The INR 2 floor works only with in-house or Sarvam TTS, or a deep ElevenLabs discount, which explains why owning TTS and ASR matters to them."
+  }
+ },
+ {
+  "id": "SQS-42",
+  "dimension": "pricing",
+  "claim": "Volume consistency check: Arth's \"1 crore+ minutes in two months\" at 80% of calls implies on average about 2 lakh AI minutes a day (about 7.6 crore a year; INR 15-38 Cr a year at INR 2-5), the same order as FY24 revenue of INR 26.5 Cr. Because the two months include a ramp, today's rate can be higher. Even at 5x, \"50 lakh+ calls a day\" is at most about 0.2 min per call, so \"calls\" means dial attempts, not conversations.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_arth-v2-speech-recognition-india.txt ; research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Arithmetic holds (1 crore / ~60 days / 0.8 = ~2.1 lakh min/day; x365 = ~7.6 crore; INR 15-38 Cr at INR 2-5). Caveat added: the 1 crore covers a two-month ramp, so the current daily rate can be above the average. The \"dial attempts\" conclusion survives a 5x error (0.2 min per call). FY24 revenue predates the AI-minute mix, so the revenue comparison is order-of-magnitude only.",
+   "claim_before": "Volume consistency check: Arth's '1 crore+ minutes in two months' at 80% of traffic implies about 2 lakh AI minutes a day (about 7.5 crore a year, INR 15-37 Cr a year at INR 2-5), the same order as FY24 revenue of INR 26.5 Cr; '50 lakh+ calls a day' is then about 0.04 min per call, so 'calls' must mean dial attempts, not conversations."
+  }
+ },
+ {
+  "id": "SQS-43",
+  "dimension": "velocity",
+  "claim": "No public changelog, release notes or status page exists (status.squadstack.com resolves only to private IPs). Blog dates are unreliable: about 13 launch posts show 'July 9, 2026' or similar but all carry sitemap lastmod 2026-09-22, and one (RAG) refers to another as 'a few weeks ago' while both show the same date.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/site/www.squadstack.ai_sitemap.xml ; data/teardown/squadstack/dns/doh_status.squadstack.com_A.json ; data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_launching-rag-and-context-management-your-ai-agent-can-finally-handle-the-calls-that-actually-matter.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-44",
+  "dimension": "velocity",
+  "claim": "Dated events in the last 6 months: 2026-05-15 domain moved .com to .ai and 'Compliance API documentation' notice (trust centre); 2026-05/07 Voice AI Platform PM roles (self-serve, APIs, SDKs) and an FDE role opened; 2026-09-04 Vision Agent and In-App Assistant posts; 2026-09-14 revenue-linked pricing; 2026-10-06 in-app SDK rebuilt; 2026-10-09 eight competitor comparison pages updated and the ASR benchmark dataset created; 2026-10-13 Arth V2; 2026-10-19 portal and AI platform redeployed.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/trust/trust-rendered.txt ; data/teardown/squadstack/jobs/webflow-php.json ; data/teardown/squadstack/dns/http-headers-deploy-dates.txt ; data/teardown/squadstack/site/www.squadstack.ai_sitemap.xml ; data/teardown/squadstack/hf/datasets-search.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-45",
+  "dimension": "velocity",
+  "claim": "Of 22 open roles, 10 are sales or marketing, 4 are product (3 on the Voice AI platform), 1 is engineering (Forward Deployed Engineer, Python/JS, prompts, RAG); go-to-market is weighted to enterprise sales (Government/PSU, Insurance, Education, Banking).",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/jobs/webflow-php.json",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-46",
+  "dimension": "plumbing",
+  "claim": "Claimed: TRAI DND registry scrubbing before dialling plus client DND lists, a 9:30-20:30 calling window hard-enforced by the platform, consent gating, opt-out honouring and 'configurable AI disclosure' in the conversation layer, India data residency on AWS Mumbai, PII redaction, ISO 27001/27701, SOC 2 Type II, DPDP and TRAI compliance.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/site/www.squadstack.ai_llms.txt ; data/teardown/squadstack/pages/txt/www.squadstack.ai.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-47",
+  "dimension": "plumbing",
+  "claim": "Observed in the portal: a business-wide DNC blacklist (paste 10-digit numbers or CSV; \"Kept on blacklist - verified DND by scrubbing\"; re-import needs 24 h after removal), DND-lead upload, and SMS blocks that take the customer's own Sender ID and DLT Entity ID. The blacklist paste field accepts only 10-digit numbers; lead-import validation rules were not seen.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/portal-js/all/pages__campaigns__ImportHistory-6779cb2764dc7d4e.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "The 10-digit rule observed is on the DNC/blacklist paste field (\"Please enter 10 digits comma separated numbers without space\"). No lead-import number validation rule was found in the captured strings, so that sentence was an overreach. The agent editor adds a dnd_request() call-closing tool (SQS-72).",
+   "claim_before": "Observed in the portal: a business-wide DNC blacklist (paste or CSV of 10-digit numbers; 'Kept on blacklist - verified DND by scrubbing'; removal needs 24 h before re-import), DND-lead upload, and SMS blocks that take the customer's own Sender ID and DLT Entity ID. Lead numbers are validated as 10-digit Indian numbers."
+  }
+ },
+ {
+  "id": "SQS-48",
+  "dimension": "plumbing",
+  "claim": "No mention of 140-series, 160-series or 1600-series numbers in about 60 SquadStack pages, the 49.7 KB llms.txt or the portal UI strings. Marketing instead sells 'spam number rotation' and 'clean number routing' to beat spam blocking; its 2024 TRAI submission argued opt-in calls should not be forced onto the 140 series.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/site/www.squadstack.ai_llms.txt ; data/teardown/squadstack/pages/txt/ ; data/teardown/squadstack/portal-js/ui-strings.json ; research/2026-10-17/lanes/r2-untouched-raw/trai-stakeholder-positions.csv",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Re-grepped the captured corpus (27 pages, 24 blog posts, llms.txt, llms-full.txt, portal strings) and the verifier's agent-editor chunk: no 140/160/1600-series mention (the only \"140\" is the Rs 140 Cr Series B). \"Anti-spam number rotation\" and \"spam number rotation\" are present; the 2024 TRAI submission row is in trai-stakeholder-positions.csv. \"About 60 pages\" is about 53 documents."
+  }
+ },
+ {
+  "id": "SQS-49",
+  "dimension": "plumbing",
+  "claim": "Promotional SquadStack campaigns most likely run from rotated 10-digit numbers through its telephony subprocessors, leaving 140/1600 designation to the buyer. The only calling window found in code is a platform-wide pause from 23:00 to 09:00 announced in the AI platform UI (calls allowed 09:00-23:00). That is wider than the marketed 9:30-20:30 and than the 10:00-21:00 default band for promotional calls. No campaign-level window field was found in the portal strings.",
+  "grade": "inferred",
+  "evidence": "claims SQS-47..SQS-48 ; data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/ai-platform-js/static_chunks_app_layout-d48c9dd2f46b1a7e.js ; data/teardown/squadstack/verify-osno-js/chunks/chunks_app_layout-a3fd0fed7978b4b2.js ; research/2026-10-20/teardown/regulation-segment/claims.json",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "refuted-in-part",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Window half is contradicted by code the lane had downloaded: the AI-platform layout (static_chunks_app_layout-d48c9dd2f46b1a7e.js) and the Osno layout show \"The system will pause all calling activities daily from 11:00 PM to 9:00 AM\" whenever the local hour is >=23 or <9. The only window seen in code is therefore 09:00-23:00, wider than the marketed 9:30-20:30 and than the TCCCPR default promotional band 10:00-21:00 (regulation lane RS-15). Server enforcement was not observed. The number-rotation half stays an inference.",
+   "claim_before": "Promotional SquadStack campaigns most likely run from rotated 10-digit numbers through Exotel/Ozonetel/Plivo, leaving 140/1600 designation to the buyer's own telco arrangements; the 9:30-20:30 window is one platform-wide window (no campaign-level window field was found)."
+  }
+ },
+ {
+  "id": "SQS-50",
+  "dimension": "plumbing",
+  "claim": "The Terms push consent to the buyer ('you represent that you have obtained all legally-required, freely-given consents ... from end-users to capture, record, store, transcribe, analyze, and use such voice data to train and improve the Platform') and disclaim regulatory fitness ('We do not guarantee the Platform's compliance with every specific industry regulation'), against marketing's 'RBI, IRDAI, SEBI, TRAI ready out of the box'. Terms last updated 13 May 2025; section 12 'Modifications' duplicates section 11.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_terms-conditions.txt ; data/teardown/squadstack/pages/txt/www.squadstack.ai_pricing.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Terms re-read: consent representation (line 136), \"We do not guarantee the Platform's compliance\" (150), \"Last Updated: 13 May 2025\", sections 11 and 12 carry the same limitation-of-liability text."
+  }
+ },
+ {
+  "id": "SQS-51",
+  "dimension": "plumbing",
+  "claim": "The public privacy policy still describes the legacy gig-worker data platform on squadstack.com (worker KYC incl. PAN/Aadhaar), borrows CCPA wording ('consumer', 'authorized agent'), and has no notice for the people SquadStack calls on behalf of brands. The 'DPDP compliant' claim has no DPDP-shaped public notice behind it.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_privacy-policy.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Privacy policy re-read: worker-network framing, KYC incl. PAN/Aadhaar, CCPA-style \"consumer\" verification wording, no DPDP or Data Principal language, no notice for called persons."
+  }
+ },
+ {
+  "id": "SQS-52",
+  "dimension": "plumbing",
+  "claim": "Data residency is partial. Origin infrastructure is AWS Mumbai and the bundles carry ElevenLabs' India-residency endpoint, but OpenAI (USA) and Plivo (USA) are declared subprocessors, in-call LLM providers include OpenAI, AWS Bedrock and OpenRouter, the default post-call extraction goes via OpenRouter, and front-end telemetry goes to US-region Sentry and PostHog. The trust centre's \"We store all data of our customers within India\" (and \"stored exclusively in India\" for OpenAI and Gemini) covers storage, not processing.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/trust/trust-rendered.api.json ; data/teardown/squadstack/ai-platform-js/ ; data/teardown/squadstack/har/ai-platform.requests.json ; data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "\"LLM calls route via OpenRouter\" generalised one default (post-call extraction) to all LLM calls; the in-call LLM providers named in the editor are OpenAI, SimpliSmart, AWS Bedrock and OpenRouter. The ElevenLabs India endpoint is a client constant; runtime use is inferred. The trust centre says OpenAI and Gemini data \"is stored exclusively in India\".",
+   "claim_before": "Data residency is partial: origin infrastructure is in AWS Mumbai and ElevenLabs is called on its India-residency endpoint, but OpenAI (USA) and Plivo (USA) are declared subprocessors, LLM calls route via OpenRouter, and front-end telemetry goes to US-region Sentry/PostHog; the trust-centre FAQ's 'We store all data of our customers within India' covers storage, not processing."
+  }
+ },
+ {
+  "id": "SQS-53",
+  "dimension": "plumbing",
+  "claim": "PII redaction claim: an inline processor between STT and LLM replaces Aadhaar/PAN etc. with typed tokens, using a rolling 5-turn window for values dictated across turns; 400+ spoken-pattern regression cases; signed off by Angel One's security team.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_why-your-voice-ai-leaks-customer-data-on-every-sensitive-call-and-how-we-fixed-it.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-54",
+  "dimension": "plumbing",
+  "claim": "Trust centre lists independent RBI (DL-SAR) and SEBI CSP audit reports, VAPT reports for admin portal, telecalling web app, API and internal network, and SOC 2 Type II, ISO 27001:2022 and ISO 27701 (documents behind request-access).",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/trust/trust-rendered.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Trust-centre titles re-read, including \"Squadstack Internal Network VAPT Testing Report.pdf\" and a Customer-Portal web application report."
+  }
+ },
+ {
+  "id": "SQS-55",
+  "dimension": "failures",
+  "claim": "There is almost no public buyer-side complaint corpus: Capterra shows 0 reviews; G2 (2 reviews per search snippet), Trustpilot and SourceForge returned 403 and were not read; the 2026-10-17 VoC file holds one SquadStack item (a worker, Trustpilot 2023). Buyer-side failure modes cannot be traced to raw threads from public material.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/complaints/capterra.txt ; research/2026-10-17/lanes/r2-untouched-raw/voc-indian-complaints.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-56",
+  "dimension": "failures",
+  "claim": "Supply-side (human telecaller) failure modes dominate the public record: on the partner app, recent reviews report payouts or 'redeem' stuck for months (2026-07-15), no work for 6 months after passing assessments (2026-07-10), accounts deactivated with money stuck (2026-06-10), a stated hiring pause, and identical templated replies from SquadStack.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/complaints/play.txt ; https://play.google.com/store/apps/details?id=com.squad.run&hl=en_IN",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-57",
+  "dimension": "failures",
+  "claim": "The human fallback ('Human Advisors pod') sits on a gig workforce that SquadStack is shrinking (FY24 revenue halved to INR 26.5 Cr; partner reviews report no new hiring). Its depth and quality for hand-offs is a risk that only a buyer interview or pilot can test.",
+  "grade": "inferred",
+  "evidence": "claims SQS-56 ; research/2026-10-17/lanes/l4a-competitors/data/company-financials.csv",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-58",
+  "dimension": "failures",
+  "claim": "SquadStack's naturalness metric 'Abruptly Disconnected Rate' counts calls dropped within 10 s of a caller realising it is an AI (about 10% vs 40% in Jan 2025); its default outcome prompt labels 'Abruptly disconnected and not Receiving' when the transcript ends without the agent's closing line.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_turing-test.txt ; data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-59",
+  "dimension": "failures",
+  "claim": "The 'Turing Test' headline (81% of 1,563 identified the AI as human) measures listeners who picked at least one of two AI recordings as human out of four; the event is dated September 2025, October 2025 and November 2025 on different pages.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_turing-test.txt ; data/teardown/squadstack/pages/txt/www.squadstack.ai_squadstack-vs-bolna.txt ; data/teardown/squadstack/site/www.squadstack.ai_llms.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-60",
+  "dimension": "failures",
+  "claim": "Internally inconsistent claims: training data 600M+ minutes vs 900M+ minutes vs 3B+ interactions; 20+ voices vs 1,000+ cloned voices; STT 'Hindi, English, Hinglish, vernacular in progress' vs 9 languages native; setup fee per use case vs '$0'.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_inside-the-humanoid-ai-agent-stack.txt ; data/teardown/squadstack/pages/txt/www.squadstack.ai_humanoid-ai-agent-stack.txt ; data/teardown/squadstack/site/www.squadstack.ai_llms.txt ; data/teardown/squadstack/blog/txt/www.squadstack.ai_voicebot_ai-outbound-calling-cost.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-61",
+  "dimension": "failures",
+  "claim": "Head-to-head wins claimed: IndiaMART (six use cases) over Sarvam, Origa, Hampam and Gnani; BankBazaar over Gupshup and Gnani; JustDial (1.5x conversion) over Sarvam, GreyLabs, Convin and Convozen.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_squadstack-vs-bolna.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-62",
+  "dimension": "v2",
+  "claim": "Persistent Memory: lead-level memory across calls keyed by a masked fingerprint inside a campaign; up to 20 plain-language extraction points per agent; modes Refresh (latest only) and Rolling History (last few calls); surfaced as pass-through fields or an AI-summarised pre-call briefing; stale data flagged for confirmation.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_introducing-persistent-memory.txt ; data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_why-voice-ai-gets-worse-the-longer-it-talks-and-how-we-fixed-it.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-63",
+  "dimension": "v2",
+  "claim": "Context management is real in code: context_summarization (turn threshold 5, 256-token summary, compaction retaining the last 3 turns), structured entity extraction and per-turn model routing (hot-swap after N turns, fallback), matching the blog's design.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js ; data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_why-voice-ai-gets-worse-the-longer-it-talks-and-how-we-fixed-it.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "confirmed",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Chunk 8449 re-read: turn_threshold 5, summary_max_tokens 256, compaction retention_turns 3, hotswap swap_at 2, fallback_config, router with hedge/cross_model_fallback. The editor labels context_summarization \"In-Call Memory\"; its summariser options are gpt-4o-mini (default) and gpt-4.1-mini."
+  }
+ },
+ {
+  "id": "SQS-64",
+  "dimension": "v2",
+  "claim": "Lift (self-improvement): mines near-misses, early drop-offs and clumsy conversions, proposes one small prompt edit at a time, every change human-reviewed, prompt split into locked sections (compliance, product rules, pricing guardrails, identity) and optimisable sections, staged rollout from a small slice to a quarter, half and all traffic; claimed lifts 1.5% to 2.7% bookings (12k leads) and 2.2% to 4.3% branch visits.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_introducing-lift-self-improvement-for-your-voice-ai-agent.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-65",
+  "dimension": "v2",
+  "claim": "Optimize (blog): multivariate tests on voice, prompt, workflow, channel and cadence with 80/20 or 70/30 splits and a significance flag. In code: Agent Evals (/agent-evals, agent-conversation-runner) and prompt-version history (/v1/prompt-version-history/). The agent editor has intra-call memory (state management with stages and memory_keys; \"In-Call Memory\" summarisation). No cross-call memory, Lift or Optimize screen appears in the captured bundles.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_introducing-optimize.txt ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "The editor chunk (not captured by the lane) has a state_management section: multi-stage calls with stage prompts, per-stage summaries and memory_keys, plus \"In-Call Memory\". So memory does appear in code, as intra-call state. No cross-call Persistent Memory or Lift screen was found.",
+   "claim_before": "Optimize: multivariate tests on voice, prompt, workflow, channel and cadence with 80/20 or 70/30 splits and a significance flag; 'Agent Evals' (agent-conversation-runner) and prompt-version history exist as routes in the AI platform. No Lift or memory screen is visible in the public bundles (they may be internal or behind other chunks)."
+  }
+ },
+ {
+  "id": "SQS-66",
+  "dimension": "v2",
+  "claim": "Vision Agent: product image, listing and seller data injected before the call so the agent confirms instead of asking (e.g. 'Aapko green color hi chahiye na?'); WhatsApp mid-call confirmation is promised next.",
+  "grade": "vendor-claimed",
+  "evidence": "data/teardown/squadstack/blog/txt/www.squadstack.ai_blog_introducing-humanoid-vision-agent.txt",
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SQS-67",
+  "dimension": "account-phase",
+  "claim": "SquadStack's Terms prohibit using the Platform 'for competitive purposes', any 'automated means or software (such as bots or scrapers) to access or extract data from the Platform' (Platform includes the website), reverse engineering, and misrepresenting affiliation. A trial account for teardown would breach these unless SquadStack consents in writing.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/pages/txt/www.squadstack.ai_terms-conditions.txt",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "annotated",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "The clause text is accurate (Terms lines 103-117), but \"would breach ... unless SquadStack consents\" is no longer a project constraint. The owner overrode vendor terms (directive.2026-10-20.terms-override; decision.2026-10-20.teardown-lines keeps only: no auth/captcha/bot-protection/rate-limit bypass, no tenant probing, no copying, no prompt jailbreaks, synthetic data, own numbers). For SquadStack the real blocker is the sign-in allowlist (SQS-70). Getting past it needs SquadStack to provision access under VP's real identity; bypassing it is a kept line."
+  }
+ },
+ {
+  "id": "SQS-68",
+  "dimension": "account-phase",
+  "claim": "Osno AI (app.osno.ai, \"osno.ai | AI Voice Agents\") is very likely a second brand of SquadStack's AI platform: the same Firebase project (squadstack-ai-paas), the same code (OSNO/AI_PAAS variant flag, same Firestore collections), API Docs pointing to apidocs.squadstack.com, and SquadStack's bundle special-cases app.osno.ai and calls /v1/create/osno-user/. www.osno.ai is an unpublished Webflow site. It is not self-serve today: sign-in is allowlisted and time-limited (SQS-70). SquadStack's own cost page lists Osno as a third-party competitor.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/dns/doh_osno.ai_TXT.json ; data/teardown/squadstack/dns/doh_squadstack.com_TXT.json ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/blog/txt/www.squadstack.ai_voicebot_ai-outbound-calling-cost.txt ; data/teardown/squadstack/verify-osno-js/chunks/chunks_1833-6b870cfb2378e09f.js ; data/teardown/squadstack/verify-osno-js/chunks/chunks_app_layout-a3fd0fed7978b4b2.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "corrected",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Strengthened as \"same platform\": the app.osno.ai build (downloaded by the verifier) shares the module layout, the OSNO/AI_PAAS variant constant, the Firebase project and the Firestore collections, and links API Docs to apidocs.squadstack.com and app.squadstack.com/voice_bot. Weakened as \"self-serve\": it is gated like ai-platform (SQS-70).",
+   "claim_before": "Osno AI (app.osno.ai, 'osno.ai | AI Voice Agents') is very likely SquadStack's self-serve brand on the same AI platform: osno.ai carries the same Firebase verification (squadstack-ai-paas) as squadstack.com, SquadStack's bundle special-cases the host app.osno.ai and calls /v1/create/osno-user/, and www.osno.ai is an unpublished Webflow site. SquadStack's own cost page lists Osno as a third-party competitor."
+  }
+ },
+ {
+  "id": "SQS-69",
+  "dimension": "account-phase",
+  "claim": "Neither ai-platform.squadstack.ai nor app.osno.ai lets an unknown business sign up today (builds of 2026-10-19/20). Both enforce ENABLE_EMAIL_DOMAIN_RESTRICTION=true: only squadstack.ai/squadstack.com addresses or allowlisted emails get past sign-in. Everyone else sees \"Sign in is temporarily disabled for external users.\" Osno also needs a provisioned user record with an expiry date.",
+  "grade": "inferred",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/verify-osno-js/chunks/chunks_1833-6b870cfb2378e09f.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "upgraded",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "Unknown -> inferred on new observations (SQS-70). The gate is client-side code; a server-side path, an allowlist change or a flag flip could open it, so this stays inferred.",
+   "grade_before": "unknown",
+   "claim_before": "Whether ai-platform.squadstack.ai or app.osno.ai lets an unknown business sign up and place a PSTN call without a sales gate is unknown (an /access-denied route and capability flags exist)."
+  }
+ },
+ {
+  "id": "SQS-70",
+  "dimension": "account-phase",
+  "claim": "Sign-in to both AI-platform builds is allowlisted. ai-platform.squadstack.ai: ENABLE_EMAIL_DOMAIN_RESTRICTION=true; an email passes if its domain is squadstack.ai or squadstack.com, or it exists in the Firestore collection squadstack-ai-paas-allowed-emails; otherwise \"Sign in is temporarily disabled for external users.\" and sign-out. app.osno.ai: the same flag and domains plus a hard-coded list of 15 external addresses (customer, agency and personal domains; not reproduced), then a record in squadstack-ai-paas-users with an expiry (\"Your access has expired on ... Please contact support to renew\"). The gate is client-side; server checks were not observed.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_6772-df4dc3c77bc44625.js ; data/teardown/squadstack/verify-osno-js/chunks/chunks_1833-6b870cfb2378e09f.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ },
+ {
+  "id": "SQS-71",
+  "dimension": "plumbing",
+  "claim": "The AI platform UI (both builds) announces a daily calling pause: \"The system will pause all calling activities daily from 11:00 PM to 9:00 AM\", shown when the browser-local hour is >=23 or <9. The implied window is 09:00-23:00, not the marketed 9:30-20:30, and it covers 21:00-23:00 and 09:00-10:00, outside the 10:00-21:00 default band for promotional calls. Server-side enforcement was not observed.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/ai-platform-js/static_chunks_app_layout-d48c9dd2f46b1a7e.js ; data/teardown/squadstack/verify-osno-js/chunks/chunks_app_layout-a3fd0fed7978b4b2.js ; research/2026-10-20/teardown/regulation-segment/report.md",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ },
+ {
+  "id": "SQS-72",
+  "dimension": "surface",
+  "claim": "The agent editor's prompt builder has call-closing scenarios with tool triggers: Positive -> transfer_call() or send_link(); Negative and Neutral -> hangup_call(); DND -> dnd_request() + hangup_call(); Callback -> schedule_callback(); custom scenarios (placeholder \"Live Seller Transfer\"). A Tools section is populated from server tools_options. The editor also offers test call, test chat and \"generate phone number\" (inbound and priority inbound numbers).",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ },
+ {
+  "id": "SQS-73",
+  "dimension": "architecture",
+  "claim": "In-call LLM providers named in the agent editor's validation: \"OpenAI, SimpliSmart, AWS Bedrock, or OpenRouter Maya Demo\" (models that support State Management). Summariser options: gpt-4o-mini (default) and gpt-4.1-mini. RAG has two backends, \"gemini\" and \"squadstack\" (Qdrant semantic documents), with model default gemini-2.5-flash. An ARC LLM catalog feeds the LLM router.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ },
+ {
+  "id": "SQS-74",
+  "dimension": "v2",
+  "claim": "Memory in code is intra-call. state_management holds multi-stage call stages (stage prompts, auto-start, per-stage summaries) and memory_keys; context_summarization is labelled \"In-Call Memory\". No field for the marketed cross-call Persistent Memory (lead-level fingerprint, Refresh / Rolling History) was found in the captured bundles.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/verify-aiplatform-editor-js/chunks/chunks_app_ai-agents_[id]_page-fd3405f9f095ea8a.js ; data/teardown/squadstack/ai-platform-js/static_chunks_8449-104a33eab55077e8.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ },
+ {
+  "id": "SQS-75",
+  "dimension": "docs-api",
+  "claim": "docs.squadstack.com (an ap-south-1 ALB) 301-redirects to apidocs.squadstack.com, the 2024 Postman lead-ingestion collection; docs.squadstack.ai does not resolve. The Osno app menu links \"API Docs\" to the same apidocs.squadstack.com.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/verify-headers/docs.squadstack.com_.headers.txt ; data/teardown/squadstack/verify-headers/docs.squadstack.ai_.headers.txt ; data/teardown/squadstack/verify-osno-js/chunks/chunks_app_layout-a3fd0fed7978b4b2.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ },
+ {
+  "id": "SQS-76",
+  "dimension": "pricing",
+  "claim": "The Plug-N-Play wallet/top-up flow is a human tele-caller product: \"Select Caller Type\", \"Help me select a tele-caller\", CEFR-certified callers, \"Caller Go-Live\", collateral \"used in the training program created for our telecallers\"; the setup fee covers \"caller training\". A free-trial subscription endpoint exists (create-free-trial-subscription, Pabbly plan ids). It is not an AI-agent self-serve path.",
+  "grade": "observed",
+  "evidence": "data/teardown/squadstack/portal-js/ui-strings.json ; data/teardown/squadstack/portal-js/all/1682-0a5d6bc77fc997bc.js",
+  "date": "2026-10-20",
+  "verification": {
+   "verdict": "added",
+   "by": "adversarial verifier, 2026-10-20",
+   "note": "New claim from the verification pass."
+  }
+ }
+]

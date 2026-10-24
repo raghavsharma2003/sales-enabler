@@ -1,0 +1,252 @@
+{
+  "module": "campaigns",
+  "date": "2026-10-21",
+  "tools": [
+    {
+      "name": "campaign.draft",
+      "risk": "draft"
+    },
+    {
+      "name": "campaign.estimate",
+      "risk": "read"
+    },
+    {
+      "name": "campaign.launch",
+      "risk": "external",
+      "a2": true,
+      "version": "policy_version:agent_version.hash"
+    },
+    {
+      "name": "campaign.pause",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "campaign.resume",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "campaign.stop",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "campaign.stop_at_cap",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "campaign.window.narrow",
+      "risk": "draft"
+    },
+    {
+      "name": "campaign.window.widen",
+      "risk": "policy",
+      "a2": true
+    },
+    {
+      "name": "campaign.audience.add",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "policy.window.set",
+      "risk": "policy",
+      "a2": true,
+      "roles": [
+        "owner",
+        "compliance"
+      ]
+    },
+    {
+      "name": "policy.category.override",
+      "risk": "policy",
+      "a2": true,
+      "roles": [
+        "owner",
+        "compliance"
+      ]
+    },
+    {
+      "name": "call.place_single",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "test.ring_member_phone",
+      "risk": "test"
+    },
+    {
+      "name": "number.search",
+      "risk": "read"
+    },
+    {
+      "name": "number.rent",
+      "risk": "spend",
+      "a2": true
+    },
+    {
+      "name": "number.byo.connect",
+      "risk": "draft"
+    },
+    {
+      "name": "number.kyc.submit",
+      "risk": "policy",
+      "a2": true
+    },
+    {
+      "name": "number.pause",
+      "risk": "external",
+      "a2": true
+    },
+    {
+      "name": "number.pause_flagged",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "a2p.declaration.export",
+      "risk": "read"
+    },
+    {
+      "name": "campaign.list",
+      "risk": "read"
+    },
+    {
+      "name": "campaign.get",
+      "risk": "read"
+    },
+    {
+      "name": "attempt.list",
+      "risk": "read"
+    },
+    {
+      "name": "attempt.retry_per_ladder",
+      "risk": "external",
+      "a3_when": "system or agent"
+    },
+    {
+      "name": "number.kyc.sync",
+      "risk": "draft",
+      "roles": [],
+      "note": "system or vp_success actor only; also via POST /hooks/telephony/kyc"
+    },
+    {
+      "name": "number.a2p.declare",
+      "risk": "policy",
+      "a2": true,
+      "roles": [
+        "owner",
+        "compliance"
+      ]
+    },
+    {
+      "name": "number.list",
+      "risk": "read",
+      "note": "viewer-safe; cursor pagination (nextCursor)"
+    },
+    {
+      "name": "member.phone.verify_start",
+      "risk": "test",
+      "roles": "all member roles"
+    },
+    {
+      "name": "member.phone.verify_confirm",
+      "risk": "draft",
+      "roles": "all member roles"
+    },
+    {
+      "name": "attempt.cancel_for_contact",
+      "risk": "draft",
+      "roles": [],
+      "note": "system or vp_success only; for erasure"
+    }
+  ],
+  "tests": {
+    "passed": 72,
+    "total": 72,
+    "files": [
+      "tests/campaigns.test.ts (37, Postgres)",
+      "tests/campaigns-review.test.ts (13, Postgres: WGC-01..08 and control)",
+      "tests/campaigns-units.test.ts (12, pure)"
+    ],
+    "e2e": "tests/e2e.test.ts steps 3b, 3c, 3d, 6b, 6c and 9b now pass as normal steps. The two direct-SQL bridges (KYC and A2P) are replaced by the signed webhook and number.a2p.declare. 8b (the calls funnel) is still a todo.",
+    "full_suite": "297/297 twice on one shared database (vp_mod_campaigns), 2026-10-21; e2e included"
+  },
+  "works": [
+    "The dial gate G1-G12 (gate.ts runGate) runs inside the claim transaction for every attempt kind: campaign, api, single, test, retry, callback and transfer. Reason codes match trust-telephony §6. Each check runs in a savepoint and fails closed with check_unavailable.",
+    "Calling windows are read in the contact's time zone. The category ceiling applies: promotional is 10:00-21:00, hard. The workspace outer band defaults to 08:00-21:00 and can be set inside 07:00-22:00. Quiet hours 22:00-07:00 hold on every path. The RBI band applies with the lending pack. National holidays plus tenant holidays are off. There is an 8-minute start cutoff. A cross-midnight window is owned by its start date.",
+    "T3 is refused in three places: at the form (campaign.draft), at the HTTP API (422 with M3.promotional_band, including call.place_single before any approval card) and at the gate. Service at 09:30 passes when the window allows it.",
+    "Consent and basis per category. An inquiry is a basis for 7 days and an application for 90; evidence.expiresAt also counts. A withdrawn 'all' purpose blocks. Promotional calls need explicit consent plus a known DND status, and CRF consent if the number is DND-registered.",
+    "Suppression applies at workspace or campaign scope, by e164 or contact. The internal DND list and tombstones are checked too.",
+    "Budgets: per person a day, a week and a run. Each phone number gets at most 3 rings a day, 120 minutes apart, across every path. Attempts that never rang the person (provider errors) do not count.",
+    "Series router: promotional goes on 140, IRDAI/RBI/SEBI packs on 1600, utilities and logistics on 1601, everyone else on declared 10-digit, and test calls may also use trial. The caller ID is sticky per person. A 10-digit line is capped at 200 dials a day. KYC, pause and A2P are checked per line (a warning before 2026-11-17, a refusal after).",
+    "G9 holds money with ledger.reserve() before any I/O, and releases it if a later check refuses or the runtime rejects the ticket.",
+    "The G11 predial hook has an 800 ms budget and fails closed. G12 caps concurrency per workspace and per campaign, and holds back 20% (at least 1) for inbound when an inbound route exists.",
+    "Worker: claims with FOR UPDATE SKIP LOCKED; 12 concurrent workers on 5 attempts claim each exactly once. Moving created -> dialing happens once. A dispatch that was never confirmed becomes unknown and is never retried.",
+    "CallTicket is built from agent_version.config ({agent, brief}) and the contact's facts. Only declared perContact facts go in, and offer facts are dropped from service calls. memory.brief is called through the registry with an 800 ms budget: loaded, none, not_loaded_timeout or disabled.",
+    "Retry ladder by outcome, from campaigns.md §7. Unknown outcomes are never retried automatically. The ladder is idempotent per attempt and runs at A3 when VP calls it.",
+    "Launch is A2 and the approval is bound to policy_version plus the agent version hash. A narrowed window voids a pending approval. A launch with blockers names each one, its fix and the role that can apply it. A workspace's first campaign stops for review after 20 dials. The worker pauses a campaign at its cap (A3 stop_at_cap) or on a low wallet, and never cancels it.",
+    "Tenancy: every query filters by workspace_id. A test shows another workspace cannot get, narrow, pause, add to, list or dial these rows.",
+    "Numbers: search, rent (spend; only an owner can approve), bring-your-own, KYC submit, pause, pause_flagged (A3). The A2P declaration pack exports as JSON or CSV.",
+    "At claim, the worker creates the conversation row (id = ticket.conversationId, attempt_id, contact_id, agent_version_id, channel 'phone', or 'test' for test calls) in the same transaction, so the calls module's runtime hook can trust it and settle the hold tagged with the attempt. The row is marked failed if the runtime refuses before any ring.",
+    "The version is chosen at claim: learning's experiment.assign, sticky per contact, is read through the registry inside the claim transaction. Without it, the campaign deployment's split decides, deterministically per contact; without that, the pinned version. The choice is stamped on the attempt and the conversation.",
+    "The G9 hold is sized by money.estimate for the agent's stack (max minutes x per-minute). A campaign's stated perMinuteInrMilli wins; an unknown rate falls back to a ₹6/min ceiling.",
+    "memory.brief status 'ok' means loaded. 'off' and 'off_for_agent' mean disabled. Anything else, not_executed or more than 800 ms means the call dials without memory.",
+    "The dispatch loop runs as a kernel job: module.jobs -> campaigns.dispatch every 2 s.",
+    "F1: a line's KYC moves submitted -> verified or rejected only through number.kyc.sync (system or vp_success actor, with evidence, audited) or the signed, idempotent carrier webhook. A decided KYC is never flipped.",
+    "F2: number.a2p.declare {numberId, a2pRef, evidence} (policy; owner or compliance approves) sets a2p_status 'declared', so a line stays dialable from 2026-11-17.",
+    "F3: the ticket's per-contact facts merge the contact's current intake attribute rows, skipping any older than max_age_s. Precedence is per-call variables, then attributes, then contact.custom. Offers stay fenced.",
+    "F4: launch binds campaign.deployment_id to the agent's latest 'campaign' deployment. Each claim follows a newer deployment.split, after any running experiment arm.",
+    "G4 codes carry a stable source class: an in-call opt-out recorded as 'call:<conversationId>' reports suppressed:in_call, with the full source in the detail.",
+    "Member phone verification (verify.ts). verify_start normalises the phone (Indian mobile only) and refuses a number this workspace suppressed or erased. It rings only 09:00-21:00 IST, as a fixed system announcement through the telephony seam's systemCall, from a trial line or VP_SYSTEM_CLI. The announcement speaks the 6-digit code twice in Hinglish and twice in English, then 'agar aapne yeh nahi maanga, ignore kar dijiye'.",
+    "Only HMAC(server salt, id + code) is stored. A code lives 10 minutes and allows 5 tries. Limits: 3 calls per member per hour, 20 per workspace per day, and 3 per phone per day across every workspace, keyed by a server-wide salted hash (per-workspace numberHash cannot count across workspaces). verify_confirm sets verified_test_phone.verified_at for the asking member only. Both tools are audited, and the code never appears in the audit log.",
+    "number.list: the workspace's lines with series, trial flag, status, KYC, A2P, carrier, rented and paused dates, and the campaigns using each line (pool or attempts). Keyset-paginated with nextCursor.",
+    "WGC review fixes in G5. Consent is decided by the newest record across every purpose that covers the call (by evidence.statedAt when readable, else created_at), so a newer withdrawal beats an older grant and an old re-imported 'yes' cannot re-open a person.",
+    "More G5 fixes: an unparseable expiresAt (non-ISO) fails closed as consent_expired, 'consent expiry unreadable'. Promotional calls need an explicit not_registered NCPR answer (or registered plus CRF consent), and an answer older than DND_FRESH_S (7 days, same as intake) defers with no_basis 'DND lookup stale'.",
+    "G6: for a +91 number the outer band, quiet hours and promotional band also hold in IST. A foreign contact.timezone can only narrow the window.",
+    "G2: refuses 'erased' when contact.erased_at is set or e164 is an 'erased:' husk. attempt.cancel_for_contact (system only) cancels a person's queued attempts. G12 counts an 'unknown' attempt whose conversation is still live.",
+    "G5 orders consent only by database-clock time: intake's effective_at (clamped to the insert time), else created_at; never the app-clock evidence.statedAt. A grant must be more than 1 s newer than the latest covering withdrawal to count, so a tie goes to the withdrawal. A 30-run deterministic test covers a fast app clock.",
+    "decision.2026-10-21.beta-stacks-test-only: G10 refuses any non-test attempt whose agent stack has status 'beta' (today v2-live and sarvam-india) with version_not_publishable 'the <label> stack is in beta: test calls only'. Test calls to a member's verified phone still run. The launch card lists it as the blocker beta_stack.",
+    "Plain words (explain.ts). Launch blockers are {code, message, why?, fix: {tool, label, role}}. Every refused attempt's precheck carries explain {code, message, why?, fix?} beside the developer detail. Messages are one sentence for a business owner, with no tool ids, rule codes or snake_case (a unit test checks every gate code).",
+    "Runtime at capacity (StartReply.retryable, 503 at_capacity). The attempt goes back to 'created', due after retryAfterS plus 0-50% jitter, with dialed_at, number, hold, conversation and claim stamps cleared. There is no outcome, ladder step or failure, only an attempt.deferred audit. The next claim re-runs the full gate, so the window still applies. The tick stops claiming after the first at-capacity reply (back-pressure). A non-retryable refusal still fails before ring, as before."
+  ],
+  "untested": [
+    "The real Plivo adapter (PlivoTelephony). It is off unless VP_TELEPHONY_LIVE=1 and has never called the live API. Its endpoint shapes are unverified, and KYC and bring-your-own are not wired. Update 2026-10-24 (telephony builder): systemCall's Call API shape checked against plivo.com/docs/voice/api/call/make-a-call; search/rent still unverified.",
+    "The default HTTP predial (httpPredial) against a real tenant endpoint. Tests inject the predial function.",
+    "HttpRuntime dispatch. Tests use FakeRuntime.",
+    "startWorker's interval loop. Tests call tick() directly.",
+    "The ladder's next_day / next_day_other_half steps. Only the minute-based steps are asserted.",
+    "A person's own stated time ('kal shaam 7 baje') widening into 07:00-08:00 or 21:00-22:00. It is not implemented: callbacks use the stated time inside the normal window.",
+    "Pacing beyond concurrency is not implemented: no canary at 3 starts a minute, no steady starts per minute, no jitter. The canary guardrails (opt-out spike and the like) are also not implemented.",
+    "Recurring campaigns and CampaignRun. Outage pause and auto-resume after 10 minutes of green health.",
+    "Calls a person has already answered, and 'called by another campaign today' beyond the per-number ceiling.",
+    "Load: precheck p95 latency was not measured (the target is 50 ms or less).",
+    "PlivoTelephony.systemCall (Speak XML) is not wired. In production a verification call reports ringing: false until a real adapter exists.",
+    "An 'unknown' attempt whose conversation stays live forever (the runtime never reports) holds a concurrency slot until someone ends the conversation. This is fail-closed by design."
+  ],
+  "needs_from_others": [
+    "calls module: settles or releases the hold at call.ended (already in calls/ingest.ts). Still needed: set attempt.outcome_class and call registry tool attempt.retry_per_ladder { attemptId, outcome, at? } as system after a non-final outcome (busy, no_answer, voicemail, short_call, callback, ...).",
+    "agents module: put config.lint = { ok } on agent_version. G10 reads it and also calls shared/safety lintAgentConfig.",
+    "kernel tests: 'prepare() runs outside the transaction' counts every idle-in-transaction session in the database, so it fails when run in parallel with suites that legitimately hold a claim transaction open (campaigns G11 predial waits up to 800 ms inside the claim by design). It passes alone (3/3). Scope the count to the test's own backend or connection.",
+    "calls module: e2e step 8b. campaignFunnel counts end_reason IS NULL as connected.",
+    "runtime/carrier relay: sign KYC events to POST /hooks/telephony/kyc with VP_TELEPHONY_WEBHOOK_SECRET (at least 32 characters), body {provider, eventId, providerRef, status, evidence}.",
+    "intake: call cancelContactAttempts(q, workspaceId, contactId, 'erased') from campaigns/index.ts inside dpdp.request.execute's transaction. Give consent_record.effective_at a DEFAULT (e.g. now()), so writers that don't set it (tests, older code) keep working; the gate already orders by it when present."
+  ],
+  "full_suite_note": "On 2026-10-21 the whole product suite (scripts/test.mjs) on this head ran 212 tests: 209 pass, 3 fail, none in campaigns. agents test.simulate and learning gates also fail on the base commit 6610597 without this module, so they predate it. The kernel prepare() test is the parallel-run flake described in needs_from_others.",
+  "risk_classes": "Every campaigns tool listed in research/2026-10-21/blueprint/data/workspace-tool-registry.json uses the registry's class. Not in the registry: campaign.stop_at_cap, number.pause_flagged and attempt.retry_per_ladder (external, A3 when VP acts), and the reads campaign.list, campaign.get and attempt.list.",
+  "routes": [
+    "POST /hooks/telephony/kyc: signed (x-vp-signature, VP_TELEPHONY_WEBHOOK_SECRET), recorded once per (provider, eventId), applied through number.kyc.sync as system",
+    "POST|GET /hooks/telephony/plivo/speak/:token: Plivo's answer URL for systemCall; X-Plivo-Signature-V3 over VP_PUBLIC_URL + path, nonce once; 503 without PLIVO_AUTH_TOKEN/VP_PUBLIC_URL",
+    "POST /hooks/telephony/plivo/hangup: Plivo's hang-up callback for the inbound application; X-Plivo-Signature-V3; stores carrier facts by CallUUID"
+  ],
+  "telephony_builder_2026_10_24": [
+    "allowlist.ts (new): VP_TELEPHONY_ALLOWED_TO checked at gate G2 (person dialled on every kind + the agent's hand-off number), inbound answering (hand-off number), member.phone.verify_start, and PlivoTelephony.systemCall/enabled(); closed without a list on any server that can reach a carrier; VP_TELEPHONY_ALLOWLIST=off is the only open switch. telephony.ts header records the dial-path decision (the runtime dials agent calls). explain.ts words the allowlist refusal. tests/telephony-allowlist.test.ts (6).",
+    "plivo-signature.ts (new) + migration 0305 plivo_nonce: X-Plivo-Signature-V3/Ma-V3 with one-time nonce on POST/GET /hooks/telephony/plivo/speak/:token; job campaigns.plivo_nonce_prune hourly. Vectors: tests/fixtures/plivo-v3-vectors.json from scripts/plivo-v3-vectors.py. tests/plivo-signature.test.ts (3).",
+    "verify.ts markVerified + tool member.phone.mark_verified (vp_success only, roles [], audited without the number, no call). Phone verification in the product runs on PlivoTelephony.systemCall (one Call API request, signed Speak answer URL): tests/telephony-verify.test.ts (2).",
+    "carrier.ts (new) + migration 0306: number.attach_carrier (vp_success only; Plivo Application create/update + Number link, answer URL = runtime's signed inbound path, hang-up URL = POST /hooks/telephony/plivo/hangup); the hang-up hook (V3-signed) stores carrier facts on the conversation; jobs campaigns.carrier_settle (ask the runtime to end after 90 s, settle after 10 min) and campaigns.carrier_cdr (CDR once per call). PlivoTelephony.attachInbound and .cdr; CarrierError keeps Plivo's refusal text.",
+    "shared/carrier.ts: Plivo hang-up causes -> reason, rang, taxonomy code, retry class; OutcomeClass 'carrier_refused' (never retried, does not count). Edited in calls (owner: calls builder): ingest accepts call.ended.carrier and applies it; taxonomy DIAL_REJECTED/DIAL_INVALID_NUMBER/DIAL_NETWORK/DIAL_TRIAL_RESTRICTED; followups.retryClass reads them; call.get returns carrier. tests/telephony-carrier.test.ts (5).",
+    "scripts/staff.ts: run a vp_success tool on the host (audited). inbound.test.ts: unlisted hand-off number refused on inbound (transfer_not_allowlisted), nothing reaches the runtime. ops/STAGING.md: 'Live phone calls' runbook (env by service, carrier set-up as the Plivo API calls the tool makes, first live call checklist)."
+  ]
+}

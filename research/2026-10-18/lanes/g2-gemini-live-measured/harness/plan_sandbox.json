@@ -1,0 +1,224 @@
+{
+ "g31": [
+  {
+   "tag": "us_g31_1m_off",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 1
+  },
+  {
+   "tag": "us_g31_1m_on6k",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 1
+  },
+  {
+   "tag": "us_g31_3m_off",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 3
+  },
+  {
+   "tag": "us_g31_3m_on6k",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 3
+  },
+  {
+   "tag": "us_g31_5m_off",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 5
+  },
+  {
+   "tag": "us_g31_5m_on6k",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 5
+  },
+  {
+   "tag": "us_g31_10m_off",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 10
+  },
+  {
+   "tag": "us_g31_10m_on6k",
+   "model": "gemini-3.1-flash-live-preview",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 10
+  }
+ ],
+ "g38": [
+  {
+   "tag": "us_g38_1m_off",
+   "model": "gemini-3.8-live",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 1
+  },
+  {
+   "tag": "us_g38_1m_on6k",
+   "model": "gemini-3.8-live",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 1
+  },
+  {
+   "tag": "us_g38_3m_off",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 3
+  },
+  {
+   "tag": "us_g38_3m_on6k",
+   "model": "gemini-3.8-live",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 3
+  },
+  {
+   "tag": "us_g38_5m_off",
+   "model": "gemini-3.8-live",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 5
+  },
+  {
+   "tag": "us_g38_5m_on6k",
+   "model": "gemini-3.8-live",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 5
+  },
+  {
+   "tag": "us_g38_10m_off",
+   "model": "gemini-3.8-live",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 10
+  },
+  {
+   "tag": "us_g38_10m_on6k",
+   "model": "gemini-3.8-live",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 10
+  }
+ ],
+ "g25": [
+  {
+   "tag": "us_g25_1m_off",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 1
+  },
+  {
+   "tag": "us_g25_1m_on6k",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 1,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 1
+  },
+  {
+   "tag": "us_g25_3m_off",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 3
+  },
+  {
+   "tag": "us_g25_3m_on6k",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 3,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 3
+  },
+  {
+   "tag": "us_g25_5m_off",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 5
+  },
+  {
+   "tag": "us_g25_5m_on6k",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 5,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 5
+  },
+  {
+   "tag": "us_g25_10m_off",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "off",
+   "vad": "meera",
+   "seed": 10
+  },
+  {
+   "tag": "us_g25_10m_on6k",
+   "model": "gemini-2.5-flash-native-audio-latest",
+   "minutes": 10,
+   "script": "P1",
+   "compression": "on:6000:3000",
+   "vad": "meera",
+   "seed": 10
+  }
+ ]
+}

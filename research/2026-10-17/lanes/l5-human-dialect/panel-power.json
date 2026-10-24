@@ -1,0 +1,360 @@
+{
+ "seed": 20261017,
+ "analytic_binomial_trials_needed": {
+  "0.6": {
+   "alpha_0.05": 194,
+   "alpha_0.0125_holm4": 276
+  },
+  "0.65": {
+   "alpha_0.05": 85,
+   "alpha_0.0125_holm4": 122
+  },
+  "0.7": {
+   "alpha_0.05": 47,
+   "alpha_0.0125_holm4": 67
+  }
+ },
+ "paired_rating_listeners_needed": {
+  "0.3": {
+   "alpha_0.05": 90,
+   "alpha_0.0125_holm4": 128
+  },
+  "0.4": {
+   "alpha_0.05": 51,
+   "alpha_0.0125_holm4": 73
+  },
+  "0.5": {
+   "alpha_0.05": 34,
+   "alpha_0.0125_holm4": 48
+  }
+ },
+ "simulated_preference_power": [
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.653
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.482
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.819
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.611
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.884
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.745
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.943
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.821
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.983
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 0.5,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.937
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.414
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.222
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.505
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.297
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.593
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.396
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.672
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.463
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.811
+  },
+  {
+   "p_mean": 0.6,
+   "sd_u_logit": 1.0,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.645
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.957
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.875
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.991
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.956
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.999
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.989
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 1.0
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.995
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 1.0
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 0.5,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 1.0
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.741
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 30,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.526
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.858
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 40,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.681
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.921
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 50,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.797
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.959
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 60,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.874
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.05,
+   "power": 0.991
+  },
+  {
+   "p_mean": 0.65,
+   "sd_u_logit": 1.0,
+   "listeners": 80,
+   "trials_per_listener": 8,
+   "alpha": 0.0125,
+   "power": 0.954
+  }
+ ],
+ "pilot_ab_two_proportion_n_per_arm_alpha05_power80": {
+  "early_hangup_15_vs_10": 686,
+  "early_hangup_30_vs_25": 1251,
+  "qualified_20_vs_25": 1094,
+  "booking_10_vs_13": 1774,
+  "booking_10_vs_12": 3841
+ }
+}

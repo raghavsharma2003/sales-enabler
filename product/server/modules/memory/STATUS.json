@@ -1,0 +1,67 @@
+{
+ "tools": [
+  "contact.memory.forget",
+  "contact.memory.get",
+  "erasure.pending",
+  "fact.approve",
+  "fact.forget",
+  "fact.review.decide",
+  "fact.review.list",
+  "memory.brief",
+  "memory.extract",
+  "memory.extract_thread",
+  "memory.policy.get",
+  "memory.policy.set"
+ ],
+ "tests": {
+  "passed": 45,
+  "total": 45,
+  "files": {
+   "memory.test.ts": 17,
+   "memory-retention.test.ts": 4,
+   "calls-outcome-import.test.ts": 6,
+   "memory-sweep.test.ts": 6,
+   "memory-review.test.ts": 3,
+   "memory-relational.test.ts": 5,
+   "memory-whatsapp.test.ts": 4
+  }
+ },
+ "works": [
+  "write gates in code: exact caller-turn quote (dropped+counted otherwise), closed kind/key vocabulary, 60-char value lint and instruction fence, purpose must equal the call's category, lawful basis required (consent needs a granted consent_record), refused categories (health, religion, caste, politics, sex_life, biometrics, financial_account, children) by model label or code detector unless policy allows that category under the same basis",
+  "retention tiers: ephemeral never stored, call_to_call 30 d, durable 365 d (expires_at)",
+  "write tiers: auto facts unused until the per-workspace undo window passes (default 60 min); commitments wait for a member's fact.approve",
+  "contradictions: newest statement from equal/higher authority supersedes; late extraction of an older call never overrides a newer one",
+  "idempotent per conversation (memory_extraction row with drop counts and token usage)",
+  "memory.brief: purpose-matched key=value shapes with ages, prefs > open > heard > context, <= 1200 bytes, throws BriefTooLarge (tool returns not_executed) instead of truncating; statuses ok/empty/off/off_for_agent/no_purpose/unknown_contact/unknown_agent",
+  "fact.forget and contact.memory.forget are destructive (A2), delete rows, no resurrection; DPDP forget_request recorded or completed by requestId with a counts-only receipt; optional stop-remembering gate",
+  "memory.policy.set (policy, A2): workspace switch, undo window, sensitive-category allowances (consent or legal_obligation only)",
+  "tenancy isolation tested on every tool",
+  "memory.extract asks the model in prepare() outside any transaction; run() re-reads every gate input under a row lock and commits nothing if the transcript changed since the model saw it (failed runs are retryable)",
+  "forgetContactMemory(q, workspaceId, contactId) in server/modules/memory/forget.ts (also re-exported from index.ts): deletes all of a contact's facts on the caller's Queryable, joining its transaction; used by contact.memory.forget",
+  "test calls (channel=test or run_manifest.test) skipped before any model call; live calls, agent memory.write=false and opted-out contacts skipped",
+  "children's-data gate (minor.ts): reads attribute rows and contact.custom; intake's canonical keys (date_of_birth, birth_year, age_group, age, is_minor) first; birth_year read as the younger possible age, age_group minor if it says under/below or any bound < 18, unclear if it has no number, then intake's canonicalAgeKey for any other key, so one list decides ('Customer DOB' counts, 'Vehicle Age' does not); under 18 or any unreadable value blocks extraction (skip minor / age_unclear, model never called) and the brief (status minor / age_unclear)",
+  "memory.transcript_purge job (transcript-purge.ts): at transcripts_days, and on erasure (erase_me, or a contact erased in place), it redacts caller text in turn, transcript, analysis, call_moment, outcome evidence, hand_off brief and call_insight quotes, keeps metrics, and records when and why; call.get shows transcriptRemoved and the call page shows it",
+  "erasure.pending: recording deletes the runtime has not confirmed (tries, last error), and erased people's calls still holding audio or words",
+  "erasure also redacts an erased person's verified outcomes (reference and amount) and their pending outcome-import preview rows (redactErasedOutcomes, run by memory.transcript_purge)",
+  "memory.retention nightly job (retention.ts): expired facts, review-tier proposals unreviewed for 14 days and extraction receipts past the transcripts window are deleted for good, with no resurrection; one counts-only audit row per workspace; memory.policy.get.retention {rules, dueNow, lastSweep}",
+  "workspace-wide memory review queue: fact.review.list (proposed facts across contacts, oldest first, exact quote, call link, the date it is dropped) and fact.review.decide (a person approves, corrects then approves, or rejects up to 50 at once; rejected proposals are deleted); web /contacts/review in its own lazy chunk",
+  "relational memory: the brief carries 'last: outcome=\u2026' (the last real call's outcome for the same purpose) and at most one 'personal:' detail; personal keys (life_event, relocation) are kept only when the caller agreed to her keeping it in the same call (keepAgreements, in code); a caller's 'yeh yaad mat rakhna' keeps nothing from that call and never reaches the model; 'mere baare mein kuch yaad mat rakhna' / 'sab bhool jao' forgets them at once with a counts-only forget_request (code-detected, never a model marker)",
+  "memory.extract_thread {threadId} (system; channels calls it): a WhatsApp thread's new messages propose facts through the same gates as a call (exact quote inside one inbound message, span {messageId,start,end}, refused categories, basis, purpose from the connection's agent, personal agreement, forget phrases); verified senders only, never an opted-out thread; a per-thread cursor (memory_thread_cursor) so each message is read once; facts carry channel 'whatsapp' and stay in the tenant (Meta s.4.7); storeFacts is shared with calls"
+ ],
+ "untested": [
+  "real LLM extraction quality",
+  "refused-category detector precision/recall on real Hinglish/Devanagari speech",
+  "brief prefetch latency at dial time",
+  "erase_me reach beyond memory_fact (recordings, transcripts, attributes, CRM belong to other modules)",
+  "an age header neither intake's list nor canonicalAgeKey recognises reads as no age data, and memory proceeds",
+  "transcript purge at large scale (200 calls per 10-minute run); follow_up payloads and safety/opt-out details are not redacted, by choice"
+ ],
+ "needs_from_others": [
+  "calls: call registry 'memory.extract' {conversationId} after a non-test call ends (system actor); write caller turns to `turn` with speaker='caller'; mark test calls channel='test' or run_manifest.test=true; insert forget_request rows when a caller asks to be forgotten (memory completes them via contact.memory.forget {requestId})",
+  "campaigns: call 'memory.brief' {contactId, agentId} at dial time; treat not_executed or status != 'ok' as memory=not_loaded and dial without memory",
+  "agents: agent_version.config.agent.category and config.agent.memory.{read,write} are what memory reads for purpose and switches",
+  "money: price memory LLM tokens (usage is recorded on memory_extraction.usage; no cost_line is written because the LLM door does not price)",
+  "workspace/compliance UI: pages for contact.memory.get, fact.approve queue, memory.policy.get/set",
+  "voice: use the memory brief only after identity is verified where required; at most one memory item per call, never in an ask turn; stop using memory mid-call on the forget phrases; the ask-to-keep shape for a volunteered personal detail (proposal sent to the voice builder 2026-10-24)"
+ ]
+}

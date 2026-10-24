@@ -1,0 +1,12 @@
+gpt-4.1-r1: 48 task results logged; teardown hung; terminating LISTEN backend(s) in vp_bench_operator_gpt_4_1_r1_1792826057 at 07:28:21
+17782|t
+gpt-4.1-r1: report written 07:28:23
+gpt-4.1-mini-r1: 48 task results logged; teardown hung; terminating LISTEN backend(s) in vp_bench_operator_gpt_4_1_mini_r1_1792826901 at 07:54:49
+21807|t
+gpt-4.1-mini-r1: report written 07:54:51
+gpt-4.1-r2: 48 task results logged; teardown hung; terminating LISTEN backend(s) in vp_bench_operator_gpt_4_1_r2_1792828502 at 08:00:27
+30490|t
+gpt-4.1-r2: report written 08:00:29
+gpt-4.1-mini-r2: 48 task results logged; teardown hung; terminating LISTEN backend(s) in vp_bench_operator_gpt_4_1_mini_r2_1792828827 at 08:26:41
+31400|t
+gpt-4.1-mini-r2: report written 08:26:43

@@ -1,0 +1,27 @@
+{
+ "nodes": [
+  {
+   "id": "open.2026-10-21.voice-live-moments-contract",
+   "type": "open-question",
+   "status": "closed",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Closed: runtime-protocol.ts and ingest list the supervisor moments (3a84688), and the runtime emits them. live_listen_started and live_listen_ended come as one pair per listener, closed before call.ended. whisper is emitted with no note, and takeover alongside its hand_off. The runtime fixture's supervisor_live call passes calls' validateRuntimeBatch (product/tests/voice-runtime-events.test.ts 4/4, and the live validator in tests/test_runtime_fixture.py)",
+   "closes_when": "the contract lists the kinds and the runtime emits them, or the timeline reads the control-plane audit instead"
+  },
+  {
+   "id": "decision.2026-10-21.voice-live-listen",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "Listen is a receive-only socket carrying both legs mixed (pcm16le 16 kHz) on the caller's 20 ms clock. Nothing from it is recorded or stored, and it is allowed even after a recording refusal (monitoring, not retention). Closing it never ends the call, and it takes no call slot. It is counted in health and marked by a live_listen_started/ended moment pair per listener",
+   "rationale": "A supervisor must hear the call as the caller does, without being heard and without creating a retained copy. The moment pair gives the call page its listened-from/to timeline, and carries no audio and no listener id.",
+   "reverse_if": "a jurisdiction treats live monitoring of a call that refused recording as needing consent, or the timeline needs the listener's identity from the runtime rather than the control plane's audit"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-21.voice-live-listen", "to": "open.2026-10-21.voice-live-moments-contract", "relation": "informs" }
+ ],
+ "events": []
+}

@@ -1,0 +1,214 @@
+{
+ "date": "2026-10-24",
+ "n": {
+  "requested": 300,
+  "answered": 296,
+  "errors": 4
+ },
+ "sources": [
+  "dev-7",
+  "optout-dev"
+ ],
+ "rps": 1,
+ "latency_ms": {
+  "p50": 1021,
+  "p75": 1149,
+  "p90": 1353,
+  "p95": 1619,
+  "p98": 2678,
+  "p99": 3159,
+  "max": 6435
+ },
+ "share_over": {
+  "1000": 0.5641891891891891,
+  "1200": 0.17567567567567569,
+  "1500": 0.06756756756756757,
+  "1800": 0.033783783783783786,
+  "2000": 0.030405405405405407,
+  "2500": 0.02364864864864865,
+  "3000": 0.010135135135135136
+ },
+ "hedge": [
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 1000,
+   "p_unavailable": 0.57,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 1200,
+   "p_unavailable": 0.18666666666666668,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 1500,
+   "p_unavailable": 0.08,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 1800,
+   "p_unavailable": 0.0266,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 2000,
+   "p_unavailable": 0.00808888888888889,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 2500,
+   "p_unavailable": 0.0020777777777777778,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 800,
+   "timeout_ms": 3000,
+   "p_unavailable": 0.0009333333333333334,
+   "extra_requests": 0.9594594594594594
+  },
+  {
+   "hedge_after_ms": 1000,
+   "timeout_ms": 1200,
+   "p_unavailable": 0.18666666666666668,
+   "extra_requests": 0.5641891891891891
+  },
+  {
+   "hedge_after_ms": 1000,
+   "timeout_ms": 1500,
+   "p_unavailable": 0.08,
+   "extra_requests": 0.5641891891891891
+  },
+  {
+   "hedge_after_ms": 1000,
+   "timeout_ms": 1800,
+   "p_unavailable": 0.0448,
+   "extra_requests": 0.5641891891891891
+  },
+  {
+   "hedge_after_ms": 1000,
+   "timeout_ms": 2000,
+   "p_unavailable": 0.0247,
+   "extra_requests": 0.5641891891891891
+  },
+  {
+   "hedge_after_ms": 1000,
+   "timeout_ms": 2500,
+   "p_unavailable": 0.0029333333333333334,
+   "extra_requests": 0.5641891891891891
+  },
+  {
+   "hedge_after_ms": 1000,
+   "timeout_ms": 3000,
+   "p_unavailable": 0.0010111111111111113,
+   "extra_requests": 0.5641891891891891
+  },
+  {
+   "hedge_after_ms": 1200,
+   "timeout_ms": 1500,
+   "p_unavailable": 0.08,
+   "extra_requests": 0.17567567567567569
+  },
+  {
+   "hedge_after_ms": 1200,
+   "timeout_ms": 1800,
+   "p_unavailable": 0.04666666666666667,
+   "extra_requests": 0.17567567567567569
+  },
+  {
+   "hedge_after_ms": 1200,
+   "timeout_ms": 2000,
+   "p_unavailable": 0.0416,
+   "extra_requests": 0.17567567567567569
+  },
+  {
+   "hedge_after_ms": 1200,
+   "timeout_ms": 2500,
+   "p_unavailable": 0.005133333333333333,
+   "extra_requests": 0.17567567567567569
+  },
+  {
+   "hedge_after_ms": 1200,
+   "timeout_ms": 3000,
+   "p_unavailable": 0.001088888888888889,
+   "extra_requests": 0.17567567567567569
+  },
+  {
+   "hedge_after_ms": 1500,
+   "timeout_ms": 1800,
+   "p_unavailable": 0.04666666666666667,
+   "extra_requests": 0.06756756756756757
+  },
+  {
+   "hedge_after_ms": 1500,
+   "timeout_ms": 2000,
+   "p_unavailable": 0.043333333333333335,
+   "extra_requests": 0.06756756756756757
+  },
+  {
+   "hedge_after_ms": 1500,
+   "timeout_ms": 2500,
+   "p_unavailable": 0.0209,
+   "extra_requests": 0.06756756756756757
+  },
+  {
+   "hedge_after_ms": 1500,
+   "timeout_ms": 3000,
+   "p_unavailable": 0.0018666666666666669,
+   "extra_requests": 0.06756756756756757
+  }
+ ],
+ "no_hedge": [
+  {
+   "timeout_ms": 1000,
+   "p_unavailable": 0.57
+  },
+  {
+   "timeout_ms": 1200,
+   "p_unavailable": 0.18666666666666668
+  },
+  {
+   "timeout_ms": 1500,
+   "p_unavailable": 0.08
+  },
+  {
+   "timeout_ms": 1800,
+   "p_unavailable": 0.04666666666666667
+  },
+  {
+   "timeout_ms": 2000,
+   "p_unavailable": 0.043333333333333335
+  },
+  {
+   "timeout_ms": 2500,
+   "p_unavailable": 0.03666666666666667
+  },
+  {
+   "timeout_ms": 3000,
+   "p_unavailable": 0.023333333333333334
+  }
+ ],
+ "errors": [
+  {
+   "ms": 10002,
+   "error": "could not reach the model: The operation was aborted due to timeout"
+  },
+  {
+   "ms": 10001,
+   "error": "could not reach the model: The operation was aborted due to timeout"
+  },
+  {
+   "ms": 10001,
+   "error": "could not reach the model: The operation was aborted due to timeout"
+  },
+  {
+   "ms": 10000,
+   "error": "could not reach the model: The operation was aborted due to timeout"
+  }
+ ],
+ "note": "Uncensored latencies (10 s cap) of the live judge request. Hedge figures are a simulation from these samples (independent draws); verify the chosen pair on staging."
+}

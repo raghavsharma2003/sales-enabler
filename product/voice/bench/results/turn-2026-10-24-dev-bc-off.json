@@ -1,0 +1,2152 @@
+{
+ "git": "a8e5853",
+ "date": "2026-10-24",
+ "split": "dev",
+ "clips": 47,
+ "vad": "SileroVAD",
+ "params": {
+  "HOLD_MS": 0,
+  "STATEMENT_HOLD_MS": 1200,
+  "LONG_HOLD_MS": 1400,
+  "BARGE_MS": 300,
+  "BARGE_WORDS": 2,
+  "BARGE_LONG_MS": 700,
+  "BARGE_NOD": true,
+  "BARGE_NOD_LONG_MS": 1500,
+  "BARGE_AUDIO": true,
+  "BARGE_AUDIO_MS": 200,
+  "RESUME_MS": 400,
+  "BARGE_PAUSED_MS": 900,
+  "SPECULATE_STABLE_MS": 400,
+  "BACKCHANNEL": 0,
+  "BC_TURN_MS": 4000,
+  "BC_PAUSE_MS": 350,
+  "BC_PAUSE_MAX_MS": 700,
+  "BC_GAP_MS": 8000,
+  "partial_ms": 300,
+  "final_ms": 250,
+  "env": {}
+ },
+ "fakes": {
+  "final_ms": 250,
+  "brain_ms": 300,
+  "tts_ms": 150,
+  "audio_s_per_char": 0.075
+ },
+ "wall_s": 293,
+ "metrics": {
+  "end_of_turn_ms": {
+   "n": 46,
+   "median": 998,
+   "median_ci95": [
+    988,
+    1002
+   ],
+   "p90": 1412,
+   "note": "end of caller speech -> her first audio; includes the fakes fixed 450 ms (brain + voice), not the 250 ms final"
+  },
+  "end_of_turn_statement_ms": {
+   "n": 40,
+   "median": 1304,
+   "median_ci95": [
+    1294,
+    1322
+   ],
+   "p90": 1509
+  },
+  "no_reply_statement": {
+   "k": 0,
+   "n": 40,
+   "rate": 0.0,
+   "ci95": [
+    -0.0,
+    0.088
+   ]
+  },
+  "premature_cut_in_per_turn": {
+   "k": 1,
+   "n": 47,
+   "rate": 0.021,
+   "ci95": [
+    0.004,
+    0.111
+   ]
+  },
+  "premature_cut_in_per_pause": {
+   "k": 1,
+   "n": 149,
+   "rate": 0.007,
+   "ci95": [
+    0.001,
+    0.037
+   ]
+  },
+  "talk_over_per_turn": {
+   "k": 1,
+   "n": 47,
+   "rate": 0.021,
+   "ci95": [
+    0.004,
+    0.111
+   ]
+  },
+  "no_reply_per_turn": {
+   "k": 0,
+   "n": 47,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.076
+   ]
+  },
+  "backchannel_turns_long": {
+   "k": 0,
+   "n": 47,
+   "rate": 0.0,
+   "ci95": [
+    0.0,
+    0.076
+   ]
+  },
+  "backchannel_turns_short": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "backchannel_overlap_50ms": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "backchannel_at_turn_end": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "missed_barge_in": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "barge_in_ms": {
+   "n": 0,
+   "median": null,
+   "median_ci95": [
+    null,
+    null
+   ]
+  },
+  "false_barge_in_backchannel": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "false_barge_in_noise": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "speculation_keep_rate": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "speculation_started_per_turn": {
+   "n": 87,
+   "median": 0,
+   "median_ci95": [
+    null,
+    null
+   ],
+   "note": "mean starts per turn"
+  },
+  "paused_on_nod_any": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "nod_resume_gap_ms": {
+   "n": 0,
+   "median": null,
+   "median_ci95": [
+    null,
+    null
+   ]
+  },
+  "false_barge_in_nod_any": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "false_barge_in_nod_500ms": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  },
+  "false_barge_in_nod_700ms": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": [
+    null,
+    null
+   ]
+  }
+ },
+ "rows": [
+  {
+   "kind": "turn",
+   "id": "T_edbb0c",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1008,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_f233eb",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 5,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1004,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_9183f1",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 955,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_e88496",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 998,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_edbb0c:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1276,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_9183f1:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1290,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_e88496:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1278,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_f233eb:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1301,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_be7aa2",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1412,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_a73c18",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1001,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_a73c18:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1270,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_be7aa2:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1305,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_42c89b",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 998,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_84d420",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1008,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_aa36a4",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 955,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_42c89b:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1331,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_84d420:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1298,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_aa36a4:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1293,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_566dff",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 947,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_c32306",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 5,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 983,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_a3f346",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 993,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_566dff:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1266,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_6071b3",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1528,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_c32306:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1285,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_a1110e",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 999,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_a3f346:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1267,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_6926b8",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1487,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_6071b3:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1549,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_99da71",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 981,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_aa8518",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1000,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_8ee5ac",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 991,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_6926b8:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1465,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_3bc6eb",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1019,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_1db619",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1316,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_c93f2a",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 5,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 985,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_edf70a",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1042,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_1db619:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1295,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_10c0e7",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 963,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_576550",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1008,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_edf70a:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1323,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_dd4fbf",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 5,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1007,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_10c0e7:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1320,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_576550:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1308,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_7591c5",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 5,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 977,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_f28abb",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 977,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_dd4fbf:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1295,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_7591c5:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1509,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_e1daf0",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 994,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_dd51c6",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1002,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_f28abb:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1285,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_f858f5",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 985,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_e1daf0:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1750,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_d175fd",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 983,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_dd51c6:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1330,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_ce03ce",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1000,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_f858f5:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1323,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_d175fd:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1332,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_52a7c3",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1022,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_ce03ce:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1294,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_8efed8",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1605,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_52a7c3:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1293,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_896b84",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 950,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_8efed8:stmt",
+   "premature": false,
+   "long_turn": false,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1335,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_6088e6",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1524,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_896b84:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1525,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_055f49",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 4,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1512,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_6942f4",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1290,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_6088e6:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1787,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_055f49:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1490,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "B_eee525",
+   "premature": true,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 1,
+   "talk_over": true,
+   "overlap_s": 0.388,
+   "no_reply": false,
+   "eot_ms": null,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_6942f4:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1311,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_76378f",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 741,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_c093fc",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 936,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "B_eee525:stmt",
+   "premature": false,
+   "long_turn": false,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 0,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1302,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_c709b0",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 995,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_76378f:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1287,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_c709b0:stmt",
+   "premature": false,
+   "long_turn": false,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 0,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1329,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "T_74a2db",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 997,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_8ad5c4",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 968,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_da1f7f",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 967,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "T_74a2db:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1305,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_8ad5c4:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 0,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1284,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_8b196c",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 3,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 998,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_da1f7f:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1292,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "turn",
+   "id": "M_598bc8",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 2,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 978,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_8b196c:stmt",
+   "premature": false,
+   "long_turn": false,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 0,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1319,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  },
+  {
+   "kind": "statement",
+   "id": "M_598bc8:stmt",
+   "premature": false,
+   "long_turn": true,
+   "bc": 0,
+   "bc_overlap_s": 0,
+   "bc_overlapped": 0,
+   "bc_after_end": 0,
+   "pauses": 1,
+   "cut_pauses": 0,
+   "talk_over": false,
+   "overlap_s": 0.0,
+   "no_reply": false,
+   "eot_ms": 1298,
+   "spec": {
+    "started": 0,
+    "kept": 0,
+    "discarded": 0,
+    "withdrawn": 0
+   }
+  }
+ ]
+}

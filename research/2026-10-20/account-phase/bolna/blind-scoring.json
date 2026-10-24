@@ -1,0 +1,521 @@
+{
+ "summary": {
+  "pre_registered_rule": "Verifier marks each row TRUE / PARTLY / FALSE / NOT-CHECKABLE against the OSS repo at the HEAD commit on the day of checking (record the SHA). Hit rate = (TRUE + 0.5 PARTLY) / (TRUE + PARTLY + FALSE) over rows with checkable_in_oss=true and contamination in {none, possible}; report the 'none'-only rate separately. Brier score over the same rows using 'confidence'.",
+  "head_sha": "bc59921e2ad535f327635a80c2a63c14b335d40e",
+  "scored_at": "2026-10-20",
+  "scored_by": "acct-bolna lane (authorized phase); verdicts by reading the code, not by a second blind agent",
+  "none_or_possible": {
+   "n": 20,
+   "counts": {
+    "TRUE": 14,
+    "PARTLY": 6,
+    "FALSE": 0
+   },
+   "hit_rate": 0.85,
+   "brier": 0.086,
+   "mean_confidence": 0.693
+  },
+  "none_only": {
+   "n": 18,
+   "counts": {
+    "TRUE": 13,
+    "PARTLY": 5,
+    "FALSE": 0
+   },
+   "hit_rate": 0.861,
+   "brier": 0.093,
+   "mean_confidence": 0.686
+  },
+  "excluded_contaminated": [
+   "BI-13",
+   "BI-14",
+   "BI-18",
+   "BI-19"
+  ],
+  "bonus_noncheckable_confirmed": {
+   "BI-20": "TRUE",
+   "BI-22": "TRUE",
+   "BI-23": "PARTLY"
+  },
+  "not_checkable": [
+   "BI-24",
+   "BI-25",
+   "BI-26",
+   "BI-27",
+   "BI-28",
+   "BI-32",
+   "BI-33",
+   "BI-34"
+  ],
+  "misses_the_black_box_could_not_see": [
+   "900 ms incremental_delay audio hold after every final transcript (after turn 2) on top of 500 ms endpointing",
+   "everything the caller says while the welcome plays is dropped (only fed to the voicemail check)",
+   "a final transcript of <= N words during agent speech is discarded as a false interruption (e.g. 'nahi', 'haan', 'ruko')",
+   "dual-ASR language switching judged by a separate Claude Haiku 4.5 call over Sarvam saaras:v3 LID",
+   "Azure PTU deployment with automatic overflow to a pay-as-you-go deployment on 429/5xx or a stream that drops before output",
+   "assistant history trimmed to what was actually heard (mark acks + proportional estimate) after a barge-in",
+   "LLM text is cut to TTS every >= 40 characters at a word boundary, not at sentence ends",
+   "auto-generated 'Call Success' and 'Call Completion' LLM-judge dispositions written for each new agent"
+  ]
+ },
+ "rows": [
+  {
+   "id": "BI-01",
+   "area": "orchestration",
+   "confidence": 0.85,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "requirements.txt and pyproject list no pipecat/livekit/vocode; orchestration is bolna/agent_manager/task_manager.py on asyncio",
+   "evidence": [
+    "data/account-phase/bolna/code/requirements.txt",
+    "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-02",
+   "area": "orchestration",
+   "confidence": 0.85,
+   "checkable_in_oss": true,
+   "contamination": "possible (parity row mentions 'OSS ConversationConfig')",
+   "verdict": "TRUE",
+   "why": "models.py AgentModel.tasks -> Task{tools_config, toolchain{execution parallel|sequential, pipelines}, task_type, task_config}; ToolsConfig has llm_agent, synthesizer, transcriber, input, output, api_tools; TaskManager._get_next_step walks the pipeline",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/models.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-03",
+   "area": "orchestration",
+   "confidence": 0.75,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "local_setup/quickstart_server.py websocket /chat/v1/{agent_id} -> AssistantManager -> TaskManager.run() gathers _listen_transcriber, transcriber.run, __listen_synthesizer, __process_output_loop, __check_for_completion as asyncio tasks joined by queues",
+   "evidence": [
+    "data/account-phase/bolna/code/local_setup/quickstart_server.py",
+    "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-04",
+   "area": "orchestration",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "local_setup/telephony_server/plivo_api_server.py places the call via the Plivo REST client and answers with <Stream bidirectional> XML pointing at the ws server; twilio_api_server.py does the same with TwiML",
+   "evidence": [
+    "data/account-phase/bolna/code/local_setup/telephony_server/plivo_api_server.py",
+    "data/account-phase/bolna/code/local_setup/telephony_server/twilio_api_server.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-05",
+   "area": "orchestration",
+   "confidence": 0.6,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "no batch, schedule, calling-guardrail, RabbitMQ or arq code anywhere in bolna/ (grep); the checkable half (layer absent from OSS) holds; the RabbitMQ/Redis detail is not checkable",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-06",
+   "area": "llm",
+   "confidence": 0.75,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "PARTLY",
+   "why": "litellm==1.84.0 is a dependency and providers.py routes cohere/ollama/deepinfra/together/fireworks/perplexity/vllm/anyscale/groq/anthropic/deepseek/openrouter through LiteLLM, but openai, azure/azure-openai and google use native SDK classes (OpenAiLLM, AzureLLM, GeminiLLM); custom = OpenAI-compatible base_url is true",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/providers.py",
+    "data/account-phase/bolna/code/requirements.txt"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-07",
+   "area": "providers",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "one class per provider behind BaseTranscriber/BaseSynthesizer; all six named classes present plus google, gladia, pixa, gemini, realtime ('bolna')",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/providers.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-08",
+   "area": "telephony",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "input/output handlers exist for twilio, exotel, plivo, vobiz, sip-trunk (Asterisk chan_websocket, ulaw) and freeswitch (L16 16k in, 24k web TTS); 'trunk' is an enum label riding the freeswitch fork; 'default' is the plain ws handler. The hedge that vobiz/trunk/freeswitch may be closed was unnecessary",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/enums.py",
+    "data/account-phase/bolna/code/bolna/input_handlers/telephony_providers"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-09",
+   "area": "turn-taking",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "no turn-detector model; end of turn = Deepgram speech_final/UtteranceEnd (endpointing, utterance_end_ms), Flux EndOfTurn/EagerEndOfTurn, AssemblyAI/Soniox native; then InterruptionManager holds audio until incremental_delay (default 900 ms) has passed since the final",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/agent_manager/interruption_manager.py",
+    "data/account-phase/bolna/code/bolna/transcriber/deepgram_transcriber.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-10",
+   "area": "turn-taking",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "InterruptionManager.should_trigger_interruption: interim word_count > number_of_words_for_interruption (default 1, so 2 words) or exact whole-transcript match in ACCIDENTAL_INTERRUPTION_PHRASES; Deepgram speech_started only sets flags, never interrupts",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/agent_manager/interruption_manager.py",
+    "data/account-phase/bolna/code/bolna/constants.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-11",
+   "area": "turn-taking",
+   "confidence": 0.45,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "no silero/webrtcvad/torch dependency; VAD comes from the STT provider (vad_events, high_vad_sensitivity) or S2S provider",
+   "evidence": [
+    "data/account-phase/bolna/code/requirements.txt"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-12",
+   "area": "call-control",
+   "confidence": 0.8,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "hangup_after_LLMCall -> agent.check_for_completion() with CHECK_FOR_COMPLETION_PROMPT 'You are an AI assistant determining if a conversation is complete' after each turn; end_call tool is an alternative mode",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/prompts.py",
+    "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-13",
+   "area": "call-control",
+   "confidence": 0.8,
+   "checkable_in_oss": true,
+   "contamination": "yes (parity.csv voicemail_amd row quotes OSS voicemail_handler.py) - EXCLUDE from hit rate",
+   "verdict": "TRUE",
+   "why": "voicemail_handler.py: gpt-4.1-mini over transcript, interim checks every 7 s, min 7 words, 30 s window (contaminated row, excluded)",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/agent_manager/voicemail_handler.py"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-14",
+   "area": "multilingual",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "yes (parity.csv code_switching row quotes OSS prompts.py) - EXCLUDE",
+   "verdict": "TRUE",
+   "why": "legacy flow: switch_language tool on the main LLM; flagged flow: a dedicated Switch LLM (default claude-haiku-4-5) judges unbiased Sarvam saaras:v3 LID + locked live ASR, then TranscriberPool swaps pre-warmed per-language STT/TTS (contaminated row, excluded)",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/helpers/language_switcher.py",
+    "data/account-phase/bolna/code/bolna/transcriber/transcriber_pool.py"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-15",
+   "area": "audio",
+   "confidence": 0.75,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "PARTLY",
+   "why": "ambient_noise flag and preset tracks (office-ambience.wav, call-center.wav, coffee-shop.wav) are in the repo, but no OSS engine code mixes them into outbound audio; mixing must happen in the closed platform/telephony side",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/models.py",
+    "data/account-phase/bolna/code/local_setup/presets/ambient_noise"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-16",
+   "area": "audio",
+   "confidence": 0.55,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "PARTLY",
+   "why": "backchanneling is exactly as stated (random pre-generated per-voice wav every gap while the caller has spoken > start delay); use_fillers in OSS only adds a prompt note and pre-tool-call messages, no pre-generated 'thinking' audio found",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/agent_manager/task_manager.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-17",
+   "area": "audio",
+   "confidence": 0.65,
+   "checkable_in_oss": true,
+   "contamination": "possible (parity memory row mentions an in-memory cache)",
+   "verdict": "PARTLY",
+   "why": "synthesizer.caching uses InmemoryScalarCache keyed by text for the life of one call; the welcome clip arrives preloaded (preloaded_welcome_audio) from the platform, so the cross-call cache is closed-source",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/memory/cache/inmemory_scalar_cache.py",
+    "data/account-phase/bolna/code/bolna/synthesizer/base_synthesizer.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-18",
+   "area": "memory",
+   "confidence": 0.8,
+   "checkable_in_oss": true,
+   "contamination": "yes (parity.csv memory_across_calls row quotes OSS memory/) - EXCLUDE",
+   "verdict": "TRUE",
+   "why": "no persistent memory; memory/ is a per-call scalar cache; personalisation = context_data/recipient_data substitution (contaminated row, excluded)",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/memory"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-19",
+   "area": "call-control",
+   "confidence": 0.9,
+   "checkable_in_oss": true,
+   "contamination": "yes (parity.csv dtmf row) - EXCLUDE",
+   "verdict": "TRUE",
+   "why": "ConversationConfig.dtmf_enabled (contaminated row, excluded)",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/models.py"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-20",
+   "area": "web-call",
+   "confidence": 0.85,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "not checkable in the OSS repo, but the public npm SDK @bolna/web-call 3.0.1 (2026-08-20) depends on sip.js ^0.21.2, mints sessions at /web-call/freeswitch-session (run_id, sip_username/password, wss_url, ice_servers, expires_in), sends X-Agent-Id/X-Run-Id and uses Google STUN. New: a Kamailio SIP edge sits in front of FreeSWITCH (sip_register=false)",
+   "evidence": [
+    "data/account-phase/bolna/pkg/npm-web-call/x/package/dist/index.d.ts",
+    "data/account-phase/bolna/pkg/npm-web-call/x/package/package.json"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-21",
+   "area": "web-call",
+   "confidence": 0.6,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "FreeSwitchInputHandler reads a patched mod_audio_stream fork (L16 16k binary frames + JSON control), provider 'freeswitch', same pipeline as phone calls",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/input_handlers/telephony_providers/freeswitch.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-22",
+   "area": "sip",
+   "confidence": 0.85,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "OSS sip_trunk handler is an Asterisk chan_websocket client streaming ulaw 160-byte 20 ms frames; the single-EC2 host detail stays unverified",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/input_handlers/telephony_providers/sip_trunk.py"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-23",
+   "area": "sip",
+   "confidence": 0.45,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "PARTLY",
+   "why": "OSS enum and FreeSwitchInputHandler docstring say trunk legs ride the same FreeSWITCH mod_audio_stream fork as web calls, which supports 'FreeSWITCH-based'; the SIP-edge specifics (488, 403, RTP range) come from the API (/trunk/pop observed) and docs",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/enums.py",
+    "data/account-phase/bolna/api-live/trunk_pop.json"
+   ],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-24",
+   "area": "hosting",
+   "confidence": 0.75,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-25",
+   "area": "hosting",
+   "confidence": 0.55,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-26",
+   "area": "hosting",
+   "confidence": 0.45,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-27",
+   "area": "residency",
+   "confidence": 0.6,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-28",
+   "area": "saas-stack",
+   "confidence": 0.9,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-29",
+   "area": "rag",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "PARTLY",
+   "why": "LanceDBProviderConfig (vector_id(s), top_k 5, score_threshold 0.1, reranker bge/minilm) and MongoDB configs exist; retrieval goes to a separate closed 'rag-proxy-server' (/conversation/query) before generation; embeddings, PDF parsing and the ONNX reranker are not in the OSS engine",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/models.py",
+    "data/account-phase/bolna/code/bolna/helpers/rag_service_client.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-30",
+   "area": "agents",
+   "confidence": 0.6,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "simple_llm_agent (streaming) and graph_agent with node types llm/static/router, edges llm/expression/unconditional/event, per-node LLM and routing-model overrides and node-scoped tools are in agent_types/graph_agent.py",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/agent_types/graph_agent.py",
+    "data/account-phase/bolna/code/bolna/models.py"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-31",
+   "area": "workflows",
+   "confidence": 0.7,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "TRUE",
+   "why": "no workflow, campaign or WhatsApp code in bolna/ (grep); the API exposes /workflows and /workflow-node-types with an AiSensy node",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna",
+    "data/account-phase/bolna/api-live/workflow_node_types.json"
+   ],
+   "in_hit_rate": true
+  },
+  {
+   "id": "BI-32",
+   "area": "post-call",
+   "confidence": 0.85,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-33",
+   "area": "quality",
+   "confidence": 0.65,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-34",
+   "area": "defaults",
+   "confidence": 0.9,
+   "checkable_in_oss": false,
+   "contamination": "none",
+   "verdict": "NOT-CHECKABLE",
+   "why": "hosted-only claim; the OSS repo and our API calls cannot confirm or refute it",
+   "evidence": [],
+   "in_hit_rate": false
+  },
+  {
+   "id": "BI-35",
+   "area": "backend",
+   "confidence": 0.75,
+   "checkable_in_oss": true,
+   "contamination": "none",
+   "verdict": "PARTLY",
+   "why": "FastAPI + Pydantic confirmed (OSS server; hosted 422 body links errors.pydantic.dev/2.13); S3 for recordings and prompts confirmed; Redis only in the local setup; Postgres/RabbitMQ not checkable; 'unknown fields rejected' is FALSE for POST /v2/agent (an unknown key returned 201 and was silently dropped)",
+   "evidence": [
+    "data/account-phase/bolna/code/bolna/helpers/utils.py",
+    "data/account-phase/bolna/api-live/voice_config_tts.json",
+    "data/account-phase/bolna/api-live/probe_unknown_field.json",
+    "data/account-phase/bolna/api-live/agentB_readback.json"
+   ],
+   "in_hit_rate": true
+  }
+ ]
+}

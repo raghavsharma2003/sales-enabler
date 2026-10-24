@@ -1,0 +1,57 @@
+{
+ "v2-38flash": {
+  "combinationId": "v2|azure+gemini-3.8-flash+gemini-lite~Despina",
+  "durationS": 5.9,
+  "file": "gemini-lite-Despina.ogg",
+  "recordedAt": "2026-10-24T04:04:26Z",
+  "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+  "tts": "gemini-lite",
+  "voice": "Despina"
+ },
+ "v2-54mini": {
+  "combinationId": "v2|azure+gpt-5.4-mini+gemini-lite~Despina",
+  "durationS": 5.9,
+  "file": "gemini-lite-Despina.ogg",
+  "recordedAt": "2026-10-24T04:04:26Z",
+  "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+  "tts": "gemini-lite",
+  "voice": "Despina"
+ },
+ "v2-flashlite": {
+  "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+  "durationS": 5.9,
+  "file": "gemini-lite-Despina.ogg",
+  "recordedAt": "2026-10-24T04:04:26Z",
+  "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+  "tts": "gemini-lite",
+  "voice": "Despina"
+ },
+ "v2-live": {
+  "combinationId": "v2|gemini-3.8-live~Despina",
+  "durationS": 5.53,
+  "file": "gemini-3.8-live-Despina.ogg",
+  "recordedAt": "2026-10-24T04:04:26Z",
+  "spokenText": "",
+  "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+  "tts": "gemini-3.8-live",
+  "voice": "Despina"
+ },
+ "v2-luna": {
+  "combinationId": "v2|azure+gpt-6-luna@or+gemini-lite~Despina",
+  "durationS": 5.9,
+  "file": "gemini-lite-Despina.ogg",
+  "recordedAt": "2026-10-24T04:04:26Z",
+  "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+  "tts": "gemini-lite",
+  "voice": "Despina"
+ },
+ "v2-mai": {
+  "combinationId": "v2|azure+gemini-3.5-flash-lite+azure-mai~hi-IN-Kavya:MAI-Voice-2.1-Flash",
+  "durationS": 8.45,
+  "file": "azure-mai-hi-IN-Kavya_MAI-Voice-2.1-Flash.ogg",
+  "recordedAt": "2026-10-24T04:04:26Z",
+  "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+  "tts": "azure-mai",
+  "voice": "hi-IN-Kavya:MAI-Voice-2.1-Flash"
+ }
+}

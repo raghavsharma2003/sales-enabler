@@ -1,0 +1,541 @@
+# VP voice lab server: static client + REST + one websocket per call. Run: python app.py (env from /opt/voicelab/.env)
+import os, sys, json, time, asyncio, hmac, glob, logging, datetime
+from collections import defaultdict
+import aiohttp
+from aiohttp import web
+HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
+from catalog import PRESETS, BRAINS, TTS, S2S, STT, SCENARIOS, FX, enabled
+from persona import MEMORY_PROMPT
+import persona_v2
+import providers as pv
+import phone
+from calls import make_call
+
+DATA = os.environ.get('LAB_DATA', os.path.join(HERE, '..', 'data'))
+WEB = os.path.join(HERE, '..', 'web')
+PASS = os.environ.get('LAB_PASSCODE', '')
+DAILY_USD = float(os.environ.get('LAB_DAILY_USD', '15'))
+log = logging.getLogger('lab')
+
+class Lab:
+    def __init__(self):
+        os.makedirs(f'{DATA}/calls', exist_ok=True); os.makedirs(f'{DATA}/memory', exist_ok=True)
+        self.http = None; self.calls = {}
+    def spend_add(self, usd):
+        with open(f'{DATA}/spend.jsonl', 'a') as f: f.write(json.dumps({'ts': time.time(), 'usd': usd}) + '\n')
+    def spend_today(self):
+        day0 = datetime.datetime.combine(datetime.date.today(), datetime.time()).timestamp(); tot = 0.0
+        try:
+            for l in open(f'{DATA}/spend.jsonl'):
+                d = json.loads(l)
+                if d['ts'] >= day0: tot += d['usd']
+        except FileNotFoundError: pass
+        return tot
+    def mem_path(self, tester, scen):
+        safe = ''.join(ch for ch in tester.lower() if ch.isalnum() or ch in '-_')[:40] or 'anon'
+        return f'{DATA}/memory/{safe}__{scen}.json'
+    def memory_get(self, tester, scen):
+        try: return json.load(open(self.mem_path(tester, scen))).get('facts', [])
+        except Exception: return []
+    def memory_put(self, tester, scen, facts):
+        old = self.memory_get(tester, scen); seen = set(x.lower() for x in old)
+        merged = old + [f for f in facts if f.lower() not in seen]
+        json.dump({'facts': merged[-30:], 'updated': time.time()}, open(self.mem_path(tester, scen), 'w'), ensure_ascii=False, indent=1)
+LAB = Lab()
+
+def authed(req):
+    k = req.headers.get('x-lab-key') or req.query.get('k') or ''
+    return bool(PASS) and hmac.compare_digest(k, PASS)
+
+@web.middleware
+async def auth_mw(req, handler):
+    if (req.path.startswith('/api/') or req.path == '/ws') and req.path != '/api/ping' and not authed(req):
+        return web.json_response({'error': 'passcode'}, status=401)
+    resp = await handler(req)
+    if req.path.startswith('/api/'): resp.headers['Cache-Control'] = 'no-store'
+    return resp
+
+async def index(req): return web.FileResponse(os.path.join(WEB, 'index.html'), headers={'Cache-Control': 'no-cache'})
+async def ping(req): return web.json_response({'ok': True})
+
+async def catalog(req):
+    return web.json_response({
+        'presets': [{**{k: v for k, v in p.items() if k != 'needs'}, 'enabled': enabled(p) and not pv.unavailable(p), 'needs': p.get('needs'),
+                     'why': pv.unavailable(p)} for p in PRESETS],
+        'brains': {k: {'label': v['label'], 'in': v['in'], 'out': v['out'], 'ttft_ms': v.get('ttft_ms')} for k, v in BRAINS.items()},
+        'tts': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['default_voice']} for k, v in TTS.items()},
+        's2s': {k: {'label': v['label'], 'voices': v['voices'], 'default': v['voice']} for k, v in S2S.items()},
+        'stt': {k: {'label': v['label']} for k, v in STT.items()},
+        'scenarios': SCENARIOS, 'fx': FX,
+        'phone': {'on': phone.on(), 'number': phone.pretty(phone.NUMBER) if phone.NUMBER else None, 'tel': '+' + phone.NUMBER if phone.NUMBER else None},
+        'spend_today_usd': round(LAB.spend_today(), 3), 'daily_cap_usd': DAILY_USD,
+        'gemini': {'vertex_on': pv.VERTEX.usable(), 'vertex_why': pv.VERTEX.why(), 'live_on': bool(pv.VERTEX_LIVE_LOCATION),
+                   'vertex_left_inr': round((pv.VERTEX_CAP_USD - pv.VERTEX.spent) * FX)}})
+
+def load_calls():
+    out = []
+    for p in sorted(glob.glob(f'{DATA}/calls/*/meta.json')):
+        try: out.append(json.load(open(p)))
+        except Exception: pass
+    return out
+def load_ratings():
+    r = {}
+    try:
+        for l in open(f'{DATA}/ratings.jsonl'):
+            d = json.loads(l); r[d['call_id']] = d     # latest rating per call wins
+    except FileNotFoundError: pass
+    return r
+
+async def calls_list(req):
+    rs = load_ratings(); out = []; who = req.query.get('tester')
+    for c in load_calls():
+        if who and c.get('tester') != who: continue
+        c2 = {k: c.get(k) for k in ('id', 'tester', 'preset', 'scenario', 'components', 'started', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'blind', 'line', 'invalid')}
+        c2['combo_label'] = combo_label(combo_of(c))[0]
+        c2['rating'] = rs.get(c['id']); out.append(c2)
+    return web.json_response(out[::-1])
+
+async def call_detail(req):
+    p = f"{DATA}/calls/{os.path.basename(req.match_info['id'])}/meta.json"
+    if not os.path.exists(p): raise web.HTTPNotFound()
+    return web.json_response(json.load(open(p)))
+
+async def call_audio(req):
+    p = f"{DATA}/calls/{os.path.basename(req.match_info['id'])}/call.wav"
+    if not os.path.exists(p): raise web.HTTPNotFound()
+    return web.FileResponse(p, headers={'Content-Type': 'audio/wav'})
+
+async def rate(req):
+    d = await req.json()
+    if not d.get('call_id'): return web.json_response({'error': 'call_id'}, status=400)
+    d['ts'] = time.time()
+    with open(f'{DATA}/ratings.jsonl', 'a') as f: f.write(json.dumps(d, ensure_ascii=False) + '\n')
+    return web.json_response({'ok': True})
+
+RATING_KEYS = ['voice_human', 'emotion', 'conversation', 'hinglish', 'turn_taking', 'speed', 'overall']
+def is_test(name):   # the lab's own headless and UI test callers never count as people
+    return (name or '').lower().startswith(('smoke', 'sim', 'uitest', 'preview'))
+def scoped_calls(req):
+    # a call that failed, or (before 2026-10-20) had a backup voice/brain swapped in, rated something else: never count it
+    who = req.query.get('tester'); calls = [c for c in load_calls() if not c.get('invalid') and not c.get('voice_fallbacks') and not c.get('brain_fallbacks')]
+    if who: return [c for c in calls if c.get('tester') == who]
+    return [c for c in calls if not is_test(c.get('tester'))]
+async def results(req):
+    rs = load_ratings(); calls = scoped_calls(req)
+    by = defaultdict(lambda: {'calls': 0, 'rated': 0, 'mins': 0.0, 'inr': 0.0, 'lat': [], 'talk_over': 0, 'replies': 0, 'scores': defaultdict(list), 'pick': 0, 'people': defaultdict(list)})
+    for c in calls:
+        b = by[combo_of(c)]; b['calls'] += 1; b['mins'] += c.get('duration_s', 0) / 60; b['inr'] += c.get('inr', 0)
+        b['lat'] += [x for x in c.get('latencies_ms') or [] if x is not None]; b['talk_over'] += c.get('talk_over', 0); b['replies'] += c.get('replies', 0)
+        r = rs.get(c['id'])
+        if r:
+            b['rated'] += 1; b['pick'] += 1 if r.get('would_pick') else 0
+            for k in RATING_KEYS:
+                if isinstance(r.get(k), (int, float)): b['scores'][k].append(r[k])
+            if isinstance(r.get('overall'), (int, float)): b['people'][c.get('tester')].append(r['overall'])
+    out = []
+    for pid, b in by.items():
+        lat = sorted(b['lat']); p50 = lat[len(lat) // 2] if lat else None
+        label, ref = combo_label(pid)
+        out.append({'preset': pid, 'label': label, 'ref': ref, 'calls': b['calls'], 'rated': b['rated'], 'minutes': round(b['mins'], 1),
+                    'inr_per_min': round(b['inr'] / b['mins'], 2) if b['mins'] > 0 else None, 'latency_p50_ms': p50,
+                    'talk_over_pct': round(100 * b['talk_over'] / b['replies']) if b['replies'] else None, 'would_pick': b['pick'],
+                    'scores': {k: round(sum(v) / len(v), 2) for k, v in b['scores'].items() if v},
+                    'people': len(b['people']), 'overall_by_person': {n: round(sum(v) / len(v), 1) for n, v in b['people'].items()}})
+    out.sort(key=lambda x: -(x['scores'].get('overall') or 0))
+    return web.json_response(out)
+
+async def testers(req):
+    rs = load_ratings(); t = defaultdict(lambda: {'calls': 0, 'rated': 0, 'minutes': 0.0, 'last': ''})
+    for c in load_calls():
+        if is_test(c.get('tester')): continue
+        x = t[c.get('tester')]; x['calls'] += 1; x['minutes'] += c.get('duration_s', 0) / 60; x['last'] = max(x['last'], c.get('started', ''))
+        if c['id'] in rs: x['rated'] += 1
+    return web.json_response(sorted(({'tester': k, **v, 'minutes': round(v['minutes'], 1)} for k, v in t.items()), key=lambda r: r['last'], reverse=True))
+
+async def memory(req):
+    tester = req.query.get('tester', ''); scen = req.query.get('scenario', 'open')
+    if req.method == 'DELETE':
+        try: os.remove(LAB.mem_path(tester, scen))
+        except FileNotFoundError: pass
+        return web.json_response({'ok': True})
+    return web.json_response({'facts': LAB.memory_get(tester, scen)})
+
+async def remember(call):
+    """After a call: extract durable facts about the caller for the next call (cheap model, own cost line)."""
+    tr = '\n'.join(f"{'Caller' if t['who'] == 'caller' else 'Assistant'}: {t['text']}" for t in call.transcript)
+    if len(tr) < 40: return
+    v2 = call.v2(); scen = call.cfg['scenario'] + ('-v2' if v2 else ''); prompt = persona_v2.MEMORY_PROMPT if v2 else MEMORY_PROMPT
+    for brain in ('gemini-3.5-flash-lite', 'gpt-4.1-mini-in'):
+        try:
+            txt, u, tm = await pv.llm_once(LAB.http, brain, [{'role': 'system', 'content': prompt}, {'role': 'user', 'content': tr[-6000:]}], max_tokens=400)
+            if tm.get('err'): continue
+            s = txt[txt.find('{'): txt.rfind('}') + 1]
+            facts = [f.strip() for f in json.loads(s).get('facts', []) if isinstance(f, str) and f.strip()]
+            if facts: LAB.memory_put(call.cfg['tester'], scen, facts)
+            call.cost['memory'] += u.get('usd', 0.0); LAB.spend_add(u.get('usd', 0.0))
+            return
+        except Exception as e:
+            call.errors.append('memory: ' + repr(e)[:160])
+
+def custom_preset(c):
+    """A stack the tester assembled on the page ("Build your own"): any ears + brain + voice, or a speech-to-speech
+    engine. It always runs on brief v2. Its id names the parts so results group by combination."""
+    c = c or {}
+    if c.get('s2s'):
+        if c['s2s'] not in S2S: return None, 'unknown speech-to-speech engine'
+        return {'id': f"custom:{c['s2s']}", 'label': 'Custom · ' + S2S[c['s2s']]['label'], 's2s': c['s2s'], 'brief': 'v2'}, None
+    stt, brain, tts = c.get('stt'), c.get('brain'), c.get('tts')
+    if stt not in STT or brain not in BRAINS or tts not in TTS: return None, 'pick ears, a brain and a voice'
+    p = {'id': f'custom:{stt}+{brain}+{tts}', 'label': f"Custom · {STT[stt]['label']} + {BRAINS[brain]['label']} + {TTS[tts]['label']}",
+         'stt': stt, 'gated': c.get('gated', True) is not False, 'brain': brain, 'tts': tts, 'brief': 'v2'}
+    if 'sarvam' in (STT[stt]['kind'], TTS[tts]['kind'], BRAINS[brain]['host']) or brain == 'sarvam-105b': p['needs'] = 'SARVAM_API_KEY'
+    return p, None
+
+def preset_combo(p):
+    brief = p.get('brief', 'v1')
+    if p.get('s2s'): return f"{brief}|{p['s2s']}~{S2S[p['s2s']]['voice']}"
+    return f"{brief}|{p['stt']}{'' if p.get('gated') else '/ungated'}+{p['brain']}+{p['tts']}~{TTS[p['tts']]['default_voice']}"
+def combo_of(meta):
+    """What a recorded call actually ran (older calls predate the field, so rebuild it from their components)."""
+    if meta.get('combo'): return meta['combo']
+    c = meta.get('components') or {}; brief = meta.get('brief') or 'v1'
+    if 's2s' in c: return f"{brief}|{c['s2s']}~{c.get('voice')}"
+    if 'brain' in c: return f"{brief}|{c.get('stt')}{'' if c.get('gated') else '/ungated'}+{c.get('brain')}+{c.get('tts')}~{c.get('voice')}"
+    return meta.get('preset')
+def combo_label(combo):
+    p = next((x for x in PRESETS if preset_combo(x) == combo), None)
+    if p: return p['label'], p.get('ref', '')
+    try:
+        brief, rest = combo.split('|', 1); body, voice = rest.rsplit('~', 1)
+        if '+' in body:
+            stt, brain, tts = body.split('+', 2); stt = stt.split('/')[0]
+            lab = f"{STT[stt]['label']} + {BRAINS[brain]['label']} + {TTS[tts]['label']}"
+            if voice != TTS[tts]['default_voice']: lab += f' ({voice})'
+        else:
+            lab = S2S[body]['label'] + (f' ({voice})' if voice != S2S[body]['voice'] else '')
+        return ('Custom · ' if brief == 'v2' else 'Round 1 · ') + lab, 'built on the page' if brief == 'v2' else 'old brief'
+    except Exception:
+        return combo, ''
+
+def stack_label(pid):
+    p = next((x for x in PRESETS if x['id'] == pid), None)
+    if p: return p['label'], p.get('ref', '')
+    if pid.startswith('custom:'):
+        q, _ = custom_preset({'s2s': pid[7:]} if '+' not in pid else dict(zip(('stt', 'brain', 'tts'), pid[7:].split('+', 2))))
+        if q: return q['label'], 'built on the page'
+    return pid, ''
+
+def prepare(cfg):
+    """Validate a call request (browser or phone). Returns (cfg, preset, error)."""
+    cfg.setdefault('scenario', 'renewal'); cfg['tester'] = (cfg.get('tester') or 'owner')[:40]
+    if cfg['scenario'] not in SCENARIOS: cfg['scenario'] = 'renewal'
+    if cfg.get('custom'):
+        preset, err = custom_preset(cfg['custom'])
+        if err: return cfg, None, err
+        cfg['preset'] = preset['id']; cfg['_preset'] = preset; cfg['blind'] = False; cfg['brain'] = None; cfg['voice'] = cfg['custom'].get('voice')
+    else:
+        preset = next((p for p in PRESETS if p['id'] == cfg.get('preset')), None)
+        if preset is not None and preset.get('brief') == 'v2' and not cfg.get('blind'):
+            # a brain or voice changed on a ready-made stack is a different combination: run and file it as that
+            b, v = cfg.get('brain') or preset.get('brain'), cfg.get('voice')
+            if preset.get('s2s'):
+                spec = {'s2s': preset['s2s'], 'voice': v} if v and v != S2S[preset['s2s']]['voice'] else None
+            else:
+                changed = b != preset['brain'] or (v and v != TTS[preset['tts']]['default_voice'])
+                spec = {'stt': preset['stt'], 'brain': b, 'tts': preset['tts'], 'voice': v, 'gated': preset.get('gated', True)} if changed else None
+            if spec:
+                cfg['custom'] = spec; return prepare(cfg)
+    if preset is None or not enabled(preset):
+        return cfg, preset, 'this stack is not available yet' + (f" (needs {preset['needs']})" if preset else '')
+    if SCENARIOS[cfg['scenario']].get('v2_only') and preset.get('brief') != 'v2':
+        return cfg, preset, 'this use case runs on the round-2 (v2) stacks and custom builds only'
+    if cfg.get('brain') and cfg['brain'] not in BRAINS: cfg['brain'] = None
+    if LAB.spend_today() >= DAILY_USD: return cfg, preset, f'daily lab budget of ${DAILY_USD:.0f} reached'
+    err = preflight(preset, cfg)
+    if err: return cfg, preset, err
+    return cfg, preset, None
+
+OR_MIN_USD = 0.30
+def uses_openrouter(p, cfg):
+    if p.get('s2s'): return False
+    return BRAINS[cfg.get('brain') or p['brain']]['host'] == 'or'
+async def or_check(p, cfg):
+    """A stack that runs on OpenRouter needs credit for the whole call: refuse up front rather than die mid-call."""
+    if p is None or not uses_openrouter(p, cfg): return None
+    bal = await pv.or_balance(LAB.http)
+    if bal is not None and bal < OR_MIN_USD:
+        return f"OpenRouter credit is nearly used up (${bal:.2f} left), so stacks that run through OpenRouter can't start. Top up OpenRouter or pick another stack."
+    return None
+
+def preflight(p, cfg):
+    """Refuse a call up front when Vertex cannot serve one of its Gemini parts (Gemini has no other route, and nothing
+    is swapped mid-call, so check first)."""
+    why = pv.unavailable(p, cfg.get('brain'))
+    return f'{why}, so this stack is unavailable right now. Pick a stack without it.' if why else None
+
+def ready_msg(call, preset):
+    blind = call.cfg.get('blind')
+    return {'t': 'ready', 'call_id': call.id, 'components': None if blind else call.components(),
+            'label': None if blind else combo_label(call.combo())[0], 'preset': None if blind else call.cfg['preset']}
+
+async def finish(call):
+    """Close a call, extract memory, write the recording and meta. Returns the summary the page shows."""
+    await call.close()
+    try: await asyncio.wait_for(remember(call), 20)
+    except Exception: pass
+    d = f'{DATA}/calls/{call.id}'; os.makedirs(d, exist_ok=True)
+    dur = call.rec.write(f'{d}/call.wav')
+    summ = call.summary(); summ['audio_s'] = round(dur, 1)
+    json.dump(summ, open(f'{d}/meta.json', 'w'), ensure_ascii=False, indent=1)
+    LAB.calls.pop(call.id, None)
+    return {k: summ.get(k) for k in ('id', 'duration_s', 'inr', 'inr_per_min', 'latency_p50_ms', 'replies', 'talk_over', 'barge_ins', 'components', 'preset',
+                                     'cost_parts_inr', 'voice_fallbacks', 'brain_fallbacks', 'line', 'ended_by', 'invalid', 'combo')}
+
+async def ws_call(req):
+    ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20)
+    await ws.prepare(req)
+    call = None
+    try:
+        msg = await ws.receive(timeout=30)
+        if msg.type != aiohttp.WSMsgType.TEXT: return ws          # client went away before starting
+        cfg = json.loads(msg.data)
+        if cfg.get('t') != 'start': await ws.send_json({'t': 'error', 'msg': 'expected start'}); return ws
+        cfg.pop('line', None); cfg.pop('_preset', None)
+        cfg, preset, err = prepare(cfg)
+        err = err or await or_check(cfg.get('_preset') or preset, cfg)
+        if err: await ws.send_json({'t': 'error', 'msg': err}); return ws
+        call = make_call(LAB, ws, cfg); LAB.calls[call.id] = call
+        await ws.send_json(ready_msg(call, preset))
+        try:
+            await call.start()
+        except Exception as e:
+            log.exception('start'); await ws.send_json({'t': 'error', 'msg': 'could not start: ' + repr(e)[:200]}); call.errors.append('start: ' + repr(e)[:200])
+            return ws
+        t_end = time.monotonic() + 20 * 60          # hard cap per call: 20 minutes
+        async for m in ws:
+            if m.type == aiohttp.WSMsgType.BINARY:
+                await call.on_mic(m.data)
+            elif m.type == aiohttp.WSMsgType.TEXT:
+                d = json.loads(m.data)
+                if d.get('t') == 'hangup': break
+                await call.on_client(d)
+            if call.wants_end: break                      # she said goodbye and hung up
+            if time.monotonic() > t_end:
+                await ws.send_json({'t': 'error', 'msg': '20-minute call limit'}); break
+    except asyncio.TimeoutError:
+        pass
+    except Exception as e:
+        log.exception('ws')
+        if call: call.errors.append('ws: ' + repr(e)[:200])
+    finally:
+        if call is not None:
+            summ = await finish(call)
+            try: await ws.send_json({'t': 'ended', 'summary': summ})
+            except Exception: pass
+            await ws.close()
+    return ws
+
+# ---- phone leg (Plivo). The page asks for a call (/api/phone/call rings an allowed test number; /api/phone/dialin
+# arms the lab number for the next allowed caller), then polls /api/phone/events for the same messages a browser
+# call gets over its websocket. Plivo reaches us on /plivo/* with a path secret instead of the lab passcode.
+DIALIN = f'{DATA}/phone-dialin-by-number.json'     # {number: the stack its owner last armed}, for unarmed dial-ins
+def phone_cfg(d, direction):
+    cfg = {k: d.get(k) for k in ('preset', 'scenario', 'tester', 'brain', 'voice', 'smart_turn', 'blind', 'consent', 'custom')}
+    cfg['smart_turn'] = cfg['smart_turn'] is not False; cfg['blind'] = bool(cfg['blind']); cfg['line'] = direction
+    return prepare(cfg)
+
+async def phone_numbers(req):
+    return web.json_response({'numbers': phone.NUMBERS.listing(req.query.get('tester', '')), 'lab_number': phone.pretty(phone.NUMBER) if phone.NUMBER else None})
+
+async def phone_verify(req):
+    if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
+    d = await req.json(); num = phone.india(d.get('number')); tester = (d.get('tester') or '')[:40]
+    if not phone.MOBILE.match(num): return web.json_response({'error': 'Enter a 10-digit Indian mobile number'}, status=400)
+    if num in phone.ALLOWED or (phone.NUMBERS.owner(num) or '').lower() == tester.lower():
+        return web.json_response({'verified': True, 'id': phone.NUMBERS.nid(num)})
+    phone.NUMBERS.start_verify(num, tester)          # new, or verified by someone else: the missed call proves it again
+    return web.json_response({'verified': False, 'id': phone.NUMBERS.nid(num), 'lab_number': phone.pretty(phone.NUMBER), 'lab_tel': '+' + phone.NUMBER,
+                              'expires_s': phone.Numbers.TTL})
+
+async def phone_call(req):
+    if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
+    d = await req.json()
+    to = phone.NUMBERS.resolve(d.get('to_id'))
+    if to is None: return web.json_response({'error': 'Add and verify your number first'}, status=403)
+    if not phone.NUMBERS.count_call(to): return web.json_response({'error': f'{phone.Numbers.DAILY_CALLS} calls to this number today is the lab limit'}, status=429)
+    cfg, preset, err = phone_cfg(d, 'out')
+    err = err or await or_check(cfg.get('_preset') or preset, cfg)
+    if err: return web.json_response({'error': err}, status=400)
+    s = phone.SESSIONS.new(cfg, 'out', to)
+    err = await phone.dial(LAB.http, s)
+    if err: s['state'] = 'failed'; return web.json_response({'error': err}, status=502)
+    phone.SESSIONS.note(s, {'t': 'state', 's': 'Ringing'})
+    return web.json_response({'token': s['token'], 'to': phone.NUMBERS.masked(to)})
+
+async def phone_dialin(req):
+    if not phone.on(): return web.json_response({'error': 'the phone line is not set up'}, status=400)
+    d = await req.json()
+    frm = phone.NUMBERS.resolve(d.get('from_id'))
+    if frm is None: return web.json_response({'error': 'Add and verify your number first'}, status=403)
+    cfg, preset, err = phone_cfg(d, 'in')
+    err = err or await or_check(cfg.get('_preset') or preset, cfg)
+    if err: return web.json_response({'error': err}, status=400)
+    for old in list(phone.SESSIONS.by_token.values()):        # one armed dial-in per phone: the newest wins
+        if old['dir'] == 'in' and old['state'] == 'waiting' and old.get('from') == frm:
+            old['state'] = 'replaced'; phone.SESSIONS.note(old, {'t': 'phone_end', 'why': 'replaced'})
+    s = phone.SESSIONS.new(cfg, 'in'); s['from'] = frm
+    if not is_test(cfg['tester']):                          # an unarmed dial-in from this phone later reuses this stack
+        try: saved = json.load(open(DIALIN))
+        except Exception: saved = {}
+        saved[frm] = cfg; json.dump(saved, open(DIALIN, 'w'))
+    phone.SESSIONS.note(s, {'t': 'state', 's': 'Waiting for your call'})
+    return web.json_response({'token': s['token'], 'number': phone.pretty(phone.NUMBER), 'tel': '+' + phone.NUMBER, 'from': phone.NUMBERS.masked(frm),
+                              'expires_s': phone.Sessions.TTL})
+
+async def phone_events(req):
+    s = phone.SESSIONS.by_token.get(req.query.get('p', ''))
+    if s is None: return web.json_response({'error': 'unknown call'}, status=404)
+    try: after = int(req.query.get('after', '0'))
+    except ValueError: after = 0
+    return web.json_response({'state': s['state'], 'n': s['n'], 'events': phone.SESSIONS.events(s, after)})
+
+async def phone_hangup(req):
+    d = await req.json(); s = phone.SESSIONS.by_token.get(d.get('token', ''))
+    if s is None: return web.json_response({'error': 'unknown call'}, status=404)
+    s['hangup'] = True
+    if s['state'] == 'waiting': s['state'] = 'cancelled'; phone.SESSIONS.note(s, {'t': 'phone_end', 'why': 'cancelled'})
+    else: await phone.hangup(LAB.http, s)
+    return web.json_response({'ok': True})
+
+async def plivo_form(req):
+    return dict(await req.post()) if req.method == 'POST' else dict(req.query)
+
+async def plivo_answer(req):
+    if not hmac.compare_digest(req.match_info['hook'], phone.HOOK or '-'): raise web.HTTPForbidden()
+    f = await plivo_form(req); tok = req.match_info.get('token')
+    xml = lambda t: web.Response(text=t, content_type='application/xml')
+    if tok:
+        s = phone.SESSIONS.by_token.get(tok)
+        if s is None or s['dir'] != 'out' or s.get('hangup'): return xml(phone.REJECT_XML)
+    else:
+        caller = phone.india(f.get('From'))
+        if phone.NUMBERS.missed_call(caller):      # the verification missed call: number proven, call cut unanswered
+            log.info('plivo: verified ...%s', caller[-3:]); return xml(phone.REJECT_XML)
+        if not phone.NUMBERS.allowed(caller):
+            log.info('plivo: rejected inbound from ...%s', caller[-3:]); return xml(phone.REJECT_XML)
+        s = phone.SESSIONS.waiting_dialin(caller)
+        if s is None:                     # nobody armed dial-in: use the stack this phone's owner last armed
+            try: cfg = json.load(open(DIALIN)).get(caller) or {}
+            except Exception: cfg = {}
+            if not cfg or is_test(cfg.get('tester')):
+                cfg = {'preset': 'base', 'scenario': 'renewal', 'tester': phone.NUMBERS.owner(caller) or 'phone', 'smart_turn': True, 'blind': False, 'line': 'in'}
+            cfg, preset, err = prepare(cfg)
+            if err: log.info('plivo: inbound refused: %s', err); return xml(phone.REJECT_XML)
+            s = phone.SESSIONS.new(cfg, 'in'); s['from'] = caller
+    s['call_uuid'] = f.get('CallUUID'); s['state'] = 'answered'
+    phone.SESSIONS.note(s, {'t': 'state', 's': 'Connecting'})
+    return xml(phone.answer_xml(phone.ws_url(f"/plivo/stream/{s['stream']}")))
+
+async def plivo_hangup(req):
+    if not hmac.compare_digest(req.match_info['hook'], phone.HOOK or '-'): raise web.HTTPForbidden()
+    f = await plivo_form(req); tok = req.match_info.get('token')
+    s = phone.SESSIONS.by_token.get(tok) if tok else next((x for x in phone.SESSIONS.by_token.values() if x.get('call_uuid') == f.get('CallUUID')), None)
+    if s is not None and s['line'] is None and s['state'] in ('dialing', 'answered'):
+        cause = (f.get('HangupCauseName') or f.get('HangupCause') or 'no answer').replace('_', ' ').lower()
+        s['state'] = 'failed'
+        phone.SESSIONS.note(s, {'t': 'error', 'msg': f'The call ended before it connected ({cause}).'}); phone.SESSIONS.note(s, {'t': 'phone_end', 'why': cause})
+    return web.Response(text='ok')
+
+async def plivo_stream(req):
+    s = phone.SESSIONS.by_stream.get(req.match_info['stream'])
+    if s is None or s['line'] is not None: raise web.HTTPForbidden()
+    ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20)
+    await ws.prepare(req)
+    line = phone.PlivoLine(ws, s); s['line'] = line; call = None
+    try:
+        while line.stream_id is None:                       # Plivo sends 'start' first
+            m = await ws.receive(timeout=15)
+            if m.type != aiohttp.WSMsgType.TEXT: return ws
+            d = json.loads(m.data)
+            if d.get('event') == 'start': line.stream_id = (d.get('start') or {}).get('streamId')
+        cfg, preset, err = prepare(dict(s['cfg']))
+        if err: line.post({'t': 'error', 'msg': err}); return ws
+        call = make_call(LAB, line, cfg); LAB.calls[call.id] = call
+        s['call_id'] = call.id; s['state'] = 'live'; line.post(ready_msg(call, preset))
+        try:
+            await call.start()
+        except Exception as e:
+            log.exception('phone start'); line.post({'t': 'error', 'msg': 'could not start: ' + repr(e)[:200]}); call.errors.append('start: ' + repr(e)[:200])
+            return ws
+        t_end = time.monotonic() + 20 * 60
+        async for m in ws:
+            if m.type == aiohttp.WSMsgType.TEXT:
+                d = json.loads(m.data); ev = d.get('event')
+                if ev == 'media': await call.on_mic(line.mic(d['media']['payload']))
+                elif ev == 'stop': break
+                elif ev in ('dtmf', 'clearedAudio', 'playedStream'): call.tr('plivo_' + ev)
+            if s.get('hangup') or call.wants_end: break
+            if time.monotonic() > t_end: line.post({'t': 'error', 'msg': '20-minute call limit'}); break
+    except asyncio.TimeoutError:
+        line.post({'t': 'error', 'msg': 'the phone audio never started'})
+    except Exception as e:
+        log.exception('plivo ws')
+        if call: call.errors.append('plivo: ' + repr(e)[:200])
+    finally:
+        if call is not None:
+            summ = await finish(call); line.post({'t': 'ended', 'summary': summ})
+        else:
+            line.post({'t': 'phone_end', 'why': 'no call'})
+        s['state'] = 'ended'
+        try: await phone.hangup(LAB.http, s)             # the caller may already be gone; Plivo then answers 404
+        except Exception: pass
+        await ws.close()
+    return ws
+
+async def on_start(app):
+    LAB.http = aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=64, keepalive_timeout=120))
+    pv.VERTEX.load(f'{DATA}/vertex-spend.jsonl'); phone.NUMBERS.load(f'{DATA}/phone-numbers.json')
+    for m in filter(None, os.environ.get('LAB_TEST_BLOCK_MODELS', '').split(',')):   # test hook: pretend Vertex does not offer a model
+        pv.VERTEX_MAP.pop(m, None)
+    async def warm():
+        loop = asyncio.get_running_loop()
+        for v in ('hi-IN-SwaraNeural', 'en-IN-Aarti:DragonHDLatestNeural'):
+            try: await loop.run_in_executor(None, pv.POOL.warm, v, 2)
+            except Exception as e: log.warning('warm %s %r', v, e)
+    asyncio.ensure_future(warm())
+    async def plivo():
+        try: await phone.ensure_app(LAB.http, log)
+        except Exception as e: log.warning('plivo setup %r', e)
+    if phone.on() and phone.LINK: asyncio.ensure_future(plivo())
+async def on_stop(app):
+    await LAB.http.close()
+
+def build():
+    app = web.Application(middlewares=[auth_mw], client_max_size=2 * 1024 * 1024)
+    app.router.add_get('/', index)
+    app.router.add_get('/api/ping', ping)
+    app.router.add_get('/api/catalog', catalog)
+    app.router.add_get('/api/calls', calls_list)
+    app.router.add_get('/api/calls/{id}', call_detail)
+    app.router.add_get('/api/calls/{id}/audio', call_audio)
+    app.router.add_post('/api/rate', rate)
+    app.router.add_get('/api/results', results)
+    app.router.add_get('/api/testers', testers)
+    app.router.add_route('*', '/api/memory', memory)
+    app.router.add_get('/ws', ws_call)
+    app.router.add_get('/api/phone/numbers', phone_numbers)
+    app.router.add_post('/api/phone/verify', phone_verify)
+    app.router.add_post('/api/phone/call', phone_call)
+    app.router.add_post('/api/phone/dialin', phone_dialin)
+    app.router.add_get('/api/phone/events', phone_events)
+    app.router.add_post('/api/phone/hangup', phone_hangup)
+    for pat in ('/plivo/answer/{hook}', '/plivo/answer/{hook}/{token}'): app.router.add_route('*', pat, plivo_answer)
+    for pat in ('/plivo/hangup/{hook}', '/plivo/hangup/{hook}/{token}'): app.router.add_route('*', pat, plivo_hangup)
+    app.router.add_get('/plivo/stream/{stream}', plivo_stream)
+    app.router.add_static('/static/', WEB, show_index=False)
+    app.on_startup.append(on_start); app.on_cleanup.append(on_stop)
+    return app
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(name)s %(message)s')
+    web.run_app(build(), host=os.environ.get('LAB_HOST', '127.0.0.1'), port=int(os.environ.get('LAB_PORT', '8080')), access_log=None)

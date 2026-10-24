@@ -1,0 +1,13 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-relational-memory",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Relational memory, voice half (memory_use.py, seam with memory session_01Rb2NUArHRfYEi2ncQqz79S): the brain sees only prefs: lines of the memory brief until identity is verified, the whole brief after; a ledger shape allows at most one earlier-call item, in passing, never in an asking turn, and turns to 'already used' once her line reuses an item's words; a caller's forget phrase drops the brief for the rest of the call, adds a one-breath acknowledgement shape once, and emits moment forget_request (note call|all, never words; added to runtime-protocol and ingest); a volunteered personal non-sensitive detail gets one ask-to-keep shape per call, never on collections/complaint jobs or no-marketing calls. Phrase lists: product/shared/memory/phrases.json, owned by memory, read as-is by the runtime (stub with memory's examples until memory overwrites)",
+   "rationale": "Answers open.2026-10-24.relational-memory-voice-half. Deterministic part verified in tests/test_memory_use.py (scripted brain, prompt assertions, n=4 scenarios). NOT verified: whether a real model recalls the promise naturally and keeps to one item; that is the joint returning-caller practice run on devsim (lab VM) or staging.",
+   "reverse_if": "the practice run shows her referencing earlier calls before identity, or more than one item, or the forget not honoured"
+  }
+ ],
+ "edges": [{"from": "decision.2026-10-24.voice-relational-memory", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements"}],
+ "events": [{"date": "2026-10-24", "event": "voice-relational-memory", "details": "Voice half of relational memory: identity gate, one item, mid-call forget with moment, ask-to-keep shape; phrase file shared with memory."}]
+}

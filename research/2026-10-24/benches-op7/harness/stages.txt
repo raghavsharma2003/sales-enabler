@@ -1,0 +1,12 @@
+stage pair1 start 2026-10-24T07:14:17Z spent=₹0
+operator-gpt-4.1-r1 cap=₹175
+operator-41-r1 exit=0 spent=₹120.6 07:28:21
+operator-gpt-4.1-mini-r1 cap=₹40
+operator-mini-r1 exit=0 spent=₹147.86 07:54:49
+stage pair1 done 2026-10-24T07:54:49Z
+stage pair2 start 2026-10-24T07:55:01Z spent=₹147.86
+operator-gpt-4.1-r2 cap=₹175 (mini reserve ₹34.1)
+operator-41-r2 exit=0 spent=₹272.86 08:00:27
+operator-gpt-4.1-mini-r2 cap=₹40
+operator-mini-r2 exit=0 spent=₹300.29 08:26:41
+stage pair2 done 2026-10-24T08:26:41Z

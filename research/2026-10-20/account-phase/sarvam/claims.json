@@ -1,0 +1,636 @@
+[
+ {
+  "id": "SAC-01",
+  "area": "access",
+  "claim": "Both stored Sarvam keys are Model API keys. api.sarvam.ai accepted each: GET /v2/models returned 200 with the same five models for the SARVAM2 key and for the SARVAM (team, credits exhausted) key. An exhausted wallet does not block read-only metadata calls.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/models-SARVAM2_API_KEY.body",
+   "data/account-phase/sarvam/api-reads/models-SARVAM_API_KEY.body"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-02",
+  "area": "access",
+  "claim": "The Voice Agents control plane refused both keys. apps.sarvam.ai answered 401 {\"detail\":\"Invalid API key format.\"} (analytics, X-API-Key) and 401 {\"error\":{... \"details\":\"Invalid API key format.\"}} (app-authoring deployments and the app-runtime signed-URL route). With Authorization: Bearer it answered \"Malformed token\" / \"Invalid Bearer token\"; with the Model API header api-subscription-key it said authentication required. Test was one GET per route using all-zero UUIDs, not real IDs.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/va-schema-xapikey.body",
+   "data/account-phase/sarvam/api-reads/va-schema-xapikey-team.body",
+   "data/account-phase/sarvam/api-reads/va-signedurl.body",
+   "data/account-phase/sarvam/api-reads/va-schema-bearer.body",
+   "data/account-phase/sarvam/api-reads/va-schema-sub.body",
+   "data/account-phase/sarvam/api-reads/disc5.body"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-03",
+  "area": "access",
+  "claim": "Voice Agents uses a separate workspace-scoped API key, created in the dashboard (Settings > API Key), that the gateway appears to format-check before scope-checking. The Model API key is a different credential class even though both start with sk_. Consequence for this phase: no agent, deployment, campaign, cohort, call log or board could be created or read with our keys, so no Voice Agents object exists to clean up.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/va-schema-xapikey.body",
+   "data/account-phase/sarvam/docs/voice-agents_settings_api-key.md",
+   "https://docs.sarvam.ai/voice-agents/settings/api-key"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-04",
+  "area": "access",
+  "claim": "The two Voice Agents service families use different error envelopes: app-authoring and app-runtime return {\"error\":{\"message\",\"type\",\"code\",\"data\":{\"details\"}}}; analytics returns {\"detail\": \"...\"}. The OpenAPI declares ErrorResponse, AnalyticsErrorResponse and a credits-only CreditsError. Model API returns {\"error\":{\"message\",\"code\":\"invalid_request_error\",\"request_id\"}}.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/va-dep-bearer.body",
+   "data/account-phase/sarvam/api-reads/va-schema-bearer.body",
+   "data/account-phase/sarvam/api-reads/probe-text-to-speech.body",
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-05",
+  "area": "access",
+  "claim": "The hosted MCP server (mcp.sarvam.ai/voice-agents) returns 401 invalid_token to an unauthenticated request and points to OAuth discovery: protected-resource metadata, then authorization-server metadata offering authorization_code and refresh_token grants, public clients (token_endpoint_auth_methods none), PKCE S256 and dynamic client registration. Docs say the token lasts 24 h with no refresh token. We did not register a client or sign in (that needs the dashboard SSO).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/mcp-unauth-initialize.hdr",
+   "data/account-phase/sarvam/api-reads/mcp-prm.body",
+   "data/account-phase/sarvam/api-reads/mcp-asm-075a06.body",
+   "data/account-phase/sarvam/docs/voice-agents_mcp.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-06",
+  "area": "surface",
+  "claim": "The public Voice Agents OpenAPI (3.1, \"API Reference\" 1.0.0, unchanged byte for byte since the public phase) has 68 operations and 175 schemas. By service: analytics 24 (attempts, interactions, recording, transcript, 20 boards and query operations), evals 15, scheduling 19 (campaigns, campaign cohorts, deployment cohorts, both webhook delivery lists and retries), app-authoring 6 (deployment create/list/get/patch/delete/status), outbounds 1, BYOK 3 (customer-hosted).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/openapi/voice-agents.json",
+   "data/account-phase/sarvam/derived/endpoints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-07",
+  "area": "surface",
+  "claim": "The public spec has no operation for creating or editing an agent, committing a version, telephony connections, numbers or groups, knowledge bases, the voice catalog, secrets, API keys or the DND list. Those exist in the dashboard, Genie and the MCP server only (MCP exposes agents, telephony, campaigns, evals, knowledge_base, boards, analytics and enterprise workflows). Docs mention a \"DND API\" and a deploy-with-code \"create or update an agent\" recipe that the spec does not contain.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/endpoints.csv",
+   "data/account-phase/sarvam/docs/voice-agents_mcp.md",
+   "data/account-phase/sarvam/docs/voice-agents_deploy_campaigns_dnd.md",
+   "data/account-phase/sarvam/docs/voice-agents_deploy_deploy-with-code.md",
+   "data/account-phase/sarvam/derived/doc-vs-spec-mismatches.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-08",
+  "area": "surface",
+  "claim": "The Model API OpenAPI has 53 operations: speech-to-text (sync, bulk job v1, translate, realtime WebSocket), text-to-speech (sync, stream, WebSocket), instant voice cloning, pronunciation dictionaries, translate, transliterate, language ID, chat completions v1/v2, responses, dubbing, document translation and Document AI. Base wss://api.sarvam.ai for streaming.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/openapi/apis.json",
+   "data/account-phase/sarvam/derived/endpoints.csv",
+   "data/account-phase/sarvam/sdk/pypi-sarvamai/x/sarvamai/environment.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-09",
+  "area": "surface",
+  "claim": "Live GET /v2/models lists five models: sarvam-105b (owned_by sarvam) and glm5.3-flash, glm5.3, gemma4, deepseekv4.1-flash (owned_by open-source). Model objects carry no pricing, context or capability fields. glm5.3-flash is served but is not in the documented V2ModelIds enum (four ids), and sarvam-105b-conversations, the agent-tuned variant named in the Voice Agents docs, is not in the list.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/models-SARVAM2_API_KEY.body",
+   "data/account-phase/sarvam/api-reads/model-glm5.3-flash.body",
+   "data/account-phase/sarvam/openapi/apis.json",
+   "data/account-phase/sarvam/docs/voice-agents_build_models.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-10",
+  "area": "surface",
+  "claim": "Fresh accounts: GET /voices returned {\"voices\":[],\"total\":0} and GET /text-to-speech/pronunciation-dictionary returned {\"dictionary_count\":0}; nothing to read back or clean up.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/voices-list.body",
+   "data/account-phase/sarvam/api-reads/pron-list.body"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-11",
+  "area": "surface",
+  "claim": "Nine empty-body POST probes to Model API routes (TTS, TTS stream, chat v1 and v2, translate, text-lid, transliterate, responses, bulk STT job) all returned 400 with a request_id that begins with the date (YYYYMMDD_uuid), the same date-prefix convention as Voice Agents interaction IDs. Responses carry server: uvicorn, cache-control no-store and no rate-limit headers on the 200. No inference ran, no spend.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/probe-text-to-speech.body",
+   "data/account-phase/sarvam/api-reads/probe-v2-chat-completions.body",
+   "data/account-phase/sarvam/api-reads/models-SARVAM2_API_KEY.hdr"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-12",
+  "area": "data-model",
+  "claim": "Hierarchy: organization > workspace > app (agent; app_type is always \"agent\") > numbered versions. Deployments and campaigns pin (app_id, app_version); UpdateDeployment can change app_version, UpdateCampaign can change app_config including version only while the campaign is paused or scheduled. Versions are draft > committed (immutable) > deployed, and the docs say commit \"freezes a version for good\".",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/data-model.json",
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_build_agent_versioning.md",
+   "data/account-phase/sarvam/docs/voice-agents_mcp.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-13",
+  "area": "data-model",
+  "claim": "Campaign lifecycle: scheduled > active > ended, with paused and cancelled reachable; PUT .../status takes action pause|resume|cancel (campaign) or pause|resume (deployment). Editing is blocked while active (\"Pause, Edit, Save, Resume\"). The concurrent-campaign limit is separate from the plan limits and is checked on pause/resume.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_deploy_campaigns_campaign-lifecycle.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-14",
+  "area": "data-model",
+  "claim": "Campaign config knobs in the schema: attempts_per_second 0.1-500 (every dial and retry counts, no bursting), retry_config.max_retries 0-20, retry_interval_minutes single value or array, retry_on for busy, failed, no_answer, short_duration (threshold_seconds default 30), provider_error and internal_error (each retry 1-20, interval minimum 5; internal_error defaults to enabled, 3 retries, 5 min), and phone_rotation.agent (needs at least two numbers).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_api_campaigns_create.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-15",
+  "area": "data-model",
+  "claim": "allowed_schedule is three free-form strings plus days and an optional timezone (HH:MM start and end, Monday..Sunday, IANA zone); the schema has no pattern or range and no category-aware window (promotional vs service). The inbound deployment window defaults to 09:00-18:00 Asia/Kolkata.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_deploy_inbounds.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-16",
+  "area": "data-model",
+  "claim": "Whether the server rejects an out-of-hours window such as 07:00-23:00 at create time is not known: creating a campaign needs the workspace key we do not have, and a campaign is also a billable action. Pre-registered SAR-P05 stays open.",
+  "grade": "unknown",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "research/2026-10-20/teardown/sarvam/predictions.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-17",
+  "area": "data-model",
+  "claim": "Cohort upload takes a CSV plus a mandatory second JSON file, cohort_transformation_file, that maps CSV columns to the phone number and agent variables; it validates into valid and rejected records (CohortResult has total_records, valid_records, rejected_records only) and the files route serves cohort, rejected_records or cohort_transformation downloads. 10-digit Indian numbers are normalised to E.164. CSV up to 100 MB, or JSON stream of 1-1000 users with app_variables and app_overrides per user. There is no field for duplicates removed or numbers suppressed by DND.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_api_campaigns_cohorts_upload.md",
+   "data/account-phase/sarvam/docs/voice-agents_api_campaigns_cohorts_stream.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-18",
+  "area": "data-model",
+  "claim": "Opt-out handling is an org-wide DND suppression list (manual, bulk CSV or an API the spec does not contain; docs say it applies to every campaign); the connectivity docs list DND, credits, carrier errors and outside-business-hours as failure causes, so a DND hit most likely shows up as a failed attempt rather than as a cohort-level count (not tested: no campaign could be created).",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_deploy_campaigns_dnd.md",
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_connectivity.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-19",
+  "area": "data-model",
+  "claim": "An attempt is one dial or connection; an interaction is a conversation that happened. Attempt rows have 30 fields incl. connectivity_status, failure_reason (sentinel NO_FAILURE_REASON), ended_by (USER_ENDS, AGENT_ENDS, VOICEMAIL or NO_END_REASON), next_action_status (retry, UNKNOWN), retry_attempt and server_retry_attempt, is_debug_call and has_log_issues as the strings \"0\"/\"1\"; interactions add job_id (= the attempt_id) and transcripts. channel_provider is deprecated and always null, so the carrier that carried a call cannot be queried from analytics.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_api_analytics_overview.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-20",
+  "area": "data-model",
+  "claim": "Analytics API behaviour: X-API-Key only, per-key rate limit with Retry-After and 429, 60-second response cache, limit up to 1000, filter_conditions with 11 operators over 21 fixed fields plus agent_variables.<key> and initial_agent_variables.<key>, interaction_id \"<YYYYMMDD>/<id>\" (slash accepted raw or as %2F). Items return the full unmasked user_contact next to masked and hashed variants.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_api_analytics_overview.md",
+   "data/account-phase/sarvam/docs/voice-agents_api_analytics_interactions.md",
+   "data/account-phase/sarvam/docs/voice-agents_api_analytics_attempts.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-21",
+  "area": "data-model",
+  "claim": "Transfers are first-class records: interactions can carry forwarded_calls with status connected|no_answer|busy|failed, transfer_type blind|warm, destination phone|sip_uri, hangup_source caller|callee|unknown, per-leg duration and a signed recording_url. The dashboard documents End Reason CALL_TRANSFER.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_build_tools_call-transfer.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-22",
+  "area": "data-model",
+  "claim": "Recordings are one stereo WAV per connected call (user left, agent right) since the 2026-10-16 changelog entry; telephony audio is kept at a legacy 11.025 kHz rate. Retention is a workspace default (0, 1, 15, 30, 45 days...) with a Voice Agents override.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_monitor_call-recordings.md",
+   "data/account-phase/sarvam/docs/changelog.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-23",
+  "area": "data-model",
+  "claim": "Audit identity: boards, widgets, test suites, cases and runs carry created_by and updated_by as an Actor {type: user|api_key, id}; for api_key the id is the key prefix. API-key actions are therefore attributed to a key, not a person.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-24",
+  "area": "lifecycle",
+  "claim": "Call lifecycle (SDK/WebSocket path): HTTPS GET {app-runtime}/orgs/{org}/workspaces/{ws}/apps/{app}/url?interaction_type=call|chat[&version=N] with X-API-Key returns {url, reference_id}; the client opens the signed WebSocket (user_identifier, user_identifier_type, sample_rate, interaction_type are appended), sends client.action.interaction_start (agent_variables and per-call overrides), and the server answers server.action.interaction_connected with reference_id and interaction_id. Ping/pong carries latency event ids; interaction_end closes. A chat (text) interaction type exists beside call.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/sdk/pypi-conv-ai/x/sarvam_conv_ai_sdk/conversation.py",
+   "data/account-phase/sarvam/sdk/npm-conv-ai/x/package/dist/modules/socket-manager.js",
+   "data/account-phase/sarvam/derived/conv-ai-sdk-protocol.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-25",
+  "area": "lifecycle",
+  "claim": "Wire protocol: 4 server categories (media, action, system, event). Server types: audio_chunk, audio, text, text_chunk, ping, interaction_connected, interaction_end, user_speech_start, user_speech_end, user_interrupt, variable_update, language_change, state_transition, transcription, kb_query, tool_call. Client types: audio_chunk, audio, text, text_chunk, interaction_start, interaction_end, variable_update, language_change, state_transition, pong. The Python and JS SDKs list identical types (0 differences). Audio is base64 audio/wav (PCM16) in JSON frames.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/conv-ai-sdk-protocol.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-26",
+  "area": "lifecycle",
+  "claim": "Only 8 of the 16 server message types have typed payloads in the Python SDK (text, text_chunk, transcription, audio_chunk, user_interrupt, interaction_connected, interaction_end, ping). user_speech_start/end, variable_update, language_change, state_transition, kb_query and tool_call are named but not parsed, so their payload shapes are unknown from the SDK.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/sdk/pypi-conv-ai/x/sarvam_conv_ai_sdk/messages/__init__.py",
+   "data/account-phase/sarvam/sdk/npm-conv-ai/x/package/dist/types/events.d.ts"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-27",
+  "area": "lifecycle",
+  "claim": "The client can drive the agent mid-call: the client message set includes variable_update, language_change and state_transition. The Python SDK does not expose methods that send them (only audio, voice note, text, interaction start/end, pong); whether the server honours them is not known.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/sdk/pypi-conv-ai/x/sarvam_conv_ai_sdk/messages/types.py",
+   "data/account-phase/sarvam/sdk/pypi-conv-ai/x/sarvam_conv_ai_sdk/conversation.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-28",
+  "area": "lifecycle",
+  "claim": "SDK drift: Python 1.1.1 (input 16/48 kHz, output 16 kHz, speech_hotwords and text_to_speech_config overrides, 13 language names with Assamese and Konkani) vs npm 0.0.42 from 2026-03-30 (input 8/16 kHz, output 16/22.05 kHz, no hotword or TTS override, 11 names) vs OpenAPI LanguageName (13 names with Sanskrit, no Konkani). The JS SDK logs the signed WebSocket URL to the console and reads rate-limit waits from an x-retry-after header, while the analytics docs say Retry-After.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/conv-ai-sdk-protocol.json",
+   "data/account-phase/sarvam/sdk/npm-conv-ai/x/package/dist/modules/socket-manager.js",
+   "data/account-phase/sarvam/derived/doc-vs-spec-mismatches.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-29",
+  "area": "lifecycle",
+  "claim": "Webhooks are post-call only. Campaign webhook (per attempt, connected or not): app_id, app_version, attempt_id, campaign_id, cohort_id, completion_status completed|partial|failed, connectivity_status connected|busy|no_answer|failed, next_action_status retry|reschedule|business_retry|short_duration_retry|provider_error_retry|internal_error_retry, failure_reason, user_identifier, user_phone_number, agent_phone_number, duration, interaction_id, retry_attempt, timestamps, initial/final/output_agent_variables, interaction_transcript [{role, en_text}], metadata. Inbound deployment webhook: 12 fields, interaction_id doubles as the delivery attempt_id, transcript adds indic_text. Instant outbound: status, channel_info{channel_type v2v|whatsapp, channel_provider, agent_phone_number}, webhook_config echoed.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_api_campaigns_webhooks_webhook-payload.md",
+   "data/account-phase/sarvam/docs/voice-agents_api_deployments_webhooks_webhook-payload.md",
+   "data/account-phase/sarvam/docs/voice-agents_api_instant-outbound_webhook-payload.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-30",
+  "area": "lifecycle",
+  "claim": "No mid-call webhook or event callback to the customer exists in the spec or docs (nothing like an assistant-request, tool-call or transfer-request hook). Mid-call integration goes the other way: the agent calls the customer HTTPS tool, on_start and on_end hooks, or code tools running on Sarvam. All webhook transcripts are English translations (en_text).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/endpoints.csv",
+   "data/account-phase/sarvam/docs/voice-agents_build_tools_https-tool.md",
+   "data/account-phase/sarvam/docs/voice-agents_api_campaigns_webhooks_webhook-payload.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-31",
+  "area": "lifecycle",
+  "claim": "WebhookConfig is {url, metadata} only: no secret, signature or header field in the spec, and no mention of HMAC or signing across the 52 docs pages re-fetched on 2026-10-20 (settings page says secrets can hold \"webhook authentication headers and tokens\", which the schema does not expose). Delivery records have status running|completed|failed and up to 200 attempt_ids can be re-delivered per call; automatic retry/backoff policy is undocumented.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_settings_api-key.md",
+   "data/account-phase/sarvam/docs/fetchlog.tsv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-32",
+  "area": "lifecycle",
+  "claim": "Instant outbound (POST .../outbounds) places one call per request with agent_variables and app_overrides (initial_bot_message, initial_state_name, initial_language_name) and returns only {attempt_id}; results arrive by webhook or by polling the analytics attempts API. This is billable, so it was not called.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_api_instant-outbound_create.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-33",
+  "area": "evals",
+  "claim": "Evals API: test suite (workspace-level or bound to an app; variables; up to 20 global_guardrails of 500 chars; up to 200 cases), case (name, category, user_scenario up to 20000 chars, expected_behaviors [{name, description}], variable_overrides, max_turns 1-200 default 50), variable mapping suite-variable > agent-variable per (app, version), run scope suite|test_case with frequency 1-20 and on_end_eval, status created|running|completed|failed, per-execution transcript and evaluation_results [{name, verdict, reasoning}]. A simulated user plays each case and an AI judge grades each behaviour Pass/Fail. Run create documents HTTP 402 CreditsError; INR 2 per simulated run.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt",
+   "data/account-phase/sarvam/docs/voice-agents_build_tests.md",
+   "data/account-phase/sarvam/docs/voice-agents_pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-34",
+  "area": "analytics",
+  "claim": "Boards: customer-facing SQL over a ClickHouse warehouse (type names UInt64, LowCardinality(String), DateTime...). One read-only SELECT per widget; SETTINGS, FORMAT, INTO OUTFILE, LIMIT BY and LIMIT+OFFSET rejected at save; {{token}} required and [[... {{token}} ...]] optional filter tokens, validated with all optional blocks kept and removed; tenant scoping server-side and results verified; row_limit 1-10000 (LIMIT clamped to 1000). Limits: 10 tabs x 20 widgets per board, viz number|table|bar|line, notification rules by cron in IST no more often than hourly to email or Slack. Documented example view: EngagementFactsBoardsView.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_api_boards_sql.md",
+   "data/account-phase/sarvam/derived/voice-agents-schemas-readable.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-35",
+  "area": "analytics",
+  "claim": "Built-in analytics: connectivity (attempted > connected, phone-number health per bot number, hour-of-day, failure reasons), engagement (attempted > connected > engaged funnel), call logs with filters and CSV export (single agent only), per-call Log Analyser (ASR confidence, tool inputs/outputs, variable NEW/CHANGED badges), tools tab (error rate, p50/p95 per tool), and a Goals tab that compares goal-achieved vs not on turns, language, hour of day (IST), TTS voice and intro message.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_goals.md",
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_log-analyser.md",
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_tools.md",
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_connectivity.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-36",
+  "area": "config",
+  "claim": "Turn-taking controls exposed to builders are three coarse settings: Let callers interrupt (on/off), Sound sensitivity (Low/Medium/High) and Eagerness to respond (Patient/Normal/Eager), plus an advanced \"Detect when the caller stops talking\" switch and nudges (ordered {message, delay seconds}) with optional hang-up after unanswered nudges. There is no numeric endpointing delay, no filler or backchannel control and no per-turn timeout in the builder.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_conversation-settings.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-37",
+  "area": "config",
+  "claim": "The Model API realtime STT WebSocket (wss://api.sarvam.ai/speech-to-text/ws, models saaras:v3|v4, modes transcribe|translate|verbatim|translit|codemix) exposes ten frame-level VAD knobs: high_vad_sensitivity, positive_speech_threshold, negative_speech_threshold, min_speech_frames, first_turn_min_speech_frames, negative_frames_count, negative_frames_window, start_speech_volume_threshold (dB), interrupt_min_speech_frames, pre_speech_pad_frames, num_initial_ignored_frames, plus vad_signals and flush_signal, keyterms (up to 50 x 64 chars, saaras:v4 only) and 8 or 16 kHz.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/sdk/pypi-sarvamai/x/sarvamai/speech_to_text_streaming/client.py",
+   "data/account-phase/sarvam/openapi/apis.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-38",
+  "area": "config",
+  "claim": "The builder's Sound sensitivity, Eagerness and interruption settings probably map onto those STT-server VAD parameters (positive/negative thresholds, negative-frame window, interrupt_min_speech_frames), so Sarvam's turn-taking sits inside its own STT service rather than in a separate turn-detection model. Not confirmed: the mapping is not documented.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/sdk/pypi-sarvamai/x/sarvamai/speech_to_text_streaming/client.py",
+   "data/account-phase/sarvam/docs/voice-agents_build_conversation-settings.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-39",
+  "area": "config",
+  "claim": "Voice config: Bulbul V3 or V4 per agent (V3 ends on Voice Agents 2026-11-10), one voice or per-language voices keyed to the starting language, speaking speed, pitch, volume 0.7-2.0, pronunciation dictionary (JSON up to 5 MB, per language and word, no phonemes), background sound (none, quiet office, call center, city traffic) with volume. Model API TTS adds pace 0.3-3 (0.5-2 on v3/v4-flash), temperature 0.01-1 default 0.6, 8-48 kHz output, codecs mp3, linear16, mulaw, alaw, opus, flac, aac, wav, dict_id and cached responses.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_voice-language.md",
+   "data/account-phase/sarvam/openapi/apis.json",
+   "data/account-phase/sarvam/docs/changelog.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-40",
+  "area": "config",
+  "claim": "The v4-flash TTS catalogue has 222 persona slugs shaped name_language_style across 50 style tokens (hi 116, en 62, enhi 13, mr 9; styles include conversational 21, customer 15, recovery 10, companion 11, sales 5, banking 5, insurance 3). Voices are sold as job-tagged personas (recovery, customer support, banking, insurance, sales, companion), not just by timbre. The docs say 176 voices; the API enum has 266 slugs in all (44 plain v2/v3 names).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/derived/tts-voice-catalog-summary.json",
+   "data/account-phase/sarvam/openapi/apis.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-41",
+  "area": "config",
+  "claim": "LLM layer: no model picker and no bring-your-own model for ASR, LLM or TTS; the only control is temperature 0.1-0.9 (default 0.3, \"Compliant\" to \"Creative\"). The docs describe a routed constellation of open-weight models plus sarvam-105b-conversations, all self-hosted.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_models.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_conversation-settings.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-42",
+  "area": "config",
+  "claim": "Prompt/agent structure: greeting is played directly (not LLM-generated) and needs a translation per allowed language; instructions are sectioned prose with variables and tools inserted with @; single-state by default, optional multi-state FSM (name, instructions, tools, next states; global vs state-level tools) reached by a one-way conversion; Genie suggestions and prompt blocks (Guardrail, Step by Step, Speaking style).",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_navigating-workspace.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_states-conversation-flow.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_single-state-agents.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-43",
+  "area": "config",
+  "claim": "Tools: core (end call always on; call transfer, KB query, voicemail detection, language switch enabled by settings), API tool (lifecycle run|on_start|on_end; auth none|bearer|api_key|basic from Secrets; response template; max wait up to 30 s; save reply into variables; call-context variables User Identifier, Call Transcript, Interaction ID, Call Length; egress IPs 4.213.167.70 and 35.154.84.150), data validator/verifier, mock tools, and Python code tools (on request) that run on Sarvam with secrets, state, language and end-call control.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_tools_core-tools.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_tools_https-tool.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_tools_code-tools.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-44",
+  "area": "config",
+  "claim": "The Python SDK shows what a code tool can see and change: SarvamToolContext has agent and internal variables, workspace secrets by name, engagement metadata (interaction_id, attempt_id, campaign_id, interaction language, app_id, app_version, agent phone number), language and allowed languages, state and next valid states, and end_conversation; an on-end tool receives the English transcript with start/end times and can set retry_interaction; an on-start tool can set initial message, state, language, speech hotwords and a TTS override. Docs say a code tool \"runs your Python inside the call\"; where that code executes is not stated.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/sdk/pypi-conv-ai/x/sarvam_conv_ai_sdk/tool.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-45",
+  "area": "memory",
+  "claim": "Memory is per-call variables plus caller context pulled from the customer: system variables (current_date/time/datetime/day, start_datetime, language_name), input and output variables (one type; outputs extracted by an LLM extraction prompt after the call, String or Enum), PII flags with mask/hash, an on-start hook that loads CRM context before the agent speaks, inbound \"known callers\" CSV cohorts mapped to variables, and per-contact overrides. No Sarvam-side store of what happened on earlier calls with the same person is documented, although the homepage says agents \"carry your customer context into every call\".",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_variables-personalization.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_on-start-on-end-hooks.md",
+   "data/account-phase/sarvam/docs/voice-agents_deploy_inbounds.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-46",
+  "area": "memory",
+  "claim": "Knowledge bases are named groups of files (PDF, DOCX/DOC, CSV/TSV, TXT, MD) with a routing description; attaching one auto-adds the KB query tool; retrieval embeds, searches, reranks and returns about 500 tokens of top chunks with source file; ingestion is asynchronous; storage is tier-based.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_knowledge-base.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-47",
+  "area": "learning",
+  "claim": "The learning loop is manual and analytic: build, simulate (scenario + judge), set a goal rule over output variables (equals, not_equals, in, gt, lt), deploy a version, read Goals/Boards, edit, repeat. Nothing in the spec or docs changes an agent from its own call outcomes. Genie can analyse calls and propose edits, but a person accepts them.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_process.md",
+   "data/account-phase/sarvam/docs/voice-agents_build_genie.md",
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_goals.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-48",
+  "area": "builder",
+  "claim": "Genie (in-dashboard assistant) and the MCP server both cover the whole lifecycle: create and edit agents, tools, KBs and test suites, put an agent on a number, place a test call, create and run campaigns, diagnose failed calls and build boards. MCP tools are one domain tool per area (agents, telephony, campaigns, evals, knowledge_base, boards, analytics, workflows) plus typed write tools (configure_agent, configure_voicemail, create_http_tool...). A workspace only has the tools and fields its plan includes. MCP is bound to one org and workspace per login and has no org_id parameters.",
+  "grade": "vendor-claimed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_build_genie.md",
+   "data/account-phase/sarvam/docs/voice-agents_mcp.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-49",
+  "area": "billing",
+  "claim": "Metering: agent minutes are 60-second pulses rounded up (45 s = 1 min, 61 s = 2); telephony is separate in 30-second pulses rounded up (Vobiz INR 0.20, forward to PSTN INR 0.40, forward to SIP INR 0.35); bring-your-own telephony is free on Sarvam; number rental INR 59 per 30 days (11, 79, 80 series) auto-renews from the credit balance and, if credits are short, the number is released and campaigns and deployments using it are cancelled with no grace; simulated test run INR 2; forwarded legs bill as telephony only. Plan ceilings: PAYG 4 concurrent / 20 starts per minute, Pro 10/50, Growth 30/150, Business 120/600.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_pricing.md",
+   "data/account-phase/sarvam/docs/voice-agents_deploy_telephony_rent-from-sarvam.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-50",
+  "area": "billing",
+  "claim": "Credits are a wallet: the plan fee returns as credits at INR 1 each and minutes beyond the credits are drawn from the balance at the plan rate; the only API-level credit failure documented is HTTP 402 on test runs. For calls, a credit shortfall appears as a failed attempt (connectivity docs list credits among failure reasons). No balance, usage or invoice endpoint exists in the Voice Agents spec or the Model API spec, so cost per call cannot be read back through any key.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/docs/voice-agents_pricing.md",
+   "data/account-phase/sarvam/docs/voice-agents_monitor_agent-analytics_connectivity.md",
+   "data/account-phase/sarvam/derived/endpoints.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-51",
+  "area": "billing",
+  "claim": "Model API metering is separate from Voice Agents: tokens/characters/seconds per the API price list, the chat completion cost is billed across all n choices, and Voice Agents rates \"include\" the models. Our two Model API keys draw on different wallets (SARVAM2 about 88.9 credits per the notes file; SARVAM exhausted); nothing was spent here.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/openapi/apis.json",
+   "data/account-phase/sarvam/docs/voice-agents_pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-52",
+  "area": "india",
+  "claim": "Calling-window, retry and number-rotation controls sit with the buyer: the schema accepts any window, a retry ladder up to 20, and rotation across numbers per user; there is no consent, DLT/PE-ID, template or 140/1600-series field anywhere in the spec (no match for DLT, NCPR, 140 or 1600 in the OpenAPI), while the telephony failure strings quoted in webhook examples show provider-side blocking (\"exotel: Phone number is registered under TRAI NDNC\").",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/sarvam/openapi/voice-agents.json",
+   "data/account-phase/sarvam/docs/voice-agents_api_instant-outbound_webhook-payload.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-53",
+  "area": "for-vp",
+  "claim": "Parity floor items visible in this API surface: versions pinned by deployments/campaigns, attempt-vs-interaction records with failure reasons, per-call variables/outcomes, cohort validation with a rejected-records file, retry ladder by outcome class, number rotation, transfer records, stereo recordings, post-call webhooks with re-delivery, an eval API with judge, a SQL analytics API, SDKs in Python/JS/React Native/Flutter and an MCP server. Missing or weak: signed webhooks, mid-call hooks, cross-call memory, a billing/usage API, consent/DLT objects, a documented DND endpoint.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/derived/endpoints.csv",
+   "data/account-phase/sarvam/derived/doc-vs-spec-mismatches.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-54",
+  "area": "for-vp",
+  "claim": "Sarvam's bundle is closed on the model side (no picker, no BYO) and open on the data side (SQL, transcripts, recordings, hashed contacts). A VP that exposes model/voice choice, signed webhooks, mid-call function hooks, a usage/cost API and cross-call memory competes on exactly the places this API is thin; a VP that only matches the feature list meets a vendor already at INR 3-3.5/min with the same lifecycle.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/sarvam/derived/endpoints.csv",
+   "data/account-phase/sarvam/docs/voice-agents_build_models.md",
+   "data/account-phase/sarvam/docs/voice-agents_pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "SAC-55",
+  "area": "only-with-login",
+  "claim": "Still needs the dashboard (or a workspace key): create/read an agent and its full config JSON; commit and version history; telephony connection and number objects; KB ingestion; Genie behaviour; real campaign/cohort validation of a messy CSV (duplicates, bad numbers, opt-out row); schedule-window enforcement; voicemail and transfer behaviour; call logs, boards and the warehouse view list from query-schema; ledger and invoice lines; org policy and roles; the Settings > API Key flow itself.",
+  "grade": "unknown",
+  "evidence": [
+   "data/account-phase/sarvam/api-reads/va-schema-xapikey.body"
+  ],
+  "date": "2026-10-20"
+ }
+]

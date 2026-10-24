@@ -1,0 +1,241 @@
+[
+ {
+  "id": "BC-01",
+  "dimension": "method",
+  "claim": "Blind black-box inference of Bolna's architecture, scored against its open code: 16 of 20 pre-registered checkable inferences correct, 4 partly, 0 wrong (hit rate 0.90 by the pre-registered (T+0.5P)/N rule; Brier 0.089). Counting minor detail errors as partly gives 10 correct, 10 partly (0.75; Brier 0.066). The 'none'-contamination subset: 15/18 correct, 3 partly (0.917). Correct-only rate 0.80 has a Wilson 95% interval of about 0.58-0.92 at n=20.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/calibration.json",
+   "research/2026-10-20/teardown/bolna/blind-inferences.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-02",
+  "dimension": "method",
+  "claim": "Hit rate by primary evidence: docs 13/14 correct + 1 partly (0.96); JS bundle 2/5 correct + 3 partly (0.70); network/DNS 1/1. No checkable inference rested on job posts or marketing (n=0), so those rates cannot be computed. By claim kind, structure 5/5 and absence 4/4 were all correct, but mechanisms read from bundle config flags were 1 correct and 3 partly: ambient_noise_track (no mixing code in OSS), use_fillers (prompt note; filler-audio path is dead code), synthesizer.caching (per-call cache only).",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/calibration.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-03",
+  "dimension": "method",
+  "claim": "Calibration: with lenient scoring the blind pass was under-confident (mean stated 0.69, observed 0.90). With strict scoring it was calibrated in the 0.70-0.75 bin (stated 0.72, observed 0.73, n=11) and the 0.80-0.85 bin (0.83 vs 0.83, n=3), and under-confident at 0.55-0.65 (0.60 vs 0.80, n=5). Bins are small, and one non-blind rater scored them.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/calibration.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-04",
+  "dimension": "method",
+  "claim": "Coverage gaps: the code shows 16 material features the blind pass never inferred.\n- 5 were in the public docs it had downloaded, so these were extraction misses: speech-to-speech mode, speculative LLM on EagerEndOfTurn, the web-search tool, end_call-tool hangup and multi-agent routing.\n- 10 are code-only: the language-switch judge (Claude Haiku 4.5 plus a parallel LID leg), self-hosted nemotron-asr-hi, dead filler code, a separate RAG proxy service, in-engine interruption and dead-air telemetry, English-only phrase lists, test depth, short final transcripts dropped during agent speech, Azure PTU-to-overflow failover, and history trimmed to what was heard after a barge-in. The acct-bolna lane listed the last three first; they are verified here.\n- 1 is a method note: OSS defaults differ from the hosted defaults.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/calibration.json",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-05",
+  "dimension": "method",
+  "claim": "OSS defaults are not hosted defaults: ConversationConfig ships call_terminate 90 s, incremental_delay 900 ms, number_of_words_for_interruption 1, hangup_after_silence 20 s and interruption_backoff_period 100 ms. The dashboard bundle injects 300 s, 300 ms, 2, 15 s and 0 ms. Reading code alone would mispredict hosted behaviour, and the bundle alone misreads mechanisms; the two methods are complementary.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/models.py:952-980",
+   "research/2026-10-20/teardown/bolna/blind-inferences.json (BI-34)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-06",
+  "dimension": "architecture",
+  "claim": "Turn-taking (cascade path) works like this:\n- End of turn comes from the STT provider: Deepgram endpointing, Flux end-of-turn at confidence 0.7 with a 500 ms timeout, AssemblyAI, or server VAD.\n- A speculative LLM request starts on Flux EagerEndOfTurn (0.5) and is cancelled on TurnResumed.\n- After turn 2, the agent's audio is held for incremental_delay ms after the utterance ends.\n- Barge-in fires only when an interim transcript has MORE than N words, or exactly equals an English stop phrase.\n- Provider speech_started events never interrupt.\nIn speech-to-speech mode the provider's VAD does the barge-in.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/constants.py:79-81, 197-224",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/interruption_manager.py:76-126",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:5733-5806, 5864-5931, 8874-8889"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-07",
+  "dimension": "architecture",
+  "claim": "Language switching is a dedicated judge LLM, not the conversational model:\n- The judge defaults to claude-haiku-4-5 via LiteLLM, with Bedrock (default region ap-south-1) as an option.\n- A parallel streaming LID recognizer (Sarvam or Soniox) feeds it one per-turn transcript.\n- A hedged duplicate request goes out after 1.8 s, and decide is capped at 6 s.\n- A speculative follow-up is generated in the target language.\n- Per-language handoff clips are pre-rendered and cached process-wide across calls.\nThis corrects the l4a report (research/2026-10-17/lanes/l4a-competitors/report.md section 4, read at 8e300d9), which described code-switching as a matrix-language prompt.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/helpers/language_switcher.py:21-32, 59-75",
+   "data/teardown/bolna/code/bolna/bolna/lid/provider.py",
+   "data/teardown/bolna/code/bolna/bolna/constants.py:104",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:299-301, 6767-6773"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-08",
+  "dimension": "pricing",
+  "claim": "Bolna has its own inference provider:\n- ASR: provider 'bolna' is a RealtimeTranscriber whose default model is nemotron-asr-hi, served over the OpenAI Realtime transcription protocol at REALTIME_TRANSCRIBER_URL.\n- LLM: provider 'bolna' is treated as self-hosted.\n- DEEPGRAM_HOST can point at a self-hosted Deepgram.\nThis is consistent with the CT-log hosts in BI-26. It implies that the default-stack COGS reconstruction in BOL-37 (INR 2.0-3.8/min) is an upper bound for calls on Bolna's own models.",
+  "grade": "inferred",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/transcriber/realtime_transcriber.py:36-53",
+   "data/teardown/bolna/code/bolna/bolna/providers.py:107,132",
+   "data/teardown/bolna/code/bolna/bolna/llms/openai_llm.py:220",
+   "data/teardown/bolna/code/bolna/bolna/transcriber/deepgram_transcriber.py:66-70",
+   "research/2026-10-20/teardown/bolna/claims.json (BOL-37)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-09",
+  "dimension": "architecture",
+  "claim": "Hangup has three routes:\n- an extra completion LLM call after each response (hangup_after_LLMCall, own model via CHECK_FOR_COMPLETION_LLM);\n- an end_call tool, either global ('primary' / 'primary_with_shadow_hangup', which also hints at an internal shadow experiment) or node-scoped on graph agents;\n- duration and silence caps.\nVoicemail detection is still an LLM reading the transcript (default gpt-4.1-mini, every 7 s for up to 30 s, minimum 7 words). That confirms the l4a parity row voicemail_amd, read at 8e300d9, still holds at bc59921.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:183-190, 829-907, 4635-4645, 8233-8254",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/voicemail_handler.py:19-42",
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv (voicemail_amd,Bolna)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-10",
+  "dimension": "architecture",
+  "claim": "Audio extras:\n- Backchannels are pre-recorded WAVs per synthesizer voice, played while the caller has spoken longer than start_delay.\n- use_fillers only adds a 'do not start with fillers' prompt note. The filler-audio branch reads an attribute that is never assigned, so it is dead code.\n- ambient_noise is a boolean with bundled office/call-centre/coffee-shop WAVs, but nothing in the OSS engine mixes them into outbound audio.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:948-963, 2221-2222, 7776-7782, 8426-8453",
+   "data/teardown/bolna/code/bolna/bolna/prompts.py:198",
+   "data/teardown/bolna/code/bolna/bolna/models.py:969",
+   "data/teardown/bolna/code/bolna/local_setup/presets/ambient_noise/office-ambience.wav"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-11",
+  "dimension": "architecture",
+  "claim": "Knowledge-base retrieval runs in a separate closed rag-proxy-server. Every turn, the engine sends it only the latest user message (similarity_threshold 0.0, top_k default 10) and appends the result as a trailing message, which keeps the system prompt plus history a cacheable prefix. The vector store is LanceDB or MongoDB. A reranker (minilm-l6-v2 / bge-*) exists but is off by default.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/helpers/rag_service_client.py:27-35",
+   "data/teardown/bolna/code/bolna/bolna/agent_types/knowledgebase_agent.py:193-210",
+   "data/teardown/bolna/code/bolna/bolna/agent_types/graph_agent.py:1544-1556",
+   "data/teardown/bolna/code/bolna/bolna/models.py:398-457"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-12",
+  "dimension": "v2",
+  "claim": "At bc59921 there is still no cross-call memory and no learning or optimisation loop:\n- memory/ holds only a per-call in-memory cache;\n- a grep finds 0 hits for previous_call / cross-call / recall;\n- there is no A/B or bandit code.\nThe engine does emit the per-call signals such a loop would need: interruption counts, barge-in recovery, talk-listen time, longest monologue, user-bot latencies, and dead air inside replies. This confirms the l4a memory_across_calls row, read at 8e300d9.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/memory/cache/inmemory_scalar_cache.py:9",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/interruption_manager.py:43-66",
+   "data/teardown/bolna/code/bolna/bolna/helpers/tts_audio_monitor.py:8-12",
+   "research/2026-10-17/lanes/l4a-competitors/parity.csv (memory_across_calls,Bolna)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-13",
+  "dimension": "india",
+  "claim": "The engine has no India calling-compliance logic: a grep finds 0 hits for DND, DLT, NCPR, TCCCPR, consent, calling hours or calling windows, so whatever exists lives in the closed scheduler. Deepgram's Model Improvement Program opt-out is a per-agent setting, and unset it falls back to the DEEPGRAM_MIP_OPT_OUT env, which defaults to false (not opted out). The hosted value is unknown.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/helpers/utils.py:199-205",
+   "data/teardown/bolna/code/bolna/bolna/transcriber/deepgram_transcriber.py:77-85"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-14",
+  "dimension": "architecture",
+  "claim": "Speech-to-speech agents (OpenAI Realtime, Gemini Live) replace the transcriber, LLM and synthesizer legs with one socket, and keep tools, DTMF, hangup and the welcome gate. The blind pass did not infer this, although the public docs describe 'realtime_agent'.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/s2s/openai_realtime_s2s.py:43",
+   "data/teardown/bolna/code/bolna/bolna/s2s/gemini_live_s2s.py:35",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:8695-8710, 9201-9204",
+   "data/teardown/bolna/web/www.bolna.ai_docs_llms-full.txt (lines ~3678, 7938)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-15",
+  "dimension": "architecture",
+  "claim": "LiteLLM serves only the long tail of LLM providers (12: cohere, ollama, deepinfra, together, fireworks, perplexity, vllm, anyscale, groq, anthropic, deepseek, openrouter). The default Azure gpt-4.1-mini path uses AsyncAzureOpenAI directly and strips the 'azure/' prefix. OpenAI, Gemini, custom and 'bolna' use native clients. This corrects BOL-22 / BI-06.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/providers.py:113-133",
+   "data/teardown/bolna/code/bolna/bolna/llms/azure_llm.py:10-11, 80-81",
+   "research/2026-10-20/teardown/bolna/claims.json (BOL-22)"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-16",
+  "dimension": "architecture",
+  "claim": "Web calls and the new SIP-trunk legs both enter through a patched FreeSWITCH mod_audio_stream fork (L16 16 kHz in, 24 kHz out, killAudio on barge-in, DTMF from a media-node sidecar). 'trunk' is an execution label on that path. Legacy SIP is an Asterisk chan_websocket bridge carrying ulaw. This confirms the cores of BI-20/21/22/23, which the blind pass marked uncheckable or stated at confidence 0.45-0.85.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/input_handlers/telephony_providers/freeswitch.py:13-19",
+   "data/teardown/bolna/code/bolna/bolna/output_handlers/telephony_providers/freeswitch.py:21-28",
+   "data/teardown/bolna/code/bolna/bolna/enums.py:13-27",
+   "data/teardown/bolna/code/bolna/bolna/input_handlers/telephony_providers/sip_trunk.py:3,22,82"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-17",
+  "dimension": "architecture",
+  "claim": "Fixed audio is reused across calls by three mechanisms, none of them the synthesizer cache:\n- the backend pre-synthesizes the welcome and hands it to the engine as base64;\n- static graph-node clips come from S3;\n- language-handoff clips sit in a process-wide cache (max 256).\nsynthesizer.caching=true is an in-memory cache that lasts one call.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:299-301, 530-555, 7787-7820",
+   "data/teardown/bolna/code/bolna/bolna/memory/cache/inmemory_scalar_cache.py:9"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-18",
+  "dimension": "velocity",
+  "claim": "The engine is heavily tested and actively hardened:\n- 175 test files with 2,072 test functions;\n- HEAD commit 2026-10-20 (BOLNA-2967);\n- comments cite incident tickets (BOLNA-2563, BOLNA-2621);\n- HTTP/2 is disabled for LLM calls because cancelled h2 streams leaked on barge-in.\nParity with this engine on edge-case handling is real work, not a weekend clone.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/tests/",
+   "data/teardown/bolna/code/bolna/bolna/llms/openai_llm.py:228",
+   "data/teardown/bolna/code/bolna/bolna/constants.py:88,129"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-19",
+  "dimension": "failures",
+  "claim": "While the agent's audio is playing, a final transcript of N words or fewer that is not an exact English stop phrase is discarded as a 'false interruption' and never reaches the LLM (dashboard N=2). So short Hindi replies such as 'haan ji', 'nahi' or 'ruko' spoken over the agent are lost. Together with the English-only stop list, this is a testable Indian-caller failure: run the l4b battery's short-reply and Hindi barge-in items.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/interruption_manager.py:128-143",
+   "data/teardown/bolna/code/bolna/bolna/agent_manager/task_manager.py:5950-5961",
+   "data/teardown/bolna/code/bolna/bolna/constants.py:197-224"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "BC-20",
+  "dimension": "method",
+  "claim": "A second rater scored independently: the acct-bolna lane scored the same 35 rows at the same SHA and got 14 TRUE, 6 PARTLY, 0 FALSE on the pre-registered 20 (hit 0.85, Brier 0.086).\n- Against this lane's lenient verdicts: 18/20 agree (Cohen's kappa 0.74).\n- Against the strict verdicts: 14/20 agree (kappa 0.40).\n- Both raters found 0 wrong and the same 4 core 'partly' rows (BI-06, 15, 16, 17).\n- BI-35's hosted clause 'unknown fields rejected' is refuted by live API evidence: an unknown key returned 201 and was silently dropped.",
+  "grade": "observed",
+  "evidence": [
+   "research/2026-10-20/teardown/bolna/calibration.json",
+   "research/2026-10-20/account-phase/bolna/blind-scoring.json",
+   "data/account-phase/bolna/api-live/probe_unknown_field.json"
+  ],
+  "date": "2026-10-20"
+ }
+]

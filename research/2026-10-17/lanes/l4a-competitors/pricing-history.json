@@ -1,0 +1,607 @@
+{
+ "generated": "2026-10-17",
+ "fx_inr_per_usd": 88.0,
+ "method": "Common Crawl CDX (cluster.idx binary search) + WARC record fetch for 12 crawls 2023-50..2026-39; live pages read 2026-10-17. Wayback CDX blocked (connection reset), archive.ph blocked (CAPTCHA).",
+ "telecaller_anchor": {
+  "inr_per_connected_min": {
+   "p10": 6.6,
+   "p50": 8.86,
+   "p90": 12.15
+  },
+  "source": "lanes/l2-economics/cost-model.json (Apna n=1,234 postings, 2026-10-17)"
+ },
+ "vendors": {
+  "Ringg": {
+   "url": "https://www.ringg.ai/pricing",
+   "obs": [
+    {
+     "date": "2025-09-08",
+     "src": "cc",
+     "plans": "PAYG $0.20/connected min (5 conc, $6/mo number); Enterprise $0.08 (>1M min/mo, 100 conc)",
+     "payg_usd": 0.2,
+     "ent_usd": 0.08,
+     "all_in": true,
+     "payg_inr_at88": 17.6,
+     "ent_inr_at88": 7.04,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-03-14",
+     "src": "cc",
+     "plans": "PAYG $0.10/connected min (50 conc, +$10/channel); Enterprise $0.06 (>100k min/mo)",
+     "payg_usd": 0.1,
+     "ent_usd": 0.06,
+     "all_in": true,
+     "payg_inr_at88": 8.8,
+     "ent_inr_at88": 5.28,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-06-11",
+     "src": "cc",
+     "plans": "same as 2026-03 + STT API $0.35/hr",
+     "payg_usd": 0.1,
+     "ent_usd": 0.06,
+     "all_in": true,
+     "payg_inr_at88": 8.8,
+     "ent_inr_at88": 5.28,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-09-05",
+     "src": "cc",
+     "plans": "India INR 6/connected min | US $0.10; number INR 499/mo; chat INR 2 per 5-min session; browser agents INR 15/min",
+     "payg_inr": 6.0,
+     "all_in": true,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "INR 6/connected min incl proprietary STT (Parrot), TTS, fine-tuned LLM, telephony, basic analytics; monthly minimum (amount not stated); advanced analytics INR 2/call",
+     "payg_inr": 6.0,
+     "all_in": true,
+     "confidence": "high"
+    }
+   ],
+   "note": "PAYG fell 50% (Sep 2025 -> Mar 2026), then re-denominated in INR at INR 6 (= $0.068 at 88)."
+  },
+  "Bolna": {
+   "url": "https://www.bolna.ai/pricing",
+   "obs": [
+    {
+     "date": "2025-12-08",
+     "src": "cc",
+     "plans": "Bundles: Starter $100/1,000 min ($0.10); Growth $250/4,000 ($0.063); Pilot $500 (Diwali offer, list $1,000)/10,000 ($0.05); 'as low as 5c (INR 4)'",
+     "payg_usd": 0.1,
+     "best_usd": 0.05,
+     "all_in": false,
+     "payg_inr_at88": 8.8,
+     "best_inr_at88": 4.4,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-03-13",
+     "src": "cc",
+     "plans": "Monthly: Explore $350/mo 5,000 min (7c); Growth $1,200/mo 20,000 min (6c, 50 conc); Scale $2,500/mo 50,000 min (5c, 75 conc); Pilot $500/10,000 (5c)",
+     "payg_usd": 0.07,
+     "best_usd": 0.05,
+     "all_in": false,
+     "payg_inr_at88": 6.16,
+     "best_inr_at88": 4.4,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-06-10",
+     "src": "cc",
+     "plans": "PAYG 6.00c (INR 5.52) standard; tiers $15..$3K down to 4.51c; 30-s pulse; pilot 10,000 min at 6c + 20% bonus = 5c effective",
+     "payg_usd": 0.06,
+     "best_usd": 0.0451,
+     "all_in": false,
+     "payg_inr_at88": 5.28,
+     "best_inr_at88": 3.97,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-09-07",
+     "src": "cc",
+     "plans": "same as 2026-06",
+     "payg_usd": 0.06,
+     "best_usd": 0.0451,
+     "all_in": false,
+     "payg_inr_at88": 5.28,
+     "best_inr_at88": 3.97,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "PAYG 6.00c (INR 5.52); top-ups ~4.5c (INR 4.15); pilot $300/6,500 (4.6c), $500/12,000 (4.2c), 25 conc; telephony + platform fee added on top (amounts not stated); docs: platform fee $0.02/min under BYOK",
+     "payg_usd": 0.06,
+     "best_usd": 0.042,
+     "all_in": false,
+     "payg_inr_at88": 5.28,
+     "best_inr_at88": 3.7,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-01",
+     "src": "secondary",
+     "plans": "Enterprise committed volume INR 1.75-2/min (indiafintech.substack citing TechCrunch; not found in TechCrunch text)",
+     "ent_inr": 1.875,
+     "all_in": null,
+     "confidence": "low"
+    }
+   ],
+   "note": "Headline moved $0.10 -> $0.05-0.07 -> $0.06 in 10 months; bundled models included but telephony/platform fee extra."
+  },
+  "Sarvam Samvaad": {
+   "url": "https://www.sarvam.ai/products/voice-agents/pricing",
+   "obs": [
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "PAYG INR 3.50 (<1,000 min, 4 conc); Pro 3.25 (1,000+); Growth 3.15 (4,000+, 30 conc); Business 3.00 (16k-2 lakh, INR 50,000 fee as credits, coming soon); Enterprise custom (2 lakh+ min/mo, postpaid); 60-s pulse; telephony (Vobiz) INR 0.20/30 s; numbers INR 59/30 days; unconnected calls free, voicemail billed",
+     "payg_inr": 3.5,
+     "best_inr": 3.0,
+     "telephony_inr_per_min": 0.4,
+     "all_in": false,
+     "confidence": "high"
+    }
+   ],
+   "cc_note": "Common Crawl has /api-pricing captures 2026-03-06 and 2026-06-11 (model APIs) but no capture of the voice-agents pricing page; Inc42 (2026) reported self-serve opening.",
+   "note": "Lowest posted Indian per-minute price: INR 3.40-3.90 all-in with Sarvam telephony."
+  },
+  "Smallest Atoms": {
+   "url": "https://smallest.ai/pricing",
+   "obs": [
+    {
+     "date": "2025-03-27",
+     "src": "cc",
+     "plans": "Atoms phone calls $0.08/min (Basic $5/mo, 100 calls/day; Premium $29/mo; Pro $49/mo $0.07/min)",
+     "payg_usd": 0.08,
+     "all_in": null,
+     "payg_inr_at88": 7.04,
+     "confidence": "high"
+    },
+    {
+     "date": "2025-06-23",
+     "src": "cc",
+     "plans": "Free / Personal $49/mo / Business $1,999/mo / Enterprise; cost/min India ~$0.20 / ~$0.09 / ~$0.07; US ~$0.20 / ~$0.15 / ~$0.12; extra custom agent setup $2,000/agent",
+     "payg_usd": 0.2,
+     "best_usd": 0.07,
+     "all_in": true,
+     "payg_inr_at88": 17.6,
+     "best_inr_at88": 6.16,
+     "confidence": "high"
+    },
+    {
+     "date": "2025-12-16",
+     "src": "cc",
+     "plans": "same as 2025-06",
+     "payg_usd": 0.2,
+     "best_usd": 0.07,
+     "all_in": true,
+     "payg_inr_at88": 17.6,
+     "best_inr_at88": 6.16,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "PAYG cascading $0.09-0.21/min all-in (hosting $0.01 + STT ~0.009 + LLM at cost + TTS ~0.09 + telephony); Enterprise 'as low as $0.05/min'; S2S at cost; 20 conc; HIPAA ZDR $1,000/mo",
+     "payg_usd": 0.09,
+     "payg_usd_high": 0.21,
+     "ent_usd": 0.05,
+     "all_in": true,
+     "payg_inr_at88": 7.92,
+     "ent_inr_at88": 4.4,
+     "confidence": "high"
+    }
+   ]
+  },
+  "Ravan.ai (Agni)": {
+   "url": "https://www.ravan.ai/pricing",
+   "obs": [
+    {
+     "date": "2025-12-16",
+     "src": "cc",
+     "plans": "capture contains no prices (cart page)",
+     "all_in": null,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Lite $29/mo $0.10 (100 min); Starter $97 $0.08 (400); Growth $297 $0.06 (1,600); Scale $497 $0.04 (3,500, agent memory); Enterprise $0.02-0.04 (on-prem); 'all plans include voice, LLM and emotion'",
+     "payg_usd": 0.1,
+     "best_usd": 0.04,
+     "ent_usd": 0.03,
+     "all_in": null,
+     "payg_inr_at88": 8.8,
+     "best_inr_at88": 3.52,
+     "ent_inr_at88": 2.64,
+     "confidence": "high"
+    }
+   ]
+  },
+  "VoiceGenie (Oriserve)": {
+   "url": "https://voicegenie.ai/pricing",
+   "obs": [
+    {
+     "date": "2024-06-25",
+     "src": "cc",
+     "plans": "12,000 min/yr $2,400 ($2,000 annual), 30,000 $6,000 ($5,000), 60,000 $12,000 ($10,000) => $0.17-0.20/min",
+     "payg_usd": 0.2,
+     "best_usd": 0.167,
+     "all_in": null,
+     "payg_inr_at88": 17.6,
+     "best_inr_at88": 14.7,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Trial $50/250 min; Starter $200/1,000; Growth $500/2,500; Elite $1,000/5,000 => $0.20/min; telephony not stated",
+     "payg_usd": 0.2,
+     "all_in": null,
+     "payg_inr_at88": 17.6,
+     "confidence": "high"
+    }
+   ],
+   "note": "Flat for 28 months while peers fell."
+  },
+  "Subverse AI": {
+   "url": "https://subverseai.com/pricing",
+   "obs": [
+    {
+     "date": "2025-09-06",
+     "src": "cc",
+     "plans": "Free 100 min; Growth $49/mo ($499/yr); $0.08/min voice",
+     "payg_usd": 0.08,
+     "all_in": null,
+     "payg_inr_at88": 7.04,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-03-16",
+     "src": "cc",
+     "plans": "no prices in capture",
+     "all_in": null,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "/pricing returns 404",
+     "all_in": null,
+     "confidence": "high"
+    }
+   ]
+  },
+  "SquadStack": {
+   "url": "https://www.squadstack.ai/pricing",
+   "obs": [
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Per minute of live conversation, typically INR 2-5/min (FAQ) incl dialer+telephony; one-time setup per use case; pilot 3-8 weeks (FAQ) vs '90-day commitment' (engagement section)",
+     "payg_inr": 5.0,
+     "best_inr": 2.0,
+     "all_in": true,
+     "confidence": "high"
+    }
+   ]
+  },
+  "MyOperator": {
+   "url": "https://www.myoperator.com/pricing",
+   "obs": [
+    {
+     "date": "2026-06-17",
+     "src": "cc",
+     "plans": "AI Agent - Voice INR 10,000/mo incl 2,000 min (INR 5/min), extra INR 8 per conversation; Hybrid INR 20,000; Enterprise AI INR 2,00,000/mo up to 10 agents; billed annually + GST",
+     "payg_inr": 5.0,
+     "all_in": true,
+     "confidence": "high"
+    }
+   ]
+  },
+  "Exotel": {
+   "url": "https://exotel.com/pricing/",
+   "obs": [
+    {
+     "date": "2024-03-03",
+     "src": "cc",
+     "plans": "Telephony plans: Dabbler INR 9,999 (5 months), Believer 19,999, Influencer 49,499 (11 months); 1 credit = INR 1; extra agent INR 199/mo; WhatsApp from INR 0.80 marketing",
+     "all_in": null,
+     "confidence": "high"
+    },
+    {
+     "date": "2025-06-21..2026-06-18",
+     "src": "cc",
+     "plans": "pricing page captures contain no prices (quote-based)",
+     "all_in": null,
+     "confidence": "high"
+    }
+   ]
+  },
+  "Vapi": {
+   "url": "https://vapi.ai/pricing",
+   "obs": [
+    {
+     "date": "2024-06-23",
+     "src": "cc (docs.vapi.ai/pricing)",
+     "plans": "flat 5c/min platform, prorated per second; numbers $2/mo; $10 free credits",
+     "platform_usd": 0.05,
+     "all_in": false,
+     "platform_inr_at88": 4.4,
+     "confidence": "medium"
+    },
+    {
+     "date": "2024-09-15",
+     "src": "cc (docs.vapi.ai/pricing)",
+     "plans": "same",
+     "platform_usd": 0.05,
+     "all_in": false,
+     "platform_inr_at88": 4.4,
+     "confidence": "medium"
+    },
+    {
+     "date": "2026-06-06",
+     "src": "cc",
+     "plans": "$0.05/min hosting; 10 conc incl +$10/line; HIPAA $2K/mo; ZDR $1K/mo; calculator 1,000 min $82-129",
+     "platform_usd": 0.05,
+     "typical_usd": [
+      0.082,
+      0.129
+     ],
+     "all_in": false,
+     "platform_inr_at88": 4.4,
+     "typical_inr_at88": [
+      7.22,
+      11.35
+     ],
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "$0.05/min hosting PAYG (4 conc); Core $29/mo (10 conc); Pro 10% of hosting, $999/mo min (30 conc); Twilio in $0.008 / out $0.014, Telnyx $0.0055",
+     "platform_usd": 0.05,
+     "typical_usd": [
+      0.082,
+      0.129
+     ],
+     "all_in": false,
+     "platform_inr_at88": 4.4,
+     "typical_inr_at88": [
+      7.22,
+      11.35
+     ],
+     "confidence": "high"
+    }
+   ],
+   "note": "Platform fee unchanged at $0.05 for 28 months; HN user: platform fee was 60-70% of their spend."
+  },
+  "Retell": {
+   "url": "https://www.retellai.com/pricing",
+   "obs": [
+    {
+     "date": "2024-12-06",
+     "src": "cc",
+     "plans": "voice engine $0.07 (ElevenLabs voices) / $0.08 (OpenAI/Deepgram); LLM GPT-4o mini $0.006 .. Claude 3.5 Sonnet $0.06; Twilio $0.01; headline $0.07-0.31; enterprise as low as $0.05",
+     "headline_usd": [
+      0.07,
+      0.31
+     ],
+     "all_in": false,
+     "headline_inr_at88": [
+      6.16,
+      27.28
+     ],
+     "confidence": "high"
+    },
+    {
+     "date": "2025-06-18",
+     "src": "cc",
+     "plans": "telephony $0.015; GPT-4o realtime $0.50/min; enterprise for >$3k/month",
+     "headline_usd": [
+      0.07,
+      0.31
+     ],
+     "all_in": false,
+     "headline_inr_at88": [
+      6.16,
+      27.28
+     ],
+     "confidence": "high"
+    },
+    {
+     "date": "2026-06-12",
+     "src": "cc",
+     "plans": "infra $0.055 + TTS $0.015 (ElevenLabs $0.04); calculator example $0.11/min",
+     "headline_usd": [
+      0.07,
+      0.31
+     ],
+     "typical_usd": [
+      0.11,
+      0.11
+     ],
+     "all_in": false,
+     "headline_inr_at88": [
+      6.16,
+      27.28
+     ],
+     "typical_inr_at88": [
+      9.68,
+      9.68
+     ],
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "infra $0.055 + TTS $0.015-0.10 + LLM ($0.0016-0.32) + telephony $0.015; add-ons KB/denoise/guardrails +$0.005, PII +$0.01, AI QA $0.10/min, branded call $0.10; 20 conc free then $8",
+     "headline_usd": [
+      0.07,
+      0.31
+     ],
+     "all_in": false,
+     "headline_inr_at88": [
+      6.16,
+      27.28
+     ],
+     "confidence": "high"
+    }
+   ],
+   "note": "Headline band unchanged Dec 2024 -> Oct 2026; unbundling moved premium voices to surcharge."
+  },
+  "Bland": {
+   "url": "https://www.bland.ai/pricing",
+   "obs": [
+    {
+     "date": "2026-06-09",
+     "src": "cc",
+     "plans": "Start $0.14/min; Build $0.12 + $299/mo; Scale $0.11 + $499/mo; transfer $0.05/0.04/0.03; daily caps 100/2,000/5,000",
+     "payg_usd": 0.14,
+     "best_usd": 0.11,
+     "all_in": false,
+     "payg_inr_at88": 12.32,
+     "best_inr_at88": 9.68,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Start $0.14; Build $0.12 + $299/mo; Enterprise custom; telephony pass-through extra",
+     "payg_usd": 0.14,
+     "best_usd": 0.12,
+     "all_in": false,
+     "payg_inr_at88": 12.32,
+     "best_inr_at88": 10.56,
+     "confidence": "high"
+    }
+   ],
+   "cc_note": "No earlier capture of /pricing in the 12 sampled crawls; secondary sources cite a 2024-25 flat $0.09/min (not verified)."
+  },
+  "Synthflow": {
+   "url": "https://synthflow.ai/pricing",
+   "obs": [
+    {
+     "date": "2024-12-11",
+     "src": "cc",
+     "plans": "Starter $29 (50 min); Pro $450 (2,000); Growth $900 (4,000); Agency $1,400 (6,000); overage $0.13 ($0.08-0.13 agency)",
+     "overage_usd": 0.13,
+     "all_in": null,
+     "overage_inr_at88": 11.44,
+     "confidence": "high"
+    },
+    {
+     "date": "2025-03-26",
+     "src": "cc",
+     "plans": "same plans; overage $0.13/$0.12/$0.12; +$7/conc; enterprise as low as $0.08",
+     "overage_usd": 0.12,
+     "all_in": null,
+     "overage_inr_at88": 10.56,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-03-14",
+     "src": "cc",
+     "plans": "PAYG voice engine $0.09/min + LLM (GPT-4.1 mini $0.02 .. GPT-4.1 $0.05) + managed Twilio $0.02; 5 conc then $20; white-label $2,000/mo; 'PAYG typically $0.15-0.24/min'",
+     "typical_usd": [
+      0.15,
+      0.24
+     ],
+     "all_in": false,
+     "typical_inr_at88": [
+      13.2,
+      21.12
+     ],
+     "confidence": "high"
+    },
+    {
+     "date": "2026-06-16",
+     "src": "cc",
+     "plans": "same as 2026-03",
+     "typical_usd": [
+      0.15,
+      0.24
+     ],
+     "all_in": false,
+     "typical_inr_at88": [
+      13.2,
+      21.12
+     ],
+     "confidence": "high"
+    },
+    {
+     "date": "2026-09-10",
+     "src": "cc",
+     "plans": "'Enterprise contracts start at $30,000 annually' (self-serve removed)",
+     "min_annual_usd": 30000,
+     "all_in": null,
+     "min_annual_inr_at88": 2640000.0,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Enterprise only, from $30,000/yr",
+     "min_annual_usd": 30000,
+     "all_in": null,
+     "min_annual_inr_at88": 2640000.0,
+     "confidence": "high"
+    }
+   ],
+   "note": "Moved up-market: subscription (2024-25) -> PAYG (H1 2026) -> enterprise-only $30k/yr (Sep 2026)."
+  },
+  "ElevenLabs Agents": {
+   "url": "https://elevenlabs.io/pricing/api",
+   "obs": [
+    {
+     "date": "2026-06-06",
+     "src": "cc",
+     "plans": "Speech Engine / Agents $0.08 per minute",
+     "payg_usd": 0.08,
+     "all_in": false,
+     "payg_inr_at88": 7.04,
+     "confidence": "high"
+    },
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Agents $0.08/min additional; burst $0.16; plan-included 15..12,375 min; conc 4..40",
+     "payg_usd": 0.08,
+     "burst_usd": 0.16,
+     "all_in": false,
+     "payg_inr_at88": 7.04,
+     "burst_inr_at88": 14.08,
+     "confidence": "high"
+    }
+   ],
+   "cc_note": "2024-2025 captures of /pricing carry TTS-minute prices (Creator ~$0.15 .. Business ~$0.06 per TTS minute), not agent prices."
+  },
+  "LiveKit (substrate)": {
+   "url": "https://livekit.com/pricing",
+   "obs": [
+    {
+     "date": "2026-10-17",
+     "src": "live",
+     "plans": "Ship from $50/mo (5,000 agent-session min, then $0.01); Scale from $500 (50,000); example phone call all-in $0.0479/min (session .01, telephony .01, LLM .0014, STT .0075, TTS .009, observability .01)",
+     "typical_usd": [
+      0.0479,
+      0.0479
+     ],
+     "all_in": true,
+     "typical_inr_at88": [
+      4.22,
+      4.22
+     ],
+     "confidence": "high"
+    }
+   ]
+  }
+ }
+}

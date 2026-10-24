@@ -1,0 +1,312 @@
+{
+  "module": "intake",
+  "tools": [
+    {
+      "id": "audience.create",
+      "risk": "draft"
+    },
+    {
+      "id": "audience.get",
+      "risk": "read"
+    },
+    {
+      "id": "audience.list",
+      "risk": "read"
+    },
+    {
+      "id": "audience.preview",
+      "risk": "read"
+    },
+    {
+      "id": "consent.record",
+      "risk": "policy"
+    },
+    {
+      "id": "contact.dial_facts",
+      "risk": "read"
+    },
+    {
+      "id": "contact.dnd_refresh",
+      "risk": "draft"
+    },
+    {
+      "id": "contact.export",
+      "risk": "policy"
+    },
+    {
+      "id": "contact.get",
+      "risk": "read"
+    },
+    {
+      "id": "contact.list",
+      "risk": "read"
+    },
+    {
+      "id": "contact.merge",
+      "risk": "external"
+    },
+    {
+      "id": "contact.search",
+      "risk": "read"
+    },
+    {
+      "id": "contact.suppress",
+      "risk": "external",
+      "note": "A3 verb: runs at once for VP and members (shared/approval.ts A3_VERBS)"
+    },
+    {
+      "id": "contact.suppress_after_opt_out",
+      "risk": "policy",
+      "autonomy": "A3: runs at once for system, agents and members whose role may call it"
+    },
+    {
+      "id": "contact.unsuppress",
+      "risk": "policy"
+    },
+    {
+      "id": "dpdp.request.execute",
+      "risk": "destructive"
+    },
+    {
+      "id": "policy.retention.get",
+      "risk": "read"
+    },
+    {
+      "id": "policy.retention.set",
+      "risk": "policy"
+    },
+    {
+      "id": "source.commit",
+      "risk": "draft"
+    },
+    {
+      "id": "source.crm.budget",
+      "risk": "read"
+    },
+    {
+      "id": "source.crm.budget.set",
+      "risk": "draft"
+    },
+    {
+      "id": "source.crm.lists",
+      "risk": "read"
+    },
+    {
+      "id": "source.crm.pull",
+      "risk": "draft"
+    },
+    {
+      "id": "source.crm.sources",
+      "risk": "read"
+    },
+    {
+      "id": "source.list",
+      "risk": "read"
+    },
+    {
+      "id": "source.map",
+      "risk": "draft"
+    },
+    {
+      "id": "source.payments.list",
+      "risk": "read"
+    },
+    {
+      "id": "source.payments.setup",
+      "risk": "draft"
+    },
+    {
+      "id": "source.receipt",
+      "risk": "read"
+    },
+    {
+      "id": "source.sample.list",
+      "risk": "read"
+    },
+    {
+      "id": "source.sample.load",
+      "risk": "draft"
+    },
+    {
+      "id": "source.sheet.pull",
+      "risk": "draft"
+    },
+    {
+      "id": "source.sheet.tabs",
+      "risk": "read"
+    },
+    {
+      "id": "source.sync",
+      "risk": "draft"
+    },
+    {
+      "id": "source.sync.schedule",
+      "risk": "draft"
+    },
+    {
+      "id": "source.upload",
+      "risk": "draft"
+    }
+  ],
+  "routes": [
+    "POST /v1/uploads/contacts (rawBody, 20 MB: one request or ordered parts; JSON over a cookie, text/csv for API keys)",
+    "POST /hooks/contacts/:sourceId (HMAC-SHA256 over timestamp + '.' + exact body bytes, 300 s skew, idempotent on eventId)",
+    "POST /hooks/payments/:integrationId (rawBody, 256 KB: Razorpay X-Razorpay-Signature hex HMAC-SHA256 of the body; Cashfree x-webhook-signature Base64 HMAC-SHA256 of timestamp+body, 5-minute window; PayU form POST with the reverse SHA-512 hash)"
+  ],
+  "migrations": [
+    "product/db/migrations/0101_intake.sql",
+    "product/db/migrations/0102_intake_attr_index.sql",
+    "product/db/migrations/0103_intake_retention.sql",
+    "product/db/migrations/0104_intake_suppression_evidence.sql",
+    "product/db/migrations/0105_intake_consent_effective.sql",
+    "product/db/migrations/0106_intake_xlsx.sql",
+    "product/db/migrations/0107_intake_crm.sql",
+    "product/db/migrations/0108_intake_crm_budget.sql",
+    "product/db/migrations/0109_intake_test_contact.sql",
+    "product/db/migrations/0110_intake_payments.sql"
+  ],
+  "tests": {
+    "passed": 52,
+    "total": 52,
+    "files": [
+      "product/tests/intake.test.ts (19)",
+      "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)",
+      "product/tests/intake-xlsx.test.ts (8)",
+      "product/tests/intake-crm.test.ts (5)",
+      "product/tests/intake-salesforce.test.ts (6)",
+      "product/tests/intake-samples.test.ts (3)",
+      "product/tests/intake-payments.test.ts (5)",
+      "product/tests/intake-sheets.test.ts (3)",
+      "product/tests/intake-dpdp-records.test.ts (2; one skips until contact.archive_batch_id exists)"
+    ],
+    "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
+  },
+  "works": [
+    "CSV/TSV/semicolon/pipe with RFC 4180 quoting, BOM, CRLF; delimiter detection",
+    "Column mapping by Hindi/English header synonyms, then value shapes; Aadhaar/PAN/bank/OTP columns ignored by design and never stored",
+    "Per-row preview with shared/phone.ts reason codes (SCI_NOTATION, NON_INDIAN, TOO_SHORT, LANDLINE_TRUNCATED, EMPTY, INVALID_PREFIX), Devanagari digits, duplicate-in-file, existing/suppressed/tombstoned flags, at most 3 questions",
+    "One write path for files and webhooks: exact E.164 dedupe (plus merged phone identifiers), attribute authority by subject (self vs record) with max_age; stale values lose authority; equal authority from different systems goes to an intake_attribute_conflict review row; a tenant's own uploads are one lineage",
+    "Consent appended with evidence and purpose; a DB trigger refuses UPDATE (except a merge re-pointing contact_id) and direct DELETE",
+    "Suppression never cleared by import; opt-out columns and webhook optOut add one; contact.suppress works for numbers not on file; contact.suppress_after_opt_out runs at once as A3 for system/agent and waits for approval for members",
+    "DPDP erase_me: tombstone (HMAC with a per-workspace salt), suppression kept and re-keyed to the hash, attributes/aliases/audiences removed, memory facts deleted through memory's forgetContactMemory, contact kept as a husk so consent history survives; re-import, webhook and dial_facts all refuse the person; forget_memory scope",
+    "contact.dial_facts for the dial gate: tombstone, suppressions, DND (unknown or older than 7 days fails closed for promotional), latest consent per purpose, service/promotional verdicts with reasons",
+    "DND provider seam: FakeDndProvider for tests, DisabledDndProvider (always unknown) as the production default",
+    "contact.merge (external, A2): attributes by authority, every FK to contact re-pointed (found from pg_constraint), merged number kept as an identifier, 30-day snapshot",
+    "contact.export (A2): formula-escaped CSV, suppressed and erased excluded by default, the file is redacted from action.result",
+    "Audiences: saved attribute filters compiled to parameterised SQL (all/any; eq, neq, in, gt/gte/lt/lte on numbers or ISO dates, exists, missing, contains), list audiences from an import, preview with matched/suppressed/callable/DND-unknown",
+    "Viewers get PII scrubbed in reads",
+    "Tenancy: every query filters by workspace; tested across 13 tools and the upload route",
+    "50,000-row import (2.94 MB, 7 columns) commits in one transaction in 18.9-21.7 s alone, re-import 7.7-13.0 s (n=9); 16-81 s inside the full suite (n=8). CI runs the same checks on 5,000 rows; VP_PERF=1 runs 50,000 and asserts 60 s",
+    "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept",
+    "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)",
+    "Consent ordered by effective_at (stated time, else insert; clamped to insert); an older or undated imported grant after a withdrawal is history only and reported as consent_older_than_latest (review WGC-06)",
+    "DPDP erase_me cancels the person's created/queued attempts through campaigns' cancelContactAttempts in the same transaction (review WGC-07); the receipt counts them",
+    "Excel (.xlsx) import, server-side and dependency-free (xlsx.ts: zip reader on node:zlib + OOXML first sheet). Formulas are never evaluated: cached values only; uncomputed formulas read as empty and are counted. Old .xls, Word files and damaged zips get a plain refusal. Up to 20 MB via POST /v1/uploads/contacts (raw bytes, or JSON base64 from the web).",
+    "Per-row voice and first_message: checked at import (a Vyakti voice; an opening note passing the agent's own lints: recitable-line, T-L1, T-L6, T-L7), refused cells counted on the receipt and not stored. rowOverrides(agent, attrs) exported for the ticket builder; never changes the disclosure clause.",
+    "source.map returns up to 3 sample values per column (none for viewers) and, with agentId, the agent's per-contact fact contract (agents/columns.ts).",
+    "Web import screen: Excel/CSV/TSV up to 20 MB, \"Which agent will call them?\", the fact-contract card with one-tap \"Use <column>\", per-person voice and opening as column choices. Browser flow and screenshots contacts-import-excel-d/m.",
+    "campaigns buildTicket applies rowOverrides (sanctioned edit); CallTicket.contact.rowOverrides says what was applied or refused (campaigns.test.ts F3b)",
+    "CRM contact import, read only: HubSpot lists (lists/search, memberships/join-order, contacts/batch/read at 100) and Zoho CRM views (token refresh, settings/custom_views, Contacts by cvid with page_token). A pull is an upload on a crm source, mapped by source.map (agent contract included) and saved by source.commit; source.sync re-imports with the last mapping; idempotent on the CRM id (intake_crm_record keeps a hash of the number): unchanged records skipped, a changed number flagged and left out. Consent and DND only from CRM fields that say so; otherwise unknown. Docs used: research/2026-10-24/crm-import/README.md.",
+    "Web: Contacts > Import > From HubSpot / From Zoho CRM (lazy chunk import-crm, 2.4 KB gzip): pick a list or view, the same column matching and verdicts as a file (shared import-review.tsx), save, then a timer (off, 1, 6, 24 h) and Sync now; a failed sync shows in plain words; an empty state links to Settings > Integrations. Browser flow against a local fake CRM; screenshots contacts-import-hubspot*, contacts-import-crm-empty at 1440 and 390; axe screens added.",
+    "Salesforce contact import, read only: Contact and Lead list views (listviews, list view describe for the view's own SOQL, object describe for field-level security, COUNT() then query with nextRecordsUrl). Per-org API budget (1,000 calls per rolling 24 h unless set with source.crm.budget.set; never past 90% of the org's limit per Sforce-Limit-Info): a pull counts first, re-checks before every page and stops with nothing imported; the calls used are on the receipt (converted.apiCalls). Fields the user may not read get no column and are named (converted.unreadable). DoNotCall is an opt-out. CRM reads run in prepare, outside the transaction. Web: From Salesforce tab and API budget card; the preview counts valid numbers that will not be called. Tests intake-salesforce 6/6; e2e flow and axe; screenshots contacts-import-salesforce at 1440 and 390.",
+    "Sample packs (samples.ts, sample-tools.ts): seven synthetic lists, one per starter agent (insurance renewal, EMI reminder, COD confirmation, admissions follow-up, appointment reminder, solar lead qualification, AC service feedback). Numbers 9000000000-9000000099 only, disjoint per pack; names across regions; mixed languages; the per-contact facts each agent says (dates relative to the load day); a duplicate, opt-outs and a missing consent. source.sample.load makes an ordinary CSV upload, so the preview, verdicts and receipt are the real ones. includeMe adds the member's own verified phone; saving marks it contact.test_member_id (re-checked against verified_test_phone at commit; no file or CRM column can set it). Web: From a sample tab (lazy chunk import-sample), e2e flow, axe screen, screenshots contacts-import-sample at 1440 and 390.",
+    "Payment status (payments.ts): Razorpay (payment.captured, order.paid, payment_link.paid), Cashfree (PAYMENT_SUCCESS) and PayU (status=success) webhooks, each verified with the gateway's own scheme before anything is read; kept once per gateway payment id; matched to exactly one live contact by the record key the workspace names (reference_id, receipt, notes, order_id, order_tags, customer_id, txnid, udf1-5), never by the payer's phone; ambiguous and unmatched are kept 30 days. paidSinceImport() for campaigns' G4 ('already_paid'): a payment counts unless the record was observed more than a day after it. Optional verified outcome on the person's latest call in the 14 days before paying (calls' recordVerified). Tools source.payments.setup / source.payments.list; web Contacts > Import > Payments (lazy chunk). Docs: research/2026-10-24/payment-webhooks/README.md.",
+    "Google Sheets as a live source (sheets.ts, sheet-tools.ts): a tab of a sheet shared with the workspace's service account (google_workspace integration; RS256 JWT for spreadsheets.readonly; Sheets v4 tabs and values, formatted), or a published CSV link (docs.google.com only, redirects only within Google). A 'sheet' source through the ordinary upload, preview, receipt and write path; source.sync and source.sync.schedule re-read it with the last mapping (the intake.crm_sync job covers sheet sources). Reads run in prepare. Web: From Google Sheets tab (lazy chunk). Docs: research/2026-10-24/google-sheets/README.md.",
+    "DPDP erase_me reaches every record carrying the person's numbers (e164 or alias, live or archived) and erases each in place; payments go with it."
+  ],
+  "untested": [
+    "XLSX and Google Sheets (no parser: the build adds no new packages)",
+    "Unmerge (the 30-day snapshot is stored; there is no tool yet)",
+    "Resolving an attribute conflict (rows are written; no resolve tool yet)",
+    "A real NCPR/DND lookup (adapter disabled by design)",
+    "Two concurrent commits with overlapping numbers (the ON CONFLICT path is written, not exercised)",
+    "Commit time for a full 20 MB file (only the 2.9 MB / 50k-row file was timed)",
+    "API-key scopes on the upload route; webhook rate limiting",
+    "Erasure of transcripts and recordings (calls module), CRM delete via an outbox",
+    "Calls and memory honouring recordings_days / transcripts_days from policy.retention.get",
+    "A zip-bomb .xlsx (the inflate limits are in code, not exercised by a test)",
+    ".xlsx with zip64, encrypted workbooks, or the first sheet being a chart sheet",
+    "The runtime leading with ticket.contact.rowOverrides.usefulFirst (voice module)",
+    "Real HubSpot or Zoho accounts (fakes only, shaped from the docs; two shapes were inferred where the official page did not show them: HubSpot lists/search response, Zoho v8 custom_views)",
+    "Zoho datacenters other than the fake; HubSpot lists over 100 (paging of lists/search)",
+    "A real Salesforce org (fakes only). The shapes are from search-quoted official text and the jsforce source; developer.salesforce.com refuses automated access (open.2026-10-24.salesforce-shapes-secondary)."
+  ],
+  "needs_from_others": [
+    {
+      "from": "safety (dial gate)",
+      "what": "Done by the main loop in a078004 (campaigns gate G3/G4 use server/identity.ts and hash-only suppressions). contact.dial_facts remains available for previews and other paths."
+    },
+    {
+      "from": "calls",
+      "what": "On forget_request rows (status done, receipt.surfaces.pending) erase transcripts and recordings for contact_id, or expose a tool intake can call."
+    },
+    {
+      "from": "workspace",
+      "what": "A vault for intake_source.hook_secret (plaintext column today) and a rotate-secret tool."
+    },
+    {
+      "from": "campaigns",
+      "what": "Audience membership via audience.preview / contact.list {audienceId}; contact.get returns stale per attribute for ATTRIBUTE_STALE."
+    },
+    {
+      "from": "shared/phone.ts owner",
+      "what": "A truncated landline written with its leading 0 (e.g. 022 2345 67) reports TOO_SHORT, not LANDLINE_TRUNCATED. Fine for the gate; the receipt reason is less precise."
+    },
+    {
+      "from": "calls",
+      "what": "Read policy.retention.get (recordings_days, transcripts_days) when purging."
+    },
+    {
+      "from": "memory",
+      "what": "Read policy.retention.get for memory retention (forgetContactMemory is now used by dpdp.request.execute)."
+    },
+    {
+      "from": "memory",
+      "what": "minor.ts: read birth_year (younger possible age) and age_group (fail closed if any bound < 18 or unreadable), ideally via AGE_KEY_SYNONYMS / canonicalAgeKey from ../intake/index.ts."
+    },
+    {
+      "from": "voice",
+      "what": "Read ticket.contact.rowOverrides.usefulFirst (shared/runtime-protocol.ts): when set it supersedes the compiled brief's opening shape; same rules, RD1 unchanged."
+    },
+    {
+      "from": "safety",
+      "what": "T-L7 misses 'the offer ends tonight so they must decide now or lose it forever' (false urgency); found while testing first_message."
+    },
+    {
+      "from": "workspace",
+      "what": "INTEGRATION_KINDS: set usedBy for hubspot and zoho_crm to 'Imports contacts' (the label now reads 'Stored, not used yet')."
+    },
+    "workspace: salesforce usedBy 'Imports contacts' in integrations.ts and SET_UP link /contacts/import?from=salesforce (requested 2026-10-24)",
+    "telephony: agree the staging allowlist on contact.test_member_id plus verified_test_phone at dial time (proposed 2026-10-24)",
+    "workspace: razorpay / cashfree / payu integration kinds (agreed; the payment e2e flow skips until they land). campaigns: wire paidSinceImport into G4 as 'already_paid' for campaign, api and retry attempts (agreed)"
+  ],
+  "jobs": [
+    "intake.retention (daily 03:10 IST)",
+    "intake.crm_sync (every 15 min; runs timed CRM syncs that are due; off unless a source sets 1, 6 or 24 h)"
+  ],
+  "cross_module_imports": [
+    "forgetContactMemory from ../memory/index.ts and cancelContactAttempts from ../campaigns/index.ts: the sanctioned data functions (integrator, 2026-10-21), so DPDP erasure forgets memory and cancels queued attempts inside its own transaction. Everything else goes through the registry.",
+    "shapeLint from ../agents/lint.ts (pure): a row's first_message passes the same recitable-line lint as the agent's opening.usefulFirst.",
+    "integrationSecretsById from ../workspace/integrations.ts (a data function on the caller's Queryable): the stored CRM credentials, decrypted only for the pull.",
+    "intake/payments.ts imports recordVerified from calls/verified.ts (its documented door for integrations) and integrationSecretsById from workspace/integrations.ts"
+  ],
+  "suppression_sources": {
+    "in_call": "contact.suppress_after_opt_out (evidence: conversationId, campaignId, quote)",
+    "manual": "contact.suppress (evidence: by)",
+    "upload": "an opt-out column in a file (evidence: source, receiptId)",
+    "crm|api_push|form|whatsapp": "optOut in a webhook event (evidence: source)",
+    "dpdp": "added by erasure when none existed (evidence: requestedBy)"
+  },
+  "dial_time_attributes": {
+    "rule": "Every attribute row has one current value per (contact_id, key) with authority, observed_at, max_age_s and source_id. A value is usable for dial-time facts only while observed_at + max_age_s > now (max_age_s null = no expiry). Stale values must not be spoken (campaigns reason ATTRIBUTE_STALE); contact.get returns stale per key.",
+    "self_subjects": "name, first_name, last_name, language, timezone, preferred_time, preferred_channel, address_as, pace: person 100 > agent 60 > crm 50 = upload 50 > system 30. name, language and timezone are mirrored onto contact columns; read those.",
+    "record_subjects": "every other key (amount_due, due_date, plan, status, record keys, external_id ...): system 100 > crm 80 > agent 75 > upload 70 > person 40. Amounts and dates may be spoken only from these rows, never from speech.",
+    "never_attributes": "Aadhaar, PAN, bank, card, OTP and password columns are dropped at mapping and never stored. Consent, opt-out and DND are ledgers (consent_record, suppression, dnd_status), not attributes; use contact.dial_facts.",
+    "freshness_defaults": "upload 30 days, crm and system 24 h, agent and person no expiry; a source can set its own max age.",
+    "age_keys": "date_of_birth (ISO date), birth_year (number), age, age_group (text such as 13-17), is_minor are canonical; see AGE_KEY_SYNONYMS / canonicalAgeKey exported from intake/index.ts",
+    "consent_order": "latest consent per purpose (or all) = ORDER BY effective_at DESC, created_at DESC, id DESC"
+  },
+  "notes": [
+    "Display ORDER BYs use the database collation on purpose (names read in the locale); the one comparison that decides membership (audience filter gt/lt on text) uses COLLATE \"C\"."
+  ]
+}

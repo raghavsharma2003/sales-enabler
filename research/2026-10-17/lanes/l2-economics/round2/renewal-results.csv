@@ -1,0 +1,153 @@
+line,metric,p10,p50,p90,mean
+2W_motor,value_per_save_inr,161.8302,265.1795,413.2644,278.2573
+2W_motor,value_per_save_3yr_ltv_inr,278.2315,457.9616,721.1534,482.8793
+2W_motor,baseline_renewal_rate,0.3668,0.4494,0.5334,0.4499
+2W_motor,incremental_renewals_ai_per_1000_due,43.8789,71.0018,106.7536,73.6386
+2W_motor,incremental_renewals_human_per_1000_due,9.5092,19.7603,37.2388,21.813
+2W_motor,ai_reach_rpc,0.5681,0.6892,0.7912,0.6839
+2W_motor,ai_attempts_per_1000_due,1999.9369,2439.3066,2930.5164,2454.2732
+2W_motor,ai_connected_minutes_per_1000_due,802.7539,1077.2105,1402.9298,1092.6709
+2W_motor,human_minutes_per_1000_due,125.6644,244.7563,432.2795,264.8845
+2W_motor,human_cost_inr_per_1000_due,996.1019,1986.5315,3588.4419,2166.4424
+2W_motor,human_cost_inr_per_renewal_collected,2.1057,4.2365,7.7782,4.6591
+2W_motor,human_cost_inr_per_1000_due_seat_method,2992.1386,5432.1349,9485.876,5917.7966
+2W_motor,human_cost_inr_per_renewal_collected_seat_method,6.3748,11.6015,20.4706,12.6929
+2W_motor,ai_minutes_per_renewal_collected,1.4807,2.0659,2.8196,2.1165
+2W_motor,vp_cost_inr_per_1000_worked_due_launch,6764.9031,9091.8477,12011.8464,9278.8851
+2W_motor,vp_cost_inr_per_1000_worked_due_scale,4479.9188,6011.9551,7966.4088,6139.7369
+2W_motor,vp_cost_inr_per_renewal_collected_launch,12.5332,17.4613,24.0728,17.9662
+2W_motor,vp_cost_inr_per_renewal_collected_scale,8.314,11.5219,16.0023,11.8859
+2W_motor,vp_cost_inr_per_incremental_save_launch,86.9173,127.4544,202.0987,137.6569
+2W_motor,vp_cost_inr_per_incremental_save_scale,56.792,84.0735,135.0408,91.3561
+2W_motor,buyer_max_fee_per_renewal_vs_nocall,18.0274,35.5162,66.4254,39.5417
+2W_motor,buyer_max_fee_per_renewal_vs_nocall_3yr_ltv,30.983,61.621,116.0958,68.6085
+2W_motor,buyer_max_fee_per_renewal_vs_human_desk,15.5036,28.6358,52.9371,31.9837
+2W_motor,buyer_max_fee_per_renewal_vs_human_desk_seat_method,21.9956,36.1826,60.7452,39.2276
+2W_motor,vp_min_fee_per_renewal_gm40_launch,20.8887,29.1021,40.1214,29.9437
+2W_motor,vp_min_fee_per_renewal_gm50_scale,16.628,23.0438,32.0047,23.7718
+2W_motor,vp_min_fee_per_save_gm40_launch,144.8621,212.4239,336.8311,229.4282
+2W_motor,vp_min_fee_per_save_gm50_scale,113.5841,168.147,270.0817,182.7122
+2W_motor,holdout_cost_inr_per_1000_due,952.6882,1842.7228,3420.3176,2049.469
+2W_motor,P(value_per_save >= 150),,,,0.9302
+2W_motor,"P(window per-renewal fee exists vs no-call, launch GM40)",,,,0.6557
+2W_motor,"P(window per-renewal fee exists vs no-call, scale GM50)",,,,0.8014
+2W_motor,"P(window per-renewal fee exists vs human desk, launch GM40)",,,,0.4846
+2W_motor,"P(window per-renewal fee exists vs human desk, scale GM50)",,,,0.6771
+2W_motor,P(AI incremental > human incremental),,,,0.9999
+2W_motor,P(VP cost per worked due < human cost per due),,,,0.0
+2W_motor,"P(VP cost per worked due < human cost per due), scale",,,,0.0032
+2W_motor,"P(VP cost per worked due < human cost per due, seat method), launch",,,,0.1495
+4W_motor,value_per_save_inr,1439.907,2414.5269,3880.9465,2552.5168
+4W_motor,value_per_save_3yr_ltv_inr,2746.5003,4623.3073,7461.0776,4900.3818
+4W_motor,baseline_renewal_rate,0.5179,0.6011,0.6843,0.6009
+4W_motor,incremental_renewals_ai_per_1000_due,31.2484,51.0497,78.7743,53.4096
+4W_motor,incremental_renewals_human_per_1000_due,18.2495,34.1269,57.8551,36.4607
+4W_motor,ai_reach_rpc,0.5681,0.6892,0.7912,0.6839
+4W_motor,ai_attempts_per_1000_due,1959.6495,2387.3938,2879.8719,2405.459
+4W_motor,ai_connected_minutes_per_1000_due,1009.3955,1391.1532,1852.6857,1414.2178
+4W_motor,human_minutes_per_1000_due,433.0572,742.3214,1157.9245,774.5436
+4W_motor,human_cost_inr_per_1000_due,3407.6766,6017.2791,9675.5483,6336.0516
+4W_motor,human_cost_inr_per_renewal_collected,5.3454,9.4548,15.4855,10.0222
+4W_motor,human_cost_inr_per_1000_due_seat_method,8409.9122,12812.6494,19941.9496,13617.9593
+4W_motor,human_cost_inr_per_renewal_collected_seat_method,13.1232,20.1582,31.7244,21.5246
+4W_motor,ai_minutes_per_renewal_collected,1.4986,2.1291,2.9465,2.184
+4W_motor,vp_cost_inr_per_1000_worked_due_launch,8046.2793,10966.9396,14676.9395,11201.943
+4W_motor,vp_cost_inr_per_1000_worked_due_scale,5194.2907,6987.0912,9284.6975,7135.4024
+4W_motor,vp_cost_inr_per_renewal_collected_launch,11.9596,16.7673,23.3099,17.2904
+4W_motor,vp_cost_inr_per_renewal_collected_scale,7.7523,10.7308,14.7085,11.0086
+4W_motor,vp_cost_inr_per_incremental_save_launch,139.4404,213.3781,346.7419,231.9177
+4W_motor,vp_cost_inr_per_incremental_save_scale,88.6676,136.468,221.5,148.1944
+4W_motor,buyer_max_fee_per_renewal_vs_nocall,90.2135,185.9929,363.7337,210.8809
+4W_motor,buyer_max_fee_per_renewal_vs_nocall_3yr_ltv,171.6796,356.8366,698.6383,404.9599
+4W_motor,buyer_max_fee_per_renewal_vs_human_desk,9.0991,63.4073,160.8588,76.1858
+4W_motor,buyer_max_fee_per_renewal_vs_human_desk_seat_method,18.5531,74.7869,173.3113,87.3625
+4W_motor,vp_min_fee_per_renewal_gm40_launch,19.9327,27.9455,38.8498,28.8173
+4W_motor,vp_min_fee_per_renewal_gm50_scale,15.5045,21.4617,29.4169,22.0173
+4W_motor,vp_min_fee_per_save_gm40_launch,232.4006,355.6302,577.9031,386.5295
+4W_motor,vp_min_fee_per_save_gm50_scale,177.3352,272.9361,443.0001,296.3887
+4W_motor,holdout_cost_inr_per_1000_due,5978.9111,12132.9463,23152.8862,13635.2843
+4W_motor,P(value_per_save >= 150),,,,1.0
+4W_motor,"P(window per-renewal fee exists vs no-call, launch GM40)",,,,0.9997
+4W_motor,"P(window per-renewal fee exists vs no-call, scale GM50)",,,,1.0
+4W_motor,"P(window per-renewal fee exists vs human desk, launch GM40)",,,,0.7905
+4W_motor,"P(window per-renewal fee exists vs human desk, scale GM50)",,,,0.8347
+4W_motor,P(AI incremental > human incremental),,,,0.887
+4W_motor,P(VP cost per worked due < human cost per due),,,,0.0344
+4W_motor,"P(VP cost per worked due < human cost per due), scale",,,,0.3537
+4W_motor,"P(VP cost per worked due < human cost per due, seat method), launch",,,,0.655
+health,value_per_save_inr,1864.6906,2736.7817,3848.1701,2807.3554
+health,value_per_save_3yr_ltv_inr,4410.9265,6472.6171,9118.9543,6638.2595
+health,baseline_renewal_rate,0.7895,0.837,0.8835,0.8367
+health,incremental_renewals_ai_per_1000_due,9.9246,17.3898,28.3651,18.4356
+health,incremental_renewals_human_per_1000_due,5.9559,11.5448,20.4433,12.5672
+health,ai_reach_rpc,0.5681,0.6892,0.7912,0.6839
+health,ai_attempts_per_1000_due,1666.4136,2047.4132,2507.1161,2071.3398
+health,ai_connected_minutes_per_1000_due,575.5505,793.7087,1064.3568,809.4705
+health,human_minutes_per_1000_due,243.1625,422.6766,653.6155,439.1945
+health,human_cost_inr_per_1000_due,1925.3439,3421.9519,5489.1847,3593.2626
+health,human_cost_inr_per_renewal_collected,2.267,4.0185,6.4846,4.239
+health,human_cost_inr_per_1000_due_seat_method,8421.861,12809.0314,19920.1877,13620.0196
+health,human_cost_inr_per_renewal_collected_seat_method,9.9073,15.1247,23.5465,16.0572
+health,ai_minutes_per_renewal_collected,0.6678,0.9294,1.2574,0.9491
+health,vp_cost_inr_per_1000_worked_due_launch,5149.2387,7004.7498,9400.0761,7178.1376
+health,vp_cost_inr_per_1000_worked_due_scale,3488.9349,4723.2604,6374.5079,4851.7892
+health,vp_cost_inr_per_renewal_collected_launch,5.9734,8.2039,11.0922,8.4141
+health,vp_cost_inr_per_renewal_collected_scale,4.0472,5.5311,7.538,5.6863
+health,vp_cost_inr_per_incremental_save_launch,247.2356,402.4201,704.9286,447.234
+health,vp_cost_inr_per_incremental_save_scale,165.414,271.4467,481.7811,302.9729
+health,buyer_max_fee_per_renewal_vs_nocall,27.7595,54.9449,101.9133,61.0036
+health,buyer_max_fee_per_renewal_vs_nocall_3yr_ltv,65.5045,130.1849,241.2899,144.2473
+health,buyer_max_fee_per_renewal_vs_human_desk,4.4012,20.0537,48.1882,23.6236
+health,buyer_max_fee_per_renewal_vs_human_desk_seat_method,14.6095,31.9357,60.9254,35.3592
+health,vp_min_fee_per_renewal_gm40_launch,9.9556,13.6732,18.487,14.0235
+health,vp_min_fee_per_renewal_gm50_scale,8.0944,11.0622,15.0761,11.3726
+health,vp_min_fee_per_save_gm40_launch,412.0593,670.7001,1174.881,745.39
+health,vp_min_fee_per_save_gm50_scale,330.828,542.8933,963.5621,605.9458
+health,holdout_cost_inr_per_1000_due,2408.5243,4692.0534,8594.7797,5182.1913
+health,P(value_per_save >= 150),,,,1.0
+health,"P(window per-renewal fee exists vs no-call, launch GM40)",,,,0.9956
+health,"P(window per-renewal fee exists vs no-call, scale GM50)",,,,0.9985
+health,"P(window per-renewal fee exists vs human desk, launch GM40)",,,,0.6834
+health,"P(window per-renewal fee exists vs human desk, scale GM50)",,,,0.7545
+health,P(AI incremental > human incremental),,,,0.8898
+health,P(VP cost per worked due < human cost per due),,,,0.0133
+health,"P(VP cost per worked due < human cost per due), scale",,,,0.1915
+health,"P(VP cost per worked due < human cost per due, seat method), launch",,,,0.9366
+life_yr2plus,value_per_save_inr,1169.6513,1940.7151,3124.7694,2061.0701
+life_yr2plus,value_per_save_3yr_ltv_inr,2860.6316,4747.9496,7664.7297,5049.9988
+life_yr2plus,baseline_renewal_rate,0.7453,0.8,0.8556,0.8001
+life_yr2plus,incremental_renewals_ai_per_1000_due,12.1963,21.1772,34.5436,22.4461
+life_yr2plus,incremental_renewals_human_per_1000_due,7.2443,14.134,24.9642,15.3066
+life_yr2plus,ai_reach_rpc,0.5681,0.6892,0.7912,0.6839
+life_yr2plus,ai_attempts_per_1000_due,1691.4581,2082.7488,2536.1667,2101.2455
+life_yr2plus,ai_connected_minutes_per_1000_due,724.306,994.5944,1309.3277,1007.7264
+life_yr2plus,human_minutes_per_1000_due,304.1443,529.566,812.3512,547.1814
+life_yr2plus,human_cost_inr_per_1000_due,2406.7117,4277.6561,6810.7159,4476.7574
+life_yr2plus,human_cost_inr_per_renewal_collected,2.9478,5.2498,8.4034,5.5048
+life_yr2plus,human_cost_inr_per_1000_due_seat_method,8434.5627,12838.9032,19954.1859,13626.0781
+life_yr2plus,human_cost_inr_per_renewal_collected_seat_method,10.2868,15.7642,24.4947,16.7424
+life_yr2plus,ai_minutes_per_renewal_collected,0.8681,1.2084,1.6154,1.2296
+life_yr2plus,vp_cost_inr_per_1000_worked_due_launch,6056.6453,8271.171,10990.8858,8419.7595
+life_yr2plus,vp_cost_inr_per_1000_worked_due_scale,4003.9767,5404.1613,7214.5437,5524.0316
+life_yr2plus,vp_cost_inr_per_renewal_collected_launch,7.2719,10.0483,13.5333,10.2698
+life_yr2plus,vp_cost_inr_per_renewal_collected_scale,4.8082,6.5785,8.8718,6.7366
+life_yr2plus,vp_cost_inr_per_incremental_save_launch,239.3274,387.9925,666.6569,428.327
+life_yr2plus,vp_cost_inr_per_incremental_save_scale,157.0608,254.3601,439.9277,281.6427
+life_yr2plus,buyer_max_fee_per_renewal_vs_nocall,23.3498,49.2007,99.9509,56.7243
+life_yr2plus,buyer_max_fee_per_renewal_vs_nocall_3yr_ltv,57.1957,120.5524,245.2756,138.9869
+life_yr2plus,buyer_max_fee_per_renewal_vs_human_desk,5.7385,19.4028,46.8715,23.4903
+life_yr2plus,buyer_max_fee_per_renewal_vs_human_desk_seat_method,14.6956,30.9131,59.2788,34.6268
+life_yr2plus,vp_min_fee_per_renewal_gm40_launch,12.1199,16.7471,22.5556,17.1164
+life_yr2plus,vp_min_fee_per_renewal_gm50_scale,9.6165,13.1571,17.7436,13.4732
+life_yr2plus,vp_min_fee_per_save_gm40_launch,398.879,646.6542,1111.0949,713.8783
+life_yr2plus,vp_min_fee_per_save_gm50_scale,314.1216,508.7203,879.8554,563.2854
+life_yr2plus,holdout_cost_inr_per_1000_due,1954.3887,4048.3426,8091.4964,4628.6909
+life_yr2plus,P(value_per_save >= 150),,,,1.0
+life_yr2plus,"P(window per-renewal fee exists vs no-call, launch GM40)",,,,0.9728
+life_yr2plus,"P(window per-renewal fee exists vs no-call, scale GM50)",,,,0.9906
+life_yr2plus,"P(window per-renewal fee exists vs human desk, launch GM40)",,,,0.5775
+life_yr2plus,"P(window per-renewal fee exists vs human desk, scale GM50)",,,,0.6967
+life_yr2plus,P(AI incremental > human incremental),,,,0.8843
+life_yr2plus,P(VP cost per worked due < human cost per due),,,,0.0209
+life_yr2plus,"P(VP cost per worked due < human cost per due), scale",,,,0.2706
+life_yr2plus,"P(VP cost per worked due < human cost per due, seat method), launch",,,,0.8697

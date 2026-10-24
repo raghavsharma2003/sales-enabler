@@ -1,0 +1,325 @@
+telephony,tts,llm,call_seconds,prompt_tokens,surcharge_scope,inr_per_connected_min_ex_gst,inr_per_connected_min_incl_18pct_gst
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,3000,n/a,22.61,26.68
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,6000,llm_only,22.99,27.13
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,6000,whole_duration,26.32,31.05
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,3000,n/a,22.14,26.12
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,6000,llm_only,22.52,26.57
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,6000,whole_duration,25.84,30.49
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,3000,n/a,21.98,25.93
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,6000,llm_only,22.36,26.38
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,6000,whole_duration,25.68,30.3
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,3000,n/a,21.82,25.75
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,6000,llm_only,22.2,26.19
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,6000,whole_duration,25.52,30.12
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,30,3000,n/a,25.65,30.27
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,30,6000,llm_only,27.55,32.51
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,30,6000,whole_duration,30.88,36.43
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,60,3000,n/a,25.18,29.71
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,60,6000,llm_only,27.08,31.95
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,60,6000,whole_duration,30.4,35.87
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,90,3000,n/a,25.02,29.52
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,90,6000,llm_only,26.92,31.76
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,90,6000,whole_duration,30.24,35.69
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,180,3000,n/a,24.86,29.33
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,180,6000,llm_only,26.76,31.57
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,calculator default 0.040,180,6000,whole_duration,30.08,35.5
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,27.93,32.96
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,30.97,36.54
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,34.3,40.47
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,27.46,32.4
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,30.5,35.98
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,33.82,39.91
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,27.3,32.21
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,30.34,35.8
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,33.66,39.72
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,27.14,32.02
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,30.18,35.61
+retell-twilio US CLI -> India 0.15,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,33.5,39.53
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,30,3000,n/a,24.98,29.48
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,30,6000,llm_only,25.36,29.93
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,30,6000,whole_duration,29.88,35.26
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,60,3000,n/a,24.51,28.92
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,60,6000,llm_only,24.89,29.37
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,60,6000,whole_duration,29.4,34.69
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,90,3000,n/a,24.35,28.73
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,90,6000,llm_only,24.73,29.18
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,90,6000,whole_duration,29.24,34.51
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,180,3000,n/a,24.19,28.55
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,180,6000,llm_only,24.57,29.0
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5-mini 0.008,180,6000,whole_duration,29.09,34.32
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,30,3000,n/a,28.03,33.07
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,30,6000,llm_only,29.93,35.31
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,30,6000,whole_duration,34.44,40.64
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,60,3000,n/a,27.55,32.51
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,60,6000,llm_only,29.45,34.75
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,60,6000,whole_duration,33.96,40.08
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,90,3000,n/a,27.39,32.32
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,90,6000,llm_only,29.29,34.56
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,90,6000,whole_duration,33.8,39.89
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,180,3000,n/a,27.23,32.14
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,180,6000,llm_only,29.13,34.38
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,calculator default 0.040,180,6000,whole_duration,33.65,39.7
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,30.3,35.76
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,33.34,39.35
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,37.86,44.67
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,29.83,35.2
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,32.87,38.79
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,37.38,44.11
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,29.67,35.01
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,32.71,38.6
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,37.22,43.92
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,29.51,34.83
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,32.55,38.41
+retell-twilio US CLI -> India 0.15,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,37.07,43.74
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,30,3000,n/a,30.69,36.21
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,30,6000,llm_only,31.07,36.66
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,30,6000,whole_duration,38.43,45.34
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,60,3000,n/a,30.21,35.65
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,60,6000,llm_only,30.59,36.1
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,60,6000,whole_duration,37.95,44.78
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,90,3000,n/a,30.05,35.46
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,90,6000,llm_only,30.43,35.91
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,90,6000,whole_duration,37.79,44.6
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,180,3000,n/a,29.89,35.27
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,180,6000,llm_only,30.27,35.72
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5-mini 0.008,180,6000,whole_duration,37.64,44.41
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,30,3000,n/a,33.73,39.8
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,30,6000,llm_only,35.62,42.04
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,30,6000,whole_duration,42.99,50.73
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,60,3000,n/a,33.25,39.23
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,60,6000,llm_only,35.15,41.48
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,60,6000,whole_duration,42.51,50.16
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,90,3000,n/a,33.09,39.05
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,90,6000,llm_only,34.99,41.29
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,90,6000,whole_duration,42.35,49.98
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,180,3000,n/a,32.93,38.86
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,180,6000,llm_only,34.83,41.1
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,calculator default 0.040,180,6000,whole_duration,42.2,49.79
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,36.01,42.49
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,39.05,46.07
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,46.41,54.76
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,35.53,41.93
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,38.57,45.51
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,45.93,54.2
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,35.37,41.74
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,38.41,45.33
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,45.77,54.01
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,35.21,41.55
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,38.25,45.14
+retell-twilio US CLI -> India 0.15,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,45.62,53.83
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,3000,n/a,32.11,37.89
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,6000,llm_only,32.49,38.34
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,6000,whole_duration,35.82,42.26
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,3000,n/a,31.64,37.33
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,6000,llm_only,32.02,37.78
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,6000,whole_duration,35.34,41.7
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,3000,n/a,31.48,37.14
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,6000,llm_only,31.86,37.59
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,6000,whole_duration,35.18,41.51
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,3000,n/a,31.32,36.96
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,6000,llm_only,31.7,37.4
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,6000,whole_duration,35.02,41.33
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,30,3000,n/a,35.15,41.48
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,30,6000,llm_only,37.05,43.72
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,30,6000,whole_duration,40.38,47.64
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,60,3000,n/a,34.68,40.92
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,60,6000,llm_only,36.58,43.16
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,60,6000,whole_duration,39.9,47.08
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,90,3000,n/a,34.52,40.73
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,90,6000,llm_only,36.42,42.97
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,90,6000,whole_duration,39.74,46.9
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,180,3000,n/a,34.36,40.54
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,180,6000,llm_only,36.26,42.78
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,calculator default 0.040,180,6000,whole_duration,39.58,46.71
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,37.43,44.17
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,40.47,47.75
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,43.8,51.68
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,36.95,43.61
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,40.0,47.19
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,43.32,51.12
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,36.8,43.42
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,39.84,47.01
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,43.16,50.93
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,36.64,43.23
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,39.68,46.82
+retell-telnyx US CLI -> India 0.25,platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,43.0,50.74
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,30,3000,n/a,34.48,40.69
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,30,6000,llm_only,34.86,41.14
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,30,6000,whole_duration,39.38,46.47
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,60,3000,n/a,34.01,40.13
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,60,6000,llm_only,34.39,40.58
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,60,6000,whole_duration,38.9,45.9
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,90,3000,n/a,33.85,39.94
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,90,6000,llm_only,34.23,40.39
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,90,6000,whole_duration,38.74,45.72
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,180,3000,n/a,33.69,39.76
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,180,6000,llm_only,34.07,40.21
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5-mini 0.008,180,6000,whole_duration,38.59,45.53
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,30,3000,n/a,37.53,44.28
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,30,6000,llm_only,39.42,46.52
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,30,6000,whole_duration,43.94,51.85
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,60,3000,n/a,37.05,43.72
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,60,6000,llm_only,38.95,45.96
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,60,6000,whole_duration,43.46,51.29
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,90,3000,n/a,36.89,43.53
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,90,6000,llm_only,38.79,45.77
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,90,6000,whole_duration,43.3,51.1
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,180,3000,n/a,36.73,43.35
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,180,6000,llm_only,38.63,45.59
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,calculator default 0.040,180,6000,whole_duration,43.15,50.91
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,39.8,46.97
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,42.84,50.56
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,47.36,55.88
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,39.33,46.41
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,42.37,50.0
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,46.88,55.32
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,39.17,46.22
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,42.21,49.81
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,46.72,55.13
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,39.01,46.04
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,42.05,49.62
+retell-telnyx US CLI -> India 0.25,elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,46.57,54.95
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,30,3000,n/a,40.19,47.42
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,30,6000,llm_only,40.56,47.87
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,30,6000,whole_duration,47.93,56.55
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,60,3000,n/a,39.71,46.86
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,60,6000,llm_only,40.09,47.31
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,60,6000,whole_duration,47.45,55.99
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,90,3000,n/a,39.55,46.67
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,90,6000,llm_only,39.93,47.12
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,90,6000,whole_duration,47.29,55.81
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,180,3000,n/a,39.39,46.48
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,180,6000,llm_only,39.77,46.93
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5-mini 0.008,180,6000,whole_duration,47.14,55.62
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,30,3000,n/a,43.23,51.01
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,30,6000,llm_only,45.12,53.25
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,30,6000,whole_duration,52.49,61.94
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,60,3000,n/a,42.75,50.45
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,60,6000,llm_only,44.65,52.69
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,60,6000,whole_duration,52.01,61.37
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,90,3000,n/a,42.59,50.26
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,90,6000,llm_only,44.49,52.5
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,90,6000,whole_duration,51.85,61.19
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,180,3000,n/a,42.43,50.07
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,180,6000,llm_only,44.33,52.31
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,calculator default 0.040,180,6000,whole_duration,51.7,61.0
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,45.51,53.7
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,48.55,57.28
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,55.91,65.97
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,45.03,53.14
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,48.07,56.72
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,55.43,65.41
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,44.87,52.95
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,47.91,56.54
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,55.27,65.22
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,44.71,52.76
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,47.75,56.35
+retell-telnyx US CLI -> India 0.25,elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,55.12,65.04
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,3000,n/a,8.79,10.37
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,6000,llm_only,9.17,10.82
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,30,6000,whole_duration,12.5,14.74
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,3000,n/a,8.32,9.81
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,6000,llm_only,8.7,10.26
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,60,6000,whole_duration,12.02,14.18
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,3000,n/a,8.16,9.62
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,6000,llm_only,8.54,10.07
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,90,6000,whole_duration,11.86,14.0
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,3000,n/a,8.0,9.44
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,6000,llm_only,8.38,9.89
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5-mini 0.008,180,6000,whole_duration,11.7,13.81
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,30,3000,n/a,11.83,13.96
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,30,6000,llm_only,13.73,16.2
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,30,6000,whole_duration,17.06,20.12
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,60,3000,n/a,11.36,13.4
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,60,6000,llm_only,13.26,15.64
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,60,6000,whole_duration,16.58,19.56
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,90,3000,n/a,11.2,13.21
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,90,6000,llm_only,13.1,15.45
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,90,6000,whole_duration,16.42,19.38
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,180,3000,n/a,11.04,13.03
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,180,6000,llm_only,12.94,15.27
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,calculator default 0.040,180,6000,whole_duration,16.26,19.19
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,14.11,16.65
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,17.15,20.24
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,20.48,24.16
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,13.64,16.09
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,16.68,19.68
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,20.0,23.6
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,13.48,15.9
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,16.52,19.49
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,19.84,23.41
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,13.32,15.72
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,16.36,19.3
+BYO Indian SIP trunk INR 0.43 (30 s pulse),platform/cartesia/minimax 0.015,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,19.68,23.23
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,30,3000,n/a,11.16,13.17
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,30,6000,llm_only,11.54,13.62
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,30,6000,whole_duration,16.06,18.95
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,60,3000,n/a,10.69,12.61
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,60,6000,llm_only,11.07,13.06
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,60,6000,whole_duration,15.58,18.39
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,90,3000,n/a,10.53,12.43
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,90,6000,llm_only,10.91,12.88
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,90,6000,whole_duration,15.42,18.2
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,180,3000,n/a,10.37,12.24
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,180,6000,llm_only,10.75,12.69
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5-mini 0.008,180,6000,whole_duration,15.27,18.01
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,30,3000,n/a,14.21,16.76
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,30,6000,llm_only,16.11,19.0
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,30,6000,whole_duration,20.62,24.33
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,60,3000,n/a,13.73,16.2
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,60,6000,llm_only,15.63,18.44
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,60,6000,whole_duration,20.14,23.77
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,90,3000,n/a,13.57,16.01
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,90,6000,llm_only,15.47,18.26
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,90,6000,whole_duration,19.98,23.58
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,180,3000,n/a,13.41,15.83
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,180,6000,llm_only,15.31,18.07
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,calculator default 0.040,180,6000,whole_duration,19.83,23.39
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,16.48,19.45
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,19.53,23.04
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,24.04,28.36
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,16.01,18.89
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,19.05,22.48
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,23.56,27.8
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,15.85,18.7
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,18.89,22.29
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,23.4,27.62
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,15.69,18.52
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,18.73,22.11
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs flash 0.040,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,23.25,27.43
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,30,3000,n/a,16.87,19.9
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,30,6000,llm_only,17.25,20.35
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,30,6000,whole_duration,24.61,29.04
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,60,3000,n/a,16.39,19.34
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,60,6000,llm_only,16.77,19.79
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,60,6000,whole_duration,24.13,28.48
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,90,3000,n/a,16.23,19.15
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,90,6000,llm_only,16.61,19.6
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,90,6000,whole_duration,23.97,28.29
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,180,3000,n/a,16.07,18.97
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,180,6000,llm_only,16.45,19.41
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5-mini 0.008,180,6000,whole_duration,23.82,28.1
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,30,3000,n/a,19.91,23.49
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,30,6000,llm_only,21.8,25.73
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,30,6000,whole_duration,29.17,34.42
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,60,3000,n/a,19.43,22.93
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,60,6000,llm_only,21.33,25.17
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,60,6000,whole_duration,28.69,33.86
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,90,3000,n/a,19.27,22.74
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,90,6000,llm_only,21.17,24.98
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,90,6000,whole_duration,28.53,33.67
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,180,3000,n/a,19.11,22.55
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,180,6000,llm_only,21.01,24.8
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,calculator default 0.040,180,6000,whole_duration,28.38,33.48
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,3000,n/a,22.19,26.18
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,6000,llm_only,25.23,29.77
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,30,6000,whole_duration,32.59,38.45
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,3000,n/a,21.71,25.62
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,6000,llm_only,24.75,29.2
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,60,6000,whole_duration,32.11,37.89
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,3000,n/a,21.55,25.43
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,6000,llm_only,24.59,29.02
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,90,6000,whole_duration,31.95,37.71
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,3000,n/a,21.39,25.24
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,6000,llm_only,24.43,28.83
+BYO Indian SIP trunk INR 0.43 (30 s pulse),elevenlabs v3 0.100,gpt-5.6-terra (recommended) 0.064,180,6000,whole_duration,31.8,37.52

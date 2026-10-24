@@ -1,0 +1,17 @@
+{
+  "nodes": [
+    {"id": "open.2026-10-24.enterprise-billing-documents", "type": "open-question", "title": "What billing documents must Vyakti issue to enterprise buyers (GST tax invoice with GSTIN and place of supply, payment receipts, credit notes, PO numbers), and from when?", "status": "open", "date": "2026-10-24", "source": "agent", "closes_when": "the owner sets the customer price (decision.2026-10-21.pricing-deferred) and a CA confirms GST timing on wallet top-ups, CGST+SGST vs IGST from GSTIN and place of supply, and the e-invoicing threshold; then invoice.get issues a numbered tax invoice beside the usage statement", "path": "research/2026-10-24/walkthrough/FRICTION.md", "detail": "Walkthrough R9: Billing shows a usage statement only. Blueprint economics-platform 2.4 proposes a monthly GST invoice with PO number, NEFT/RTGS to a per-tenant virtual account, and Form 16A TDS credits. Nothing can be invoiced while no price is set; receipts for top-ups can come first because a top-up has an amount."},
+    {"id": "open.2026-10-24.test-spend-vs-empty-wallet", "type": "open-question", "title": "What do practice calls (browser tests, ring-my-phone tests) draw on when the wallet is ₹0?", "status": "open", "date": "2026-10-24", "source": "agent", "closes_when": "the owner picks: wallet, a free daily test allowance, or nothing; then Today and Billing say it in one line", "path": "research/2026-10-24/walkthrough/FRICTION.md",
+     "detail": "Walkthrough R12: Today shows 'Spend today ₹0.09' while the wallet is ₹0 and Empty.",
+     "recommendation": "A free daily test allowance that never touches the wallet, as the blueprint proposes (economics-platform 2.1 and 2.6: browser tests inside a ₹200/day test budget are not billed). Practice calls are metered as Vyakti's own cost, capped by the allowance per workspace per IST day. Today and Billing read 'Practice calls today: ₹0.09 of your free ₹200, not charged to your wallet'. Past the allowance, practice calls stop with 'Add money to keep testing today' rather than charging an empty wallet. Reason: a buyer with ₹0 must still be able to hear the agent before paying, which is the self-serve promise, and the cost is small (about ₹1.4-2 a minute of provider cost). The ₹200 figure is the blueprint's and is the owner's to confirm."}
+  ],
+  "edges": [
+    {"from": "open.2026-10-24.enterprise-billing-documents", "to": "decision.2026-10-21.pricing-deferred", "rel": "requires"},
+    {"from": "open.2026-10-24.test-spend-vs-empty-wallet", "to": "decision.2026-10-21.pricing-deferred", "rel": "informed-by"},
+    {"from": "open.2026-10-24.enterprise-billing-documents", "to": "component.2026-10-21.money-module", "rel": "part-of"},
+    {"from": "open.2026-10-24.test-spend-vs-empty-wallet", "to": "component.2026-10-21.money-module", "rel": "part-of"}
+  ],
+  "events": [
+    {"date": "2026-10-24", "what": "Money R4: money.parts gives every buildable part a ₹-per-minute figure (USD list price as basis); stack.list shows it as the part's price. R5: the 'VP' strings in the walkthrough screenshots match pre-d69f3ff code verbatim (the walk's server predated that commit); current code and stored cost-card rows say Vyakti; a guard test now covers every money read tool and the stored rows. R9 and R12 logged as open questions."}
+  ]
+}

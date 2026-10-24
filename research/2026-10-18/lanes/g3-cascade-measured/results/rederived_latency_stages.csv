@@ -1,0 +1,9 @@
+config,stt_last_final_rel_end_p50_ms,llm_ttft_p50_ms,llm_ttft_p90_ms,first_clause_rel_end_p50_ms,llm_done_rel_end_p50_ms,llm_done_rel_end_p90_ms,tts_ttfb_p50_ms,tts_ttfb_p90_ms,first_audio_p50_ms,llm_requests_per_turn_mean
+C1_az_az41_azneural,662,308,382,982,1229,1334,32,91,1026,1.87
+C2_az_az41_azhd,646,301,367,962,1214,1373,164,191,1133,1.87
+C3_az_or_azhd,648,208,357,878,945,1251,160,184,1044,1.85
+C6_gtl_or_azneural,771,208,521,991,1073,1491,34,63,1031,1.9
+C7_az_gm_azneural,640,824,1055,1514,1532,1754,48,86,1568,1.85
+C8_gtl_gm_azneural,766,794,864,1646,1676,1753,46,84,1688,1.83
+C1_az_az41_azneural+gatedSTT,648,308,333,968,1194,1293,29,44,989,1.87
+C6_gtl_or_azneural+gatedSTT,753,222,518,1007,1114,1540,32,54,1038,1.83

@@ -1,0 +1,398 @@
+[
+ {
+  "setting": "Agent type (Create agent dialog)",
+  "default": "Conversational flow pre-selected",
+  "range": "Single prompt; Conversational flow; Other options: Custom LLM, Multi-Prompt (Deprecated, greyed)",
+  "evidence": "03-create-agent-dialog.png, 03b-other-options.png"
+ },
+ {
+  "setting": "Create menu",
+  "default": "dropdown, no default",
+  "range": "Voice Agent; Chat Agent",
+  "evidence": "78-create-dialog-again.png"
+ },
+ {
+  "setting": "Template tab",
+  "default": "All",
+  "range": "10 tabs, 28 templates plus Build from scratch and Generate from prompt",
+  "evidence": "03-create-agent-dialog.png"
+ },
+ {
+  "setting": "LLM model",
+  "default": "GPT 5.6 Terra ($0.064/min)",
+  "range": "39 models: 21 versatile, 12 fast, 6 speech-to-speech; $0.0016 to $0.32 cascaded, $0.07 to $0.38 S2S",
+  "evidence": "04-agent-builder-top.png, 09-model-dropdown.png"
+ },
+ {
+  "setting": "Voice",
+  "default": "Cimo (retell-Cimo, American, Middle Aged)",
+  "range": "21 platform voices; custom providers MiniMax, Cartesia, Fish Audio, Inworld, ElevenLabs",
+  "evidence": "10-voice-picker.png, 10c-custom-providers-shot.png"
+ },
+ {
+  "setting": "Expressive mode (voice modal)",
+  "default": "Off",
+  "range": "not opened",
+  "evidence": "10-voice-picker.png"
+ },
+ {
+  "setting": "Speech language",
+  "default": "English (US)",
+  "range": "63 locales incl. English (India), Hindi (India), Kannada, Marathi, Tamil, Urdu; Multiselect",
+  "evidence": "11-language-shot.png"
+ },
+ {
+  "setting": "Welcome message",
+  "default": "User speaks first (hint: AI starts speaking after silence)",
+  "range": "options not visible",
+  "evidence": "75-agent-page.png, 99-all-page-text.txt[04-agent-builder-top]"
+ },
+ {
+  "setting": "Prompt",
+  "default": "empty (placeholder only)",
+  "range": "free text; / for functions, {{ for variables",
+  "evidence": "04-agent-builder-top.png"
+ },
+ {
+  "setting": "Cost strip",
+  "default": "$0.134/min (vendor-displayed)",
+  "range": "n/a",
+  "evidence": "04-agent-builder-top.png"
+ },
+ {
+  "setting": "Latency strip",
+  "default": "820-1290ms (vendor-displayed)",
+  "range": "n/a",
+  "evidence": "04-agent-builder-top.png"
+ },
+ {
+  "setting": "Tokens strip",
+  "default": "814 - 3k single prompt; 834 - 834 flow agent",
+  "range": "n/a",
+  "evidence": "04-agent-builder-top.png, 80-conv-flow-builder.png"
+ },
+ {
+  "setting": "Version",
+  "default": "V0 with Environment tag",
+  "range": "not opened",
+  "evidence": "04-agent-builder-top.png"
+ },
+ {
+  "setting": "Functions",
+  "default": "one function: end_call",
+  "range": "End Call, Call Transfer, Agent Transfer, Press Digit, In-Call SMS, Extract Dynamic Variable, Code, Custom Function + 8 integrations",
+  "evidence": "09-model-dropdown.png, 99-all-page-text.txt[07-function-add-menu]"
+ },
+ {
+  "setting": "Transfer handling",
+  "default": "Cold Transfer; Static Destination; SIP INVITE; caller ID Retell Agent's Number; Talk while waiting checked (Prompt mode)",
+  "range": "Cold, Warm, Agentic Warm; INVITE or REFER; Retell or user number",
+  "evidence": "08-call-transfer-form.png"
+ },
+ {
+  "setting": "Transfer Ring Duration",
+  "default": "30s",
+  "range": "slider, scale ends at 90s",
+  "evidence": "08-call-transfer-form.png, 99-all-page-text.txt[08-call-transfer-form]"
+ },
+ {
+  "setting": "Knowledge base",
+  "default": "none; Advanced Settings collapsed",
+  "range": "sources: web pages, files up to 50MB, text, Google Drive, OneDrive, Notion; first 10 KBs free",
+  "evidence": "05-settings-state.png, 74-kb-add-types.png, 73-kb-add-dialog.png"
+ },
+ {
+  "setting": "Use contact's memory",
+  "default": "ON",
+  "range": "toggle",
+  "evidence": "07-Knowledge_Base___Memory.png"
+ },
+ {
+  "setting": "Save conversation to memory",
+  "default": "OFF ($0.005 per run)",
+  "range": "toggle",
+  "evidence": "76-workflow-tab.png, 99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Background Sound",
+  "default": "None",
+  "range": "select (options not opened)",
+  "evidence": "05-settings-state.png"
+ },
+ {
+  "setting": "Response Wait time",
+  "default": "0ms (handle at far right; ends: More waiting / Less waiting)",
+  "range": "slider in ms; numeric ends not shown",
+  "evidence": "05-settings-state.png, 99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Dynamically adjust based on user input",
+  "default": "unchecked",
+  "range": "checkbox",
+  "evidence": "05-settings-state.png"
+ },
+ {
+  "setting": "Interruption Sensitivity",
+  "default": "0.9",
+  "range": "slider (ends: blocks interruption / stops immediately); 0 to 1 per earlier API read",
+  "evidence": "05-settings-state.png, 99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Reminder Message Frequency",
+  "default": "10 seconds, 1 times",
+  "range": "two numeric fields",
+  "evidence": "05-settings-state.png"
+ },
+ {
+  "setting": "Pronunciation",
+  "default": "empty",
+  "range": "IPA and CMU for selected voice",
+  "evidence": "08-Speech_settings.png"
+ },
+ {
+  "setting": "Denoising Mode",
+  "default": "Remove noise",
+  "range": "Remove noise; Remove noise + background speech; No denoising",
+  "evidence": "05-settings-state.png"
+ },
+ {
+  "setting": "Transcription Mode",
+  "default": "selected option not visible",
+  "range": "Optimize for speed (Provider Config); Optimize for accuracy (Provider Config)",
+  "evidence": "05-settings-state.png, 99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Vocabulary Specialization",
+  "default": "not visible",
+  "range": "General; Medical",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Boosted Keywords",
+  "default": "not visible (presumed empty)",
+  "range": "free list",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Voicemail Detection / Response",
+  "default": "toggle state not visible",
+  "range": "Hang up if reaching voicemail; Leave a message if reaching voicemail",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "IOS / Android Call Screen Handling",
+  "default": "state not visible",
+  "range": "predefined message",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "IVR Hangup",
+  "default": "state not visible",
+  "range": "hang up if IVR detected",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "User Keypad Input Detection",
+  "default": "state not visible; Timeout 2.5 s",
+  "range": "timeout; termination key 0-9, #, *; digit limit",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "End Call on Silence",
+  "default": "10.0 m",
+  "range": "slider with Min/Max (values not captured)",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Max Call Duration",
+  "default": "1.00 h",
+  "range": "slider with Min/Max (values not captured)",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Ring Duration",
+  "default": "30 s",
+  "range": "5s to 300s",
+  "evidence": "99-all-page-text.txt[05-all-settings-expanded]"
+ },
+ {
+  "setting": "Data Storage",
+  "default": "Everything; Retention: Keep forever",
+  "range": "Everything; Everything except PII; Basic Attributes Only",
+  "evidence": "13-security-shot.png"
+ },
+ {
+  "setting": "PII Redaction",
+  "default": "none selected",
+  "range": "14 categories in 6 groups, no Indian IDs",
+  "evidence": "14-state.png"
+ },
+ {
+  "setting": "Safety Guardrails",
+  "default": "none selected (all 10 unchecked)",
+  "range": "1 input (jailbreak), 9 output categories",
+  "evidence": "14b-guardrails.png"
+ },
+ {
+  "setting": "Do-not-contact Handling",
+  "default": "OFF",
+  "range": "toggle",
+  "evidence": "13-security-shot.png"
+ },
+ {
+  "setting": "Opt In Secure URLs",
+  "default": "OFF (URLs expire after 24 hours)",
+  "range": "toggle",
+  "evidence": "13-security-shot.png"
+ },
+ {
+  "setting": "Fallback Voice ID",
+  "default": "Automatic fallback",
+  "range": "Automatic fallback; Select a fallback voice",
+  "evidence": "13-security-shot.png"
+ },
+ {
+  "setting": "Default Dynamic Variables",
+  "default": "none",
+  "range": "Set Up",
+  "evidence": "13-security-shot.png"
+ },
+ {
+  "setting": "Post call extraction",
+  "default": "Call Summary, Call Successful, User Sentiment; model GPT-5.6 Terra",
+  "range": "add fields",
+  "evidence": "12-settings-panel.png"
+ },
+ {
+  "setting": "Agent webhook URL / timeout",
+  "default": "empty URL; 5 s",
+  "range": "timeout slider from 1s; events via Set Up",
+  "evidence": "12-settings-panel.png"
+ },
+ {
+  "setting": "MCPs",
+  "default": "none",
+  "range": "Add MCP",
+  "evidence": "12-settings-panel.png"
+ },
+ {
+  "setting": "Conversation flow Transition Flexibility",
+  "default": "not visible",
+  "range": "Flex Mode; Rigid Mode",
+  "evidence": "99-all-page-text.txt[80-conv-flow-builder]"
+ },
+ {
+  "setting": "Batch: when to send",
+  "default": "Send Now",
+  "range": "Send Now; Schedule (date plus timezone)",
+  "evidence": "24-batch-create-shot.png, 27-batch-upload-shot.png"
+ },
+ {
+  "setting": "Batch: schedule timezone",
+  "default": "Asia/Calcutta",
+  "range": "select (not opened)",
+  "evidence": "27-batch-upload-shot.png"
+ },
+ {
+  "setting": "Batch: When Calls Can Run",
+  "default": "00:00-23:59, Mon-Sun",
+  "range": "start/end selects, multiple ranges via + Add, Days of Week",
+  "evidence": "25-calls-can-run-shot.png"
+ },
+ {
+  "setting": "Batch: reserved concurrency for other calls",
+  "default": "5 (batch allocation 15)",
+  "range": "stepper",
+  "evidence": "24-batch-create-shot.png"
+ },
+ {
+  "setting": "Batch: CSV upload",
+  "default": "empty; up to 50 MB",
+  "range": "CSV with downloadable template",
+  "evidence": "24-batch-create-shot.png"
+ },
+ {
+  "setting": "Batch cost",
+  "default": "$0.005 per dial (vendor-displayed)",
+  "range": "n/a",
+  "evidence": "24-batch-create-shot.png"
+ },
+ {
+  "setting": "Call History page size",
+  "default": "50 / page",
+  "range": "select",
+  "evidence": "41-call-history.png"
+ },
+ {
+  "setting": "Analytics date range",
+  "default": "Sep 24 - Oct 21, 2026 (28 days)",
+  "range": "date range picker",
+  "evidence": "43-analytics.png"
+ },
+ {
+  "setting": "Concurrent Calls Limit",
+  "default": "20",
+  "range": "Adjust Concurrency; Reserve Inbound Capacity (Not Set)",
+  "evidence": "5x-settings.png"
+ },
+ {
+  "setting": "Concurrency Burst",
+  "default": "ON (up to 3x, max 300 additional calls, $0.10/min)",
+  "range": "toggle",
+  "evidence": "5x-settings.png"
+ },
+ {
+  "setting": "Conductor credits pay-as-you-go",
+  "default": "OFF (30 free credits per user per day)",
+  "range": "toggle",
+  "evidence": "5x-settings.png"
+ },
+ {
+  "setting": "LLM Token Limit",
+  "default": "32768 (read-only)",
+  "range": "no edit control",
+  "evidence": "5x-settings.png"
+ },
+ {
+  "setting": "CPS (Telnyx, Twilio, Custom Telephony)",
+  "default": "1 each",
+  "range": "Adjust Limit",
+  "evidence": "5x-settings.png"
+ },
+ {
+  "setting": "Opt in Stable Server",
+  "default": "OFF (+$0.02/min)",
+  "range": "toggle",
+  "evidence": "6x-settings_reliability.png"
+ },
+ {
+  "setting": "Account webhook",
+  "default": "empty URL; Timeout 5s",
+  "range": "URL, Test, timeout editor",
+  "evidence": "6x-settings_webhooks.png"
+ },
+ {
+  "setting": "Auto recharge",
+  "default": "not enabled (banner offers Enable)",
+  "range": "Enable; Auto recharge; Budget Setting (not opened)",
+  "evidence": "5x-billing.png"
+ },
+ {
+  "setting": "Credits balance (free trial)",
+  "default": "$10.00",
+  "range": "Buy credits",
+  "evidence": "5x-billing.png, 99-all-page-text.txt[02-agents-empty]"
+ },
+ {
+  "setting": "Roles",
+  "default": "Admin, Developer, Member (System); Add Role greyed",
+  "range": "custom roles apparently gated",
+  "evidence": "6z-roles.png"
+ },
+ {
+  "setting": "Conductor credit badge / model",
+  "default": "30 credits; model Default",
+  "range": "model select not opened",
+  "evidence": "71-home-onboarding-conductor.png"
+ }
+]

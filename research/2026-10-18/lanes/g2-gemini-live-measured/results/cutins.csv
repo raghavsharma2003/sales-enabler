@@ -1,0 +1,41 @@
+vantage,model,vad,g38_thinking_budget0,pause_class,turns,cutins,rate,wilson_lo,wilson_hi,median_cutin_at_ms
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,False,P4_t03 (2.42 s pause),8,6,0.75,0.409,0.929,2557
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,False,no pause >=0.5 s,26,6,0.231,0.11,0.421,2931
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,False,pause 0.5-0.9 s,7,2,0.286,0.082,0.641,5376
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,meera,False,pause 0.9-1.3 s,13,7,0.538,0.291,0.768,3006
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,False,P4_t03 (2.42 s pause),7,7,1.0,0.646,1.0,2547
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,False,no pause >=0.5 s,14,2,0.143,0.04,0.399,2534
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,False,pause 0.5-0.9 s,2,2,1.0,0.342,1.0,4356
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,server,False,pause 0.9-1.3 s,6,2,0.333,0.097,0.7,2840
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,False,P4_t03 (2.42 s pause),5,5,1.0,0.566,1.0,2690
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,False,no pause >=0.5 s,19,0,0.0,0.0,0.168,
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,False,pause 0.5-0.9 s,7,1,0.143,0.026,0.513,1664
+india-centralindia-vm,gemini-3.1-flash-live-preview,meera,False,pause 0.9-1.3 s,10,2,0.2,0.057,0.51,2751
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,False,P4_t03 (2.42 s pause),3,3,1.0,0.438,1.0,2892
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,False,no pause >=0.5 s,8,0,0.0,0.0,0.324,
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,False,pause 0.5-0.9 s,2,0,0.0,0.0,0.658,
+india-centralindia-vm,gemini-3.1-flash-live-preview,server,False,pause 0.9-1.3 s,4,0,0.0,0.0,0.49,
+india-centralindia-vm,gemini-3.8-live,meera,False,P4_t03 (2.42 s pause),7,7,1.0,0.646,1.0,2292
+india-centralindia-vm,gemini-3.8-live,meera,False,no pause >=0.5 s,36,0,0.0,0.0,0.096,
+india-centralindia-vm,gemini-3.8-live,meera,False,pause 0.5-0.9 s,7,0,0.0,0.0,0.354,
+india-centralindia-vm,gemini-3.8-live,meera,False,pause 0.9-1.3 s,20,16,0.8,0.584,0.919,2614
+india-centralindia-vm,gemini-3.8-live,meera,True,P4_t03 (2.42 s pause),6,6,1.0,0.61,1.0,2097
+india-centralindia-vm,gemini-3.8-live,meera,True,no pause >=0.5 s,25,0,0.0,0.0,0.133,
+india-centralindia-vm,gemini-3.8-live,meera,True,pause 0.5-0.9 s,8,8,1.0,0.676,1.0,1869
+india-centralindia-vm,gemini-3.8-live,meera,True,pause 0.9-1.3 s,15,14,0.933,0.702,0.988,2220
+india-centralindia-vm,gemini-3.8-live,server,False,P4_t03 (2.42 s pause),4,4,1.0,0.51,1.0,2485
+india-centralindia-vm,gemini-3.8-live,server,False,no pause >=0.5 s,12,0,0.0,0.0,0.243,
+india-centralindia-vm,gemini-3.8-live,server,False,pause 0.5-0.9 s,2,0,0.0,0.0,0.658,
+india-centralindia-vm,gemini-3.8-live,server,False,pause 0.9-1.3 s,6,1,0.167,0.03,0.564,3004
+sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,meera,False,no pause >=0.5 s,119,2,0.017,0.005,0.059,2623
+sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,meera,False,pause 0.9-1.3 s,48,7,0.146,0.072,0.272,3225
+sandbox-us-east-proxy,gemini-3.1-flash-live-preview,meera,False,no pause >=0.5 s,88,0,0.0,0.0,0.042,
+sandbox-us-east-proxy,gemini-3.1-flash-live-preview,meera,False,pause 0.9-1.3 s,38,1,0.026,0.005,0.135,3224
+sandbox-us-east-proxy,gemini-3.8-live,meera,False,no pause >=0.5 s,129,0,0.0,0.0,0.029,
+sandbox-us-east-proxy,gemini-3.8-live,meera,False,pause 0.9-1.3 s,53,23,0.434,0.31,0.567,2828
+sandbox-us-east-proxy,gemini-3.8-live,server,False,no pause >=0.5 s,9,1,0.111,0.02,0.435,1236
+sandbox-us-east-proxy,gemini-3.8-live,server,False,pause 0.9-1.3 s,4,1,0.25,0.046,0.699,3179
+sandbox-us-east-proxy,gemini-3.8-live,server,True,P4_t03 (2.42 s pause),7,6,0.857,0.487,0.974,2479
+sandbox-us-east-proxy,gemini-3.8-live,server,True,no pause >=0.5 s,15,1,0.067,0.012,0.298,181
+sandbox-us-east-proxy,gemini-3.8-live,server,True,pause 0.5-0.9 s,7,1,0.143,0.026,0.513,3012
+sandbox-us-east-proxy,gemini-3.8-live,server,True,pause 0.9-1.3 s,10,4,0.4,0.168,0.687,2901

@@ -1,0 +1,286 @@
+{
+ "startedAt": "2026-10-24T03:51:41.746Z",
+ "mode": "model",
+ "endpoint": "Azure OpenAI, GlobalStandard",
+ "caps": {
+  "rps": 1,
+  "maxTokens": 3000000,
+  "maxInr": 72.896
+ },
+ "summary": {
+  "run": 7,
+  "passed": 5,
+  "passRate": 0.714,
+  "ci95": {
+   "lo": 0.359,
+   "hi": 0.918
+  },
+  "reachedModel": {
+   "run": 7,
+   "passed": 5,
+   "passRate": 0.714,
+   "ci95": {
+    "lo": 0.359,
+    "hi": 0.918
+   }
+  },
+  "tokens": 108941,
+  "inrMilli": 21295,
+  "wallMs": 137034,
+  "byCategory": {
+   "agent": {
+    "run": 3,
+    "passed": 3,
+    "ci95": {
+     "lo": 0.439,
+     "hi": 1
+    }
+   },
+   "template": {
+    "run": 3,
+    "passed": 2,
+    "ci95": {
+     "lo": 0.208,
+     "hi": 0.939
+    }
+   },
+   "multi": {
+    "run": 1,
+    "passed": 0,
+    "ci95": {
+     "lo": 0,
+     "hi": 0.793
+    }
+   }
+  },
+  "stoppedEarly": "cost cap \u20b972.896",
+  "notMeasured": []
+ },
+ "tasks": [
+  {
+   "id": "agent-feedback",
+   "category": "agent",
+   "status": "pass",
+   "why": "agent \"Furniture Delivery Feedback\" is about feedback",
+   "reachedModel": true,
+   "llmCalls": 2,
+   "toolCalls": 1,
+   "tokens": {
+    "input": 10095,
+    "output": 168
+   },
+   "requests": 2,
+   "toolsOffered": {
+    "min": 32,
+    "max": 32
+   },
+   "schemaChars": {
+    "mean": 18997,
+    "max": 18997
+   },
+   "findTools": 0,
+   "wallMs": 16926,
+   "inrMilli": 2045
+  },
+  {
+   "id": "agent-sitevisit",
+   "category": "agent",
+   "status": "pass",
+   "why": "agent \"Green Acres Realty Site Visit Booker\" is about site visit",
+   "reachedModel": true,
+   "llmCalls": 2,
+   "toolCalls": 1,
+   "tokens": {
+    "input": 10315,
+    "output": 114
+   },
+   "requests": 2,
+   "toolsOffered": {
+    "min": 32,
+    "max": 32
+   },
+   "schemaChars": {
+    "mean": 19359,
+    "max": 19359
+   },
+   "findTools": 0,
+   "wallMs": 14976,
+   "inrMilli": 2046
+  },
+  {
+   "id": "agent-webinar",
+   "category": "agent",
+   "status": "pass",
+   "why": "agent \"Webinar Invite & Registration\" is about webinar",
+   "reachedModel": true,
+   "llmCalls": 2,
+   "toolCalls": 1,
+   "tokens": {
+    "input": 9617,
+    "output": 140
+   },
+   "requests": 2,
+   "toolsOffered": {
+    "min": 32,
+    "max": 32
+   },
+   "schemaChars": {
+    "mean": 17685,
+    "max": 17685
+   },
+   "findTools": 0,
+   "wallMs": 17002,
+   "inrMilli": 1933
+  },
+  {
+   "id": "tpl-name",
+   "category": "template",
+   "status": "pass",
+   "why": "Asha, from the clinic template",
+   "reachedModel": true,
+   "llmCalls": 2,
+   "toolCalls": 1,
+   "tokens": {
+    "input": 9229,
+    "output": 52
+   },
+   "requests": 2,
+   "toolsOffered": {
+    "min": 30,
+    "max": 30
+   },
+   "schemaChars": {
+    "mean": 17057,
+    "max": 17057
+   },
+   "findTools": 0,
+   "wallMs": 6442,
+   "inrMilli": 1793
+  },
+  {
+   "id": "tpl-nodiscount",
+   "category": "template",
+   "status": "fail",
+   "why": "never-say: []",
+   "reachedModel": true,
+   "llmCalls": 5,
+   "toolCalls": 4,
+   "tokens": {
+    "input": 30187,
+    "output": 228
+   },
+   "requests": 5,
+   "toolsOffered": {
+    "min": 33,
+    "max": 33
+   },
+   "schemaChars": {
+    "mean": 18742,
+    "max": 18742
+   },
+   "findTools": 0,
+   "wallMs": 39857,
+   "inrMilli": 5908
+  },
+  {
+   "id": "edit-hindi",
+   "category": "template",
+   "status": "pass",
+   "why": "primary hi-IN",
+   "reachedModel": true,
+   "llmCalls": 4,
+   "toolCalls": 3,
+   "tokens": {
+    "input": 23401,
+    "output": 185
+   },
+   "requests": 4,
+   "toolsOffered": {
+    "min": 30,
+    "max": 30
+   },
+   "schemaChars": {
+    "mean": 19106,
+    "max": 19106
+   },
+   "findTools": 0,
+   "wallMs": 31899,
+   "inrMilli": 4587
+  },
+  {
+   "id": "multi-audience-campaign",
+   "category": "multi",
+   "status": "fail",
+   "why": "model error: The assistant's brain did not answer (could not reach the model: bench guard: spend cap reached). Nothing was changed by this message; try again or switch brain. [stopped by llm_error]",
+   "reachedModel": true,
+   "llmCalls": 3,
+   "toolCalls": 3,
+   "tokens": {
+    "input": 15048,
+    "output": 162
+   },
+   "stoppedBy": "llm_error",
+   "requests": 4,
+   "toolsOffered": {
+    "min": 33,
+    "max": 33
+   },
+   "schemaChars": {
+    "mean": 19064,
+    "max": 19064
+   },
+   "findTools": 0,
+   "wallMs": 9932,
+   "inrMilli": 2983
+  },
+  {
+   "id": "multi-template-limits",
+   "category": "multi",
+   "status": "not_run",
+   "why": "stopped: cost cap \u20b972.896",
+   "reachedModel": false,
+   "llmCalls": 0,
+   "toolCalls": 0,
+   "tokens": {
+    "input": 0,
+    "output": 0
+   },
+   "requests": 0,
+   "toolsOffered": {
+    "min": 0,
+    "max": 0
+   },
+   "schemaChars": {
+    "mean": 0,
+    "max": 0
+   },
+   "findTools": 0,
+   "wallMs": 0,
+   "inrMilli": null
+  }
+ ],
+ "model": "gpt-4.1 (gpt-4.1-2025-04-14)",
+ "harness": {
+  "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+  "requests": 35,
+  "inputTokens": 120836,
+  "outputTokens": 5295,
+  "inr": 26.983,
+  "byModel": {
+   "gpt-4.1": {
+    "requests": 35,
+    "inputTokens": 120836,
+    "outputTokens": 5295,
+    "inr": 26.983
+   }
+  },
+  "retries429": 0,
+  "httpErrors": 0,
+  "httpErrorDetails": [],
+  "networkErrors": 0,
+  "refusedByCap": 1,
+  "servedModels": [
+   "gpt-4.1-2025-04-14"
+  ]
+ }
+}

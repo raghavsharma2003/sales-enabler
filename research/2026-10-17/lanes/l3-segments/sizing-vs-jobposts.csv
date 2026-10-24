@@ -1,0 +1,16 @@
+segment_family,model_seat_share_p50,apna_jobpost_share,ratio_model_to_jobposts
+lending_origination,0.0474,0.1937,0.24
+real_estate,0.1896,0.1823,1.04
+lending_collections,0.0496,0.1666,0.3
+edtech_admissions,0.1713,0.1229,1.39
+healthcare,0.1562,0.0882,1.77
+insurance,0.0498,0.0687,0.72
+travel_hospitality,0.044,0.05,0.88
+fintech_saas_onboarding,0.0179,0.0288,0.62
+telecom_isp,0.0034,0.0242,0.14
+auto,0.0972,0.0191,5.09
+d2c_ecom,0.0444,0.0131,3.38
+solar,0.0439,0.0119,3.69
+matrimony,0.0092,0.0119,0.77
+study_abroad,0.0318,0.011,2.88
+diagnostics,0.0444,0.0076,5.82

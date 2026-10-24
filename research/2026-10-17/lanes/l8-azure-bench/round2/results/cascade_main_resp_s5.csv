@@ -1,0 +1,282 @@
+ts,config,session,clip,rid,kind,used,cancel_reason,created_rel_end_ms,llm_ttft_ms,played_rel_end_ms,prompt_tokens,cached_tokens,completion_tokens,tts_chars,tts_sdk_first_byte_ms,harness,audio_bytes,err,text
+2026-10-17T18:07:55Z,D_seg800_spec_quality,P1-pass1,P1_t01,1,commit,False,caller_resumed,-1890.3,,,,,,0,,v2,0,,"हाँ, हैलो।"
+2026-10-17T18:07:55Z,D_seg800_spec_quality,P1-pass1,P1_t01,2,spec,False,respec,-1019.8,,,,,,0,,v2,0,,"हाँ, हैलो। हाँ"
+2026-10-17T18:07:55Z,D_seg800_spec_quality,P1-pass1,P1_t01,3,spec,False,caller_resumed,-898.4,,,,,,0,,v2,0,,"हाँ, हैलो। हाँ बोलिए"
+2026-10-17T18:07:55Z,D_seg800_spec_quality,P1-pass1,P1_t01,4,spec,False,respec,260.1,,,,,,0,,v2,0,,"हाँ, हैलो। हाँ बोलिए कौन बोल रहा"
+2026-10-17T18:07:55Z,D_seg800_spec_quality,P1-pass1,P1_t01,5,spec,True,,496.5,1259.1,1785.4,1714,1711,29,95,29,v2,94220,,"हाँ, हैलो। हाँ बोलिए कौन बोल रहा है"
+2026-10-17T18:08:00Z,D_seg800_spec_quality,P1-pass1,P1_t02,6,commit,True,,960.5,2224.5,3224.3,1754,1650,37,102,33,v2,116860,,हम।
+2026-10-17T18:08:08Z,D_seg800_spec_quality,P1-pass1,P1_t03,7,spec,False,respec,-3259.9,,,,,,0,,v2,0,,प्रीमियम कितना आएगा इस
+2026-10-17T18:08:08Z,D_seg800_spec_quality,P1-pass1,P1_t03,8,spec,False,caller_resumed,-2966.4,,,,,,0,,v2,0,,प्रीमियम कितना आएगा इस बार
+2026-10-17T18:08:08Z,D_seg800_spec_quality,P1-pass1,P1_t03,9,spec,False,respec,260.1,,,,,,0,,v2,0,,"प्रीमियम कितना आएगा इस बार? लास्ट ईयर तो 25,000 के आसपास"
+2026-10-17T18:08:08Z,D_seg800_spec_quality,P1-pass1,P1_t03,10,spec,True,,350.6,951.0,1320.4,1819,1751,40,145,18,v2,126960,,"प्रीमियम कितना आएगा इस बार? लास्ट ईयर तो 25,000 के आसपास था"
+2026-10-17T18:08:19Z,D_seg800_spec_quality,P1-pass1,P1_t04,11,spec,False,caller_resumed,-6699.9,,,,,,0,,v2,0,,सॉरी
+2026-10-17T18:08:19Z,D_seg800_spec_quality,P1-pass1,P1_t04,12,spec,False,caller_resumed,-5719.9,,,,,,0,,v2,0,,सॉरी सॉरी एक
+2026-10-17T18:08:19Z,D_seg800_spec_quality,P1-pass1,P1_t04,13,spec,False,caller_resumed,-4220.0,,,,,,0,,v2,0,,सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ
+2026-10-17T18:08:19Z,D_seg800_spec_quality,P1-pass1,P1_t04,14,spec,False,caller_resumed,-2680.0,,,,,,0,,v2,0,,सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ मुझे बस ये जानना
+2026-10-17T18:08:19Z,D_seg800_spec_quality,P1-pass1,P1_t04,15,spec,True,,260.0,1132.8,1434.8,1903,1751,42,127,11,v2,114060,,"सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ मुझे बस ये जानना है कि क्लेम लिमिट 1.5,00,000 है या ज्यादा"
+2026-10-17T18:08:22Z,D_seg800_spec_quality,P1-pass1,P1_t05,16,commit,True,,958.5,993.4,1968.1,1957,1751,17,52,16,v2,60920,,ओके?
+2026-10-17T18:08:29Z,D_seg800_spec_quality,P1-pass1,P1_t06,17,spec,False,respec,-1359.9,,,,,,0,,v2,0,,वेट आप रोब
+2026-10-17T18:08:29Z,D_seg800_spec_quality,P1-pass1,P1_t06,18,spec,False,caller_resumed,-1256.6,,,,,,0,,v2,0,,वेट आप रोबॉट हो क्या
+2026-10-17T18:08:29Z,D_seg800_spec_quality,P1-pass1,P1_t06,19,spec,False,respec,260.1,,,,,,0,,v2,0,,"वेट, आप रोबॉट हो क्या? ए"
+2026-10-17T18:08:29Z,D_seg800_spec_quality,P1-pass1,P1_t06,20,spec,False,respec,364.7,,,,,,0,,v2,0,,"वेट, आप रोबॉट हो क्या? एआई"
+2026-10-17T18:08:29Z,D_seg800_spec_quality,P1-pass1,P1_t06,21,spec,True,,466.1,1082.4,1565.5,1994,1954,27,95,16,v2,94060,,"वेट, आप रोबॉट हो क्या? एआई हो"
+2026-10-17T18:08:36Z,D_seg800_spec_quality,P1-pass1,P1_t08,22,spec,False,respec,-2999.9,,,,,,0,,v2,0,,ठीक
+2026-10-17T18:08:36Z,D_seg800_spec_quality,P1-pass1,P1_t08,23,spec,False,caller_resumed,-2898.5,,,,,,0,,v2,0,,ठीक है
+2026-10-17T18:08:36Z,D_seg800_spec_quality,P1-pass1,P1_t08,24,spec,False,respec,-700.0,,,,,,0,,v2,0,,ठीक है कल 3:30 बजे कॉल कर
+2026-10-17T18:08:36Z,D_seg800_spec_quality,P1-pass1,P1_t08,25,spec,False,caller_resumed,-601.3,,,,,,0,,v2,0,,ठीक है कल 3:30 बजे कॉल कर लेना
+2026-10-17T18:08:36Z,D_seg800_spec_quality,P1-pass1,P1_t08,26,spec,False,respec,260.1,,,,,,0,,v2,0,,ठीक है कल 3:30 बजे कॉल कर लेना तब
+2026-10-17T18:08:36Z,D_seg800_spec_quality,P1-pass1,P1_t08,27,spec,True,,601.5,933.1,1593.0,2045,1954,43,140,35,v2,145960,,ठीक है कल 3:30 बजे कॉल कर लेना तब फ्री हूँ
+2026-10-17T18:08:43Z,D_seg800_spec_quality,P1-pass1,P1_t09,28,spec,False,caller_resumed,-3099.9,,,,,,0,,v2,0,,बीटी
+2026-10-17T18:08:43Z,D_seg800_spec_quality,P1-pass1,P1_t09,29,spec,False,caller_resumed,-899.9,,,,,,0,,v2,0,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना
+2026-10-17T18:08:43Z,D_seg800_spec_quality,P1-pass1,P1_t09,30,spec,False,respec,260.1,,,,,,0,,v2,0,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है पता है
+2026-10-17T18:08:43Z,D_seg800_spec_quality,P1-pass1,P1_t09,31,spec,True,,266.5,1238.0,1545.7,2113,1954,36,102,13,v2,105060,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है पता है आपको
+2026-10-17T18:08:50Z,D_seg800_spec_quality,P1-pass1,P1_t10,32,spec,False,respec,260.1,,,,,,0,,v2,0,,हाँ और रिन्यूअल का लिंक व्हाट्सएप पे भेज दो इसी नंबर
+2026-10-17T18:08:50Z,D_seg800_spec_quality,P1-pass1,P1_t10,33,spec,True,,481.5,1210.6,1717.5,2177,1954,36,57,17,v2,68620,,हाँ और रिन्यूअल का लिंक व्हाट्सएप पे भेज दो इसी नंबर पे
+2026-10-17T18:08:55Z,D_seg800_spec_quality,P1-pass1,P1_t11,34,spec,False,respec,260.1,,,,,,0,,v2,0,,ओके थैंक यू
+2026-10-17T18:08:55Z,D_seg800_spec_quality,P1-pass1,P1_t11,35,spec,True,,304.5,1135.0,1451.6,2229,1954,11,18,11,v2,44320,,ओके थैंक यू बाई
+2026-10-17T18:09:04Z,D_seg800_spec_quality,P2-pass1,P2_t01,1,commit,False,caller_resumed,-2851.5,,,,,,0,,v2,0,,"हाँ, हैलो।"
+2026-10-17T18:09:04Z,D_seg800_spec_quality,P2-pass1,P2_t01,2,spec,False,respec,-1519.9,,,,,,0,,v2,0,,"हाँ, हैलो। के बोल"
+2026-10-17T18:09:04Z,D_seg800_spec_quality,P2-pass1,P2_t01,3,spec,False,respec,-1457.5,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक"
+2026-10-17T18:09:04Z,D_seg800_spec_quality,P2-pass1,P2_t01,4,spec,False,caller_resumed,-1157.5,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक बानी"
+2026-10-17T18:09:04Z,D_seg800_spec_quality,P2-pass1,P2_t01,5,spec,False,respec,260.1,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक बानी। का बात"
+2026-10-17T18:09:04Z,D_seg800_spec_quality,P2-pass1,P2_t01,6,spec,True,,646.6,1018.1,1720.3,1715,1650,34,118,33,v2,104060,,"हाँ, हैलो। के बोलक बानी। का बात बा"
+2026-10-17T18:09:08Z,D_seg800_spec_quality,P2-pass1,P2_t02,7,commit,True,,1073.5,916.2,2005.8,1759,1650,35,100,15,v2,115260,,हाँ।
+2026-10-17T18:09:17Z,D_seg800_spec_quality,P2-pass1,P2_t03,8,spec,False,respec,-2759.9,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके
+2026-10-17T18:09:17Z,D_seg800_spec_quality,P2-pass1,P2_t03,9,spec,False,caller_resumed,-2692.4,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका
+2026-10-17T18:09:17Z,D_seg800_spec_quality,P2-pass1,P2_t03,10,spec,False,respec,260.1,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70
+2026-10-17T18:09:17Z,D_seg800_spec_quality,P2-pass1,P2_t03,11,spec,False,respec,305.4,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70 बरिस
+2026-10-17T18:09:17Z,D_seg800_spec_quality,P2-pass1,P2_t03,12,spec,True,,606.5,966.2,1605.1,1826,1756,40,143,31,v2,130560,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70 बरिस बा
+2026-10-17T18:09:26Z,D_seg800_spec_quality,P2-pass1,P2_t04,13,spec,False,respec,260.1,,,,,,0,,v2,0,,"रुकी रुकी पहले ही बताएं 1,50,000 ले के इलाज के खर्चा कवर हुई"
+2026-10-17T18:09:26Z,D_seg800_spec_quality,P2-pass1,P2_t04,14,spec,True,,524.5,915.6,1453.4,1900,1756,37,105,13,v2,105260,,"रुकी रुकी पहले ही बताएं 1,50,000 ले के इलाज के खर्चा कवर हुई कि न"
+2026-10-17T18:09:30Z,D_seg800_spec_quality,P2-pass1,P2_t05,15,spec,False,respec,260.1,,,,,,0,,v2,0,,ठीक
+2026-10-17T18:09:30Z,D_seg800_spec_quality,P2-pass1,P2_t05,16,spec,True,,840.6,983.8,1838.4,1948,1756,35,117,14,v2,109620,,ठीक बा
+2026-10-17T18:09:37Z,D_seg800_spec_quality,P2-pass1,P2_t06,17,spec,False,respec,260.1,,,,,,0,,v2,0,,"प्रीमियम 25,000 से ज़्यादा हुई तहमरा से न"
+2026-10-17T18:09:37Z,D_seg800_spec_quality,P2-pass1,P2_t06,18,spec,True,,290.5,1009.6,1312.2,2011,1756,40,126,10,v2,125660,,"प्रीमियम 25,000 से ज़्यादा हुई तहमरा से न हो पाई"
+2026-10-17T18:09:44Z,D_seg800_spec_quality,P2-pass1,P2_t08,19,spec,False,respec,-2239.9,,,,,,0,,v2,0,,रउआ मशीन हई की
+2026-10-17T18:09:44Z,D_seg800_spec_quality,P2-pass1,P2_t08,20,spec,False,caller_resumed,-1986.6,,,,,,0,,v2,0,,रउआ मशीन हई की आदमी
+2026-10-17T18:09:44Z,D_seg800_spec_quality,P2-pass1,P2_t08,21,spec,False,respec,260.1,,,,,,0,,v2,0,,रउआ मशीन हई की आदमी। सच सच
+2026-10-17T18:09:44Z,D_seg800_spec_quality,P2-pass1,P2_t08,22,spec,False,respec,416.1,,,,,,0,,v2,0,,रउआ मशीन हई की आदमी। सच सच बता
+2026-10-17T18:09:44Z,D_seg800_spec_quality,P2-pass1,P2_t08,23,spec,True,,516.8,1082.5,1639.5,2072,1756,33,109,15,v2,114260,,रउआ मशीन हई की आदमी। सच सच बताएं
+2026-10-17T18:09:53Z,D_seg800_spec_quality,P2-pass1,P2_t09,24,spec,False,respec,260.1,,,,,,0,,v2,0,,परसों 3:30 बजे फ़ोन करें वो घरी दुकान पर भीड़ कम
+2026-10-17T18:09:53Z,D_seg800_spec_quality,P2-pass1,P2_t09,25,spec,True,,414.5,1110.9,1546.7,2134,1756,44,125,16,v2,147820,,परसों 3:30 बजे फ़ोन करें वो घरी दुकान पर भीड़ कम रहेला
+2026-10-17T18:09:59Z,D_seg800_spec_quality,P2-pass1,P2_t10,26,spec,False,respec,260.0,,,,,,0,,v2,0,,अच्छा कि बताएं आज सिवान में बरखा हो
+2026-10-17T18:09:59Z,D_seg800_spec_quality,P2-pass1,P2_t10,27,spec,True,,502.4,1100.7,1622.3,2203,1756,38,99,19,v2,103660,,अच्छा कि बताएं आज सिवान में बरखा होई का
+2026-10-17T18:10:06Z,D_seg800_spec_quality,P2-pass1,P2_t11,28,spec,False,respec,-1399.9,,,,,,0,,v2,0,,ठीक बा राख
+2026-10-17T18:10:06Z,D_seg800_spec_quality,P2-pass1,P2_t11,29,spec,False,respec,-1380.4,,,,,,0,,v2,0,,ठीक बा राखत
+2026-10-17T18:10:06Z,D_seg800_spec_quality,P2-pass1,P2_t11,30,spec,False,caller_resumed,-1279.2,,,,,,0,,v2,0,,ठीक बा राखत बानी
+2026-10-17T18:10:06Z,D_seg800_spec_quality,P2-pass1,P2_t11,31,spec,False,respec,260.1,,,,,,0,,v2,0,,ठीक बा राखत बानी।
+2026-10-17T18:10:06Z,D_seg800_spec_quality,P2-pass1,P2_t11,32,spec,True,,705.3,1062.4,1782.5,2259,1756,40,57,14,v2,68620,,ठीक बा राखत बानी। प्रणाम
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,1,commit,False,barge_in_after_cutin,-7575.4,1093.7,-6443.1,,,,11,,v2,6368,,हाँ।
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,2,spec,False,caller_resumed,-6959.9,,,,,,0,,v2,0,,हाँ। हैलो
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,3,spec,False,caller_resumed,-5780.0,,,,,,0,,v2,0,,हाँ। हैलो कौन
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,4,commit,False,barge_in_after_cutin,-5186.6,918.2,-4225.8,,,,54,,v2,35488,,हाँ। हैलो कौन?
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,5,spec,False,respec,-4419.9,,,,,,0,,v2,0,,हाँ। हैलो कौन?
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,6,spec,False,caller_resumed,-4376.5,,,,,,0,,v2,0,,हाँ। हैलो कौन? ज़रा
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,7,spec,False,caller_resumed,-1799.9,,,,,,0,,v2,0,,हाँ। हैलो कौन? ज़रा ज़ोर से बोलो बेटा
+2026-10-17T18:10:19Z,D_seg800_spec_quality,P4-pass1,P4_t01,8,spec,True,,260.1,1080.4,1383.5,1720,1650,39,123,17,v2,121120,,हाँ। हैलो कौन? ज़रा ज़ोर से बोलो बेटा सुनाई कम देता
+2026-10-17T18:10:23Z,D_seg800_spec_quality,P4-pass1,P4_t02,9,commit,True,,957.6,893.5,1890.8,1770,1650,34,96,13,v2,116860,,हाँ।
+2026-10-17T18:10:34Z,D_seg800_spec_quality,P4-pass1,P4_t03,10,spec,False,barge_in_after_cutin,-6339.9,939.1,-5333.0,1817,1767,8,9,37,v2,29120,,हमारी पॉलिसी
+2026-10-17T18:10:34Z,D_seg800_spec_quality,P4-pass1,P4_t03,11,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:10:34Z,D_seg800_spec_quality,P4-pass1,P4_t03,12,spec,False,caller_resumed,-2381.5,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:10:34Z,D_seg800_spec_quality,P4-pass1,P4_t03,13,commit,False,,-1754.4,1055.6,-675.5,1824,1767,25,64,23,v2,81360,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T18:10:34Z,D_seg800_spec_quality,P4-pass1,P4_t03,14,spec,False,respec,260.1,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता
+2026-10-17T18:10:34Z,D_seg800_spec_quality,P4-pass1,P4_t03,15,spec,True,,348.7,915.1,1291.1,1830,1767,35,122,26,v2,122460,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है
+2026-10-17T18:10:44Z,D_seg800_spec_quality,P4-pass1,P4_t04,16,commit,False,barge_in_after_cutin,-5659.5,909.9,-4706.5,1878,1767,9,13,15,v2,30060,,पिछली बार।
+2026-10-17T18:10:44Z,D_seg800_spec_quality,P4-pass1,P4_t04,17,spec,False,respec,-4459.9,,,,,,0,,v2,0,,पिछली बार। 25
+2026-10-17T18:10:44Z,D_seg800_spec_quality,P4-pass1,P4_t04,18,spec,False,caller_resumed,-4284.7,,,,,,0,,v2,0,,"पिछली बार। 25,000"
+2026-10-17T18:10:44Z,D_seg800_spec_quality,P4-pass1,P4_t04,19,spec,False,respec,-2739.9,,,,,,0,,v2,0,,"पिछली बार। 25,000 नहीं"
+2026-10-17T18:10:44Z,D_seg800_spec_quality,P4-pass1,P4_t04,20,spec,False,caller_resumed,-2682.5,,,,,,0,,v2,0,,"पिछली बार। 25,000 नहीं नहीं"
+2026-10-17T18:10:44Z,D_seg800_spec_quality,P4-pass1,P4_t04,21,spec,True,,260.1,962.8,1240.2,1891,1767,35,100,16,v2,116160,,"पिछली बार। 25,000 नहीं नहीं 24,500 भरे थे"
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,22,spec,False,respec,-4699.9,,,,,,0,,v2,0,,बेटा
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,23,spec,False,caller_resumed,-4489.4,,,,,,0,,v2,0,,बेटा रुको
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,24,spec,False,respec,-1619.9,,,,,,0,,v2,0,,बेटा रुको इतना जल्दी जल्दी मत
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,25,spec,False,caller_resumed,-1590.4,,,,,,0,,v2,0,,बेटा रुको इतना जल्दी जल्दी मत बोलो
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,26,commit,True,,-880.5,971.2,107.8,1949,1767,20,47,17,v2,67260,,"बेटा, रुको, इतना जल्दी जल्दी मत बोलो।"
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,27,spec,False,respec,260.1,,,,,,0,,v2,0,,"बेटा, रुको, इतना जल्दी जल्दी मत बोलो। धीरे"
+2026-10-17T18:10:52Z,D_seg800_spec_quality,P4-pass1,P4_t05,28,spec,False,turn_over,495.4,,,,,,0,,v2,0,,"बेटा, रुको, इतना जल्दी जल्दी मत बोलो। धीरे बोलो"
+2026-10-17T18:11:00Z,D_seg800_spec_quality,P4-pass1,P4_t06,29,commit,False,barge_in_after_cutin,-4224.5,985.8,-3186.3,1983,1767,8,9,26,v2,29120,,तुम।
+2026-10-17T18:11:00Z,D_seg800_spec_quality,P4-pass1,P4_t06,30,spec,False,respec,-3140.0,,,,,,0,,v2,0,,तुम। मशीन
+2026-10-17T18:11:00Z,D_seg800_spec_quality,P4-pass1,P4_t06,31,spec,False,caller_resumed,-3128.5,,,,,,0,,v2,0,,तुम। मशीन हो क्या
+2026-10-17T18:11:00Z,D_seg800_spec_quality,P4-pass1,P4_t06,32,spec,False,respec,260.1,,,,,,0,,v2,0,,तुम। मशीन हो क्या आजकल फ़ोन पे मशीन बोलती
+2026-10-17T18:11:00Z,D_seg800_spec_quality,P4-pass1,P4_t06,33,spec,True,,270.6,969.5,1254.3,1995,0,29,99,13,v2,96560,,तुम। मशीन हो क्या आजकल फ़ोन पे मशीन बोलती है
+2026-10-17T18:11:22Z,D_seg800_spec_quality,P4-pass1,P4_t09,34,spec,False,respec,-5099.9,,,,,,0,,v2,0,,सोमवार
+2026-10-17T18:11:22Z,D_seg800_spec_quality,P4-pass1,P4_t09,35,spec,False,caller_resumed,-4894.6,,,,,,0,,v2,0,,सोमवार को
+2026-10-17T18:11:22Z,D_seg800_spec_quality,P4-pass1,P4_t09,36,commit,False,barge_in_after_cutin,-4375.2,921.4,-3419.4,2037,1650,18,57,33,v2,63860,,सोमवार को।
+2026-10-17T18:11:22Z,D_seg800_spec_quality,P4-pass1,P4_t09,37,spec,False,respec,-2759.9,,,,,,0,,v2,0,,सोमवार को। 3.5
+2026-10-17T18:11:22Z,D_seg800_spec_quality,P4-pass1,P4_t09,38,spec,False,caller_resumed,-2705.4,,,,,,0,,v2,0,,सोमवार को। 3:30 बजे
+2026-10-17T18:11:22Z,D_seg800_spec_quality,P4-pass1,P4_t09,39,spec,True,,260.1,951.0,1244.8,2049,1650,38,122,12,v2,120820,,सोमवार को। 3:30 बजे मेरे बेटे को फ़ोन कर लेना
+2026-10-17T18:11:29Z,D_seg800_spec_quality,P4-pass1,P4_t10,40,spec,False,respec,-1999.9,,,,,,0,,v2,0,,अच्छा
+2026-10-17T18:11:29Z,D_seg800_spec_quality,P4-pass1,P4_t10,41,spec,False,caller_resumed,-1971.9,,,,,,0,,v2,0,,अच्छा बेटा
+2026-10-17T18:11:29Z,D_seg800_spec_quality,P4-pass1,P4_t10,42,spec,False,respec,260.1,,,,,,0,,v2,0,,अच्छा बेटा तुमने खाना खा
+2026-10-17T18:11:29Z,D_seg800_spec_quality,P4-pass1,P4_t10,43,spec,True,,332.7,1032.8,1411.0,2106,1650,36,107,45,v2,117260,,अच्छा बेटा तुमने खाना खा लिया
+2026-10-17T18:11:36Z,D_seg800_spec_quality,P4-pass1,P4_t11,44,spec,False,caller_resumed,-3599.9,,,,,,0,,v2,0,,अच्छा
+2026-10-17T18:11:36Z,D_seg800_spec_quality,P4-pass1,P4_t11,45,commit,False,barge_in_after_cutin,-2992.5,1015.8,-1958.5,,,,57,,v2,33088,,अच्छा।
+2026-10-17T18:11:36Z,D_seg800_spec_quality,P4-pass1,P4_t11,46,spec,False,caller_resumed,-2159.9,,,,,,0,,v2,0,,अच्छा। ठीक है
+2026-10-17T18:11:36Z,D_seg800_spec_quality,P4-pass1,P4_t11,47,spec,False,respec,260.1,,,,,,0,,v2,0,,अच्छा। ठीक है भगवान भला
+2026-10-17T18:11:36Z,D_seg800_spec_quality,P4-pass1,P4_t11,48,spec,True,,697.5,1127.8,1838.9,2161,1650,38,63,11,v2,71460,,अच्छा। ठीक है भगवान भला करें
+2026-10-17T18:11:48Z,D_seg800_spec_quality,P4pause-1,P4_t03,1,spec,False,barge_in_after_cutin,-6339.9,892.6,-5410.8,1707,1650,12,23,15,v2,36860,,हमारी पॉलिसी
+2026-10-17T18:11:48Z,D_seg800_spec_quality,P4pause-1,P4_t03,2,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:11:48Z,D_seg800_spec_quality,P4pause-1,P4_t03,3,spec,False,respec,-2403.3,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो
+2026-10-17T18:11:48Z,D_seg800_spec_quality,P4pause-1,P4_t03,4,spec,False,caller_resumed,-2302.3,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:11:48Z,D_seg800_spec_quality,P4pause-1,P4_t03,5,spec,True,,260.1,1004.9,1317.7,1719,1650,34,96,16,v2,116260,,हमारी पॉलिसी। कब खत्म हो रही है बेटा तो बाहर रहता है
+2026-10-17T18:11:59Z,D_seg800_spec_quality,P4pause-1,P4_t03,6,spec,False,barge_in_after_cutin,-6339.9,1017.4,-5304.3,1707,1704,13,25,18,v2,45760,,हमारी पॉलिसी
+2026-10-17T18:11:59Z,D_seg800_spec_quality,P4pause-1,P4_t03,7,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:11:59Z,D_seg800_spec_quality,P4pause-1,P4_t03,8,spec,False,caller_resumed,-2393.3,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:11:59Z,D_seg800_spec_quality,P4pause-1,P4_t03,9,commit,False,,-1763.2,1130.3,-572.3,1714,1650,32,96,24,v2,103460,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T18:11:59Z,D_seg800_spec_quality,P4pause-1,P4_t03,10,spec,False,respec,260.1,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता
+2026-10-17T18:11:59Z,D_seg800_spec_quality,P4pause-1,P4_t03,11,spec,True,,314.6,941.0,1306.3,1720,1650,37,123,17,v2,129760,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है
+2026-10-17T18:12:09Z,D_seg800_spec_quality,P4pause-1,P4_t03,12,spec,False,barge_in_after_cutin,-6339.9,944.3,-5344.8,1707,1704,14,25,23,v2,47460,,हमारी पॉलिसी
+2026-10-17T18:12:09Z,D_seg800_spec_quality,P4pause-1,P4_t03,13,spec,False,respec,-2478.2,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:12:09Z,D_seg800_spec_quality,P4pause-1,P4_t03,14,spec,False,respec,-2417.5,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो
+2026-10-17T18:12:09Z,D_seg800_spec_quality,P4pause-1,P4_t03,15,spec,False,caller_resumed,-2316.2,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:12:09Z,D_seg800_spec_quality,P4pause-1,P4_t03,16,commit,True,,-1778.2,1813.7,47.6,1714,1711,33,97,12,v2,87260,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T18:12:09Z,D_seg800_spec_quality,P4pause-1,P4_t03,17,spec,False,turn_over,260.1,1140.7,1424.4,,,,10,,v2,14560,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है
+2026-10-17T18:12:19Z,D_seg800_spec_quality,P4pause-1,P4_t03,18,spec,False,barge_in_after_cutin,-6339.9,999.8,-5256.1,1707,1704,13,27,44,v2,47560,,हमारी पॉलिसी
+2026-10-17T18:12:19Z,D_seg800_spec_quality,P4pause-1,P4_t03,19,spec,False,respec,-2479.8,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:12:19Z,D_seg800_spec_quality,P4pause-1,P4_t03,20,spec,False,caller_resumed,-2313.4,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:12:19Z,D_seg800_spec_quality,P4pause-1,P4_t03,21,commit,False,,-1720.4,1052.0,-651.8,1714,1711,34,96,16,v2,115960,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T18:12:19Z,D_seg800_spec_quality,P4pause-1,P4_t03,22,spec,False,respec,260.1,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता
+2026-10-17T18:12:19Z,D_seg800_spec_quality,P4pause-1,P4_t03,23,spec,True,,286.9,896.0,1227.5,1720,1717,34,112,17,v2,116560,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है
+2026-10-17T18:12:30Z,D_seg800_spec_quality,P4pause-1,P4_t03,24,spec,False,barge_in_after_cutin,-6339.9,965.9,-5331.8,1707,1704,13,25,14,v2,45760,,हमारी पॉलिसी
+2026-10-17T18:12:30Z,D_seg800_spec_quality,P4pause-1,P4_t03,25,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो
+2026-10-17T18:12:30Z,D_seg800_spec_quality,P4pause-1,P4_t03,26,spec,False,caller_resumed,-2390.3,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:12:30Z,D_seg800_spec_quality,P4pause-1,P4_t03,27,commit,False,,-1763.2,882.6,-807.4,1714,1711,33,103,46,v2,102760,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T18:12:30Z,D_seg800_spec_quality,P4pause-1,P4_t03,28,spec,False,respec,260.1,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता
+2026-10-17T18:12:30Z,D_seg800_spec_quality,P4pause-1,P4_t03,29,spec,True,,306.9,1043.4,1379.0,1720,1717,40,134,16,v2,135860,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है
+2026-10-17T18:12:47Z,D_seg800_spec_quality,P1-pass2,P1_t01,1,commit,False,caller_resumed,-1891.3,,,,,,0,,v2,0,,"हाँ, हैलो।"
+2026-10-17T18:12:47Z,D_seg800_spec_quality,P1-pass2,P1_t01,2,spec,False,respec,-1019.9,,,,,,0,,v2,0,,"हाँ, हैलो। हाँ"
+2026-10-17T18:12:47Z,D_seg800_spec_quality,P1-pass2,P1_t01,3,spec,False,caller_resumed,-898.3,,,,,,0,,v2,0,,"हाँ, हैलो। हाँ बोलिए"
+2026-10-17T18:12:47Z,D_seg800_spec_quality,P1-pass2,P1_t01,4,spec,False,respec,260.1,,,,,,0,,v2,0,,"हाँ, हैलो। हाँ बोलिए कौन बोल रहा"
+2026-10-17T18:12:47Z,D_seg800_spec_quality,P1-pass2,P1_t01,5,spec,True,,503.4,924.6,1453.0,1714,1711,30,101,24,v2,98860,,"हाँ, हैलो। हाँ बोलिए कौन बोल रहा है"
+2026-10-17T18:12:51Z,D_seg800_spec_quality,P1-pass2,P1_t02,6,commit,True,,985.6,959.4,1965.5,1755,1650,39,119,16,v2,126660,,हम।
+2026-10-17T18:12:59Z,D_seg800_spec_quality,P1-pass2,P1_t03,7,spec,False,respec,-3259.9,,,,,,0,,v2,0,,प्रीमियम कितना आएगा इस
+2026-10-17T18:12:59Z,D_seg800_spec_quality,P1-pass2,P1_t03,8,spec,False,caller_resumed,-3060.4,,,,,,0,,v2,0,,प्रीमियम कितना आएगा इस बार
+2026-10-17T18:12:59Z,D_seg800_spec_quality,P1-pass2,P1_t03,9,spec,True,,260.2,1351.7,1624.7,1822,1752,30,88,12,v2,102920,,"प्रीमियम कितना आएगा इस बार? लास्ट ईयर तो 25,000 के आसपास था"
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,10,spec,False,caller_resumed,-6699.9,,,,,,0,,v2,0,,सॉरी
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,11,spec,False,respec,-5719.9,,,,,,0,,v2,0,,सॉरी सॉरी एक
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,12,spec,False,caller_resumed,-5633.4,,,,,,0,,v2,0,,सॉरी सॉरी एक सेकंड
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,13,spec,False,caller_resumed,-4219.9,,,,,,0,,v2,0,,सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,14,spec,False,respec,-2679.8,,,,,,0,,v2,0,,सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ मुझे बस ये
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,15,spec,False,caller_resumed,-2626.2,,,,,,0,,v2,0,,सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ मुझे बस ये जानना
+2026-10-17T18:13:10Z,D_seg800_spec_quality,P1-pass2,P1_t04,16,spec,True,,260.1,979.9,1251.5,1896,1752,37,105,11,v2,106760,,"सॉरी सॉरी एक सेकंड बीच में बोल रही हूँ मुझे बस ये जानना है कि क्लेम लिमिट 1.5,00,000 है या ज्यादा"
+2026-10-17T18:13:13Z,D_seg800_spec_quality,P1-pass2,P1_t05,17,commit,True,,1038.4,891.8,1945.4,1945,1752,17,60,15,v2,64420,,ओके?
+2026-10-17T18:13:20Z,D_seg800_spec_quality,P1-pass2,P1_t06,18,spec,False,respec,-1359.9,,,,,,0,,v2,0,,वेट आप रो
+2026-10-17T18:13:20Z,D_seg800_spec_quality,P1-pass2,P1_t06,19,spec,False,caller_resumed,-1282.5,,,,,,0,,v2,0,,वेट आप रोबॉट हो क्या
+2026-10-17T18:13:20Z,D_seg800_spec_quality,P1-pass2,P1_t06,20,spec,False,respec,260.1,,,,,,0,,v2,0,,"वेट, आप रोबॉट हो क्या? ए"
+2026-10-17T18:13:20Z,D_seg800_spec_quality,P1-pass2,P1_t06,21,spec,False,respec,338.6,,,,,,0,,v2,0,,"वेट, आप रोबॉट हो क्या? एआई"
+2026-10-17T18:13:20Z,D_seg800_spec_quality,P1-pass2,P1_t06,22,spec,True,,439.8,949.0,1406.1,1982,1942,32,107,16,v2,111960,,"वेट, आप रोबॉट हो क्या? एआई हो"
+2026-10-17T18:13:26Z,D_seg800_spec_quality,P1-pass2,P1_t08,23,spec,False,respec,-2999.9,,,,,,0,,v2,0,,ठीक
+2026-10-17T18:13:26Z,D_seg800_spec_quality,P1-pass2,P1_t08,24,spec,False,caller_resumed,-2860.4,,,,,,0,,v2,0,,ठीक है
+2026-10-17T18:13:26Z,D_seg800_spec_quality,P1-pass2,P1_t08,25,spec,False,respec,-699.9,,,,,,0,,v2,0,,ठीक है कल 3:30 बजे कॉल
+2026-10-17T18:13:26Z,D_seg800_spec_quality,P1-pass2,P1_t08,26,spec,False,caller_resumed,-663.3,,,,,,0,,v2,0,,ठीक है कल 3:30 बजे कॉल कर
+2026-10-17T18:13:26Z,D_seg800_spec_quality,P1-pass2,P1_t08,27,spec,False,respec,260.1,,,,,,0,,v2,0,,ठीक है कल 3:30 बजे कॉल कर लेना तब
+2026-10-17T18:13:26Z,D_seg800_spec_quality,P1-pass2,P1_t08,28,spec,True,,339.6,934.6,1297.0,2037,1942,40,128,22,v2,139320,,ठीक है कल 3:30 बजे कॉल कर लेना तब फ्री
+2026-10-17T18:13:33Z,D_seg800_spec_quality,P1-pass2,P1_t09,29,spec,False,caller_resumed,-3099.9,,,,,,0,,v2,0,,बीटी
+2026-10-17T18:13:33Z,D_seg800_spec_quality,P1-pass2,P1_t09,30,spec,False,respec,-899.9,,,,,,0,,v2,0,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना
+2026-10-17T18:13:33Z,D_seg800_spec_quality,P1-pass2,P1_t09,31,spec,False,caller_resumed,-790.5,,,,,,0,,v2,0,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है
+2026-10-17T18:13:33Z,D_seg800_spec_quality,P1-pass2,P1_t09,32,spec,False,respec,260.1,,,,,,0,,v2,0,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है पता है
+2026-10-17T18:13:33Z,D_seg800_spec_quality,P1-pass2,P1_t09,33,spec,True,,313.7,1095.0,1449.9,2103,1942,34,91,15,v2,99560,,बीटी डब्ल्यू आज दिल्ली का एक्सयूआई कितना है पता है आपको
+2026-10-17T18:13:40Z,D_seg800_spec_quality,P1-pass2,P1_t10,34,spec,False,respec,260.1,,,,,,0,,v2,0,,हाँ और रिन्यूअल का लिंक व्हाट्सएप पे भेज दो इसी नंबर
+2026-10-17T18:13:40Z,D_seg800_spec_quality,P1-pass2,P1_t10,35,spec,True,,407.6,1112.5,1536.6,2165,1942,36,57,16,v2,68620,,हाँ और रिन्यूअल का लिंक व्हाट्सएप पे भेज दो इसी नंबर पे
+2026-10-17T18:13:45Z,D_seg800_spec_quality,P1-pass2,P1_t11,36,spec,False,respec,260.1,,,,,,0,,v2,0,,ओके थैंक यू
+2026-10-17T18:13:45Z,D_seg800_spec_quality,P1-pass2,P1_t11,37,spec,False,respec,286.5,,,,,,0,,v2,0,,ओके थैंक यू बाई
+2026-10-17T18:13:45Z,D_seg800_spec_quality,P1-pass2,P1_t11,38,spec,True,,586.5,1203.5,1805.6,2217,1942,16,37,15,v2,62980,,ओके थैंक यू बाय
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,1,commit,False,caller_resumed,-2843.4,,,,,,0,,v2,0,,"हाँ, हैलो।"
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,2,spec,False,respec,-1519.9,,,,,,0,,v2,0,,"हाँ, हैलो। के बोल"
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,3,spec,False,respec,-1457.4,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक"
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,4,spec,False,respec,-1255.5,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक बा"
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,5,spec,False,caller_resumed,-1154.3,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक बानी"
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,6,spec,False,respec,260.1,,,,,,0,,v2,0,,"हाँ, हैलो। के बोलक बानी। का बात"
+2026-10-17T18:13:54Z,D_seg800_spec_quality,P2-pass2,P2_t01,7,spec,True,,640.5,901.3,1555.7,1715,1712,36,114,13,v2,111320,,"हाँ, हैलो। के बोलक बानी। का बात बा"
+2026-10-17T18:13:57Z,D_seg800_spec_quality,P2-pass2,P2_t02,8,commit,True,,1052.5,935.6,2004.9,1761,1650,36,106,13,v2,130960,,हाँ।
+2026-10-17T18:14:07Z,D_seg800_spec_quality,P2-pass2,P2_t03,9,spec,False,respec,-2759.9,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा
+2026-10-17T18:14:07Z,D_seg800_spec_quality,P2-pass2,P2_t03,10,spec,False,respec,-2728.2,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके
+2026-10-17T18:14:07Z,D_seg800_spec_quality,P2-pass2,P2_t03,11,spec,False,caller_resumed,-2627.2,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका
+2026-10-17T18:14:07Z,D_seg800_spec_quality,P2-pass2,P2_t03,12,spec,False,respec,260.1,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70
+2026-10-17T18:14:07Z,D_seg800_spec_quality,P2-pass2,P2_t03,13,spec,False,respec,372.6,,,,,,0,,v2,0,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70 बरिस
+2026-10-17T18:14:07Z,D_seg800_spec_quality,P2-pass2,P2_t03,14,spec,True,,672.7,920.4,1606.3,1829,1758,47,157,13,v2,144860,,हमरा बाबूजी के भी एह में जोड़ल जा सके लाका? उनकर उमेर 70 बरिस बा
+2026-10-17T18:14:15Z,D_seg800_spec_quality,P2-pass2,P2_t04,15,spec,False,respec,260.1,,,,,,0,,v2,0,,"रुकी रुकी पहले ही बताएं 1,50,000 ले के इलाज के खर्चा कवर हुई"
+2026-10-17T18:14:15Z,D_seg800_spec_quality,P2-pass2,P2_t04,16,spec,True,,529.7,951.4,1495.3,1910,1758,35,98,14,v2,97360,,"रुकी रुकी पहले ही बताएं 1,50,000 ले के इलाज के खर्चा कवर हुई कि न"
+2026-10-17T18:14:19Z,D_seg800_spec_quality,P2-pass2,P2_t05,17,commit,True,,967.8,942.1,1957.1,1957,1758,22,70,17,v2,71220,,ठीक बात।
+2026-10-17T18:14:26Z,D_seg800_spec_quality,P2-pass2,P2_t06,18,spec,False,respec,260.1,,,,,,0,,v2,0,,"प्रीमियम 25,000 से ज़्यादा हुई तहमरा से न"
+2026-10-17T18:14:26Z,D_seg800_spec_quality,P2-pass2,P2_t06,19,spec,True,,309.8,1029.9,1354.6,2006,1954,44,124,14,v2,134960,,"प्रीमियम 25,000 से ज़्यादा हुई तहमरा से न हो पाई"
+2026-10-17T18:14:34Z,D_seg800_spec_quality,P2-pass2,P2_t08,20,spec,False,respec,-2239.9,,,,,,0,,v2,0,,रउआ मशीन हई की
+2026-10-17T18:14:34Z,D_seg800_spec_quality,P2-pass2,P2_t08,21,spec,False,caller_resumed,-1996.5,,,,,,0,,v2,0,,रउआ मशीन हई की आदमी
+2026-10-17T18:14:34Z,D_seg800_spec_quality,P2-pass2,P2_t08,22,spec,False,respec,260.1,,,,,,0,,v2,0,,रउआ मशीन हई की आदमी। सच सच
+2026-10-17T18:14:34Z,D_seg800_spec_quality,P2-pass2,P2_t08,23,spec,False,respec,489.8,,,,,,0,,v2,0,,रउआ मशीन हई की आदमी। सच सच बता
+2026-10-17T18:14:34Z,D_seg800_spec_quality,P2-pass2,P2_t08,24,spec,True,,590.8,1966.0,2575.0,2071,1954,33,109,17,v2,113060,,रउआ मशीन हई की आदमी। सच सच बताएं
+2026-10-17T18:14:42Z,D_seg800_spec_quality,P2-pass2,P2_t09,25,spec,False,respec,260.1,,,,,,0,,v2,0,,परसों 3:30 बजे फ़ोन करें वो घरी दुकान पर भीड़ कम
+2026-10-17T18:14:42Z,D_seg800_spec_quality,P2-pass2,P2_t09,26,spec,True,,444.7,1057.1,1513.9,2133,1954,36,103,11,v2,105360,,परसों 3:30 बजे फ़ोन करें वो घरी दुकान पर भीड़ कम रहेला
+2026-10-17T18:14:49Z,D_seg800_spec_quality,P2-pass2,P2_t10,27,spec,False,respec,260.1,,,,,,0,,v2,0,,अच्छा कि बताएं आज सिवान में बरखा
+2026-10-17T18:14:49Z,D_seg800_spec_quality,P2-pass2,P2_t10,28,spec,False,respec,429.6,,,,,,0,,v2,0,,अच्छा कि बताएं आज सिवान में बरखा हो
+2026-10-17T18:14:49Z,D_seg800_spec_quality,P2-pass2,P2_t10,29,spec,True,,530.7,1080.9,1629.6,2194,1954,32,83,14,v2,83560,,अच्छा कि बताएं आज सिवान में बरखा होई का
+2026-10-17T18:14:55Z,D_seg800_spec_quality,P2-pass2,P2_t11,30,spec,False,respec,-1399.9,,,,,,0,,v2,0,,ठीक बा राख
+2026-10-17T18:14:55Z,D_seg800_spec_quality,P2-pass2,P2_t11,31,spec,False,caller_resumed,-1260.1,,,,,,0,,v2,0,,ठीक बा राखत बानी
+2026-10-17T18:14:55Z,D_seg800_spec_quality,P2-pass2,P2_t11,32,spec,False,respec,260.1,,,,,,0,,v2,0,,ठीक बा राखत बानी।
+2026-10-17T18:14:55Z,D_seg800_spec_quality,P2-pass2,P2_t11,33,spec,True,,444.5,1127.1,1589.1,2244,1954,39,57,15,v2,68620,,ठीक बा राखत बानी। प्रणाम
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,1,commit,False,barge_in_after_cutin,-7575.4,1053.4,-6469.6,,,,11,,v2,6368,,हाँ।
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,2,spec,False,caller_resumed,-6959.9,,,,,,0,,v2,0,,हाँ। हैलो
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,3,spec,False,caller_resumed,-5779.9,,,,,,0,,v2,0,,हाँ। हैलो कौन
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,4,commit,False,barge_in_after_cutin,-5180.3,1146.0,-3979.3,,,,11,,v2,6368,,हाँ। हैलो कौन?
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,5,spec,False,respec,-4419.9,,,,,,0,,v2,0,,हाँ। हैलो कौन?
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,6,spec,False,caller_resumed,-4387.4,,,,,,0,,v2,0,,हाँ। हैलो कौन? ज़रा
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,7,spec,False,caller_resumed,-1799.9,,,,,,0,,v2,0,,हाँ। हैलो कौन? ज़रा ज़ोर से बोलो बेटा
+2026-10-17T18:15:08Z,D_seg800_spec_quality,P4-pass2,P4_t01,8,spec,True,,260.1,931.5,1221.6,1720,1717,39,121,14,v2,118920,,हाँ। हैलो कौन? ज़रा ज़ोर से बोलो बेटा सुनाई कम देता
+2026-10-17T18:15:12Z,D_seg800_spec_quality,P4-pass2,P4_t02,9,commit,True,,914.5,990.1,1957.2,1770,1650,35,100,14,v2,115260,,हाँ।
+2026-10-17T18:15:23Z,D_seg800_spec_quality,P4-pass2,P4_t03,10,spec,False,barge_in_after_cutin,-6339.9,1057.7,-5212.6,1818,1767,8,9,43,v2,29120,,हमारी पॉलिसी
+2026-10-17T18:15:23Z,D_seg800_spec_quality,P4-pass2,P4_t03,11,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:15:23Z,D_seg800_spec_quality,P4-pass2,P4_t03,12,spec,False,caller_resumed,-2393.4,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:15:23Z,D_seg800_spec_quality,P4-pass2,P4_t03,13,spec,True,,260.1,970.3,1251.3,1830,1767,33,93,13,v2,102660,,हमारी पॉलिसी। कब खत्म हो रही है बेटा तो बाहर रहता है
+2026-10-17T18:15:33Z,D_seg800_spec_quality,P4-pass2,P4_t04,14,commit,False,barge_in_after_cutin,-5699.3,970.2,-4685.5,1876,1767,9,9,11,v2,29120,,पिछली बार।
+2026-10-17T18:15:33Z,D_seg800_spec_quality,P4-pass2,P4_t04,15,spec,False,respec,-4459.9,,,,,,0,,v2,0,,पिछली बार। 25
+2026-10-17T18:15:33Z,D_seg800_spec_quality,P4-pass2,P4_t04,16,spec,False,caller_resumed,-4314.1,,,,,,0,,v2,0,,"पिछली बार। 25,000"
+2026-10-17T18:15:33Z,D_seg800_spec_quality,P4-pass2,P4_t04,17,spec,False,caller_resumed,-2739.9,,,,,,0,,v2,0,,"पिछली बार। 25,000 नहीं नहीं"
+2026-10-17T18:15:33Z,D_seg800_spec_quality,P4-pass2,P4_t04,18,spec,True,,260.1,915.7,1191.9,1889,1767,38,98,16,v2,107660,,"पिछली बार। 25,000 नहीं नहीं 24,500 भरे थे"
+2026-10-17T18:15:41Z,D_seg800_spec_quality,P4-pass2,P4_t05,19,spec,False,respec,-1619.9,,,,,,0,,v2,0,,बेटा रुको इतना जल्दी जल्दी मत
+2026-10-17T18:15:41Z,D_seg800_spec_quality,P4-pass2,P4_t05,20,spec,False,caller_resumed,-1498.5,,,,,,0,,v2,0,,बेटा रुको इतना जल्दी जल्दी मत बोलो
+2026-10-17T18:15:41Z,D_seg800_spec_quality,P4-pass2,P4_t05,21,commit,True,,-888.4,960.9,89.1,1950,1767,23,53,16,v2,67260,,"बेटा, रुको, इतना जल्दी जल्दी मत बोलो।"
+2026-10-17T18:15:41Z,D_seg800_spec_quality,P4-pass2,P4_t05,22,spec,False,respec,260.1,,,,,,0,,v2,0,,"बेटा, रुको, इतना जल्दी जल्दी मत बोलो। धीरे"
+2026-10-17T18:15:41Z,D_seg800_spec_quality,P4-pass2,P4_t05,23,spec,False,turn_over,397.4,930.4,1340.1,,,,50,,v2,14560,,"बेटा, रुको, इतना जल्दी जल्दी मत बोलो। धीरे बोलो"
+2026-10-17T18:15:49Z,D_seg800_spec_quality,P4-pass2,P4_t06,24,spec,False,respec,-3140.0,,,,,,0,,v2,0,,तुम मशीन
+2026-10-17T18:15:49Z,D_seg800_spec_quality,P4-pass2,P4_t06,25,spec,False,caller_resumed,-3120.0,,,,,,0,,v2,0,,तुम मशीन हो क्या
+2026-10-17T18:15:49Z,D_seg800_spec_quality,P4-pass2,P4_t06,26,spec,False,respec,260.1,,,,,,0,,v2,0,,तुम मशीन हो क्या आजकल फ़ोन पे मशीन बोलती
+2026-10-17T18:15:49Z,D_seg800_spec_quality,P4-pass2,P4_t06,27,spec,True,,277.6,971.8,1300.5,1998,1767,33,114,18,v2,111160,,तुम मशीन हो क्या आजकल फ़ोन पे मशीन बोलती है
+2026-10-17T18:16:11Z,D_seg800_spec_quality,P4-pass2,P4_t09,28,spec,False,respec,-5099.9,,,,,,0,,v2,0,,सोमवार
+2026-10-17T18:16:11Z,D_seg800_spec_quality,P4-pass2,P4_t09,29,spec,False,caller_resumed,-4811.5,,,,,,0,,v2,0,,सोमवार को
+2026-10-17T18:16:11Z,D_seg800_spec_quality,P4-pass2,P4_t09,30,commit,False,barge_in_after_cutin,-4392.3,1120.5,-3253.9,2044,1767,31,98,15,v2,99960,,सोमवार को।
+2026-10-17T18:16:11Z,D_seg800_spec_quality,P4-pass2,P4_t09,31,spec,False,respec,-2759.9,,,,,,0,,v2,0,,सोमवार को। 3.5
+2026-10-17T18:16:11Z,D_seg800_spec_quality,P4-pass2,P4_t09,32,spec,False,caller_resumed,-2725.4,,,,,,0,,v2,0,,सोमवार को। 3:30 बजे
+2026-10-17T18:16:11Z,D_seg800_spec_quality,P4-pass2,P4_t09,33,spec,True,,260.1,982.7,1265.6,2056,1767,37,121,18,v2,132820,,सोमवार को। 3:30 बजे मेरे बेटे को फ़ोन कर लेना
+2026-10-17T18:16:17Z,D_seg800_spec_quality,P4-pass2,P4_t10,34,spec,False,respec,-1999.9,,,,,,0,,v2,0,,अच्छा
+2026-10-17T18:16:17Z,D_seg800_spec_quality,P4-pass2,P4_t10,35,spec,False,caller_resumed,-1925.5,,,,,,0,,v2,0,,अच्छा बेटा
+2026-10-17T18:16:17Z,D_seg800_spec_quality,P4-pass2,P4_t10,36,spec,False,respec,260.1,,,,,,0,,v2,0,,अच्छा बेटा तुमने खाना खा
+2026-10-17T18:16:17Z,D_seg800_spec_quality,P4-pass2,P4_t10,37,spec,True,,278.8,1081.8,1383.0,2112,1767,32,96,22,v2,98160,,अच्छा बेटा तुमने खाना खा लिया
+2026-10-17T18:16:25Z,D_seg800_spec_quality,P4-pass2,P4_t11,38,spec,False,caller_resumed,-3599.9,,,,,,0,,v2,0,,अच्छा
+2026-10-17T18:16:25Z,D_seg800_spec_quality,P4-pass2,P4_t11,39,commit,False,barge_in_after_cutin,-2917.5,1042.3,-1862.1,,,,57,,v2,29120,,अच्छा।
+2026-10-17T18:16:25Z,D_seg800_spec_quality,P4-pass2,P4_t11,40,spec,False,respec,-2159.9,,,,,,0,,v2,0,,अच्छा।
+2026-10-17T18:16:25Z,D_seg800_spec_quality,P4-pass2,P4_t11,41,spec,False,caller_resumed,-2134.6,,,,,,0,,v2,0,,अच्छा। ठीक है
+2026-10-17T18:16:25Z,D_seg800_spec_quality,P4-pass2,P4_t11,42,spec,False,respec,260.1,,,,,,0,,v2,0,,अच्छा। ठीक है भगवान भला
+2026-10-17T18:16:25Z,D_seg800_spec_quality,P4-pass2,P4_t11,43,spec,True,,760.7,1073.8,1848.1,2163,1767,37,63,13,v2,71460,,अच्छा। ठीक है भगवान भला करें
+2026-10-17T18:16:37Z,D_seg800_spec_quality,P4pause-2,P4_t03,1,spec,False,barge_in_after_cutin,-6339.9,1432.2,-4874.8,1707,1704,13,25,19,v2,46460,,हमारी पॉलिसी
+2026-10-17T18:16:37Z,D_seg800_spec_quality,P4pause-2,P4_t03,2,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:16:37Z,D_seg800_spec_quality,P4pause-2,P4_t03,3,spec,False,respec,-2417.6,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो
+2026-10-17T18:16:37Z,D_seg800_spec_quality,P4pause-2,P4_t03,4,spec,False,caller_resumed,-2317.4,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:16:37Z,D_seg800_spec_quality,P4pause-2,P4_t03,5,spec,True,,260.1,927.1,1237.3,1719,1716,33,97,17,v2,106260,,हमारी पॉलिसी। कब खत्म हो रही है बेटा तो बाहर रहता है
+2026-10-17T18:16:48Z,D_seg800_spec_quality,P4pause-2,P4_t03,6,spec,False,barge_in_after_cutin,-6340.0,927.9,-5392.5,1707,1704,17,40,13,v2,54560,,हमारी पॉलिसी
+2026-10-17T18:16:48Z,D_seg800_spec_quality,P4pause-2,P4_t03,7,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:16:48Z,D_seg800_spec_quality,P4pause-2,P4_t03,8,spec,False,caller_resumed,-2355.3,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:16:48Z,D_seg800_spec_quality,P4pause-2,P4_t03,9,spec,True,,260.1,976.1,1270.7,1719,1716,38,114,11,v2,121960,,हमारी पॉलिसी। कब खत्म हो रही है बेटा तो बाहर रहता है
+2026-10-17T18:16:59Z,D_seg800_spec_quality,P4pause-2,P4_t03,10,spec,False,barge_in_after_cutin,-6339.9,969.4,-5357.8,1707,1704,8,15,12,v2,30460,,हमारी पॉलिसी
+2026-10-17T18:16:59Z,D_seg800_spec_quality,P4pause-2,P4_t03,11,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:16:59Z,D_seg800_spec_quality,P4pause-2,P4_t03,12,spec,False,caller_resumed,-2399.3,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:16:59Z,D_seg800_spec_quality,P4pause-2,P4_t03,13,spec,True,,260.0,933.4,1253.3,1719,1716,28,81,21,v2,97260,,हमारी पॉलिसी। कब खत्म हो रही है बेटा तो बाहर रहता है
+2026-10-17T18:17:09Z,D_seg800_spec_quality,P4pause-2,P4_t03,14,spec,False,barge_in_after_cutin,-6339.9,910.0,-5312.0,1707,1704,8,9,34,v2,29120,,हमारी पॉलिसी
+2026-10-17T18:17:09Z,D_seg800_spec_quality,P4pause-2,P4_t03,15,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:17:09Z,D_seg800_spec_quality,P4pause-2,P4_t03,16,spec,False,caller_resumed,-2315.4,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:17:09Z,D_seg800_spec_quality,P4pause-2,P4_t03,17,spec,True,,260.1,995.1,1290.6,1719,1716,30,86,12,v2,98660,,हमारी पॉलिसी। कब खत्म हो रही है बेटा तो बाहर रहता है
+2026-10-17T18:17:20Z,D_seg800_spec_quality,P4pause-2,P4_t03,18,spec,False,barge_in_after_cutin,-6340.0,1188.4,-5091.9,1707,1704,9,9,16,v2,29120,,हमारी पॉलिसी
+2026-10-17T18:17:20Z,D_seg800_spec_quality,P4pause-2,P4_t03,19,spec,False,respec,-2479.9,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म
+2026-10-17T18:17:20Z,D_seg800_spec_quality,P4pause-2,P4_t03,20,spec,False,respec,-2453.4,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो
+2026-10-17T18:17:20Z,D_seg800_spec_quality,P4pause-2,P4_t03,21,spec,False,caller_resumed,-2353.5,,,,,,0,,v2,0,,हमारी पॉलिसी। कब खत्म हो रही है
+2026-10-17T18:17:20Z,D_seg800_spec_quality,P4pause-2,P4_t03,22,commit,False,,-1753.4,915.7,-778.4,1714,1711,35,106,17,v2,117460,,हमारी पॉलिसी। कब खत्म हो रही है?
+2026-10-17T18:17:20Z,D_seg800_spec_quality,P4pause-2,P4_t03,23,spec,True,,260.1,894.1,1200.5,1720,1717,33,116,17,v2,113960,,हमारी पॉलिसी। कब खत्म हो रही है? बेटा तो बाहर रहता है

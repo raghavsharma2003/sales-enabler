@@ -1,0 +1,90 @@
+# Gates for the VP product tree (product/): typecheck, migrations on a clean Postgres 16, the test suite,
+# the web build, and the Python voice runtime's unit tests. The old Relay app is not gated here.
+name: product
+on:
+  push:
+    paths: ['product/**', '.github/workflows/product.yml', 'package.json', 'package-lock.json']
+  pull_request:
+    paths: ['product/**', '.github/workflows/product.yml', 'package.json', 'package-lock.json']
+jobs:
+  control-plane:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: vp, POSTGRES_PASSWORD: vp, POSTGRES_DB: vp_test }
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U vp -d vp_test" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://vp:vp@localhost:5432/vp_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      # The voice runtime's packages, so the tests that drive the real runtime (calls-live, safety-optout-e2e, the browser
+      # call flows) run in CI instead of skipping (the must-be audit, 2026-10-24).
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip, cache-dependency-path: product/voice/requirements.txt }
+      - name: voice runtime packages
+        run: pip install -r product/voice/requirements.txt
+      - name: typecheck
+        run: npx tsc -p product/tsconfig.json
+      # The product tsconfig does not cover web/src (3d2b7a9 found a web type error that every gate had passed).
+      - name: typecheck (web)
+        run: npx tsc --noEmit -p product/web
+      - name: migrate (twice, to prove idempotence)
+        run: node product/scripts/migrate.mjs && node product/scripts/migrate.mjs
+      - name: tests
+        run: node product/scripts/test.mjs
+      - name: web build
+        run: if [ -f product/web/build.mjs ]; then node product/web/build.mjs; fi
+  # The browser flows (product/web/e2e): the real UI against the real server, a throwaway Postgres 16 and a scripted
+  # Operator. control-plane skips them for want of a browser; here a skip is a failure, so CI green covers them.
+  web-e2e:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: npm }
+      - run: npm ci
+      # The voice runtime's packages, so the tests that drive the real runtime (calls-live, safety-optout-e2e, the browser
+      # call flows) run in CI instead of skipping (the must-be audit, 2026-10-24).
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip, cache-dependency-path: product/voice/requirements.txt }
+      - name: voice runtime packages
+        run: pip install -r product/voice/requirements.txt
+      - name: browser and Postgres 16
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          [ -x /usr/lib/postgresql/16/bin/initdb ] || { sudo apt-get update && sudo apt-get install -y postgresql-16; }
+      - name: precheck (must not skip)
+        run: node product/web/e2e/precheck.mjs
+      - name: browser flows
+        env:
+          E2E_DIAG_DIR: ${{ runner.temp }}/vp-e2e-diag
+        run: sh product/web/e2e/run.sh
+      - name: keep the failing flows' screenshots and logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-diag
+          path: |
+            ${{ runner.temp }}/vp-e2e-diag
+            /tmp/vp-e2e-server.log
+          if-no-files-found: ignore
+  voice-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: unit tests
+        run: |
+          if [ -d product/voice ]; then
+            cd product/voice
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            python -m unittest discover -v
+          fi

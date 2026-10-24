@@ -1,0 +1,40 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.staff-review-export",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Staff review export (directive.2026-10-24.calling-first-build-all, integrator item 3): review.export {from, to, includeTest?, limit?} is staff-only (actor vp_success; no member role) and returns one workspace's calls in a window of at most 7 days as one JSON. Each call is call.get's own record (call.get and the export now share one builder, so they cannot drift): the transcript with every per-turn field the runtime stored (voice's coming per-turn trace travels with it unchanged), turns, moments, safety, judge marks, tools, hand-offs, outcomes, cost lines and settlement, analysis, the gate record, flags. Added: the runtime events seen (seq, type, time), an errors list (end reason error or failed, failed analysis, the safety judge unavailable, failed tools), and recording {available, why}, never an address or a signed link. Test calls are in by default (the owner reviews mostly on them). Time order; truncated is set past the limit (default 200, max 500). Each export is audited (vp_success, window, count).",
+   "rationale": "The integrator's review script needs 'the log of everything' for the owner's long staging calls.",
+   "reverse_if": "Staff need the recording itself (then add a short-lived signed link per call, audited), or a window's export outgrows one response (then page by cursor).",
+   "evidence": [
+    "product/tests/calls-review-export.test.ts (synthetic): in-window calls in time order, test calls in and excludable, another workspace's and out-of-window calls never, errors listed, no recording address, audited; an owner is refused; more than 7 days refused in words"
+   ]
+  },
+  {
+   "id": "open.2026-10-24.call-page-review-timeline",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Integrator items 1-2 wait on peers: the call-page timeline (gap per turn, a marker where something went wrong, the recording seekable to the turn) needs voice's per-turn trace fields (not on the branch as of 2bdb29b); 'Flag this moment' calls learning's review.flag_turn {conversationId, turn, note}, agreed with learning 2026-10-24 (learning owns the tool and the owner_review flag; calls owns the button on call-review.tsx).",
+   "closes_when": "the call page shows the trace timeline and \"flag this moment\" lands with its learning seam"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.staff-review-export",
+   "to": "decision.2026-10-24.why-allowed-from-stored-notes",
+   "relation": "informed-by"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "staff-review-export",
+   "details": "review.export built. Full suite on a fresh DB 800/801 before dropping a label the activity-label guard forbids on reads (then that guard 1/1). Seams agreed: money's test.budget for test.browser_call (money edits calls/tools.ts); learning's review.flag_turn."
+  }
+ ]
+}

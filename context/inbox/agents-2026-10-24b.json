@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.language-capability-matrix",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Every voice-stack part declares its languages as measured or stated; a stack serves a language only if every part does, graded by its weakest part",
+      "rationale": "Agents for multilingual lists need to know what each stack can hear, understand and speak. shared/components.ts gives each part a LanguageSupport {measured, stated, source}; shared/stacks.ts stackLanguage()/stackLanguages() derive the per-stack matrix. Measured is limited to what our lab and benches ran: Hinglish on Azure ears, the benched brains, Gemini 3.8 Flash-Lite voice, MAI voice and Gemini Live, plus Hindi on Azure ears and the two Gemini/MAI voices; a test refuses any other measured entry. Stated lists are the makers' published support as we understood it on 2026-10-24, restricted to VP's 12 codes, and NOT re-read from vendor docs today. Result on the curated stacks: Kannada, Malayalam, Gujarati, Punjabi and Odia are served only by the two beta stacks (Sarvam, Gemini Live), so none can call real people in those languages yet.",
+      "reverse_if": "A docs read or a test call shows a stated entry is wrong (fix the list and its source), or a language is run on our calls (then it moves to measured with the run named).",
+      "path": "product/shared/components.ts"
+    },
+    {
+      "id": "decision.2026-10-24.agent-languages-validated-against-stack",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "An agent may speak only languages its voice stack serves: draft writes and every version path refuse otherwise, naming the language, the stack and the part",
+      "rationale": "The agent's primary plus allowed languages are its languages. saveDraft refuses a write that introduces an unserved language (e.g. adding Kannada on a stack whose voice cannot speak it, or switching a Tamil agent to the MAI voice stack); createVersion refuses any unserved language for published, candidate, variant and restored versions. Message: 'Kannada is not supported by the voice stack <label>: its voice (<part>) does not support Kannada. Choose a stack that supports Kannada, or remove Kannada from the agent's languages.'",
+      "reverse_if": "Owners need to draft ahead of a stack that will support a language (then drafts warn and only versions refuse)."
+    },
+    {
+      "id": "decision.2026-10-24.language-variants-and-routing",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Language variants are immutable agent versions (kind 'variant') with the same facts and agenda; campaigns route each contact to a version that speaks their language, else the main one with the reason recorded",
+      "rationale": "version.language_variant (A2) copies a published version's config with languages {primary: L, allowed: [L, English if the stack serves it], mirrorCaller: true} and optionally another stack; it is refused when shared/safety has no checked disclosure line for L (disclosure.json has Hinglish, English, Hindi, Tamil and Bengali today; Kannada, Telugu and the rest need the safety team) and runs the hard guard and language validation. Variants never count as the live version. At claim the worker routes after the experiment or deployment choice (campaigns/languages.ts routeAttempt): explicit campaign.draft languageRoutes first, then the agent's newest variant per language; beta-stack versions are skipped because they cannot dial real people; Hindi and Hinglish serve each other, English is served by English or Hinglish; no match calls with the main version and stores precheck.language {preferred, servedBy, versionId, reason}. The R2 launch warning now counts only those fallbacks and points to version.language_variant.",
+      "reverse_if": "Fallback calls in the wrong language show worse outcomes than not calling (then fallback becomes skip-with-reason), or owners want variants as separate agents rather than versions.",
+      "path": "product/server/modules/campaigns/languages.ts"
+    },
+    {
+      "id": "measure.2026-10-24.languages-tests",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
+      "title": "Languages: tests/agents-languages.test.ts 8/8 (matrix honesty, stack grading, normalisation and routing rules, validation wording, draft refusals, variants, routing at claim with fallback reasons, the warning count 2 of 6 with Tamil and Bengali variants, explicit route checks); fresh-DB suite 576 pass, 0 fail, 4 skipped; ui-contract 179/179; browser flows 54 pass, 0 fail, 2 skipped",
+      "n": 8,
+      "method": "node:test on throwaway Postgres 16; gates tsc --noEmit, node scripts/test.mjs on a fresh DB (skips: voice runtime Python), tsx scripts/ui-contract.ts --strict, web/e2e/run.sh with VP_VOICE_PYTHON=/bin/false (skips: no devsim runtime). Routing is exercised through routeAttempt, the function claimNext calls; a full claim with dialing is not exercised in these tests.",
+      "path": "product/tests/agents-languages.test.ts"
+    },
+    {
+      "id": "open.2026-10-24.languages-runtime-and-disclosure",
+      "type": "open-question", "status": "open", "source": "model", "date": "2026-10-24",
+      "title": "What remains for multilingual calls: the voice runtime per language, disclosure lines for Kannada, Telugu and others, and a docs read of the stated lists",
+      "closes_when": "Voice configures ears and voices per ticket language and a test call runs in Tamil and Bengali; safety adds checked disclosure lines (disclosure.json) for kn-IN, te-IN, ml-IN, mr-IN, gu-IN, pa-IN, or-IN plus crisis and opt-out lexicons per language; the stated lists in components.ts are re-checked against the vendors' current docs and corrected where wrong."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.agent-languages-validated-against-stack", "to": "decision.2026-10-24.language-capability-matrix", "relation": "requires" },
+    { "from": "decision.2026-10-24.language-variants-and-routing", "to": "decision.2026-10-24.agent-languages-validated-against-stack", "relation": "requires" },
+    { "from": "decision.2026-10-24.language-variants-and-routing", "to": "decision.2026-10-24.launch-language-warning", "relation": "extends" },
+    { "from": "measure.2026-10-24.languages-tests", "to": "decision.2026-10-24.language-variants-and-routing", "relation": "tests" },
+    { "from": "decision.2026-10-24.language-variants-and-routing", "to": "open.2026-10-24.languages-runtime-and-disclosure", "relation": "leaves-open" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "agents-languages", "details": "Language model shipped (agents + campaigns): per-part language matrix (measured only for Hindi/Hinglish what our tests ran), agent languages validated against the stack, version.language_variant (A2, needs a disclosure line), per-contact routing at claim with recorded fallback, launch warning counts only unserved contacts. Verified by 8 tests and all four gates. Not done: runtime per-language audio (voice), disclosure lines for Kannada/Telugu and others (safety), vendor-docs re-read of stated lists." }
+  ]
+}

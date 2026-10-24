@@ -1,0 +1,62 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.brief-review-model",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Model review of brief text (agents/review.ts, contract shared/safety/brief-review.json), built on the owner's go (open.2026-10-24.tl1-model-check). Regex door first (T-L1 plus the guard's crisis-line and manipulation rules), never weakened; the model reads only briefs the rules let through, field by field, and can only add a finding (human, hide_ai, crisis, manipulation) at or above threshold 0.5. Publish and version.candidate block with the rule, the field, the model's reason and the fix; agent.create and brief.edit return the review as advisory. With no model (VP_LLM_BRIEF_REVIEW_*, falling back to VP_LLM_DEFAULT_*) the publish card says 'AI-honesty review: rules only (no model configured)'; unavailable says why. Recommended: GPT-4.1 through Azure; Flash-Lite through Vertex the alternative. TS only: the voice runtime never reviews briefs, so there is no Python port.",
+   "rationale": "Regex T-L1 reaches 23/60 on fresh paraphrase (measure.2026-10-24.tl1-third-person). Briefs change rarely, so a slower, stronger model costs little latency.",
+   "reverse_if": "The blind score shows the model adds too many false positives on benign briefs (blocking honest publishes), or misses as much as the regex."
+  },
+  {
+   "id": "asset.2026-10-24.brief-review-sets",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Brief-review eval sets. DEV: sets/dev-brief-review.json (58 flag across human, hide_ai, crisis and manipulation; 43 pass; builder-written; regex floor 43/58, FP 1/43 before the guard fix below). BLIND: sets/heldout-brief-review.json (80 flag: human 30, hide_ai 20, crisis 10, manipulation 20; 80 pass; en 40, hinglish 28, hi-deva 12 per list; 39 multi-line snippets). Written by a separate agent with no repo access, checked by script (0 duplicates, 0 overlap with earlier sets), never read by the builder. The integrator scores it once: judge-eval --task brief-review.",
+   "paths": [
+    "product/shared/safety/sets/dev-brief-review.json",
+    "product/shared/safety/sets/heldout-brief-review.json"
+   ],
+   "value": "the measurement of the brief review",
+   "effort": "one agent run"
+  },
+  {
+   "id": "rejected.2026-10-24.guard-crisis-bare-stop",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "agents/guard.ts crisis-line regex with a bare 'stop' within 40 characters of a helpline: it refused the correct instruction 'If a caller mentions self-harm, stop the agenda, stay warm, and give Tele-MANAS 14416 and 112' at save",
+   "tried": "CRISIS alternation (never|don't|...|without|stop) followed by helpline words within 40 characters",
+   "broke": "Found on the DEV pass list (1/43). Fixed: 'stop' now needs 'giving|mentioning|saying|reading|offering' after it; 'Stop giving the helpline numbers' and 'Never mention 14416 or 112' still refuse (tests)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.brief-review-model",
+   "to": "open.2026-10-24.tl1-model-check",
+   "relation": "implements"
+  },
+  {
+   "from": "asset.2026-10-24.brief-review-sets",
+   "to": "decision.2026-10-24.brief-review-model",
+   "relation": "supports"
+  },
+  {
+   "from": "rejected.2026-10-24.guard-crisis-bare-stop",
+   "to": "decision.2026-10-24.brief-review-model",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-brief-review",
+   "details": "Model review of brief text at save (advisory) and publish/candidate (blocking), regex-first, raise-only, labelled when no model is configured; judge-eval --task brief-review; DEV and BLIND sets; guard crisis 'stop' false positive fixed. Gates: tsc clean, fresh-DB 540/540, ui-contract strict 176/176, voice unittest OK."
+  }
+ ]
+}

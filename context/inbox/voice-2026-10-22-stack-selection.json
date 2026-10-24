@@ -1,0 +1,31 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-22.voice-runtime-built-stacks",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-22",
+   "source": "model",
+   "title": "The voice runtime runs the parts a ticket names (stack.components). A curated id must carry exactly the parts of the runtime's own table, else 422 stack_mismatch. 'custom' is built from catalog parts: a cascade needs ears, brain and voice; an engine stack has s2s only. Unknown parts, incomplete sets and parts that differ from agent.voice.components are refused. Missing credentials are named per part (503 stack_unavailable with missing), and so are parts Vertex does not serve. combination_id uses the same algorithm over the parts, so a built copy of a curated stack files under the same combination",
+   "rationale": "directive.2026-10-22.full-stack-selection: users pick every component, with a default stack. Never substituting a part, and filing under what actually ran, keep test integrity.",
+   "reverse_if": "built stacks need settings beyond parts and the gate (e.g. per-part regions or speeds); then the ticket carries them and the combination id must include them"
+  },
+  {
+   "id": "measure.2026-10-22.components-parity",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-22",
+   "source": "verified",
+   "title": "shared/components.ts matches the voice runtime catalog on every listed part: id, part, route, requires, and voices as a subset with the same default. All 7 curated stacks are built from offered parts. Known difference: components.ts offers 6 of the catalog's 12 Sarvam voices",
+   "n": 21,
+   "method": "product/voice/tests/test_stack_select.py ComponentsParity parses components.ts and compares it with vpvoice/catalog.py and stacks.py, 2026-10-22. Python 3.13 and 3.12, clean clone.",
+   "path": "product/voice/tests/test_stack_select.py",
+   "value": "parity green; Sarvam voices are a subset by choice in components.ts"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-22.voice-runtime-built-stacks", "to": "directive.2026-10-22.full-stack-selection", "relation": "implements" },
+  { "from": "measure.2026-10-22.components-parity", "to": "decision.2026-10-22.voice-runtime-built-stacks", "relation": "tests" }
+ ],
+ "events": []
+}

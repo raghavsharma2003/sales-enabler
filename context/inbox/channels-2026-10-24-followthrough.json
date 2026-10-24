@@ -1,0 +1,61 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.wa-followthrough-rules",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Follow-through after a call (blueprint 6.3 v1): a rule (followthrough.rule.set, A2, one approval bound to the template's version, its daily limit and the most it can spend a day on the card) sends an approved utility template when a call of an agent or campaign ends with an outcome or reason code, when the caller asked for WhatsApp, or when a campaign attempt is not answered. A job (channels.followthrough, every 30 s) acts on each call once: the run row is written before the send, so a crash never sends twice; two unanswered attempts give one note per person per rule a day",
+   "rationale": "The system actor cannot run an external tool without a card (A3 is a closed list), so the per-send work is a job behind a rule a person approved, as a campaign launch approves many calls. Every send still goes through gatedSend (opt-in, window, door, 2 a day per person, wallet and caps). Marketing templates are refused for rules. Values bind like call-ticket facts: the contact's record or the attempt's variables, never free text; a value past its attribute max age is not used; the bound values are the door's facts, so an amount on the record may be stated and any other may not.",
+   "reverse_if": "Buyers need a per-send approval for some purpose (then add an A2 queue for that rule), or the 48-hour look-back misses follow-ups when analysis is slow (then key on analysis completion)."
+  },
+  {
+   "id": "decision.2026-10-24.wa-in-call-optin",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "\"WhatsApp pe bhej do\" on a call is the caller's WhatsApp opt-in for follow-ups (consent purpose follow_up, source in_call, their exact words and the turn as evidence); \"WhatsApp mat bhejo\" on a call is a WhatsApp opt-out. Read once per finished call (channel_call_read). A general WhatsApp yes never covers marketing: marketing needs a consent row for purpose 'marketing' itself",
+   "rationale": "Blueprint 4.11 case table: 'WhatsApp pe bhej do' sets the channel preference and follows up there if opted in. The phrase matcher has look-alike negatives in tests (\"WhatsApp mat bhejo\", \"I am not on WhatsApp\", \"send it by email\").",
+   "reverse_if": "Counsel (KC8) says a spoken request on a call is not consent for a WhatsApp message (then it becomes a preference only and a template asks to confirm), or the matcher misreads more than 1 in 50 real caller lines."
+  },
+  {
+   "id": "decision.2026-10-24.wa-door-category",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A WhatsApp template meets the reply door as its category: utility as a service message (RD7 keeps offers out, which is also Meta's rule for utility), marketing as promotional. A template is fixed text, so any door verdict but pass blocks it, at drafting (on its samples) and at every send (on the bound values)",
+   "rationale": "Probed on 2026-10-24: 'enjoy 20% off cleaning this Diwali' is blocked by RD7 in service and passes as promotional.",
+   "reverse_if": "Meta's category rules and RD7 disagree on real templates (then Meta's review decides and the door only adds RD4/RD5/RD6)."
+  },
+  {
+   "id": "open.2026-10-24.rd4-reply-with-otp",
+   "type": "open-question",
+   "status": "open",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "The reply door passes 'Please reply with the OTP sent to your phone.' (RD4 catches 'share the OTP'). Found while testing WhatsApp templates; for the safety builder",
+   "closes_when": "rules.json RD4 catches 'reply with the OTP' (and a cases.json vector holds it in TS and Python), or the safety builder says it is out of scope."
+  },
+  {
+   "id": "open.2026-10-24.in-call-send-whatsapp-link",
+   "type": "open-question",
+   "status": "open",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "The agents' in-call tool send_whatsapp_link (risk external) is not yet routed to the channels gate; today follow-ups go out after the call through follow-through rules only",
+   "closes_when": "The runtime's tool event for send_whatsapp_link reaches gatedSend with an approved template, or the agents owner retires the tool in favour of follow-through rules."
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-24.wa-followthrough-rules", "to": "decision.2026-10-24.channels-seam", "relation": "extends" },
+  { "from": "decision.2026-10-24.wa-followthrough-rules", "to": "rejected.harvest.08", "relation": "constrained-by" },
+  { "from": "decision.2026-10-24.wa-in-call-optin", "to": "decision.2026-10-24.wa-optout-channel-only", "relation": "extends" },
+  { "from": "decision.2026-10-24.wa-door-category", "to": "decision.2026-10-24.channels-seam", "relation": "extends" }
+ ],
+ "events": [
+  { "date": "2026-10-24", "event": "channels step 2: follow-through after a call", "details": "templates (draft, submit to the fake Meta, review by sync or webhook), follow-through rules and job, in-call opt-in, metering on delivery; tests/channels-followthrough.test.ts 4 tests green. Not verified against Meta." }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "source": "https://prices.azure.com/api/retail/prices?$filter=armRegionName eq centralindia and contains(meterName,Custom)",
+ "date_read": "2026-10-19",
+ "method": "read-primary (Azure Retail Prices API, public, no auth)",
+ "items": [
+  {
+   "productName": "Azure Speech",
+   "skuName": "S1",
+   "meterName": "S1 Custom Neural Voice Model Hosting Unit",
+   "unitPrice": 4.032,
+   "unitOfMeasure": "1/Hour",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2021-10-01T00:00:00Z",
+   "type": "Consumption"
+  },
+  {
+   "productName": "Azure Speech",
+   "skuName": "Free",
+   "meterName": "Free Custom Voice Font Hosting Unit",
+   "unitPrice": 0.0,
+   "unitOfMeasure": "1/Day",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2018-09-24T00:00:00Z",
+   "type": "Consumption"
+  },
+  {
+   "productName": "Azure Speech",
+   "skuName": "S1",
+   "meterName": "S1 Custom Neural Realtime Characters",
+   "unitPrice": 24.0,
+   "unitOfMeasure": "1M",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2021-10-01T00:00:00Z",
+   "type": "Consumption"
+  },
+  {
+   "productName": "Azure Speech",
+   "skuName": "S1",
+   "meterName": "S1 Custom Voice Font Hosting Unit",
+   "unitPrice": 0.0537,
+   "unitOfMeasure": "1/Hour",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2020-02-01T00:00:00Z",
+   "type": "Consumption"
+  },
+  {
+   "productName": "Azure Speech",
+   "skuName": "S1",
+   "meterName": "S1 Custom Voice Font Hosting Unit",
+   "unitPrice": 1.290322,
+   "unitOfMeasure": "1/Day",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2020-02-01T00:00:00Z",
+   "type": "Consumption"
+  },
+  {
+   "productName": "Azure Speech",
+   "skuName": "S1",
+   "meterName": "S1 Custom Neural Long Audio Characters",
+   "unitPrice": 100.0,
+   "unitOfMeasure": "1M",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2021-02-01T00:00:00Z",
+   "type": "Consumption"
+  },
+  {
+   "productName": "Azure Speech",
+   "skuName": "S1",
+   "meterName": "S1 Custom Neural Training",
+   "unitPrice": 52.0,
+   "unitOfMeasure": "1 Hour",
+   "armRegionName": "centralindia",
+   "effectiveStartDate": "2021-06-01T00:00:00Z",
+   "type": "Consumption"
+  }
+ ]
+}

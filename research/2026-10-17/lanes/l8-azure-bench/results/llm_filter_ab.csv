@@ -1,0 +1,7 @@
+model,pairs,default_ttft_p50,async_ttft_p50,median_paired_diff_ms,ci95_lo,ci95_hi,default_first_to_last_p50,async_first_to_last_p50
+DeepSeek-V4-Flash(DZ-EU),32,1174,904,-242,-320,-183,0,202
+Llama-3.3-70B,32,2530,2270,-318,-468,105,0,419
+gpt-4.1-mini,32,2010,1778,-208,-274,-134,1,232
+gpt-5.4-mini,32,1976,1780,-188,-234,-146,18,194
+gpt-5.4-nano,32,1854,1573,-298,-364,-214,18,280
+gpt-6-luna(DZ-EU),32,1375,1049,-304,-377,-256,10,312

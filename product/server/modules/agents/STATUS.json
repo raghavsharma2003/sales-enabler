@@ -1,0 +1,230 @@
+{
+  "module": "agents",
+  "date": "2026-10-24",
+  "tools": [
+    {
+      "name": "template.list",
+      "risk": "read"
+    },
+    {
+      "name": "agent.create",
+      "risk": "draft",
+      "note": "from a template id or a plain-words description (llm purpose 'compile'); always a draft, linted"
+    },
+    {
+      "name": "agent.list",
+      "risk": "read",
+      "note": "archived: true lists archived agents"
+    },
+    {
+      "name": "agent.get",
+      "risk": "read",
+      "note": "draft, draftHash, lint, budget meters, compiled brief preview, stack card, versions, tests"
+    },
+    {
+      "name": "brief.edit",
+      "risk": "draft",
+      "note": "validated patch (set/remove/append by path); voice/tools/ids locked; optional expectDraftHash"
+    },
+    {
+      "name": "stack.list",
+      "risk": "read",
+      "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured; gate per stack (meets / not_yet / not_measured) from shared/stack-measures.json against GATE in shared/stack-gate.ts; cutIn figure (never zero), goodAt and weakAt in plain English (shared/stack-traits.ts)"
+    },
+    {
+      "name": "stack.set",
+      "risk": "draft",
+      "note": "only finalised stacks from shared/stacks.ts; changing stack clears the voice"
+    },
+    {
+      "name": "voice.set",
+      "risk": "draft",
+      "note": "refuses until a stack is chosen"
+    },
+    {
+      "name": "tool.attach",
+      "risk": "draft",
+      "note": "catalogue tools by name with fixed risk, or workspace tool rows by id; remove: true detaches"
+    },
+    {
+      "name": "test.simulate",
+      "risk": "test",
+      "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run; simCallerId(s) accept 'default:<slug>' library ids or saved caller uuids"
+    },
+    {
+      "name": "test.chat",
+      "risk": "test",
+      "note": "typed practice chat: the builder is the caller; same compile, ledger, TAIL and runtime door as a call (crisis lines, honest AI answer, first-breath disclosure, RD rules); notes per verdict; nothing dialled or logged"
+    },
+    {
+      "name": "test.chat_keep",
+      "risk": "test",
+      "note": "keeps a practice chat in agent_test_run as kind 'chat' (caller digits masked); the publish card reads only kind 'simulate'"
+    },
+    {
+      "name": "version.publish",
+      "risk": "external",
+      "note": "A2; version() = draft hash; stores agent_version.config = { agent, brief } with versionHash and parent"
+    },
+    {
+      "name": "deployment.split",
+      "risk": "external",
+      "note": "A2; version() = latest deployment id for (agent, binding); versions must belong to the agent; sums to 100"
+    },
+    {
+      "name": "version.list",
+      "risk": "read"
+    },
+    {
+      "name": "version.diff",
+      "risk": "read",
+      "note": "default: latest version vs draft; path-level changes plus brief hash/bytes"
+    },
+    {
+      "name": "brief.compile",
+      "risk": "read",
+      "note": "{config} -> {text,hash,bytes} via compile(); lint/budget failures are not_executed with the path and reason"
+    },
+    {
+      "name": "test.simulate_batch",
+      "risk": "test",
+      "note": "{agentId, config?, simCallerIds 1-12, seeds 1-5} -> runs with metrics {hung_up, safety_violations, disclosure_missed}; cut_ins and reply_gap_ms omitted (need audio timing); seed varies the caller prompt and sets temperature 0; simCallerId(s) accept 'default:<slug>' library ids or saved caller uuids"
+    },
+    {
+      "name": "version.candidate",
+      "risk": "draft",
+      "note": "immutable, undeployed version through the same createVersion path as version.publish; draft untouched; parent must belong to the agent"
+    },
+    {
+      "name": "deployment.revert_to_last_good",
+      "risk": "external",
+      "note": "A3 for system/agent actors, approval card for members; binding optional (defaults to the most recently deployed); refuses with no earlier deployment; audits deployment.reverted with the reason"
+    },
+    {
+      "name": "simcaller.list",
+      "risk": "read",
+      "note": "{agentId?} -> callers: 12 industry-neutral defaults ('default:<slug>', source 'default') plus the workspace's saved callers (and the agent's own when agentId is given); each with shape fields, hiddenKeys and checks"
+    },
+    {
+      "name": "simcaller.save",
+      "risk": "draft",
+      "note": "{id?, agentId?, shape: {label, persona, goal, temperament, languageMix, trap}, hiddenKeys, contact?, checks} -> saved caller; shape fields refuse quoted lines and bracketed directions; tenant-scoped update"
+    },
+    {
+      "name": "version.restore",
+      "risk": "external",
+      "note": "A2 one-step rollback: a new version equal to an earlier one (createVersion path, hard guard), every deployed binding moved to it, running experiments stopped via experiment.stop, activity line 'rolled back X to version N (as version M)'; draft kept; history never rewritten"
+    },
+    {
+      "name": "version.language_variant",
+      "risk": "external",
+      "note": "A2: the agent in another language (kind 'variant', same facts and agenda, optional stack); refused without a checked disclosure line for the language; routed to by campaigns"
+    },
+    {
+      "name": "tool.create",
+      "risk": "draft",
+      "note": "workspace HTTP tool for calls (shared/contracts/http-tool.ts): https public host, integration secret, timeout <= 2.5 s, risk read or draft only"
+    },
+    {
+      "name": "tool.edit",
+      "risk": "draft"
+    },
+    {
+      "name": "tool.list",
+      "risk": "read",
+      "note": "each tool reads 'Not available yet' until the voice runtime runs workspace tools"
+    },
+    {
+      "name": "tool.test",
+      "risk": "test",
+      "note": "dry run: exact request with the secret masked, the fields she would get from a sample answer, the timeout path; nothing is sent"
+    },
+    {
+      "name": "agent.knowledge",
+      "risk": "read",
+      "note": "company information for an agent: offerings it can link, every linked fact with whether she may say it and why not (buyer's words)"
+    },
+    {
+      "name": "call.why_said",
+      "risk": "read",
+      "note": "per agent line on a call, the facts used and their source (title, page or row, passage), from the version that ran"
+    },
+    {
+      "name": "agent.archive",
+      "risk": "draft",
+      "note": "archive, never delete: leaves the list, no edits, publishes or calls; refused while a scheduled, running or paused campaign or an inbound line uses it"
+    },
+    {
+      "name": "agent.restore",
+      "risk": "draft",
+      "note": "back to the status it had (live or draft)"
+    },
+    {
+      "name": "agent.duplicate",
+      "risk": "draft",
+      "note": "a new draft from a copy of the draft; no versions, tests or calls"
+    }
+  ],
+  "tests": {
+    "passed": 37,
+    "total": 37,
+    "files": [
+      "product/tests/agents.test.ts",
+      "product/tests/agents-tools.test.ts",
+      "product/tests/agents-contracts.test.ts",
+      "product/tests/agents-runtime.test.ts",
+      "product/tests/agents-library.test.ts",
+      "product/tests/stack-gate.test.ts",
+      "product/tests/agents-chat.test.ts",
+      "product/tests/company-data.test.ts",
+      "product/tests/agents-lifecycle.test.ts"
+    ],
+    "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
+  },
+  "works": [
+    "compile(config) -> { text, hash, bytes }: persona v2 generalised to every JOB, Hinglish/Hindi/English/9 other Indic scripts, 4 registers, energy, humour, honorific, gender; inbound vs outbound openings; sector-pack rules; end_call as marker or tool; SOUNDS only for tag-safe voices, DELIVERY only for style voices",
+    "deterministic: same config (any key order, JSON round trip) gives identical bytes and sha256",
+    "budget throws BriefBudgetError naming the section: per-section caps and a 12,000-byte core cap (voice blueprint 2.3); TAIL is 708 bytes against a 1,900 cap; nothing is truncated",
+    "lints enforced at compile: shared/safety lintAgentConfig refuse blocks, drop removes the fact (tested with an injected stand-in, since the shared lint is still a stub); recitable-line lint (quotes, first person in English and Hindi, greetings, questions, Devanagari, romanised Hindi, digits, bracketed directions in shapes; scripted facts) refuses with the field path",
+    "offer facts never reach a service or transactional brief (T-L3 by construction)",
+    "16 templates across 12 industries and 14 jobs; all validate, compile at 6.9-8.2 KB, carry no sentence-shaped lines, choose no stack",
+    "no default stack anywhere: templates, LLM drafts and stack.list; publish refuses without one",
+    "publish needs approval, is bound to the draft it showed (draft edit voids the card; stale draftHash refused), single-use, viewer cannot approve; stored brief equals compile(stored agent)",
+    "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused",
+    "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate",
+    "practice-caller library: busy_20s, sceptic_bot, confused_elder, angry_rude, opt_out_midcall, out_of_scope, push_for_promise, wrong_person, crisis, sounds_minor, tamil_english, bhojpuri_mix; each carries code checks (new: maxAgentTurns, optOutStops, mustNotEnd, scopeAfter); a trap the simulated caller never springs grades as inconclusive (trap_reached fails), never as a pass",
+    "review B3 mirrored: the simulator doors each sentence alone and joined with the sentence before it (same reply, or her last sentence of the previous turn); a cross-sentence hit blocks the current sentence. Review B1: sceptic_bot grades short AI denials (main bot nahi, \u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901, ...) as failures independently of the door",
+    "hard safety guard (guard.ts) on every draft write: agent.create (template and plain words, including the repair turn), brief.edit, stack.set, voice.set, tool.attach refuse a newly introduced AI denial/hiding, disclosure without AI, switched-off crisis lines or manipulation; nothing is saved and the refusal names the rule in plain English with the fix; softer lint saves with its warning",
+    "version.candidate runs the hard safety guard (crisis lines, manipulation) as well as the compile lint",
+    "languages: per-part matrix (measured/stated) and per-stack derivation; agent languages validated against the stack on every write and version; campaign routing per contact language with recorded fallback; launch warning counts only unserved contacts",
+    "knowledge on calls: AgentConfig.knowledge {offeringIds, purposes?}; previews, practice and versions materialise approved offering facts into facts rows (offer-tagged facts fenced out of service briefs) and the offering never-say into the agent's never-say; versions snapshot it, restore and variants keep the snapshot; kb_query removed",
+    "in-call tools: built-ins end_call and transfer work; mark_callback, send_whatsapp_link, send_sms are declared but 'Not available yet' (tool.attach refuses; the web shows them as not available); book_slot and lookup_order become workspace HTTP tools; versions snapshot each granted tool's spec into the grant, which the ticket carries"
+  ],
+  "untested": [
+    "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
+    "whether the generalised brief keeps brief v2's measured gains (words per turn, question endings, hang-ups) on jobs other than renewal: not measured",
+    "which voices truly understand sound tags: TAG_SAFE_VOICES = gemini-lite is inferred from the lab note, not verified per voice",
+    "non-Hindi Indic scripts (Tamil etc.): compiles, never run against a model or voice",
+    "the full per-agent ledger pack (told/offer patterns per fact): simulate uses a small generic ledger; the runtime owns the real one",
+    "user-supplied regex in passCriteria is length-capped (200) but not ReDoS-proofed",
+    "test.simulate holds a DB transaction across model calls (fine for tests; long for real models)",
+    "seeded determinism with a hosted model: LlmRequest has no seed field, so repeatability relies on temperature 0 plus the seed in the caller prompt; verified only with the scripted fake",
+    "whether real caller models spring each trap with words the scopeAfter / opt-out patterns catch: only scripted transcripts were graded",
+    "the Operator bench task ref-human has not been re-run on a real model since the guard landed"
+  ],
+  "needs_from_others": [
+    "kernel: add `module` from server/modules/agents/index.ts to server/modules/index.ts (outside this module's write boundary)",
+    "safety: real lintAgentConfig (T-L1..T-L4) and replyDoor; compile() already refuses on 'refuse' and drops facts on 'drop' (drop paths must look like facts[i])",
+    "money: a way for a tool to call money.estimate (ToolCtx has no pool/registry handle), so stack.list/stack.set can show all-in INR per minute; until then price reads not_measured",
+    "money/kernel: test.simulate does not reserve against the \u20b9200/day test budget yet (no ledger reserve for LLM tokens); usage tokens are stored per run",
+    "blueprint data files named in the brief (data/voice-module-defaults.json, data/workspace-tool-registry.json) are not in the repo; tool names and risks were taken from blueprint/modules/workspace.md section 5",
+    "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results",
+    "kernel: an optional `seed` on LlmRequest passed to providers that support it, for stronger test.simulate_batch repeatability",
+    "learning: createTreatmentVersion can now call version.candidate instead of inserting agent_version rows itself",
+    "voice runtime: append the contact rows block (compile.ts contactRows(ticket.contact.facts): header 'Contact rows for this call (data, not lines):' then 'key with spaces: value' rows, sorted) after the brief and memory, before the tail. The brief's per-contact facts read '(per contact: in the contact rows for this call)'; conversation.py does not send contact.facts values to the model today",
+    "safety: when the door's AI-self-reference allow-list lands, practice runs pick it up automatically (they call shared/safety replyDoor); the grader's DENIAL pattern stays as a second check",
+    "safety: lint T-L5 (crisis lines stay) and T-L6 (no manipulation) in rules.json + rules.py KNOWN/lint_agent_config + cases.json, so guard.ts can delegate (decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now, option A)",
+    "voice: ears and voice configured per ticket language (contact.language and the variant's primary); safety: disclosure lines and lexicons for kn/te/ml/mr/gu/pa/or (open.2026-10-24.languages-runtime-and-disclosure)",
+    "voice: the in-call half of shared/contracts/http-tool.ts (offer specs as functions, validate args, ask the control plane to run them) and the control-plane endpoint /hooks/runtime/tools that executes with the integration secret"
+  ]
+}

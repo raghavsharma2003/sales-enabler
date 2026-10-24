@@ -1,0 +1,19 @@
+segment,postings,share_all,share_of_classified,employers,median_fixed_mid_salary,p25_salary,p75_salary,sum_openings_capped10,median_openings,pre_sales_share,post_sales_share,unclear_share,top_cities
+b2b_sales,769,0.2281,0.2781,678,20500.0,17500.0,25000.0,7665,10,0.573,0.225,0.202,Delhi-NCR:177; Mumbai:111; Bengaluru:104
+unspecified_bpo_or_unknown,607,0.18,,492,20000.0,16000.0,25000.0,6043,10,0.198,0.308,0.494,Mumbai:114; Delhi-NCR:107; Bengaluru:97
+real_estate,388,0.1151,0.1403,349,22500.0,20000.0,30000.0,3872,10.0,0.807,0.098,0.095,Delhi-NCR:110; Bengaluru:57; Mumbai:49
+lending_origination,375,0.1112,0.1356,303,20000.0,17000.0,22500.0,3736,10,0.512,0.171,0.317,Delhi-NCR:109; Mumbai:55; Bengaluru:47
+lending_collections,319,0.0946,0.1154,250,20000.0,18000.0,23500.0,3176,10,0.0,1.0,0.0,Delhi-NCR:73; Bengaluru:46; Mumbai:41
+edtech_admissions,219,0.0649,0.0792,180,22500.0,19250.0,29000.0,2184,10,0.744,0.096,0.16,Delhi-NCR:57; Bengaluru:37; Mumbai:21
+healthcare,197,0.0584,0.0712,175,20000.0,17500.0,25000.0,1970,10,0.34,0.325,0.335,Delhi-NCR:70; Mumbai:25; Bengaluru:23
+insurance,113,0.0335,0.0409,82,19500.0,16500.0,22500.0,1124,10,0.407,0.248,0.345,Delhi-NCR:33; Mumbai:29; Kolkata:10
+travel_hospitality,108,0.032,0.0391,98,22500.0,17500.0,26500.0,1080,10.0,0.38,0.343,0.278,Delhi-NCR:29; Mumbai:19; Ahmedabad:10
+fintech_saas_onboarding,65,0.0193,0.0235,58,20000.0,18500.0,24000.0,632,10,0.615,0.138,0.246,Delhi-NCR:16; Indore:13; Mumbai:13
+telecom_isp,51,0.0151,0.0184,45,20000.0,16000.0,30000.0,510,10,0.333,0.373,0.294,Delhi-NCR:10; Mumbai:9; Bengaluru:8
+auto,42,0.0125,0.0152,40,21250.0,17000.0,22500.0,420,10.0,0.357,0.381,0.262,Bengaluru:13; Mumbai:9; Pune:3
+d2c_ecom,31,0.0092,0.0112,29,23500.0,20000.0,27500.0,310,10,0.29,0.484,0.226,Bengaluru:8; Delhi-NCR:8; Jaipur:5
+study_abroad,24,0.0071,0.0087,19,20500.0,17500.0,32500.0,232,10.0,0.417,0.125,0.458,Chandigarh:13; Hyderabad:2; Bengaluru:2
+solar,24,0.0071,0.0087,24,17500.0,12000.0,22500.0,240,10.0,0.5,0.208,0.292,Jaipur:3; Mumbai:2; Ahmedabad:2
+diagnostics,18,0.0053,0.0065,16,22500.0,20000.0,27500.0,180,10.0,0.389,0.389,0.222,Mumbai:6; Delhi-NCR:5; Bengaluru:2
+matrimony,15,0.0044,0.0054,10,20500.0,16500.0,21500.0,150,10,0.467,0.267,0.267,Delhi-NCR:2; Hyderabad:2; Chennai:2
+fitness_beauty,7,0.0021,0.0025,6,22500.0,20000.0,25000.0,70,10,0.714,0.286,0.0,Delhi-NCR:2; Ahmedabad:1; Chandigarh:1

@@ -1,0 +1,45 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.stack-voice-samples-rendered",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Stack voice samples rendered on staging 69597eb through the product's own adapters (python -m vpvoice.samples): 6 of 7 curated stacks from 3 clips, all passing QA and shipped in product/web/public/samples. gemini-lite~Despina 5.90 s, 36.0 KB, -16.8 LUFS (v2-flashlite, v2-54mini, v2-38flash, v2-luna); gemini-3.8-live~Despina 5.53 s, 33.5 KB, -15.9 LUFS (v2-live); azure-mai~Kavya 8.45 s, 49.2 KB, -16.5 LUFS (v2-mai). Ogg/Opus mono 48 kHz. Azure Speech hi-IN heard the line in 3/3: word errors 0, 0 and 2 of 17 (one spacing variant), CER 0 with AI=एआई; the disclosure 3/3 (safety.affirms_ai) and 'आशा' 3/3 (0 name repairs). sarvam-india not rendered (no Sarvam key on staging). Web's parseSamples accepts 6/6 and every URL resolves in dist. About Rs 1.0 (list prices)",
+   "n": 3,
+   "method": "2026-10-24 04:04 UTC, VM vl-vm-cin, staging redeployed to 69597eb first (vps5-deploy-69597eb: deploy_pre + stage_setup verbatim + deploy_post; 3 new migrations). ffmpeg was absent on the VM and was installed from the Ubuntu archive (only the renderer, its tests and benches use it); the offline renderer tests then passed with ffmpeg (0 skipped) before any request. Render as vpstage from the staging tree with staging's env minus NODE_ENV (the renderer refuses production; this one process only) and staging's Vertex pacer loaded first: 2 Vertex request starts (Live, TTS) 8.69 s apart, 0 from the staging runtime in the window, 0 active calls. The launcher's naive .env read logged 'VERTEX_MODEL_MAP ignored' (the VM line is single-quoted); an offline comparison with the running runtime's /proc environ showed identical resolved model maps and Vertex locations, so the clips came from the models staging calls use. QA per clip on the VM: ffprobe, size, ffmpeg ebur128 (integrated LUFS, true peak) and volumedetect, and one Azure Speech REST short-audio hi-IN request on the shipped file decoded to 16 kHz WAV; word/character error and the product's affirms_ai and names.repair on the transcripts offline (ops/asr_wer.py). Machine QA only: no human listened, no browser played the files",
+   "path": "research/2026-10-24/samples/README.md",
+   "value": "6/7 stacks, 3 clips, 3/3 pass"
+  },
+  {
+   "id": "open.2026-10-24.sarvam-india-sample",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "sarvam-india still shows 'No sample recorded yet': the renderer refused it on staging ('Sarvam isn't set up on this server'), because staging carries no Sarvam key by design. Whether to use a Sarvam key for one sample (Sarvam may train on call data unless opted out) is the integrator's or owner's call",
+   "closes_when": "A Sarvam key is approved for this, python -m vpvoice.samples --stack sarvam-india renders on the VM, and the clip passes the same QA (duration, loudness, format and size, Azure Speech round-trip with the disclosure and the name heard)"
+  },
+  {
+   "id": "open.2026-10-24.live-sample-spoken-text-empty",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The renderer wrote spokenText '' for v2-live, although the audio is the whole line (Azure Speech word error 0/17). speak_live stops reading at turnComplete and breaks on any non-text frame, where the runtime's s2s read loop continues; inference, not diagnosed: Live's outputTranscription arrives after the renderer stops reading. An empty spokenText reads as 'said nothing', and decision.2026-10-24.voice-stack-sample-renderer's reverse_if keys on spokenText. Web ignores spokenText, so the card is right",
+   "closes_when": "speak_live collects Live's outputTranscription (reads on past turnComplete for it, continues past non-text frames) or omits spokenText when it is empty, and a re-render of v2-live on the VM shows Live's own transcript"
+  }
+ ],
+ "edges": [
+  {"from": "measure.2026-10-24.stack-voice-samples-rendered", "to": "open.2026-10-24.stack-voice-samples", "relation": "implements"},
+  {"from": "measure.2026-10-24.stack-voice-samples-rendered", "to": "decision.2026-10-24.voice-stack-sample-renderer", "relation": "tests"},
+  {"from": "measure.2026-10-24.stack-voice-samples-rendered", "to": "measure.2026-10-24.voice-samples-offline", "relation": "extends"},
+  {"from": "measure.2026-10-24.stack-voice-samples-rendered", "to": "open.2026-10-24.sarvam-india-sample", "relation": "leaves-open"},
+  {"from": "measure.2026-10-24.stack-voice-samples-rendered", "to": "open.2026-10-24.live-sample-spoken-text-empty", "relation": "leaves-open"},
+  {"from": "open.2026-10-24.live-sample-spoken-text-empty", "to": "decision.2026-10-24.voice-stack-sample-renderer", "relation": "informs"}
+ ],
+ "events": [
+  {"date": "2026-10-24", "event": "staging-69597eb-stack-voice-samples", "details": "VM worker (about Rs 1.0, list prices). Staging redeployed e9fdde3 -> 69597eb (migrations 0204, 0606, 0906; npm ci; smoke green; sarvam-india unavailable, no key). ffmpeg installed on the VM (the renderer needs it; no serving path uses it). python -m vpvoice.samples rendered 6 of 7 curated stacks from 3 clips (gemini-lite Despina for flashlite/54mini/38flash/luna, gemini-3.8-live Despina, azure-mai Kavya), paced: 2 Vertex requests 8.69 s apart. QA 3/3 pass: 5.53-8.45 s, 33.5-49.2 KB Ogg/Opus, -16.8 to -15.9 LUFS, Azure Speech hi-IN word error 0/0/2 of 17 (spacing), disclosure and 'आशा' heard 3/3. Shipped in product/web/public/samples with the renderer's manifest; web parseSamples 6/6. Open: sarvam-india sample (no key on staging), v2-live spokenText '' (renderer stops reading before Live's transcription). Not verified: browser playback, a human listen."}
+ ]
+}

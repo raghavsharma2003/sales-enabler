@@ -1,0 +1,14 @@
+# all.sh stage logs (op5)
+stage pair1 start 2026-10-24T02:49:31Z spent=₹0
+operator-gpt-4.1-r1 cap=₹150
+operator-41-r1 exit=0 spent=₹98.24 02:54:07
+operator-gpt-4.1-mini-r1 cap=₹43.8
+operator-mini-r1 exit=0 spent=₹125.22 03:19:54
+stage pair1 done 2026-10-24T03:19:54Z
+stage pair2 start 2026-10-24T03:20:13Z spent=₹125.22
+operator-gpt-4.1-r2 cap=₹121.1 (mini reserve ₹33.7)
+operator-41-r2 exit=0 spent=₹222.44 03:25:10
+operator-gpt-4.1-mini-r2 cap=₹43.8
+operator-mini-r2 exit=0 spent=₹250.02 03:50:52
+stage pair2 done 2026-10-24T03:50:52Z
+ablation (abl.sh, STOP_MARGIN=8, cap 28): 2026-10-24T03:51:46Z-03:53:58Z, spent total ₹277.00

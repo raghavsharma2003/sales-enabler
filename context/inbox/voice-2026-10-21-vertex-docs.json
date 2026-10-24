@@ -1,0 +1,40 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-21.vertex-live-docs-read",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-21",
+   "source": "verified",
+   "title": "Vertex AI Live API and Gemini TTS, from Google's public docs read 2026-10-21. Endpoint: wss://{LOCATION}-aiplatform.googleapis.com/ws/google.cloud.aiplatform.v1.LlmBidiService/BidiGenerateContent with an OAuth bearer token. gemini-3.8-live (GA) is listed in us / eu / us-central1 only, not India and not global. gemini-3.5-transcribe-live-preview exists (text out). Gemini 3.8 Flash TTS is listed as preview via the Gemini Enterprise API only. Vertex TTS ids are gemini-3.1-flash-tts-preview and gemini-2.5-flash(-lite-preview)/pro-tts",
+   "n": 9,
+   "method": "Public documentation pages only (no Google call with credentials), read by a research agent on 2026-10-21 and checked against the runtime design. Sources (docs.cloud.google.com; cloud.google.com 301-redirects there):\n- live-api/start-manage-session: regional host, LlmBidiService path (v1), bearer token; session limits (audio 15 min without compression, connection ~10 min, goAway 60 s before end, resumption within 24 h); contextWindowCompression trigger_tokens 5k-128k.\n- live-api/configure-language-voice: setup fields in snake_case in the samples (generation_config, speech_config.voice_config.prebuilt_voice_config.voice_name, input_audio_transcription, output_audio_transcription, realtime_input_config.automatic_activity_detection); 30 voices incl. Kore, Charon, Puck, Callirrhoe, Aoede, Zephyr, Leda.\n- live-api/get-started-websocket: setup.model is the full model resource path; the sample's realtime input uses media_chunks with audio/pcm;rate=16000.\n- live-api (overview) and models/gemini/3-8-live: audio in raw PCM16 16 kHz LE, out PCM16 24 kHz LE; gemini-3.8-live GA, released 2026-09-24, regions us, eu, us-central1; gemini-live-2.5-flash-native-audio GA, US and EU regions only, retires 2026-12-13; gemini-3.5-transcribe-live-preview is preview.\n- learn/locations: lists Live models in every group, including Asia Pacific; this conflicts with the per-model pages, which are more specific.\n- text-to-speech/docs/gemini-tts: Cloud TTS v1/text:synthesize with model_name, or Vertex generateContent with speech_config; regions global/us/eu/northamerica-northeast1; Gemini 3.8 Flash TTS preview only via the Gemini Enterprise API.\nNot confirmed:\n- whether Vertex accepts camelCase JSON on the websocket (proto JSON normally does; the runtime sends camelCase);\n- the exact server message keys (setupComplete, serverContent.inputTranscription/outputTranscription, interrupted, usageMetadata);\n- realtimeInput.audio versus mediaChunks (runtime default mediaChunks, switch with VERTEX_LIVE_AUDIO);\n- whether interimInputTranscription exists on Vertex;\n- a global host for Live.",
+   "path": "product/voice/vpvoice/providers/google.py",
+   "value": "Live on Vertex is regional and, per the model pages, not offered in India; 3.8 TTS may not be on Vertex generateContent"
+  },
+  {
+   "id": "decision.2026-10-21.voice-vertex-route-config",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "The voice runtime reaches Gemini only through Vertex. Model ids and locations are configuration, with no API-key or OpenRouter fallback: VERTEX_MODEL_MAP (our id -> Vertex id), VERTEX_LOCATION (text/TTS, default global), VERTEX_LIVE_LOCATION (Live, no default). A model Vertex does not offer, or Live without a location, makes the stack unavailable before the call, with a plain reason per component. There is no Live default location because the docs list gemini-3.8-live outside India only",
+   "rationale": "Owner directive decision.2026-10-21.gemini-vertex-only. What Vertex offers moves faster than code. The owner's console report and Instinct's Model Garden read decide the real ids and regions, so the runtime must not guess them, and must refuse rather than reroute. Calling a us-central1 Live endpoint from an India-hosted runtime keeps the India-only calling promise, but it puts processing outside India: that is the owner's call, not a default.",
+   "reverse_if": "Vertex lists the Live models in asia-south1 (then default VERTEX_LIVE_LOCATION=asia-south1); or the owner rules that Live processing must stay in India (then the Gemini-ears stacks stay unavailable, and the ears move to Sarvam or Azure); or the console shows different model ids (update DEFAULT_MODELS)"
+  },
+  {
+   "id": "open.2026-10-21.vertex-live-in-india",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-21",
+   "source": "model",
+   "title": "Every v2 stack except sarvam-india uses Gemini ears over Live, and the docs list gemini-3.8-live (and so probably the transcribe-live preview) only in us / eu / us-central1. Does the owner accept Live processing outside India from an India-hosted runtime? If not, which ears replace Gemini's? Also open: whether the 3.8 Flash(-Lite) TTS voices are on Vertex at all (the docs say Enterprise API preview only)",
+   "closes_when": "the owner's console report gives the Live and TTS model ids and regions, and the owner rules on Live processing location"
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-21.voice-vertex-route-config", "to": "measure.2026-10-21.vertex-live-docs-read", "relation": "informed-by" },
+  { "from": "open.2026-10-21.vertex-live-in-india", "to": "measure.2026-10-21.vertex-live-docs-read", "relation": "informed-by" }
+ ],
+ "events": []
+}

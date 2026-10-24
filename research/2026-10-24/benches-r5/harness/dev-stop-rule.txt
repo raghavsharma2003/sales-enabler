@@ -1,0 +1,36 @@
+Pre-registered 2026-10-24T02:10:46Z (file mtime), before any round 5 model request: the first ledger row is
+02:10:55.685Z (tree ab5dade4726174f32ce195959613bc7dfa11ab5c, which contains 2cdf64b). This header line alone was
+corrected at 02:13Z, from "02:11Z" to the file's mtime; nothing below it changed.
+
+Reference DEV numbers: round 4 (research/2026-10-24/benches-r4/analysis-dev-gpt-4.1-mini.json, tree 8e3440a, the
+b1a80cf contract, the same 42 DEV ids: splits.json regenerated at ab5dade and byte-identical to round 4's):
+gpt-4.1-mini outcome 42/42, moments 34/36, objections 9/11 (missed complaint.lending.hinglish and
+objection_resolved.telecom.hinglish), commitments 11/11.
+
+STOP RULE (the integrator's, 2026-10-24), read on the DEV arm "current" (the product contract) only:
+  stop the TEST runs and report instead if
+    - DEV outcome <= 38/42, or
+    - DEV objection recall < 9/11 (below round 4's).
+  Kept from rounds 3-4: also stop if DEV moments < 32/36 or DEV commitments < 7/11.
+The three ablation arms (r4-table, r3-stance, no-outcome-rules) are diagnostic, DEV only (2cdf64b refuses them on
+TEST), one pass each, and do not gate TEST.
+
+HOW THE ABLATION WILL BE READ (from 2cdf64b's decision node decision.2026-10-24.objection-always-a-moment):
+  - one pass per arm, 11 objection calls on DEV, so each arm comparison is small; counts and exact McNemar on the same
+    42 DEV ids are reported per arm, against current and against r4-table.
+  - "the table crowds out objections" is claimed only if r4-table misses at least 2 objections that BOTH r3-stance and
+    no-outcome-rules keep. Otherwise the cause is reported as not shown.
+  - reverse_if of that decision: current still drops objections on DEV (fewer than 11/11), or the loss is noise
+    against r3-stance (r4-table and r3-stance within 1 objection of each other).
+
+HOW TEST WILL BE READ (written now, before TEST):
+  - "regression fixed": over the mini-first runs (DEV current, mini p1, mini p2, tiered p1, tiered p2) objection
+    recall is >= 50/51 (round 3 51/51, round 4 43/51), and each of the 5 calls that lost an objection in round 4 keeps
+    it in every run that contains it (complaint.lending.hinglish and objection_resolved.telecom.hinglish on DEV;
+    objection_resolved.realestate.hinglish, objection_resolved.ecommerce.hinglish, complaint.realestate.hinglish on
+    TEST). Paired test: exact McNemar on (call, run) pairs, round 4 -> round 5, same ids.
+  - "outcome gains kept": each mini-first TEST pass has outcome >= 40/42 (round 4: 42, 41; tiered 42, 42) and the exact
+    McNemar round 4 -> round 5 on outcome shows no loss with p < 0.05 on any pass.
+  - decision.2026-10-23.analysis-default-mini-single is re-checked by its reverse_if: tiered (and gpt-4.1, if the cap
+    allows it to run) ahead of mini by more than 4/42 on outcome, moments or commitments on the mean of two TEST
+    passes, at a cost inside Rs 0.17 for a 3-minute call.

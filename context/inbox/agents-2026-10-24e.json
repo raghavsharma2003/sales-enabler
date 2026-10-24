@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.stack-gate-visible",
+      "type": "decision", "status": "built", "source": "verified", "date": "2026-10-24",
+      "title": "Blueprint decision 4 made honest and visible, never blocking: every catalog stack carries a speed and turn-taking gate status computed from staging measurements against one config (GATE: median reply within 1.5 s, cut-ins at most 5%)",
+      "rationale": "shared/stack-gate.ts holds GATE and gateStatus(); shared/stack-measures.json holds the measured reply-gap p50 (value, n, calls, p90, date, source) and cut-in rate per stack, and unlisted or null means not measured, never zero. States: 'Meets the speed and turn-taking gate'; 'Not yet: 3.2 s replies (target 1.5 s)' (and/or 'N% cut-ins (target at most 5%)') when any measured number misses; 'Not measured' when nothing measured misses but a number is missing. The reply gap a stack card headlines is built from the same file, so the card and the gate cannot disagree. stack.list/agent.get stack cards carry gate; the stack picker (also the agent page's Voice stack tab) shows a Speed and turn-taking row with How we know (measurement, date, target, 'Calls still run on a stack that does not meet it'). campaign.get on a production campaign adds a non-blocking warning stack_gate naming the numbers, with a 'Compare voice stacks' fix; it is never a blocker. Today v2-flashlite (default) reads Not yet: 3.2 s replies (3,201 ms median, 22 replies, 4 calls, 24 Oct 2026); v2-mai 2.7 s; v2-54mini 2.1 s; cut-ins not measured per stack anywhere, so no stack reads Meets. A built stack (stackId custom) still resolves to beta and its campaign is blocked by beta_stack (test calls only), as decision.2026-10-22.custom-stack-contract says; now pinned by a test.",
+      "reverse_if": "The owner wants the gate to block production launches, or per-stack cut-in measurement proves the 5% threshold wrong for Hinglish turn-taking (then change GATE, the one place)."
+    },
+    {
+      "id": "measure.2026-10-24.stack-gate-tests",
+      "type": "measurement", "status": "measured", "source": "verified", "date": "2026-10-24",
+      "title": "Stack gate tests 6/6: default stack status recomputed from MEASURES vs GATE and equal to 'Not yet: 3.2 s replies (target 1.5 s)'; every branch (meets, cut-ins miss, both miss, half measured, unknown and custom); card reply gap equals the measurement; built stack beta and not measured; stack.list carries gate with target; production campaign warning names the numbers and is absent from blockers; built-stack campaign blocked as beta_stack",
+      "n": 6, "method": "node:test tests/stack-gate.test.ts on throwaway Postgres 16; full suite 703 pass / 0 fail on a fresh DB; tsc clean; ui-contract --strict 214/214; browser flows 0 fail (2 skipped, voice Python disabled).",
+      "notes": "Not verified: cut-in rates (none measured per stack); the integrator's new staging numbers are not loaded yet. Load them into shared/stack-measures.json only; nothing else changes."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.stack-gate-visible", "to": "decision.2026-10-21.blueprint-defining-decisions", "relation": "implements" },
+    { "from": "decision.2026-10-24.stack-gate-visible", "to": "decision.2026-10-22.custom-stack-contract", "relation": "informs" },
+    { "from": "measure.2026-10-24.stack-gate-tests", "to": "decision.2026-10-24.stack-gate-visible", "relation": "tests" }
+  ],
+  "events": [
+    { "date": "2026-10-24", "event": "agents-stack-gate", "details": "Speed and turn-taking gate per stack from shared/stack-measures.json against GATE in shared/stack-gate.ts; shown on stack cards, the picker and as a non-blocking launch warning; built stacks still test-calls-only. Waiting on the integrator's staging re-measurement (reply gap and cut-in rate per stack) to load." }
+  ]
+}

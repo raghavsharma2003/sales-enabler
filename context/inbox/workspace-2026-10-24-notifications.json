@@ -1,0 +1,100 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.notifications-from-outbox",
+   "type": "decision",
+   "status": "decided",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Notifications that reach people (Slack, email) are driven by the same webhook_outbox as webhooks, with their own mark (notified_at). There are four alerts: crisis (a crisis hand-off), hand_off (any other hand-off except a person taking over), campaign.paused (a pause with a system cause: cap, wallet or guard; never a person's pause) and wallet.low (a new trigger in 1030 fires when the state moves into low, empty or overdrawn). Each destination chooses its alerts. A delivery row is unique per (destination, outbox row), only destinations that existed when the event happened receive it, and the text is made at send time from ids and codes.",
+   "rationale": "Calls, campaigns and money did not need to change: every path that makes a hand-off, pauses a campaign or moves the wallet is already captured by a trigger. Making the text at send time means no caller words are ever stored in or sent from the notification tables.",
+   "reverse_if": "A module needs to raise an alert that has no table change behind it (for example, a judge verdict mid-call); then add webhook.emit-style explicit alerts next to the outbox.",
+   "path": "product/server/modules/workspace/notifications.ts"
+  },
+  {
+   "id": "decision.2026-10-24.crisis-alert-wording",
+   "type": "decision",
+   "status": "decided",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The crisis alert text is exactly 'Vyakti, <workspace>: A caller may be in distress — open the call: <VP_PUBLIC_URL>/calls/<id>'. Without VP_PUBLIC_URL it ends 'open the call in Vyakti.'. No alert carries the caller's words, name or number, and that includes the hand-off brief summary. Test and practice calls alert no one.",
+   "rationale": "Integrator brief: a crisis alert carries no caller words beyond that line. A Slack channel or a mailbox is not a place for a person in distress's words or identity.",
+   "reverse_if": "Counsel or the owner wants the agent's name or the campaign in the crisis line so on-duty staff can triage faster; that is not caller data and can be added."
+  },
+  {
+   "id": "decision.2026-10-24.crisis-wake-notify",
+   "type": "decision",
+   "status": "decided",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "An AFTER INSERT trigger on webhook_outbox runs pg_notify('vp_outbox'), and the workspace module LISTENs (startNotifier, a dedicated pool client that reconnects after 5 s) and sends at once. The 5 s timer stays as a safety net. Crisis deliveries are claimed first.",
+   "rationale": "A 5 s poll alone could not meet 'reaches every on-duty destination within 5 s' once the send time is added. NOTIFY fires only on commit, so a rolled-back hand-off wakes no one.",
+   "reverse_if": "The deployment uses a connection pooler in transaction mode (PgBouncer), where LISTEN does not work; then poll the outbox every second instead.",
+   "path": "product/db/migrations/1030_workspace_notifications.sql"
+  },
+  {
+   "id": "decision.2026-10-24.slack-hooks-only-email-smtp-env",
+   "type": "decision",
+   "status": "decided",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Slack uses the existing 'slack' integration. Its webhook_url must start with https://hooks.slack.com/; that is checked at integration.stage_secrets and again before every send, and VP_SLACK_WEBHOOK_BASE replaces the base for tests or a proxy. Email uses SMTP from env (VP_SMTP_HOST, VP_SMTP_PORT, VP_SMTP_USER, VP_SMTP_PASS, VP_SMTP_FROM) through a small client in workspace/smtp.ts, because the build rules allow no new packages. STARTTLS is required unless the server is loopback. With no recipients listed, email goes to the active owners, operators and compliance members. Without SMTP, notification.destination.list says 'Email not set up', the Notifications page shows it, and email deliveries are recorded as 'skipped' with that reason.",
+   "rationale": "Integrator brief. Locking Slack to one host keeps a stored URL from becoming an exfiltration channel.",
+   "reverse_if": "Owners want a managed mail API (SES, SendGrid) with keys in the workspace instead of server env."
+  },
+  {
+   "id": "measure.2026-10-24.notifications-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/notifications.test.ts, 5 tests, run against a Slack-shaped receiver and a minimal SMTP server, both on 127.0.0.1. Results:\n- Exactly 4 Slack messages for 4 alertable events: a crisis, a hand-off, a campaign paused at its cap, and the wallet going low. Two runs gave no repeats.\n- Nothing for a takeover, a pause made by a person, a second low reading, or a practice-call crisis. Another workspace received nothing.\n- No message carried the caller's words, name or number.\n- A non-Slack address was refused.\n- Crisis hand-off committed through the real /hooks/runtime ingest, to Slack received, woken by LISTEN: 49, 31 and 32 ms on three runs (n=3, local Postgres 16, same machine).\n- With SMTP unset, email deliveries were recorded as skipped with 'Email is not set up'. With SMTP set, a test alert reached the owner (the on-duty default) with a base64 UTF-8 subject.",
+   "n": 3,
+   "method": "node --test on a throwaway Postgres 16; timing is Date.now() from before the hook POST to the receiver's arrival",
+   "path": "product/tests/notifications.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.notifications-unverified",
+   "type": "open-question",
+   "status": "open",
+   "source": "inference",
+   "date": "2026-10-24",
+   "title": "Notifications are not yet verified against real Slack (hooks.slack.com) or a real SMTP server with STARTTLS: the STARTTLS upgrade path in smtp.ts is not exercised by any test. LISTEN behind a pooler is not checked either. The next step is one staging run with an owner-controlled Slack workspace and mailbox.",
+   "closes_when": "One staging run delivers each of the four alerts (crisis, hand_off, campaign.paused, wallet.low) to an owner-controlled Slack webhook on hooks.slack.com and to a real mailbox over SMTP with STARTTLS. Each delivery is logged with its latency (n per alert, method, date). A test exercises the STARTTLS upgrade path in smtp.ts. The deployment pooler mode is checked: session or direct keeps LISTEN, transaction mode needs the one-second poll fallback."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.notifications-from-outbox",
+   "to": "decision.2026-10-24.results-outbox-triggers",
+   "relation": "depends_on"
+  },
+  {
+   "from": "decision.2026-10-24.crisis-wake-notify",
+   "to": "decision.2026-10-24.notifications-from-outbox",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.notifications-tests",
+   "to": "decision.2026-10-24.crisis-wake-notify",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.notifications-tests",
+   "to": "decision.2026-10-24.crisis-alert-wording",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.notifications-unverified",
+   "to": "measure.2026-10-24.notifications-tests",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "notifications-built",
+   "details": "Integrator brief 'notifications that reach people'. Built: Slack (hooks.slack.com only) and email (SMTP from env, 'Email not set up' visible) destinations; per-destination alerts (crisis, hand_off, campaign.paused, wallet.low) from the outbox; crisis woken by LISTEN/NOTIFY, measured at 31 to 49 ms locally; Settings > Notifications. ARCHITECTURE.md now names the cross-module triggers (1020, 1030). Integrator decisions recorded: budget 205 KB accepted as temporary; outbox triggers accepted. Not verified: real Slack, real SMTP with STARTTLS."
+  }
+ ]
+}

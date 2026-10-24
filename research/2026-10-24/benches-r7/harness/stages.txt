@@ -1,0 +1,8 @@
+run mini.current-p1 start 2026-10-24T06:41:28Z spent=₹0
+analysis-mini.current-p1 exit=0 spent=₹2.21 06:43:42
+run tiered.current-p1 start 2026-10-24T06:43:57Z spent=₹2.21
+analysis-tiered.current-p1 exit=0 spent=₹4.4 06:46:09
+run mini.current-p2 start 2026-10-24T06:46:22Z spent=₹4.4
+analysis-mini.current-p2 exit=0 spent=₹6.55 06:48:33
+run tiered.current-p2 start 2026-10-24T06:48:41Z spent=₹6.55
+analysis-tiered.current-p2 exit=0 spent=₹8.7 06:50:53

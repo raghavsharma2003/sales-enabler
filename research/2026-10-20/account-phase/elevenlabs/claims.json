@@ -1,0 +1,639 @@
+[
+ {
+  "id": "AP-EL-01",
+  "area": "access",
+  "claim": "Our key is an xi-api-key header key on api.elevenlabs.io for a FREE-tier workspace (10,000-credit monthly limit, 3 voice slots, seat workspace_admin, next reset 2026-11-20). The workspace held one agent of ours before this phase (\"[Eval] Synthetic Clinic Demo\", created 2026-10-20 19:09 UTC by team@vyakti.ai, 0 calls). No phone number, KB, tool, secret, MCP server, test, tag, webhook or batch existed.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/user.json",
+   "data/account-phase/elevenlabs/api-reads/user-subscription.json",
+   "data/account-phase/elevenlabs/api-reads/agents-list.json",
+   "data/account-phase/elevenlabs/api-reads/phone-numbers.json",
+   "data/account-phase/elevenlabs/api-reads/tools.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-02",
+  "area": "access",
+  "claim": "The entire documented /v1/convai configuration and read surface answers to a free-tier key: more than 25 read-only GETs returned 200 (agents, conversations, phone numbers v1/v2, batch workspace, knowledge base, tools, secrets, MCP servers, agent tests, test invocations, tags, triage tickets, users, settings, dashboard settings, environments, environment variables, live-count, WhatsApp accounts, KB crawl, RAG index, speech engines, LLM list). Writing agents, tools, branches, merge proposals, tests, tags and KB documents also worked without a paid plan; only user memory was refused (AP-EL-31).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/conversations-list.json",
+   "data/account-phase/elevenlabs/api-reads/settings.json",
+   "data/account-phase/elevenlabs/api-reads/speech-engine.json",
+   "data/account-phase/elevenlabs/api-writes/create-minimal-response.json",
+   "data/account-phase/elevenlabs/api-writes/branch-create.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-03",
+  "area": "access",
+  "claim": "About 110 authorized requests at roughly 1 per second produced no 429 and no rate-limit or quota headers; response headers carry only date, server (uvicorn), x-trace-id, x-region (us-central1) and via (1.1 google). Documented per-plan limits are concurrency (4 to 40 calls) not request rates, so API rate limits remain unknown.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/user.headers.txt",
+   "data/account-phase/elevenlabs/api-writes/create-minimal-response.headers.txt",
+   "research/2026-10-20/teardown/elevenlabs/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-04",
+  "area": "access",
+  "claim": "The API control plane answers from GCP us-central1 (x-region header on every response, via: 1.1 google). Consistent with the public-phase finding that the standard workspace is US-hosted (an India caller reaches an Iowa control plane unless on the Enterprise residency environment).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/user.headers.txt",
+   "research/2026-10-20/teardown/elevenlabs/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-05",
+  "area": "access",
+  "claim": "Key management is not reachable with an API key: GET /v1/workspace/api-keys returns 401 \"Neither authorization header nor xi-api-key received\" even though our key was sent, so key creation/listing, billing portal, seats and invoices need a dashboard login. /v1/usage/character-stats works but requires start_unix and end_unix (422 otherwise).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/workspace-api-keys.json",
+   "data/account-phase/elevenlabs/api-reads/usage-stats.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-06",
+  "area": "access",
+  "claim": "Error envelope is consistent: {detail:{type, code, message, status, request_id, param}} for auth (401 authentication_error), validation (400 validation_error with param path), missing documents (404 document_not_found), feature gates (403 feature_not_available) and in-use resources (409 conflict with a force flag); FastAPI-style 422 arrays are returned for bad query parameters.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/noauth.json",
+   "data/account-phase/elevenlabs/api-writes/patch-bounds.json",
+   "data/account-phase/elevenlabs/api-writes/patch-notfound.json",
+   "data/account-phase/elevenlabs/api-writes/patch-rich-response.json",
+   "data/account-phase/elevenlabs/cleanup/del-tool-webhook.json",
+   "data/account-phase/elevenlabs/api-reads/agents-summaries.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-07",
+  "area": "api",
+  "claim": "The live OpenAPI is structurally identical to the public-phase copy fetched a few hours earlier (322 paths, 1,644 schemas, 420 operations; no added or removed path or schema), so the public spec is a stable description of what a key can call. Of the 420 operations, 200 sit under /v1/convai or /v1/speech-engine; we exercised 64 of 420.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/derived/endpoint-surface.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-08",
+  "area": "data-model",
+  "claim": "Agent object graph: agent (conversation_config, platform_settings, workflow, tags) -> branches -> immutable versions; tools, knowledge-base documents, MCP servers, secrets, environment variables, pronunciation dictionaries and tests are workspace-level objects referenced by id (tool_ids, knowledge_base locators, attached tests); conversations reference agent_id, branch_id, version_id, user_id and tag_ids; batch calls reference agent, branch, environment and phone number. A created agent returns only {agent_id, main_branch_id, initial_version_id}; the full config comes from a second GET.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/create-minimal-response.json",
+   "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-09",
+  "area": "data-model",
+  "claim": "An agent read-back carries 313 non-widget leaf settings (179 with schema descriptions) split into conversation_config (asr, turn, tts, conversation, language_presets, vad, realtime_model, agent.prompt) and platform_settings (evaluation, widget, data_collection, analysis_items, overrides, workspace_overrides, testing, guardrails, auth, call_limits, queueing_config, privacy, analysis_llm, topic_discovery, sentiment_analysis, simulation_library, alerting, safety). Settings are one JSON document, not a normalised set of tables.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/derived/agent-config-knobs.csv",
+   "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-10",
+  "area": "data-model",
+  "claim": "Versioning is commit-per-write: every PATCH, including one whose only change was an unknown property, creates a new immutable version (seq_no_in_branch 1 -> 3 after two PATCHes) with parent links (in_branch_parent_id, out_of_branch_parent_id, merged_from_*, rebased_from_version_id). The Main branch reports protection_status writer_perms_required, yet an admin can PATCH it directly; no approval is forced.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/branch-main.json",
+   "data/account-phase/elevenlabs/api-writes/patch-unknown-prop.json",
+   "data/account-phase/elevenlabs/api-writes/patch-rich-response.json",
+   "data/account-phase/elevenlabs/api-writes/version-initial.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-11",
+  "area": "data-model",
+  "claim": "Branches, merge preview and merge proposals work on a free workspace: POST /branches takes a parent version plus a config delta in one call and returns created_branch_id and created_version_id; merge-preview (needs target_branch_id query) returns the full merged agent config, not a diff; POST /merge-proposals takes source, target, title, description, requested reviewers and an optional triage ticket and returns an agtmprop_ id. Deployments (traffic split by branch percentage) list is empty and POST was not exercised.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/branch-create.json",
+   "data/account-phase/elevenlabs/api-writes/merge-preview.json",
+   "data/account-phase/elevenlabs/api-writes/mergeprop-create.json",
+   "data/account-phase/elevenlabs/api-writes/deployments.json",
+   "data/account-phase/elevenlabs/api-writes/branch-probe-readback.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-12",
+  "area": "data-model",
+  "claim": "Per-agent RBAC is fine-grained: the read-back lists 65 permission strings (27 view, 15 manage, 13 edit, plus run, archive, duplicate, merge, monitor, publish, rerun, search, delete), for example agent_view_costs, agent_manage_traffic, agent_manage_protected_branches, agent_merge_branches, agent_publish_version, agent_view_memories; access_info carries role and access_source; workspace groups carry group_usage_limit and group_concurrency_limit; a service-accounts resource exists (empty).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json",
+   "data/account-phase/elevenlabs/api-reads/workspace-groups.json",
+   "data/account-phase/elevenlabs/api-reads/service-accounts.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-13",
+  "area": "data-model",
+  "claim": "Workflows are a typed graph: nodes are start, end, phone_number (transfer with SIP headers, UUI, post-dial digits), override_agent (a subagent with its own prompt, KB, tools and entry_behavior), standalone_agent (transfer to another agent/branch/node) and tool (parallel tools); edges carry forward/backward conditions of type unconditional, llm (natural-language condition), result (tool success) or expression; edge_order fixes evaluation order; prevent_subagent_loops guards cycles. A new agent holds only a start node.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-14",
+  "area": "config",
+  "claim": "Server defaults differ from the OpenAPI defaults, so the spec is not a reliable description of a new agent: the schema says default LLM gemini-2.5-flash but a newly created agent (empty conversation_config) comes back with deepseek-v41-flash; speculative_turn is false in the schema but true on the read-back; call_limits.bursting_enabled is true by default (excess calls accepted at double price per docs); queueing is on with a 180 s wait; topic discovery and sentiment analysis are on; analysis_llm is gemini-2.5-flash with analysis_llm_billed false; privacy.retention_days is -1.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-15",
+  "area": "config",
+  "claim": "Silent acceptance of unknown fields: a PATCH containing {turn:{unknownKnob:1}} returned 200 and committed a version. A typo in a knob name is therefore dropped without an error, the opposite of Vapi (which rejected unknown properties). Bounds and enums are enforced, but only the first violation is returned per request.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/patch-unknown-prop.json",
+   "data/account-phase/elevenlabs/api-writes/patch-bounds.json",
+   "data/account-phase/elevenlabs/api-writes/patch-bad-enum.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-16",
+  "area": "config",
+  "claim": "Enum domains revealed by validation errors: turn_eagerness patient|normal|eager; turn_timeout -1 or 1-300 s; asr.provider elevenlabs|scribe_realtime|scribe_v2_turbo|scribe_v2|scribe_v3_live|scribe_v3_live_medical; privacy.user_memory.scale minimal|balanced|maximum; turn.mode turn|silence and turn_model turn_v2|turn_v3 both accepted; the call-start override schema lists 72 language codes incl. hi, ta, te, bn, gu, kn, ml, mr, pa, ur, as.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/patch-bounds.json",
+   "data/account-phase/elevenlabs/api-writes/patch-bad-enum.json",
+   "data/account-phase/elevenlabs/api-writes/x-asr-provider.json",
+   "data/account-phase/elevenlabs/api-writes/x-user-memory-scale.json",
+   "data/account-phase/elevenlabs/api-writes/x-turn-modes.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-17",
+  "area": "config",
+  "claim": "Turn-taking and voice knobs on the agent object (read back, not only in docs): turn_timeout, initial_wait_time, silence_end_call_timeout, mode, turn_eagerness, spelling_patience, speculative_turn, retranscribe_on_turn_timeout, turn_model, interruption_ignore_terms with per-language lists and a merge-with-defaults flag, transcribe_on_disabled_interruptions, soft_timeout_config (timeout, message(s), LLM-generated filler, randomised fillers, cap per generation), noisy_environment_detection with a spoken message, vad.background_voice_detection; TTS: model_id, voice_id, supported_voices (multi-voice), expressive_mode, suggested_audio_tags, stability, speed, similarity_boost, text_normalisation_type, pronunciation dictionaries, phoneme tags, optimize_streaming_latency, output audio format; conversation: max_duration, dtmf_input_settings, background_sound, context compaction (enabled, soft_trigger_fraction, tail_size), monitoring.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json",
+   "data/account-phase/elevenlabs/derived/agent-config-knobs.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-18",
+  "area": "config",
+  "claim": "Per-call overrides are opt-in field by field: platform_settings.overrides defaults every field to false except conversation.text_only. Fields that the spec marks client-overridable at call start number 23 distinct names (first_message, language, prompt, llm, voice_id, model_id, stability, speed, similarity_boost, keywords, knowledge_base, tool_ids, native_mcp_server_ids, text_only, max_duration_seconds and others); six LLM-sampling fields (llm, temperature, max_tokens, reasoning_effort, thinking_budget, enable_reasoning_summary) are runtime-overridable.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-19",
+  "area": "config",
+  "claim": "Changing the TTS model silently changes another setting: moving an agent from eleven_v4_turbo to eleven_flash_v2_5 flipped tts.expressive_mode from true to false in the read-back, without being asked.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json",
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-20",
+  "area": "india",
+  "claim": "A hinglish_mode boolean exists on agent config (\"mixes English words and phrases into responses in Hindi, Malayalam, Telugu, or Kannada\", default false). It appears in the OpenAPI and the read-back but in none of the 258 saved docs pages. The server accepted and persisted hinglish_mode=true even with language=en, so it is not cross-validated and its effect on output is unmeasured (no call placed).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json",
+   "data/account-phase/elevenlabs/api-writes/hinglish-en-readback.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-21",
+  "area": "india",
+  "claim": "Language/voice/model combinations are only partly validated: eleven_turbo_v2 on a Hindi agent was rejected (\"Non-english Agents must use turbo or flash v2_5\"), and flash_v2_5 on an English agent was rejected (\"English Agents must use turbo or flash v2\"), but Hindi with eleven_v4_turbo, eleven_v4, eleven_v3_conversational, eleven_multilingual_v2 and eleven_turbo_v2_5 were all accepted (n=5 accepted, n=2 rejected). The default voice \"Eric\" (American English male) is verified for only six languages (de, en, es, fr, pt, sk), not Hindi, yet the API accepted language=hi with that voice unchanged: a default Hindi agent speaks through an English-verified voice unless the builder swaps it.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/x-hi-on-english-only-tts.json",
+   "data/account-phase/elevenlabs/api-writes/x-hinglish-on-en.json",
+   "data/account-phase/elevenlabs/api-writes/x-hi-tts-eleven_v4_turbo.json",
+   "data/account-phase/elevenlabs/api-reads/voice-default.json",
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-22",
+  "area": "india",
+  "claim": "Voice supply for India is large on the public library but thin on premade: of 21 premade voices on the account only 8 list a verified Hindi variant; the shared voice library returns total_count 7,750 for language=hi, 356 for language=hi with accent=indian and 1,085 for language=en with accent=indian (page 1 of each: 78-92 professional, 8-22 high_quality; conversational use case 24-41 per 100). Each shared voice exposes rate, fiat_rate, cloned_by_count, usage_character_count_1y and notice_period, and conversation records carry voice_rewards (USD cents per voice), so voice owners are paid per use.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/shared-voices-hi.json",
+   "data/account-phase/elevenlabs/api-reads/shared-voices-hi-indian.json",
+   "data/account-phase/elevenlabs/api-reads/shared-voices-en-indian.json",
+   "data/account-phase/elevenlabs/api-reads/voices-own.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-23",
+  "area": "india",
+  "claim": "TTS catalogue (GET /v1/models, 11 entries): eleven_v4 and eleven_v4_turbo list 94 languages incl. hi, bn, ta, te; eleven_v3 and v3_conversational 74; multilingual_v2 29; flash_v2_5 and turbo_v2_5 32 (hi, ta present); eleven_turbo_v2 and flash_v2 English only; two speech-to-speech models. Hindi is available on both the older v2.5 family and the new v4 family.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/models.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-24",
+  "area": "config",
+  "claim": "GET /v1/convai/llm/list returns 111 LLMs (OpenAI 48, Google 28, Anthropic 23, xAI 1, ElevenLabs-hosted/other 11) with max_tokens_limit, max_context_limit, image/document/parallel-tool support, reasoning-effort sets (54 models), service tiers (7 models offer \"fast\") and deprecation_info (43 models deprecated or in warning). The default deprecation policy is warning 90 days, fallback starting 60 days before at 25% of traffic and complete 20 days before at 100%, with a replacement_model (for example gpt-4-turbo -> gpt-5.5).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/llm-list.json",
+   "data/account-phase/elevenlabs/derived/llm-list-summary.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-25",
+  "area": "config",
+  "claim": "Inference from the deprecation fields: during a model fallback window a share of an agent's calls is served by the replacement model without the buyer editing the agent, so the same agent version can behave differently day to day and tests filed under one model may not have run on it. Behavioural drift is bounded by the 20 to 60 day window; we did not observe a live fallback.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/llm-list.json",
+   "data/account-phase/elevenlabs/derived/llm-list-summary.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-26",
+  "area": "pricing",
+  "claim": "The LLM cost calculator (POST /v1/convai/llm-usage/calculate, free) prices every model per minute assuming about 5.27 agent messages per minute (price_per_minute / price_per_message is 5.27 for all rows). At a 4,000-character prompt: gemini-2.5-flash $0.00538/min, gpt-5.4-mini $0.01292, deepseek-v41-flash (the server default) $0.01300, claude-sonnet-5 $0.03723, gpt-4 $0.48; a 12,000-character prompt with 20 knowledge-base pages and RAG on costs about 7.5x more (gpt-4o-mini $0.00249 -> $0.01957). At FX 95 the server-default LLM is about INR 1.23/min against INR 0.51/min for gemini-2.5-flash, i.e. the default is 2.4x the cheaper schema default.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/llm-usage-4k.json",
+   "data/account-phase/elevenlabs/api-reads/llm-usage-12k-rag.json",
+   "data/account-phase/elevenlabs/derived/llm-cost-4k.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-27",
+  "area": "tools",
+  "claim": "Tools are workspace objects with a common behaviour envelope: response_timeout_secs, disable_interruptions, interruption_mode, force_pre_tool_speech and pre_tool_speech (auto), assignments (map a tool response field into a dynamic variable), tool_call_sound and sound behaviour, tool_error_handling_mode, execution_mode (immediate), dynamic_variables, usage_stats {total_calls, avg_latency_secs} and response_mocks for simulation. Webhook tools add api_schema (url, method, headers, path/query/body JSON schema where each property can be a constant, a dynamic variable, an allowed-value list or omitted), auth_connection, mtls_auth_connection and follow_redirects; client tools run in the caller's browser/app.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/tool-webhook-create.json",
+   "data/account-phase/elevenlabs/api-writes/tool-client-create.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-28",
+  "area": "tools",
+  "claim": "System tools are written through built_in_tools but stored and returned in the same tools[] list with type \"system\"; the input schema accepts 7 slots (transfer_to_agent, end_call, language_detection, transfer_to_number, skip_turn, play_keypad_touch_tone, voicemail_detection) while the read-back exposes 14, adding update_state, memory_entry_search, run_subagent, flag_issue_for_review and three transfer_to_genesys variants that cannot be set through the public input schema (inference: private or beta features).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json",
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-29",
+  "area": "tools",
+  "claim": "Deleting an agent does not release its dependencies: after DELETE /agents/{id} returned 204, the tool and KB document it had used still returned 409 \"in use by: Unknown / Main\" until deleted with force=true, because version history keeps the references. Environment variables have no DELETE route (405), so a created variable is permanent. Neither limit appears in the docs pages we saved.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/cleanup/del-tool-webhook.json",
+   "data/account-phase/elevenlabs/cleanup/del-kb.json",
+   "data/account-phase/elevenlabs/cleanup/del-envvar.json",
+   "data/account-phase/elevenlabs/cleanup/verify-envvars.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-30",
+  "area": "testing",
+  "claim": "Agent testing has three test types: llm (chat_history + success_condition + up to 5 success and 5 failure examples), tool (expected tool-call parameters, check_any_tool_matches) and simulation (scenario/persona text, up to 30 success_conditions, up to 50 turns, tool mocks with fallback_strategy raise_error|call_real_tool, simulated_user_model and evaluation_model selectable), grouped in folders, run via run-tests and tracked as test-invocations (cancel, resubmit). We created one simulation test and did not run it (a run spends LLM credits).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/test-sim-create.json",
+   "data/account-phase/elevenlabs/api-writes/test-sim-readback.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-31",
+  "area": "analytics",
+  "claim": "Post-call analysis is configurable per agent and stored with the conversation: evaluation criteria (prompt type, binary or scored mode with max_score 100, per-criterion LLM and llm_billed flag, scope), data-collection items (typed JSON-schema properties with description) unified under analysis_items with ids and source (user or system), summary_language, topic_discovery and sentiment_analysis (on by default), and an analysis_llm. Results appear as analysis.call_successful, call_success_score, evaluation_criteria_results_list (result, rationale, score), data_collection_results_list (value, rationale), transcript_summary and call_summary_title.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-32",
+  "area": "lifecycle",
+  "claim": "Conversation record (GetConversationResponseModel): status initiated|in-progress|processing|done|failed; metadata with call_duration_secs, queue_wait_secs, cost (integer credits) and cost_fiat, termination_reason, error {code, reason}, warnings, main_language, 18 feature-usage flags (incl. is_livekit), phone_call per provider (twilio, exotel, sip: direction, agent_number, external_number, call_result answered|voicemail|busy|no_answer|failed, call_sid, SIP header variables), batch_call {batch_call_id, recipient_id, campaign {campaign_id, campaign_lead_id, cold_attempt, conversation_type}}, initiation source (27 values), timezone; transcript turns with tool_calls, tool_results, feedback, interrupted, ignored_as_backchannel, producing_llm, llm_usage, rag_retrieval_info, triggered_guardrails, reasoning and per-turn conversation_turn_metrics (named timers such as convai_llm_service_ttfb and convai_llm_service_ttf_sentence, plus ASR provider, TTS model and TTS cascade); tag_ids; otlp_traces. The list endpoint filters on 40 parameters.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/teardown/elevenlabs/docs-md/eleven-agents__workflows__post-call-webhooks.md",
+   "data/account-phase/elevenlabs/derived/endpoint-surface.csv"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-33",
+  "area": "lifecycle",
+  "claim": "State machine seen across the API: a call is created by a channel (widget/SDK WebSocket or WebRTC, Twilio, Exotel, SIP trunk, WhatsApp, batch recipient) -> status initiated -> in-progress -> processing (analysis) -> done or failed; batch calls move pending -> in_progress -> completed|failed|cancelled with per-recipient pending|dispatched|initiated|in_progress|completed|failed|cancelled|voicemail; call_initiation_failure is a separate webhook for calls that never connected. No call was placed here, so transitions are read from schemas and docs, not observed live.",
+  "grade": "inferred",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/teardown/elevenlabs/docs-md/eleven-agents__workflows__post-call-webhooks.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-34",
+  "area": "pricing",
+  "claim": "Billing is metered inside every conversation record: charging carries is_burst, tier, dev_discount, free_minutes_consumed, free_llm_dollars_consumed, platform_usage (category_usage map), platform_price/platform_charge, llm_usage split into irreversible_generation and initiated_generation, llm_price/llm_charge, call_charge, tts_usage (primary model, audio-output seconds, characters, per-voice usage), asr_usage (model, transcription calls, audio-input seconds), analysis charging (running total and last run) and voice_surcharge_charge. Splitting initiated from irreversible LLM generations suggests speculative generations are metered separately (inference), which matches the schema note that speculative_turn \"may increase LLM costs\".",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-35",
+  "area": "pricing",
+  "claim": "Concurrency governance: call_limits default to agent_concurrency_limit -1 (no cap), daily_limit 100000 and bursting on; docs say bursting accepts up to 3x the plan concurrency (cap 300) at 2x the per-minute price with deprioritised STT/TTS, and queueing (on by default, 180 s wait, hold audio elevator1.mp3) holds callers rather than rejecting them. The account carries a creator_repricing_variant field in the subscription object, which suggests per-account pricing variants (inference).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json",
+   "data/account-phase/elevenlabs/api-reads/user-subscription.json",
+   "data/teardown/elevenlabs/docs-md/eleven-agents__guides__burst-pricing.md"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-36",
+  "area": "telephony",
+  "claim": "Phone numbers are import-only: the spec has three /phone-numbers routes (create/import, get/patch/delete, SIP messages) and a v2 paginated list, with no search/buy/purchase route; our workspace has none imported. Outbound is placed through provider-specific routes (twilio, exotel, sip-trunk, whatsapp outbound-call/message) or batch calling; none was called (each places a billable call).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-reads/phone-numbers.json",
+   "data/account-phase/elevenlabs/api-reads/phone-numbers-v2.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-37",
+  "area": "telephony",
+  "claim": "Batch calling request/response shape: submit takes name, agent_id, recipients[{id, phone_number or whatsapp_user_id, conversation_initiation_client_data}], scheduled_time_unix, timezone, phone_number_id, branch/environment, target_concurrency_limit, whatsapp_params and telephony_call_config (ringing_timeout_secs up to 999, Twilio call recording, Twilio machine detection with per-verdict actions); retry and cancel exist, export is per batch. There is no field for a calling window, DND/NCPR scrub, consent, suppression list or retry policy. Not called (it places calls); consistent with public-phase EL-05/EL-10.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "research/2026-10-20/teardown/elevenlabs/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-38",
+  "area": "protocol",
+  "claim": "Client-to-server WebSocket events (@elevenlabs/types 0.25.0): user_audio_chunk, pong, user_message, user_activity, feedback, client_tool_result, mcp_tool_approval_result, contextual_update, conversation_initiation_client_data (conversation_config_override, custom_llm_extra_body, dynamic_variables, user_id, source_info, tool_mock_config) and multimodal_message. Server-to-client: audio (with character alignment), user_transcript, tentative_user_transcript, agent_response, agent_response_correction, agent_chat_response_part, agent_reasoning_response_part, interruption, conversation_initiation_metadata (conversation_id, audio formats pcm_8000..48000 or ulaw_8000, persistent_session_token), conversation_history (session resume), client_tool_call, rich_content, agent_tool_request/response, mcp_tool_call (4 states), mcp_connection_status, vad_score, ping (with ping_ms), context_usage (tokens vs model limit), asr_initiation_metadata, guardrail_triggered, internal_turn_probability, internal_tentative_agent_response, agent_typing, external_agent_connected/disconnected and error (codes 1000/1002/1008/1011, 26 error_types).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/sdk/npm-types/unpacked/package/dist/generated/types/asyncapi-types.d.ts",
+   "data/account-phase/elevenlabs/sdk/npm-client/unpacked/package/dist/types.d.ts"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-39",
+  "area": "protocol",
+  "claim": "Two events are design-relevant for a screen-aware or memory-aware agent: contextual_update lets the client push text into the agent's context mid-call without forcing a reply, and user_activity tells the agent the user is active (suppresses it interrupting). internal_turn_probability and internal_tentative_agent_response show that turn probability and speculative agent text are computed server-side and exposed as debug-level events.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/sdk/npm-types/unpacked/package/dist/generated/types/asyncapi-types.d.ts"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-40",
+  "area": "protocol",
+  "claim": "Post-call webhooks come in three types: post_call_transcription (the full conversation record plus event_timestamp), post_call_audio (base64 mp3 of the full call) and call_initiation_failure (failure_reason plus Twilio StatusCallback body or SIP status/twirp code). Signatures use an ElevenLabs-Signature HMAC verified by constructEvent/construct_event; webhooks auto-disable after 10 or more consecutive failures when the last success was over 7 days ago or never; the settings enum lists six event types (transcript, audio, call_initiation_failure, answering_machine_detection, unredacted_transcript, unredacted_audio). Payload shapes are from docs and schema; no webhook was created or received here.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/elevenlabs/docs-md/eleven-agents__workflows__post-call-webhooks.md",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-reads/workspace-webhooks.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-41",
+  "area": "protocol",
+  "claim": "A pre-call personalisation hook exists: for inbound Twilio calls ElevenLabs POSTs {caller_id, agent_id, called_number, call_sid, conversation_id} to a workspace-configured URL (settings.conversation_initiation_client_data_webhook {url, request_headers}, null on our workspace) and uses the returned dynamic_variables, overrides, branch_id and environment, fetching in parallel with the carrier connect so the caller hears ringing, not silence. The return must contain every dynamic variable the agent declares.",
+  "grade": "observed",
+  "evidence": [
+   "data/teardown/elevenlabs/docs-md/eleven-agents__customization__personalization__twilio-personalization.md",
+   "data/account-phase/elevenlabs/api-reads/settings.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-42",
+  "area": "architecture",
+  "claim": "Speech Engine is a bring-your-own-brain resource: POST /v1/speech-engine creates an object with its own asr, tts, turn, vad, conversation, privacy and call_limits blocks plus speech_engine {ws_url, request_headers} pointing at the buyer's WebSocket \"transcript server\" and cascade_timeout_seconds (how long to wait for that server before abandoning the attempt). ElevenLabs then supplies speech, turn-taking and telephony while the buyer supplies the reply text. None exists on our workspace and none was created.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-reads/speech-engine.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-43",
+  "area": "architecture",
+  "claim": "The Python SDK carries an on-prem (in-VPC) conversation mode: OnPremInitiationData sends an enclave_setup_config message over the conversation WebSocket with agent_config_dict, override list, tools_config_list, post-call transcription/audio webhooks with HMAC secrets (16-character minimum), prompt knowledge base and a Bedrock inference profile (global or us; server default us). It confirms a private-deployment orchestrator that takes its whole config over the socket.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/sdk/pypi-elevenlabs/unpacked/elevenlabs/conversational_ai/conversation.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-44",
+  "area": "architecture",
+  "claim": "REA static analysis of the published @elevenlabs/client 1.29.0 dist (226 files, 113 JavaScript files parsed, 0 parse failures, 22 endpoint candidates) recovered the REST calls /v1/convai/conversations/{id}/files and /feedback and LiveKit region discovery; the package depends on livekit-client ^2.21.0 and @elevenlabs/types 0.25.0 and embeds wss://api and wss://livekit.rtc hosts for global, eu.residency and in.residency. This confirms public-phase EL-16 (WebRTC over LiveKit by default) from the real package.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/rea/client-sdk-dist.analysis.json",
+   "data/account-phase/elevenlabs/sdk/npm-client/unpacked/package/package.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-45",
+  "area": "architecture",
+  "claim": "The official CLI 1.7.0 is a thin npm launcher around a per-platform native binary (Rust per its README; we read the README and launcher and did not run it). It offers \"agents as code\" (init, add, status, push, pull, test; agents.json, tools.json, tests.json registries; push force-overrides main and registered branches; pulled configs are raw wire JSON so they round-trip), every API resource as a subcommand, a data-residency switch (global, us, eu-residency, in-residency, sg-residency base URLs) and agent templates (default, minimal, voice-only, text-only, customer-service, assistant).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/sdk/npm-cli/unpacked/package/README.md",
+   "data/account-phase/elevenlabs/sdk/npm-cli/unpacked/package/bin/cli.js"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-46",
+  "area": "architecture",
+  "claim": "The JS (2.74.0) and Python (2.74.1) SDKs are Fern-generated from the same OpenAPI and expose the same conversational_ai modules (agents, analytics, batch_calls, conversations, dashboard, exotel, knowledge_base, llm, llm_usage, mcp_servers, phone_numbers, realtime, secrets, settings, sip_trunk, tests, tools, triage_tickets, twilio, users, whatsapp, whatsapp_accounts); the same package also ships speech-engine, flows (image/video/TTS generation templates), music and dubbing clients, so the voice-agent product rides on a wider media platform.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/sdk/npm-elevenlabs-js/unpacked/package/dist/api/resources/conversationalAi",
+   "data/account-phase/elevenlabs/sdk/pypi-elevenlabs/unpacked/elevenlabs/conversational_ai/client.py"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-47",
+  "area": "architecture",
+  "claim": "conversation_config.realtime_model accepted \"eleven_realtime_v1_max\" on a free workspace through PATCH with no gate, although the public-phase finding was that the two Realtime speech-to-speech models roll out by workspace; the write path does not enforce availability, and what the field does at call time is unknown (no call placed).",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/x-realtime-model.json",
+   "research/2026-10-20/teardown/elevenlabs/claims.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-48",
+  "area": "v2",
+  "claim": "User memory exists in the product but is gated: setting platform_settings.privacy.user_memory.enabled=true returned 403 feature_not_available \"User memories are not available for this workspace.\" The knob has a scale of minimal|balanced|maximum (default enabled=false, scale balanced), workspace settings carry user_memory.retention_days, permissions include agent_view_memories and agent_edit_memories, and the agent output reserves a memory_entry_search tool slot. Memory is therefore a built, flag-gated feature, upgrading the public-phase inference (EL-51) from \"in development\" to \"present behind a workspace flag\"; how it writes and recalls memory is unknown.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/patch-rich-response.json",
+   "data/account-phase/elevenlabs/api-writes/x-user-memory-scale.json",
+   "data/account-phase/elevenlabs/api-reads/settings.json",
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-49",
+  "area": "v2",
+  "claim": "Improvement loop surface in the documented API: triage tickets (per agent and workspace, comments, merge, turn-comments, assignable users), topics (agent-level topic discovery), tags on conversations, branches + merge proposals + deployments (traffic split), and agent tests all exist as endpoints; no endpoint trains or tunes an agent automatically. The learning loop stays human-gated, matching EL-53.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/openapi/openapi-live.json",
+   "data/account-phase/elevenlabs/api-reads/triage-tickets.json",
+   "data/account-phase/elevenlabs/api-writes/topics.json",
+   "data/account-phase/elevenlabs/api-writes/merge-proposals.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-50",
+  "area": "safety",
+  "claim": "Guardrails are a first-class config block, all off by default: focus, prompt_injection, synthetic_voice (aimed at synthetic-voice callers, action end_call), content (sexual, violence, harassment, self_harm, profanity, religion_or_politics, medical_and_legal_information with low/medium/high thresholds, streaming or blocking execution), moderation and custom guardrails; the trigger action is end_call. 17 guardrail types appear in the conversation filter. prompt_injection=true was accepted on write. Nothing in the block handles AI-disclosure or crisis lines; those stay prompt content.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json",
+   "data/account-phase/elevenlabs/api-writes/agent-rich-readback.json",
+   "data/account-phase/elevenlabs/openapi/openapi-live.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-51",
+  "area": "privacy",
+  "claim": "Privacy defaults on a new agent: record_voice true, retention_days -1 (we read this as indefinite), delete_audio and delete_transcript_and_pii false, zero_retention_mode false, conversation_history_redaction off (entity list configurable) and nested_history_redaction false; widget terms text states the caller consents to recording and sharing with third-party providers. An Indian buyer must switch retention and redaction on deliberately.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/api-writes/agent-minimal-readback.json",
+   "data/account-phase/elevenlabs/api-reads/agent-existing.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-52",
+  "area": "scope",
+  "claim": "Not done on purpose: no call, batch, simulation run, test run, number purchase, webhook creation or WebRTC/WebSocket session (each is billable or would start a conversation); no request to the 326 dashboard-bundle routes that are absent from the public OpenAPI (outbound campaigns, automations, memories, templates, task agents), because this phase is limited to documented routes. Whether the campaigns product is enabled for our workspace is therefore unknown.",
+  "grade": "unknown",
+  "evidence": [
+   "research/2026-10-20/teardown/elevenlabs/claims.json",
+   "research/2026-10-20/account-phase/elevenlabs/code/el_probe.sh"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-53",
+  "area": "scope",
+  "claim": "Cleanup: all synthetic objects created in this phase were removed (2 agents, 2 tools, 1 KB document, 1 test, 1 tag; the branch and merge proposal went with their agent) except one environment variable \"teardown_probe\" (value \"synthetic\"), which cannot be deleted because no DELETE route exists. The pre-existing agent \"[Eval] Synthetic Clinic Demo\" was read, never modified.",
+  "grade": "observed",
+  "evidence": [
+   "data/account-phase/elevenlabs/cleanup/verify-agents2.json",
+   "data/account-phase/elevenlabs/cleanup/verify-tools2.json",
+   "data/account-phase/elevenlabs/cleanup/verify-kb2.json",
+   "data/account-phase/elevenlabs/cleanup/verify-envvars.json"
+  ],
+  "date": "2026-10-20"
+ },
+ {
+  "id": "AP-EL-54",
+  "area": "method",
+  "claim": "Method check against Bolna-style calibration: of the public-phase inferences that the account phase could test without a call, EL-13 (agent defaults) was partly wrong (server default LLM differs from schema), EL-51 (memory \"in development\") was upgraded to \"gated\", EL-54 (no Hinglish guidance) was refined (hinglish_mode exists in the API but not the docs), and EL-11 (no numbers sold) was confirmed (no buy route). Pre-registered predictions scored: see predictions-scored.json.",
+  "grade": "inferred",
+  "evidence": [
+   "research/2026-10-20/account-phase/elevenlabs/predictions-scored.json",
+   "research/2026-10-20/teardown/elevenlabs/claims.json"
+  ],
+  "date": "2026-10-20"
+ }
+]

@@ -1,0 +1,39 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-23.redact-keeps-layout",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Fix for rejected.2026-10-23.upload-newlines-folded-by-redact: redact (TS and Python) now finds secrets on the folded text as before but writes its output from a same-length fold that keeps tab, CR, LF, VT, FF, U+0085, U+2028 and U+2029. A 3-row CSV uploaded through the Operator (scripted model copies the upload into source.upload, then source.commit) imports 3/3 rows; before the fix 0/3 (tests/operator-upload.test.ts, run before and after). Detection is unchanged: spans come from the same folded text.",
+   "n": "1 Operator e2e CSV (3 rows, CRLF and LF mixed) + 1 unit (TS) + 1 unit (Python); fresh-DB suite 456/456, voice unittest 225/225",
+   "method": "node:test against a throwaway Postgres 16 with setFakeLlm; python -m unittest",
+   "not_verified": "Not run against a real model on the VM (the csv-pune bench task should be re-run there). A secret split across lines is still found, because digit runs read the folded text (unchanged)."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-23.redact-keeps-layout",
+   "to": "rejected.2026-10-23.upload-newlines-folded-by-redact",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-23.redact-keeps-layout",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-23.redact-keeps-layout",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-23",
+   "event": "safety-redact-keeps-layout",
+   "details": "Operator CSV uploads imported 0 rows because redact rebuilt its output from whitespace-folded text. redact (TS index.ts, Python rules.py) now detects on the folded text and writes from a same-length fold that keeps tab and line breaks. tests/operator-upload.test.ts: 3-row CSV through the Operator, 0/3 before, 3/3 after. Gates: tsc clean, fresh-DB 456/456, ui-contract strict 173/173, voice unittest 225 OK."
+  }
+ ]
+}

@@ -1,0 +1,101 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.transcript-redact-not-delete",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Transcript retention and erasure redact the words in place and keep the metrics (job memory.transcript_purge, every 10 minutes). Calls are purged when the person was erased (forget_request scope erase_me, or a contact intake erased in place), whatever the call's age, or when the call ended longer ago than the workspace's transcripts_days. turn.text is set to '' and heard_text to NULL, and the timing, latency and cut-ins stay. conversation.transcript becomes []. analysis loses every free-text key (summary, points, quotes, quote, text, note, claim, reason, message, body, why) and keeps its codes, counts and verdicts. call_moment quote and note are nulled; outcome.evidence loses quote; hand_off.brief loses summary; this call's quotes leave each call_insight theme. The row records transcript_purged_at and transcript_purge_reason. call.get returns transcriptRemoved, and the call page shows it ('Transcript removed: this workspace keeps transcripts for N days.' or 'Transcript removed on the person's erasure request.').",
+   "rationale": "Deleting conversation rows would cascade-delete cost_line, breaking billing and settlement, and would orphan the audit's object ids, outcomes and learning's per-call metrics. Deleting turn rows would lose the reply-gap timing the reports read. Redacting removes every place the caller's words or a model's paraphrase of them live, and keeps what is not personal.",
+   "reverse_if": "Counsel requires the conversation row itself to go at erasure, in which case cost lines are first moved to a non-cascading settlement record. Or another table starts storing caller text keyed by conversation, in which case add it to purgeOne.",
+   "path": "product/server/modules/memory/transcript-purge.ts"
+  },
+  {
+   "id": "decision.2026-10-24.erasure-pending-visible",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A recording delete that the voice runtime has not confirmed is a visible pending erasure. calls.recording_purge writes recording_purge_tries, recording_purge_tried_at and recording_purge_error on each failure and clears the error on success. call.get's recording reason adds 'Deleting it is pending: the voice runtime has not confirmed after N tries; it is retried every 10 minutes.' The new read tool erasure.pending lists those calls, plus erased people's calls that still hold audio or words.",
+   "rationale": "open.2026-10-24.recording-files-retention-purge: a failed delete is retried and is never silent. Before this it was a console.warn only.",
+   "reverse_if": "Erasure becomes synchronous with the request (then the pending state lives on the forget_request receipt instead)."
+  },
+  {
+   "id": "rejected.2026-10-24.intake-erasure-without-scope",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Intake's dpdp.request.execute wrote its forget_request without a scope, so an erase_me request was stored as forget_memory, the column default. calls.recording_purge acts only on scope = 'erase_me', so an erasure done through the product never deleted the recordings. The existing purge test missed it because it wrote scope = 'erase_me' itself.",
+   "tried": "Erasure through intake, followed by calls.recording_purge.",
+   "broke": "The audio of an erased person was never purged. Fixed: intake stores i.scope. Both purges also treat contact.erased_at as an erasure, so a request row with the wrong scope can no longer hide one. tests/memory-retention.test.ts goes through intake; with the one-line fix reverted, it fails at 'intake stores the scope the purges act on'."
+  },
+  {
+   "id": "measure.2026-10-24.transcript-retention-erasure-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Retention and erasure: tests/memory-retention.test.ts 4/4. (1) Analysis redaction keeps codes and verdicts and drops all free text. (2) A call 31 days old in a 30-day workspace: the text is gone from turn, transcript, analysis, moment, outcome evidence, hand-off brief and insight quotes; the turn rows, latency 640 ms, cost line 2400 milli and outcome are kept; call.get says why and its JSON holds no caller word. A 5-day-old call keeps its words. A run scoped to one workspace touches no other; a second run purges 0. (3) An erase_me request through intake: the forget_request stores scope erase_me, the recording link is refused at once, the transcript is purged with reason erased, and the runtime is asked to purge only that call; another person's call is untouched. (4) The runtime is unreachable twice: erasure.pending shows 2 tries with the error, and call.get says the deletion is pending; once the runtime is back, it is purged and nothing is pending. Fresh-DB suite 590 pass, 0 fail, 0 skipped, including browser flows. Voice unittest 290 OK, which includes test_signed_purge_deletes_the_audio_once_and_the_link_stops_working.",
+   "n": 4,
+   "method": "node:test on throwaway Postgres 16 with FakeRuntime; scripts/test.mjs on a fresh database (vp_mem_fresh); python3 -m unittest discover in product/voice; tsc for the server and the web",
+   "path": "product/tests/memory-retention.test.ts"
+  },
+  {
+   "id": "measure.2026-10-24.recording-purge-runtime-test-checked",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Checked that commit 22956aa closes open.2026-10-24.recording-files-retention-purge. In product/voice/tests/test_recordings.py, test_signed_purge_deletes_the_audio_once_and_the_link_stops_working shows that a signed purge returns {ok:true, deleted:true}, leaves no .wav and no .json in the folder, and that a link signed before the purge then returns 404; a repeat purge returns deleted:false (idempotent). test_refusals_leave_the_file shows another workspace's purge refused (403), a missing or wrong signature refused (401), and a body naming another call refused (400), each with the file left in place. product/tests/calls-recording-purge.test.ts covers the control-plane job. Gap found and fixed in 08584cf: erasures done through intake stored the wrong scope, so the job never purged their audio (rejected.2026-10-24.intake-erasure-without-scope). Re-run on 08584cf: voice unittest 290 OK; fresh-DB suite 596/596.",
+   "n": 2,
+   "method": "read the runtime tests and re-ran python3 -m unittest discover in product/voice; scripts/test.mjs on a fresh database",
+   "path": "product/voice/tests/test_recordings.py"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.transcript-redact-not-delete",
+   "to": "open.2026-10-24.transcript-retention-erasure",
+   "relation": "resolves"
+  },
+  {
+   "from": "rejected.2026-10-24.intake-erasure-without-scope",
+   "to": "decision.2026-10-24.recording-purge-on-runtime",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.transcript-retention-erasure-tests",
+   "to": "decision.2026-10-24.transcript-redact-not-delete",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.transcript-retention-erasure-tests",
+   "to": "decision.2026-10-24.erasure-pending-visible",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.recording-purge-runtime-test-checked",
+   "to": "open.2026-10-24.recording-files-retention-purge",
+   "relation": "resolves"
+  },
+  {
+   "from": "decision.2026-10-24.erasure-pending-visible",
+   "to": "decision.2026-10-24.recording-purge-on-runtime",
+   "relation": "extends"
+  },
+  {
+   "from": "rejected.2026-10-24.intake-erasure-without-scope",
+   "to": "open.2026-10-24.recording-files-retention-purge",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "transcript-retention-and-erasure",
+   "details": "Closes open.2026-10-24.transcript-retention-erasure: memory.transcript_purge redacts words at transcripts_days and on erasure, keeps metrics, and the call page says why. open.2026-10-24.recording-files-retention-purge is closed by 22956aa: its runtime test shows the file and .json gone, a previously signed link returning 404, and refusals leaving the file. No product/voice change. Added on top: unconfirmed deletes are a visible pending erasure (erasure.pending, call.get). Fixed intake's erase_me forget_request being stored as forget_memory, which meant recordings were never purged after a product erasure. Verified: tests/memory-retention.test.ts 4/4; fresh-DB suite 590/590 with browser flows; voice unittest 290 OK. Not verified: against the real runtime over HTTP (calls-live.test.ts covers the recording purge, not the new pending fields); scale at many thousands of calls (200 per run); follow_up payloads and safety and opt-out details are not redacted, by choice."
+  }
+ ]
+}

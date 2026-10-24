@@ -1,0 +1,134 @@
+{
+ "model": "gpt-6-sol-2026-09-22",
+ "deployment": "l8-gpt-6-sol-dz",
+ "generated_at": "2026-10-17T13:23:28Z",
+ "latency_s": 27.0,
+ "usage": {
+  "completion_tokens": 2261,
+  "completion_tokens_details": {
+   "accepted_prediction_tokens": 0,
+   "audio_tokens": 0,
+   "reasoning_tokens": 32,
+   "rejected_prediction_tokens": 0
+  },
+  "latency_checkpoint": {
+   "engine_tbt_ms": 11,
+   "engine_ttft_ms": 173,
+   "engine_ttlt_ms": 25309,
+   "pre_inference_ms": 79,
+   "service_tbt_ms": 11,
+   "service_ttft_ms": 331,
+   "service_ttlt_ms": 25459,
+   "user_visible_ttft_ms": 251
+  },
+  "prompt_tokens": 722,
+  "prompt_tokens_details": {
+   "audio_tokens": 0,
+   "cache_write_tokens": 0,
+   "cached_tokens": 0
+  },
+  "total_tokens": 2983
+ },
+ "prompt_system": "You write test stimuli for a blind listening study on Indian voice agents. Output strict JSON only. Write natural SPOKEN register exactly as a real telecaller from that region speaks on the phone to a customer from the same region, not written or literary language, and not a caricature.",
+ "prompt_user": "For each turn below write ONE agent turn of 24 to 30 words (it must take 8 to 15 seconds to speak), with exactly the same content in every register. Use digits for amounts, dates and times.\nRegisters (keys):\n\"neutral_hinglish\": neutral urban Hindi-English as a Delhi or Mumbai telecaller speaks; Hindi in Devanagari, English loanwords (EMI, down payment, test ride, order, delivery, policy, premium, WhatsApp, link) in Latin script.\n\"bhojpuri_mix\": for a customer in Siwan or Chhapra, Bihar: Bhojpuri-dominant with Hindi and the English loanwords a Bhojpuri-speaking telecaller in Patna really uses; genuine Bhojpuri grammar (raua, bani, ba, hamni, rahi, kaile) not Hindi with one Bhojpuri word; Devanagari script with the English loanwords also in Devanagari.\n\"marathi_mix\": for a customer in Pune or Nashik: colloquial spoken Marathi as a Marathi telecaller speaks, mixing in the Hindi and English words people really use; Devanagari script including the loanwords.\n\"tamil_english\": for a customer in Madurai: colloquial spoken Tamil-English code-mix; everything in Tamil script, with the English loanwords transliterated into Tamil script (no Latin letters at all, digits allowed).\n\"indian_english\": Indian English as a Chennai or Bengaluru telecaller speaks, Latin script.\nAlso give \"gloss_en\": a plain English translation of the content.\nReturn JSON: {\"<turn_id>\": {\"neutral_hinglish\": ..., \"bhojpuri_mix\": ..., \"marathi_mix\": ..., \"tamil_english\": ..., \"indian_english\": ..., \"gloss_en\": ...}, ...}\nTurns:\nT1_sales_opening: Greeting; the caller is Priya, an AI assistant from Shree Ram Motors (say AI assistant explicitly); the customer filled an enquiry form yesterday for a Hero Splendor bike on EMI; ask if now is a good time for two minutes.\nT2_sales_price: On-road price is Rs 82,500; with a down payment of Rs 15,000 the EMI is about Rs 2,950 a month for 24 months; ask if that works.\nT3_sales_objection: The customer just said it is expensive. Acknowledge it; there is also a 36-month plan with an EMI of about Rs 2,200; offer a free test ride on Saturday at 11 am.\nT4_postsales_cod: Their order of a pressure cooker worth Rs 1,299, cash on delivery, will arrive tomorrow between 10 am and 2 pm; ask whether someone will be at home to receive it.\nT5_postsales_ndr: Our delivery partner could not reach them today; ask whether to try again tomorrow evening or whether they want to change the delivery address.\nT6_postsales_renewal: Their health policy renewal is due on 15 November; the premium is Rs 24,500 a year; offer to send the payment link on WhatsApp now.",
+ "turn_specs": {
+  "T1_sales_opening": "Greeting; the caller is Priya, an AI assistant from Shree Ram Motors (say AI assistant explicitly); the customer filled an enquiry form yesterday for a Hero Splendor bike on EMI; ask if now is a good time for two minutes.",
+  "T2_sales_price": "On-road price is Rs 82,500 and the EMI is about Rs 2,950 a month for 24 months; ask if that works for them. (Shortened 2026-10-17: the first version with the Rs 15,000 down payment ran 15.8-17.6 s.)",
+  "T3_sales_objection": "The customer just said it is expensive. Acknowledge it; there is also a 36-month plan with an EMI of about Rs 2,200; offer a free test ride on Saturday at 11 am.",
+  "T4_postsales_cod": "Their order of a pressure cooker worth Rs 1,299, cash on delivery, will arrive tomorrow between 10 am and 2 pm; ask whether someone will be at home to receive it.",
+  "T5_postsales_ndr": "Our delivery partner could not reach them today; ask whether to try again tomorrow evening or whether they want to change the delivery address.",
+  "T6_postsales_renewal": "Their health policy renewal is due on 15 November; the premium is Rs 24,500 a year; offer to send the payment link on WhatsApp now."
+ },
+ "content": {
+  "T1_sales_opening": {
+   "neutral_hinglish": "नमस्ते, मैं श्री राम मोटर्स से प्रिया, AI assistant बोल रही हूँ। आपने कल Hero Splendor बाइक की EMI के लिए enquiry form भरा था। अभी 2 मिनट बात कर सकते हैं?",
+   "bhojpuri_mix": "नमस्कार, हम प्रिया, श्री राम मोटर्स से एआई असिस्टेंट बोलत बानी। रउआ काल्ह हीरो स्प्लेंडर बाइक के ईएमआई खातिर इन्क्वायरी फॉर्म भरले रहीं। अबहीं 2 मिनट बात हो सकेला?",
+   "marathi_mix": "नमस्कार, मी श्री राम मोटर्समधून प्रिया, एआय असिस्टंट बोलतेय. तुम्ही काल हिरो स्प्लेंडर बाईकच्या ईएमआयसाठी एन्क्वायरी फॉर्म भरला होता. आता 2 मिनिटं बोलायला वेळ आहे का?",
+   "tamil_english": "வணக்கம், நான் ஸ்ரீ ராம் மோட்டர்ஸ்ல இருந்து பிரியா, ஏஐ அசிஸ்டன்ட் பேசுறேன். நீங்க நேத்து ஹீரோ ஸ்ப்ளெண்டர் பைக் ஈஎம்ஐக்காக என்கொயரி ஃபார்ம் போட்டிருந்தீங்க. இப்போ 2 நிமிஷம் பேசலாமா?",
+   "indian_english": "Hello, this is Priya, an AI assistant from Shree Ram Motors. You filled an enquiry form yesterday for a Hero Splendor bike on EMI. Is now okay for 2 minutes?",
+   "gloss_en": "Hello, this is Priya, an AI assistant from Shree Ram Motors. You enquired yesterday about buying a Hero Splendor bike on EMI. Is now a good time to talk for two minutes?"
+  },
+  "T2_sales_price": {
+   "neutral_hinglish": "जी, इस गाड़ी की on-road price Rs 82,500 है, और 24 महीनों के लिए EMI करीब Rs 2,950 हर महीने आएगी। बताइए, ये आपके लिए ठीक रहेगा?",
+   "bhojpuri_mix": "जी, एह गाड़ी के ऑन रोड प्राइस 82,500 रुपया बा, आ 24 महीना खातिर ईएमआई करीब 2,950 रुपया महीना पड़ी। रउआ बताईं, ई रउआ खातिर ठीक रही?",
+   "marathi_mix": "हो, या गाडीची ऑन रोड प्राइस 82,500 रुपये आहे, आणि 24 महिन्यांसाठी ईएमआय साधारण 2,950 रुपये महिन्याला येईल. मग सांगा ना, हे तुम्हाला चालेल का?",
+   "tamil_english": "சார், இந்த வண்டியோட ஆன் ரோடு பிரைஸ் 82,500 ரூபாய் ஆகும், 24 மாசத்துக்கு ஈஎம்ஐ மாசம் சுமார் 2,950 ரூபாய் வரும். இது உங்களுக்கு சரியா இருக்குமா, ஒரு தடவை சொல்லுங்க சார்?",
+   "indian_english": "Sir, the on-road price of this vehicle is Rs 82,500, and for 24 months the EMI will be around Rs 2,950 per month. Will that work for you?",
+   "gloss_en": "The vehicle’s on-road price is Rs 82,500. The EMI is about Rs 2,950 per month for 24 months. Would that work for you?"
+  },
+  "T3_sales_objection": {
+   "neutral_hinglish": "जी, समझ सकती हूँ, आपको ये महंगा लग रहा है। हमारे पास 36 महीने का plan भी है, जिसमें EMI करीब ₹2,200 होगी। शनिवार सुबह 11 बजे free test ride रखें?",
+   "bhojpuri_mix": "जी, समझत बानी, रउआ के ई महँग लागत बा। 36 महीना के प्लान भी बा, जेकर ईएमआई लगभग ₹2,200 पड़ी। शनिचर के सुबह 11 बजे फ्री टेस्ट राइड रखीं का?",
+   "marathi_mix": "हो, समजतंय, तुम्हाला हे महाग वाटतंय. आमच्याकडे 36 महिन्यांचा प्लॅनही आहे, त्यात ईएमआय साधारण ₹2,200 येईल. शनिवारी सकाळी 11 वाजता फ्री टेस्ट राइड ठेवू का?",
+   "tamil_english": "ஆமா, புரியுது, உங்களுக்கு இது விலை அதிகமா தோணுது. 36 மாச பிளானும் இருக்கு, அதுல ஈஎம்ஐ சுமார் ₹2,200 வரும். சனிக்கிழமை காலை 11 மணிக்கு ஃப்ரீ டெஸ்ட் ரைடு வைக்கலாமா?",
+   "indian_english": "Yes, I understand, it feels expensive to you. We also have a 36-month plan with EMI of around ₹2,200. Shall I arrange a free test ride Saturday at 11 am?",
+   "gloss_en": "I understand that it seems expensive. There is also a 36-month plan with an EMI of about ₹2,200. Would you like a free test ride on Saturday at 11 am?"
+  },
+  "T4_postsales_cod": {
+   "neutral_hinglish": "आपका ₹1,299 का pressure cooker वाला order cash on delivery है। ये कल सुबह 10 बजे से दोपहर 2 बजे के बीच पहुँचेगा। उसे लेने के लिए घर पर कोई रहेगा?",
+   "bhojpuri_mix": "रउआ के ₹1,299 वाला प्रेशर कुकर के ऑर्डर कैश ऑन डिलीवरी बा। ई काल्ह सुबह 10 बजे से दुपहर 2 बजे के बीच आई। लेवे खातिर घरे केहू रही का?",
+   "marathi_mix": "तुमची ₹1,299 ची प्रेशर कुकरची ऑर्डर कॅश ऑन डिलिव्हरी आहे. ती उद्या सकाळी 10 ते दुपारी 2 च्या दरम्यान येईल. घ्यायला घरी कोणी असेल का?",
+   "tamil_english": "உங்க ₹1,299 பிரஷர் குக்கர் ஆர்டர் கேஷ் ஆன் டெலிவரி. அது நாளைக்கு காலை 10 மணிக்கும் மதியம் 2 மணிக்கும் நடுவுல வரும். அதை வாங்க வீட்டுல யாராவது இருப்பாங்களா?",
+   "indian_english": "Your pressure cooker order for ₹1,299 is cash on delivery. It will arrive tomorrow between 10 am and 2 pm. Will someone be at home to receive it?",
+   "gloss_en": "Your ₹1,299 pressure cooker order is cash on delivery and will arrive tomorrow between 10 am and 2 pm. Will someone be home to receive it?"
+  },
+  "T5_postsales_ndr": {
+   "neutral_hinglish": "आज हमारा delivery partner आपसे संपर्क नहीं कर पाया, इसलिए delivery नहीं हो सकी। बताइए, कल शाम फिर से कोशिश करें, या आप delivery address बदलना चाहेंगे?",
+   "bhojpuri_mix": "आजु हमनी के डिलीवरी पार्टनर रउआ से संपर्क ना कर पवलें, एह से डिलीवरी ना भइल। बताईं, काल्ह साँझ फेर कोशिश करीं, कि रउआ डिलीवरी एड्रेस बदलल चाहत बानी?",
+   "marathi_mix": "आज आमच्या डिलिव्हरी पार्टनरला तुमच्याशी संपर्क करता आला नाही, त्यामुळे डिलिव्हरी झाली नाही. सांगा, उद्या संध्याकाळी पुन्हा प्रयत्न करू, की तुम्हाला डिलिव्हरी ॲड्रेस बदलायचा आहे?",
+   "tamil_english": "இன்னிக்கு எங்க டெலிவரி பார்ட்னரால உங்களைத் தொடர்பு கொள்ள முடியல, அதனால டெலிவரி ஆகல. நாளைக்கு சாயங்காலம் மறுபடியும் முயற்சி பண்ணட்டுமா, இல்ல டெலிவரி அட்ரஸ் மாத்தணுமா?",
+   "indian_english": "Our delivery partner could not reach you today, so the delivery did not happen. Should we try again tomorrow evening, or would you like to change the delivery address?",
+   "gloss_en": "Our delivery partner could not reach you today. Should we try delivering again tomorrow evening, or would you like to change the delivery address?"
+  },
+  "T6_postsales_renewal": {
+   "neutral_hinglish": "आपकी health policy का renewal 15 नवंबर को होना है। इसका premium ₹24,500 सालाना है। अगर आप चाहें, तो payment link अभी WhatsApp पर भेज दूँ?",
+   "bhojpuri_mix": "रउआ के हेल्थ पॉलिसी के रिन्यूअल 15 नवंबर के बा। एकर प्रीमियम साल के ₹24,500 बा। रउआ चाहीं त पेमेंट लिंक अबहीं व्हाट्सऐप पर भेज दीं का?",
+   "marathi_mix": "तुमच्या हेल्थ पॉलिसीचं रिन्यूअल 15 नोव्हेंबरला आहे. त्याचा प्रीमियम वर्षाला ₹24,500 आहे. तुम्हाला हवं असेल तर पेमेंट लिंक आत्ता व्हॉट्सॲपवर पाठवू का?",
+   "tamil_english": "உங்க ஹெல்த் பாலிசி ரினியூவல் 15 நவம்பருக்கு வருது. அதோட பிரீமியம் வருஷத்துக்கு ₹24,500. உங்களுக்கு வேணும்னா பேமெண்ட் லிங்க் இப்பவே வாட்ஸ்அப்புல அனுப்பட்டுமா?",
+   "indian_english": "Your health policy renewal is due on 15 November, and the premium is ₹24,500 per year. If you like, shall I send the payment link on WhatsApp now?",
+   "gloss_en": "Your health policy renewal is due on 15 November. The annual premium is ₹24,500. Would you like me to send the payment link on WhatsApp now?"
+  }
+ },
+ "superseded": {
+  "T2_sales_price": {
+   "neutral_hinglish": "Hero Splendor की on-road कीमत ₹82,500 है। ₹15,000 down payment देने पर 24 महीने के लिए EMI करीब ₹2,950 महीना बनेगी। बताइए, क्या ये आपके लिए ठीक रहेगा?",
+   "bhojpuri_mix": "हीरो स्प्लेंडर के ऑन-रोड दाम ₹82,500 बा। ₹15,000 डाउन पेमेंट देब त 24 महीना खातिर ईएमआई लगभग ₹2,950 महीना पड़ी। रउआ बताईं, ई ठीक रही का?",
+   "marathi_mix": "हिरो स्प्लेंडरची ऑन-रोड किंमत ₹82,500 आहे. ₹15,000 डाउन पेमेंट केलं तर 24 महिन्यांसाठी ईएमआय साधारण ₹2,950 महिना येईल. सांगा, हे तुम्हाला चालेल का?",
+   "tamil_english": "ஹீரோ ஸ்ப்ளெண்டரோட ஆன் ரோடு விலை ₹82,500. ₹15,000 டவுன் பேமெண்ட் கட்டினா, 24 மாசத்துக்கு ஈஎம்ஐ மாசம் சுமார் ₹2,950 வரும். சொல்லுங்க, இது உங்களுக்கு ஓகேவா இருக்குமா?",
+   "indian_english": "The Hero Splendor on-road price is ₹82,500. With ₹15,000 down payment, the EMI comes to around ₹2,950 per month for 24 months. Will that work for you?",
+   "gloss_en": "The on-road price is ₹82,500. With a ₹15,000 down payment, the EMI is about ₹2,950 per month for 24 months. Does that work for you?"
+  }
+ },
+ "regenerations": [
+  {
+   "generated_at": "2026-10-17T13:42:25Z",
+   "usage": {
+    "completion_tokens": 1396,
+    "completion_tokens_details": {
+     "accepted_prediction_tokens": 0,
+     "audio_tokens": 0,
+     "reasoning_tokens": 1024,
+     "rejected_prediction_tokens": 0
+    },
+    "latency_checkpoint": {
+     "engine_tbt_ms": 15,
+     "engine_ttft_ms": 365,
+     "engine_ttlt_ms": 21372,
+     "pre_inference_ms": 99,
+     "service_tbt_ms": 15,
+     "service_ttft_ms": 560,
+     "service_ttlt_ms": 21543,
+     "user_visible_ttft_ms": 461
+    },
+    "prompt_tokens": 523,
+    "prompt_tokens_details": {
+     "audio_tokens": 0,
+     "cache_write_tokens": 0,
+     "cached_tokens": 0
+    },
+    "total_tokens": 1919
+   },
+   "prompt_user": "For each turn below write ONE agent turn of 24 to 30 words (it must take 8 to 15 seconds to speak), with exactly the same content in every register. Use digits for amounts, dates and times.\nRegisters (keys):\n\"neutral_hinglish\": neutral urban Hindi-English as a Delhi or Mumbai telecaller speaks; Hindi in Devanagari, English loanwords (EMI, down payment, test ride, order, delivery, policy, premium, WhatsApp, link) in Latin script.\n\"bhojpuri_mix\": for a customer in Siwan or Chhapra, Bihar: Bhojpuri-dominant with Hindi and the English loanwords a Bhojpuri-speaking telecaller in Patna really uses; genuine Bhojpuri grammar (raua, bani, ba, hamni, rahi, kaile) not Hindi with one Bhojpuri word; Devanagari script with the English loanwords also in Devanagari.\n\"marathi_mix\": for a customer in Pune or Nashik: colloquial spoken Marathi as a Marathi telecaller speaks, mixing in the Hindi and English words people really use; Devanagari script including the loanwords.\n\"tamil_english\": for a customer in Madurai: colloquial spoken Tamil-English code-mix; everything in Tamil script, with the English loanwords transliterated into Tamil script (no Latin letters at all, digits allowed).\n\"indian_english\": Indian English as a Chennai or Bengaluru telecaller speaks, Latin script.\nAlso give \"gloss_en\": a plain English translation of the content.\nReturn JSON: {\"<turn_id>\": {\"neutral_hinglish\": ..., \"bhojpuri_mix\": ..., \"marathi_mix\": ..., \"tamil_english\": ..., \"indian_english\": ..., \"gloss_en\": ...}, ...}\nTurns:\nT2_sales_price: On-road price is Rs 82,500 and the EMI is about Rs 2,950 a month for 24 months; ask if that works for them. (Shortened 2026-10-17: the first version with the Rs 15,000 down payment ran 15.8-17.6 s.)"
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+segment,frozen_score,frozen_rank,V1_post_sales_0_score,V1_rank,V1_dirichlet_p_top1,V1_dirichlet_p_top3,round1_value_gate,G_out_symmetric_outcome_gate,G_out_breakeven_calls_per_outcome,V2_symmetric_gate_rank,V3_post_sales_0_plus_symmetric_gate_rank,G_min_mid_vs_A,G_min_high_vs_A,G_min_mid_vs_B,rank_S1_multiplicative_unchanged
+insurance_renewals,3.85,1,3.722,1,0.464,0.996,PASS (outcome pricing possible),PASS,84.99,1,1,FAIL,PASS,PASS,3
+real_estate,3.45,2,3.722,1,0.485,0.998,PASS (outcome pricing possible),PASS,169.97,2,1,FAIL,PASS,PASS,2
+d2c_ecom_post_purchase,3.4,3,3.222,5,0.038,0.224,FAIL (market price below VP managed COGS),PASS,1.81,3,5,FAIL,FAIL,FAIL,1
+fintech_saas_onboarding,3.35,4,3.278,4,0.0,0.116,PASS,PASS,17.0,4,4,FAIL,PASS,PASS,9
+lending_collections,3.35,4,3.167,8,0.0,0.061,PASS on value; FAIL risk on price competition,PASS,17.0,4,8,FAIL,PASS,PASS,13
+healthcare_hospitals_clinics,3.25,6,3.167,8,0.0,0.003,MARGINAL,PASS,25.5,6,8,FAIL,PASS,PASS,5
+auto_dealers,3.15,7,3.167,8,0.0,0.0,PASS (thin),PASS,84.99,7,8,FAIL,PASS,PASS,5
+edtech_admissions,3.15,7,3.389,3,0.0,0.511,PASS,PASS,84.99,7,3,FAIL,PASS,PASS,4
+utilities_billing,3.15,7,2.944,13,0.012,0.063,,not evaluated (no value-gate row),,7,13,not evaluated,not evaluated,not evaluated,16
+solar_rooftop,3.1,10,3.222,5,0.0,0.026,,not evaluated (no value-gate row),,10,5,not evaluated,not evaluated,not evaluated,5
+diagnostics,3.0,11,2.889,14,0.0,0.0,,not evaluated (no value-gate row),,11,14,not evaluated,not evaluated,not evaluated,10
+study_abroad,3.0,11,3.222,5,0.0,0.001,,not evaluated (no value-gate row),,11,5,not evaluated,not evaluated,not evaluated,5
+insurance_sales,2.9,13,3.111,11,0.0,0.0,,not evaluated (no value-gate row),,13,11,not evaluated,not evaluated,not evaluated,12
+telecom_isp_retention,2.9,13,2.667,16,0.0,0.0,MARGINAL,PASS,25.5,13,16,FAIL,PASS,PASS,17
+lending_origination,2.8,15,3.0,12,0.0,0.0,,not evaluated (no value-gate row),,15,12,not evaluated,not evaluated,not evaluated,15
+travel_hospitality,2.75,16,2.833,15,0.0,0.0,,not evaluated (no value-gate row),,16,15,not evaluated,not evaluated,not evaluated,14
+k12_school_admissions_fees,2.65,17,2.611,17,0.0,0.0,,not evaluated (no value-gate row),,17,17,not evaluated,not evaluated,not evaluated,10
+political_government_outreach,2.5,18,2.556,18,0.0,0.001,,not evaluated (no value-gate row),,18,18,not evaluated,not evaluated,not evaluated,18
+matrimony_fitness_misc,2.4,19,2.444,19,0.0,0.0,,not evaluated (no value-gate row),,19,19,not evaluated,not evaluated,not evaluated,19

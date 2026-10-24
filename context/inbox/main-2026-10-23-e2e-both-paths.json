@@ -1,0 +1,19 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-23.e2e-verified-with-devsim-only",
+   "type": "rejection",
+   "title": "Verifying a browser-flow fix only with devsim running",
+   "status": "rejected",
+   "date": "2026-10-23",
+   "source": "main loop",
+   "tried": "bdd8446 changed the guided-start flow to wait for the browser call view. It was checked with product/web/e2e/run.sh locally, where a Python with the runtime's packages starts devsim.",
+   "broke": "CI has no devsim. Without a voice runtime the test panel shows a status line instead of the call view, so CI web-e2e stayed red for one more push (bdd8446) after 54b4312.",
+   "instead": "7713d8d accepts both outcomes. A browser-flow change is now run both ways before pushing: `VP_VOICE_PYTHON=/bin/false sh product/web/e2e/run.sh` (no runtime, as in CI) and the default (devsim)."
+  }
+ ],
+ "edges": [
+  { "from": "rejected.2026-10-23.e2e-verified-with-devsim-only", "to": "evidence.2026-10-22.launch-readiness-audit", "relation": "informs" }
+ ],
+ "events": []
+}

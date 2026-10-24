@@ -1,0 +1,49 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.staging-config-fix-verify",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": "10 checks in 1 new synthetic workspace ('Config Check', c0c91999-513d-4d6c-accc-7648f8930b3e): 9 pass, 1 fail; 1 browser test call, 1 practice-caller run, 1 typed-chat exchange, 1 Operator message",
+   "title": "Staging at 9b34ff7 with control-plane models (op7's Azure deployments: VP_LLM_DEFAULT_* on lab-gpt41mini-in, the Operator on lab-gpt41) and recordings on: test.chat answers (one exchange), test.simulate runs (4 turns, ended by the caller, 4/6 checks), the Operator answers from workspace.get only (read), a browser test call (111 s) is analysed on gpt-4.1-mini (status done) and its recording answers 200 audio/wav through :8443 (401 without the passcode). The one fail is by design: a browser test call gets no outcome, because calls/analysis.ts takes the outcome definition only from the call's campaign and records outcomes only for non-test calls. Spend INR 3.85 (call 2.24 + Azure-counted tokens 1.61)",
+   "method": "stage_setup_v2.sh (v1 + 13 env lines + the .env.extra hook) redeployed the same 9b34ff7 bundle through the five-part Run Command (vps9-deploy-v2); names confirmed in .env and both processes' /proc environ, and each side's own code (llm.ts, judge.ts, judge.py, analysis.ts) read its process env. Verification: research/2026-10-24/staging/ops/verify9.py on the VM, through the product's own API, in a new workspace (random password kept in the VM process); the call via replygap.one_call (synthetic clips P1, test.browser_call, never a phone); the recording fetched through Caddy on :8443 with basic auth. Spend from the DB (conversation, cost_line, agent_test_run, plus test.chat's own usage) and from Azure Monitor (ModelRequests, InputTokens, OutputTokens per deployment, 10:26-10:34 UTC) at op7's rates",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md"
+  },
+  {
+   "id": "decision.2026-10-24.staging-judge-mode-off-with-default-model",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Staging sets VP_SAFETY_JUDGE_MODE=off alongside VP_LLM_DEFAULT_*, because both judges fall back to the default model (judge.ts judgeConfigured: VP_LLM_SAFETY_JUDGE_* ?? VP_LLM_DEFAULT_*; judge.py config: ... or ...) and default to shadow, so leaving VP_LLM_SAFETY_JUDGE_* unset no longer keeps the judge uncalled. Off keeps staging's judge exactly as before the fix: no judge calls, no judge events (verified: runtime runs False, control plane mode off, 0 judge events on the verification call)",
+   "rationale": "The coordinator's brief wanted every VP_LLM_SAFETY_JUDGE_* unset 'because the judge stays shadow and unconfigured on staging'. With VP_LLM_DEFAULT_* set, unset alone would have run the judge in shadow on lab-gpt41mini-in (a model judge.json does not recommend) on every caller turn of calls, chats, simulations and analyses, with spend and judge marks on the owner's call pages.",
+   "reverse_if": "The safety builder or the owner wants the judge measured or shown on staging: then configure VP_LLM_SAFETY_JUDGE_* on its recommended route (Flash-Lite on Vertex) and set the mode deliberately, or drop the line to accept shadow on the default model. Also reverse if the product stops falling back from the judge's purpose to VP_LLM_DEFAULT_*.",
+   "path": "research/2026-10-24/staging/ops/stage_setup_v2.sh"
+  },
+  {
+   "id": "risk.2026-10-24.brief-review-blocks-renewal-template",
+   "type": "risk",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "With a model configured, the AI-honesty brief review (here lab-gpt41mini-in through VP_LLM_DEFAULT_*, not its recommended route) flags the insurance-renewal template's own persona.notes[0] ('explain premiums like a friend who works in insurance') as a human persona (ai_honesty, kind human, confidence 0.9, 'publish: blocked until fixed'), so a buyer's first version.publish from that template is refused until the note is edited (staging, n = 1 review)",
+   "mitigation": "Either reword the template note so it cannot read as a human persona, or route the brief review to its recommended model (VP_LLM_BRIEF_REVIEW_*) and re-check its false positives (BLIND-BR2 recorded false positives failing). Until then, tell the owner the renewal template needs that one note edited before publishing on staging.",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md"
+  }
+ ],
+ "edges": [
+  {"from": "measure.2026-10-24.staging-config-fix-verify", "to": "evidence.2026-10-24.staging-testbuild-9b34ff7", "relation": "evidence"},
+  {"from": "measure.2026-10-24.staging-config-fix-verify", "to": "measure.2026-10-24.staging-testbuild-smoke", "relation": "extends"},
+  {"from": "decision.2026-10-24.staging-judge-mode-off-with-default-model", "to": "measure.2026-10-24.staging-config-fix-verify", "relation": "derived-from"},
+  {"from": "risk.2026-10-24.brief-review-blocks-renewal-template", "to": "measure.2026-10-24.staging-config-fix-verify", "relation": "derived-from"}
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "staging-config-fix-9b34ff7",
+   "details": "Staging's two set-up gaps closed on 9b34ff7 and made persistent: stage_setup_v2.sh (v1 + VP_LLM_DEFAULT_URL/_KEY/_KEY_HEADER/_MODEL from the lab's LAB_AI_* lines, VP_LLM_OPERATOR_MODEL and its prices, VP_ANALYSIS_MODELS / _DEFAULT_MODEL, VP_SAFETY_JUDGE_MODE=off, VP_RECORDINGS_DIR, VP_RUNTIME_PUBLIC_URL, VP_TEST_BUDGET_DEFAULT_INR=2000 inert until 84b7c48, and an optional /opt/vp-stage/.env.extra hook) redeployed the same bundle at 10:27 UTC; future deploys use v2. Names confirmed in .env and both processes; VP_LLM_SAFETY_JUDGE_* unset; the judge off on both sides. Verification in workspace 'Config Check': 9/10 pass (chat, practice caller, Operator with read tools only, browser call, analysis done, recording 200 audio/wav through :8443); a test call gets no outcome by design. Found: the brief review on the default model blocks publishing the renewal template; RD1 double disclosure also in the typed chat; RD6 bare-amount premium again (n = 2 calls). Spend INR 3.85 of the INR 40 cap."
+  }
+ ]
+}

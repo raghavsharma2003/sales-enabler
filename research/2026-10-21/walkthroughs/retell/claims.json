@@ -1,0 +1,640 @@
+[
+ {
+  "id": "wt-retell-01",
+  "area": "coverage",
+  "claim": "The capture set is 69 text captures (one combined file) and 51 PNGs; 18 text captures have no PNG (for example the full Call settings panel, the function-add menu, the accent dropdown, the From-number dropdown). No call, number purchase, batch send, KB document, simulation run or QA report was made, so every runtime behaviour is unobserved.",
+  "grade": "observed",
+  "evidence": [
+   "99-all-page-text.txt",
+   "00-FINAL-REPORT.md"
+  ]
+ },
+ {
+  "id": "wt-retell-02",
+  "area": "coverage",
+  "claim": "Three captures are mislabelled: 06-Functions.png shows all accordions collapsed plus an AI-QA feature preview (not Functions); 78-create-dialog-again.png shows the Create an Agent dropdown (Voice Agent / Chat Agent), not the dialog; 10d-accent-minimax.txt actually holds the Cartesia voice list.",
+  "grade": "observed",
+  "evidence": [
+   "06-Functions.png",
+   "78-create-dialog-again.png",
+   "99-all-page-text.txt[10d-accent-minimax]"
+  ]
+ },
+ {
+  "id": "wt-retell-03",
+  "area": "ia",
+  "claim": "The dashboard has 15 sidebar destinations: Home; BUILD (Agents, Knowledge Base); DEPLOY (Phone Numbers, Batch Call); DATA (Call History, Chat History, Contacts); MONITOR (Analytics, Live Monitoring, AI Quality Assurance, Alerting); SYSTEM (Integrations, Billing, Settings). Settings has its own sub-nav: Limits, Reliability, API Keys, Webhooks, Workspace (General, Users, Roles). There is no Campaigns entry anywhere in the navigation.",
+  "grade": "observed",
+  "evidence": [
+   "5x-chat-history.png",
+   "5x-settings.png",
+   "6z-roles.png",
+   "99-all-page-text.txt[02-agents-empty]"
+  ]
+ },
+ {
+  "id": "wt-retell-04",
+  "area": "first-run",
+  "claim": "A persistent 7-step Getting started checklist (0/7 on a new workspace) sits in the sidebar on every page: Build your first agent; Run a test call; View transcript and analysis; Add a phone number; Make your first real call; Invite a teammate; Try advanced functions (sub-items: Use simulation testing, Run AI quality assurance). Three steps are locked at 0/7 and two at 1/7; the free-trial panel shows $10.00 remaining, concurrency 0/20 and an Add Payment button.",
+  "grade": "observed",
+  "evidence": [
+   "02-agents-empty.png",
+   "04-agent-builder-top.png",
+   "99-all-page-text.txt[02-agents-empty]"
+  ]
+ },
+ {
+  "id": "wt-retell-05",
+  "area": "first-run",
+  "claim": "Creating an agent is a dropdown (Voice Agent / Chat Agent) then a Create agent dialog: type cards Single prompt and Conversational flow (Conversational flow pre-selected), an Other options link (Custom LLM; Multi-Prompt greyed and marked Deprecated), 10 template tabs and 28 template cards plus Build from scratch and Generate from prompt (Suggested). The Create agent button is enabled with no template chosen.",
+  "grade": "observed",
+  "evidence": [
+   "78-create-dialog-again.png",
+   "03-create-agent-dialog.png",
+   "03b-other-options.png",
+   "79-voice-agent-options.png",
+   "99-all-page-text.txt[03-create-agent-dialog]"
+  ]
+ },
+ {
+  "id": "wt-retell-06",
+  "area": "first-run",
+  "claim": "Steps to a first working agent: about 4 clicks and 0 required fields (Create an Agent, Voice Agent, Create agent, then Run Test in the browser). The builder opens with an empty prompt and a default model, voice and language already set; no phone number is needed for a browser test.",
+  "grade": "inferred",
+  "evidence": [
+   "02-agents-empty.png",
+   "78-create-dialog-again.png",
+   "79-voice-agent-options.png",
+   "04-agent-builder-top.png"
+  ]
+ },
+ {
+  "id": "wt-retell-07",
+  "area": "first-run",
+  "claim": "The 28 templates are US-centric (Insurance Verification Caller, Mortgage Inbound Form Follow-Up, Pharmacy Refill Caller, Legal Intake Screener, Medical Receptionist); the nearest to Indian use cases are Payment Reminder Caller, Payment Collection Agent, Win-Back Campaign and Reminder & No-Show Reducer. There is no renewal, insurance-renewal or India template.",
+  "grade": "observed",
+  "evidence": [
+   "99-all-page-text.txt[03-create-agent-dialog]",
+   "03-create-agent-dialog.png"
+  ]
+ },
+ {
+  "id": "wt-retell-08",
+  "area": "builder",
+  "claim": "The agent builder has three rail tabs (Agent, Workflow, Simulation), a prompt editor with model / voice / language selectors, an Agent Handbook button, a Welcome Message selector (default shows User speaks first, hint AI starts speaking after silence), ten collapsed accordions (Functions; Knowledge Base & Memory; Speech settings; Realtime transcription settings; Call settings; Security & fallback settings; Post call extraction; Post call memory settings; Webhook settings; MCPs) and a Test Audio / Test LLM panel. Header has V0 version button, Test, Build with AI and Publish.",
+  "grade": "observed",
+  "evidence": [
+   "04-agent-builder-top.png",
+   "75-agent-page.png",
+   "99-all-page-text.txt[04-agent-builder-top]"
+  ]
+ },
+ {
+  "id": "wt-retell-09",
+  "area": "builder",
+  "claim": "A strip above the prompt shows Cost $0.134/min, Latency 820-1290ms and Tokens 814 - 3k for the default stack (GPT 5.6 Terra, voice Cimo, English US). These are vendor-displayed figures, not measured by us.",
+  "grade": "displayed-by-vendor",
+  "evidence": [
+   "04-agent-builder-top.png",
+   "75-agent-page.png"
+  ]
+ },
+ {
+  "id": "wt-retell-10",
+  "area": "builder",
+  "claim": "The displayed $0.134/min reconciles as 0.055 (infra) + 0.015 (platform voice) + 0.064 (the GPT 5.6 Terra list price shown in the model picker); telephony is therefore not in the strip. The infra and voice components come from the earlier public rate card, so this is arithmetic, not a labelled breakdown.",
+  "grade": "inferred",
+  "evidence": [
+   "04-agent-builder-top.png",
+   "09-model-dropdown.png"
+  ]
+ },
+ {
+  "id": "wt-retell-11",
+  "area": "builder",
+  "claim": "With an empty prompt the strip already reports 814 tokens (834 for a new Conversational Flow agent), so about 20% of the 4,000-token billing threshold from the earlier pricing research is consumed by built-in text (Handbook presets, end_call) before the user types anything. What counts toward the 814 is not shown.",
+  "grade": "inferred",
+  "evidence": [
+   "04-agent-builder-top.png",
+   "80-conv-flow-builder.png",
+   "99-all-page-text.txt[80-conv-flow-builder]"
+  ]
+ },
+ {
+  "id": "wt-retell-12",
+  "area": "builder",
+  "claim": "Cost and latency are shown as underlined values (hover affordance) but the hover content was not captured, so the component breakdown the vendor offers is unknown.",
+  "grade": "unknown",
+  "evidence": [
+   "04-agent-builder-top.png"
+  ]
+ },
+ {
+  "id": "wt-retell-13",
+  "area": "model",
+  "claim": "The model picker lists 39 entries in three labelled groups: 21 under Versatile and highly intelligent, 12 under Fast and cost-efficient, 6 under Speech to speech. The screenshot shows only the first 18 rows; the rest are in the text capture. Four rows carry a Suggested badge (GPT 5.6 Terra, GPT 5.5, GPT 5.4, Claude 5 Sonnet) and the footer links to a Model leaderboard.",
+  "grade": "observed",
+  "evidence": [
+   "09-model-dropdown.png",
+   "99-all-page-text.txt[09-model-dropdown]"
+  ]
+ },
+ {
+  "id": "wt-retell-14",
+  "area": "model",
+  "claim": "Every model row shows a per-minute price: cascaded LLMs range from $0.0016/min (GPT 5 nano) to $0.32/min (GPT 6 Astra), speech-to-speech from $0.07/min (GPT Realtime 2.1 mini, GPT Realtime mini) to $0.38/min (GPT Realtime 2.1, GPT Realtime 2). The list is not sorted by price; GPT rows have submenu chevrons whose contents were not opened.",
+  "grade": "displayed-by-vendor",
+  "evidence": [
+   "09-model-dropdown.png",
+   "99-all-page-text.txt[09-model-dropdown]"
+  ]
+ },
+ {
+  "id": "wt-retell-15",
+  "area": "model",
+  "claim": "The model list shows price only: no latency, quality score or context window per row, and no Indic-language suitability marker. Comparison depends on the external Model leaderboard link. The only trade-off display is the single Cost / Latency strip for the current selection.",
+  "grade": "observed",
+  "evidence": [
+   "09-model-dropdown.png",
+   "04-agent-builder-top.png"
+  ]
+ },
+ {
+  "id": "wt-retell-16",
+  "area": "model",
+  "claim": "The picker catalogue has no Indian-lab or open-weight model: providers are OpenAI (GPT 4.1 to 6.1, Realtime), Anthropic (Claude 4.5 Haiku to 5.5 Opus) and Google (Gemini 2.5 to 4). The dashboard lists 33 cascaded entries where the earlier API read counted 32 LLM enum values; the difference is unexplained.",
+  "grade": "observed",
+  "evidence": [
+   "99-all-page-text.txt[09-model-dropdown]"
+  ]
+ },
+ {
+  "id": "wt-retell-17",
+  "area": "voice",
+  "claim": "The Platform Voices tab shows 21 voice cards (name, accent, age band, provider tag retell, ID) with Gender, Accent and Search filters, a play button per card, Add voice clone, Expressive mode (Off) and More Settings. The Accent filter offers only American, British and Mexican; all 21 voices are American (15), British (2) or Mexican (4); none is Indian. Cards show no price, latency or language list.",
+  "grade": "observed",
+  "evidence": [
+   "10-voice-picker.png",
+   "99-all-page-text.txt[10b-accent]"
+  ]
+ },
+ {
+  "id": "wt-retell-18",
+  "area": "voice",
+  "claim": "The Custom Providers tab offers five engines (MiniMax, Cartesia, Fish Audio, Inworld, ElevenLabs) with Gender, Accent, Types and Search filters and a Recommended Voices carousel. The text capture holds at least 39 MiniMax rows and 85 Cartesia rows (the Cartesia list is cut mid-row, so the DOM list is virtualised or truncated); traits seen are American, Southern American, British, Mexican, French, German, Spanish, Brazilian, Chinese, Japanese, none Indian. Fish Audio, Inworld and ElevenLabs tabs were not opened.",
+  "grade": "observed",
+  "evidence": [
+   "10c-custom-providers-shot.png",
+   "99-all-page-text.txt[10c-custom-providers]",
+   "99-all-page-text.txt[10d-accent-minimax]"
+  ]
+ },
+ {
+  "id": "wt-retell-19",
+  "area": "voice",
+  "claim": "The same persona names (Cimo, Grace, Hailey, Nia, Nico, Adrian, Andrew and others) appear under retell-, minimax- and cartesia- IDs, with a Retell or Provider trait tag. That supports the earlier inference that Platform Voices are Retell-curated names over third-party engines; it is not an audio or traffic fingerprint.",
+  "grade": "inferred",
+  "evidence": [
+   "10c-custom-providers-shot.png",
+   "10-voice-picker.png",
+   "99-all-page-text.txt[10d-accent-minimax]"
+  ]
+ },
+ {
+  "id": "wt-retell-20",
+  "area": "voice",
+  "claim": "The agents list shows the API-created agent VP-SYNTHETIC-teardown-renewal-hinglish with voice Saanvi, which is not among the picker voices we could see, so the dashboard renders voices the Platform tab does not surface. Whether Saanvi is an Indian-accent voice is not shown.",
+  "grade": "unknown",
+  "evidence": [
+   "99-all-page-text.txt[78-create-dialog-again]",
+   "78-create-dialog-again.png"
+  ]
+ },
+ {
+  "id": "wt-retell-21",
+  "area": "language",
+  "claim": "The Speech Language dropdown (searchable, with a Multiselect toggle in its header) lists 63 locales. India-relevant: English (India) at position 4, Hindi (India) at position 13, Kannada, Marathi, Tamil, Urdu (all India) and Nepali. Absent: Telugu, Bengali, Gujarati, Malayalam, Punjabi, Odia, and any Hinglish or code-switching option. The screenshot shows only the first 10 rows, so Hindi is visible only in the text capture.",
+  "grade": "observed",
+  "evidence": [
+   "11-language-shot.png",
+   "99-all-page-text.txt[11-language-shot]"
+  ]
+ },
+ {
+  "id": "wt-retell-22",
+  "area": "language",
+  "claim": "What Multiselect does (whether Hindi + English selected together yields code-switching, one ASR language set, or a prompt hint) is not shown anywhere in the capture and needs a call to learn.",
+  "grade": "unknown",
+  "evidence": [
+   "11-language-shot.png",
+   "99-all-page-text.txt[11-language-shot]"
+  ]
+ },
+ {
+  "id": "wt-retell-23",
+  "area": "control",
+  "claim": "Speech settings defaults on a new agent: Background Sound None; Response Wait time 0ms (slider handle at the far right, end labels More waiting / Less waiting); Dynamically adjust based on user input unchecked; Interruption Sensitivity 0.9 (end labels blocks interruption / stops immediately); Reminder Message Frequency 10 seconds, 1 times; Pronunciation empty (IPA and CMU supported by the selected voice).",
+  "grade": "observed",
+  "evidence": [
+   "05-settings-state.png",
+   "08-Speech_settings.png",
+   "99-all-page-text.txt[05-all-settings-expanded]"
+  ]
+ },
+ {
+  "id": "wt-retell-24",
+  "area": "control",
+  "claim": "Retell defaults sit at the most reactive end of its own scales: zero added response wait and interruption 0.9 of 1. No endpointing-silence value in milliseconds is exposed on the default panel; speed versus accuracy of transcription is chosen by two radios whose labels end with Provider Config, and which one is selected is not visible.",
+  "grade": "inferred",
+  "evidence": [
+   "05-settings-state.png",
+   "99-all-page-text.txt[05-all-settings-expanded]"
+  ]
+ },
+ {
+  "id": "wt-retell-25",
+  "area": "control",
+  "claim": "Call settings values (text capture only, no screenshot, toggle states not visible): Voicemail Detection with responses Hang up if reaching voicemail or Leave a message; IOS / Android Call Screen Handling message; IVR Hangup; User Keypad Input Detection with Timeout 2.5 s, Termination Key (0-9, #, *) and Digit Limit; End Call on Silence 10.0 m; Max Call Duration 1.00 h; Ring Duration 30 s on a 5s-300s scale.",
+  "grade": "observed",
+  "evidence": [
+   "99-all-page-text.txt[05-all-settings-expanded]"
+  ]
+ },
+ {
+  "id": "wt-retell-26",
+  "area": "control",
+  "claim": "Taken together, the default silence hang-up (10 minutes) and max duration (1 hour), with a single reminder after 10 seconds, would let an unattended live line run up to about $1.34 (10 min) or $8.04 (1 h) at the displayed $0.134/min. This is arithmetic on displayed values; whether the defaults are active on a phone call is untested.",
+  "grade": "inferred",
+  "evidence": [
+   "99-all-page-text.txt[05-all-settings-expanded]",
+   "04-agent-builder-top.png"
+  ]
+ },
+ {
+  "id": "wt-retell-27",
+  "area": "control",
+  "claim": "Realtime transcription defaults: Denoising Mode Remove noise selected (other options Remove noise + background speech, No denoising); Transcription Mode radios Optimize for speed / Optimize for accuracy (selected one not visible); Custom Settings with Vocabulary Specialization General or Medical only and Boosted Keywords. No Indic or Hindi vocabulary set is offered.",
+  "grade": "observed",
+  "evidence": [
+   "05-settings-state.png",
+   "99-all-page-text.txt[05-all-settings-expanded]"
+  ]
+ },
+ {
+  "id": "wt-retell-28",
+  "area": "control",
+  "claim": "Retell default turn-taking is the opposite of Bolna: Bolna holds a reply about 1.4 s (500 ms endpointing plus 900 ms hold, inferred from its code), while Retell shows a 0 ms added wait and 0.9 interruption sensitivity. Neither is tuned for Hinglish in what is shown; the open turn-taking problem (15-42% cut-ins across our lab stacks) means Retell defaults could over-cut in Hinglish, which only a call battery can show.",
+  "grade": "inferred",
+  "evidence": [
+   "05-settings-state.png",
+   "99-all-page-text.txt[05-all-settings-expanded]"
+  ]
+ },
+ {
+  "id": "wt-retell-29",
+  "area": "tools",
+  "claim": "Functions: a new single-prompt agent already holds an end_call function. The add menu offers End Call, Call Transfer, Agent Transfer, Press Digit (IVR Navigation), In-Call SMS, Extract Dynamic Variable, Code, Custom Function, plus 8 integrations: HubSpot, Salesforce, Microsoft Dynamics 365, GoHighLevel, Zoho CRM, Zendesk, Calendly, Cal.com. No WhatsApp, Indian CRM or Indian telephony app is listed.",
+  "grade": "observed",
+  "evidence": [
+   "09-model-dropdown.png",
+   "99-all-page-text.txt[07-function-add-menu]",
+   "99-all-page-text.txt[06-functions]"
+  ]
+ },
+ {
+  "id": "wt-retell-30",
+  "area": "tools",
+  "claim": "Call Transfer form: Static Destination or Dynamic Routing, E.164 formatting and extension option, three handling modes (Cold, Warm with one-way brief, Agentic Warm with two-way talk then bridge), SIP INVITE or SIP REFER, displayed caller ID (Retell Agent number selected, or the user number), Transfer Ring Duration 30s (scale up to 90s), custom SIP headers, Talk while waiting checked with Prompt or Static Sentence. The form is about 12 inputs tall.",
+  "grade": "observed",
+  "evidence": [
+   "08-call-transfer-form.png",
+   "99-all-page-text.txt[08-call-transfer-form]"
+  ]
+ },
+ {
+  "id": "wt-retell-31",
+  "area": "kb",
+  "claim": "Knowledge Base: the Add Knowledge Base dialog takes a name and documents from Add Web pages, Upload files (Up to 50MB), Add text, Connect Google Drive, Connect Microsoft OneDrive or Connect Notion; the note says the first 10 knowledge bases are included at no extra charge. Per-source limits, crawl depth and refresh behaviour are not shown. The empty KB page has no call-to-action button.",
+  "grade": "observed",
+  "evidence": [
+   "73-kb-add-dialog.png",
+   "74-kb-add-types.png",
+   "72-kb-page.png",
+   "99-all-page-text.txt[74-kb-add-types]"
+  ]
+ },
+ {
+  "id": "wt-retell-32",
+  "area": "memory",
+  "claim": "Contact memory: Use contact memory is ON by default in Knowledge Base & Memory; Save conversation to memory (update after each call) is OFF by default and priced $0.005 per run, shown at the toggle in Post call memory settings and in the Workflow tab. Privacy or retention of the memory text is not described.",
+  "grade": "displayed-by-vendor",
+  "evidence": [
+   "07-Knowledge_Base___Memory.png",
+   "76-workflow-tab.png",
+   "99-all-page-text.txt[05-all-settings-expanded]"
+  ]
+ },
+ {
+  "id": "wt-retell-33",
+  "area": "flows",
+  "claim": "The Workflow tab for a single-prompt agent is a lifecycle canvas: Pre-call functions, Call started, Agent, Call ended, Post Call Extraction, Save conversation to memory, Post-call functions, with Knowledge base & memory (0) and Webhook (0) nodes. Post-call extraction defaults to Call Summary, Call Successful and User Sentiment using GPT-5.6 Terra.",
+  "grade": "observed",
+  "evidence": [
+   "76-workflow-tab.png",
+   "12-settings-panel.png"
+  ]
+ },
+ {
+  "id": "wt-retell-34",
+  "area": "flows",
+  "claim": "The Conversational Flow builder is a node canvas with a Global settings / Node settings panel, a palette of 13 entries (Conversation, Subagent, Function, Call Transfer, Press Digit, Logic Split, Agent Transfer, In-Call SMS, Extract Variable, Code, MCP, Ending, Note) plus Subflows, a Transition Flexibility choice (Flex Mode or Rigid Mode, default not visible), minimap and zoom. Its settings list has no Functions or MCPs accordion because those are nodes.",
+  "grade": "observed",
+  "evidence": [
+   "80-conv-flow-builder.png",
+   "99-all-page-text.txt[80-conv-flow-builder]"
+  ]
+ },
+ {
+  "id": "wt-retell-35",
+  "area": "flows",
+  "claim": "MCPs and webhooks sit at the bottom of the single-prompt settings: an Add MCP button (none configured) and an Agent Level Webhook URL (empty) with a Test button, a Webhook Timeout slider at 5 s (scale starts at 1s) and Webhook Events Set Up. A promo row pushes Try integrations in Workflow.",
+  "grade": "observed",
+  "evidence": [
+   "12-settings-panel.png",
+   "99-all-page-text.txt[12-security-extraction-webhook-mcp]"
+  ]
+ },
+ {
+  "id": "wt-retell-36",
+  "area": "testing",
+  "claim": "Testing surfaces: an in-builder Test Audio / Test LLM panel with Run Test (browser, no phone needed; not run), a Simulation tab with Test Cases (columns Test Case, User Prompt, Success Criteria, Edited by) and Batch Testing History plus Import (empty), a Conductor with Improve using failures and Suggest edge case tests suggestions, and an AI Quality Assurance page. No test case was created.",
+  "grade": "observed",
+  "evidence": [
+   "04-agent-builder-top.png",
+   "77-simulation-tab.png",
+   "99-all-page-text.txt[04-agent-builder-top]"
+  ]
+ },
+ {
+  "id": "wt-retell-37",
+  "area": "testing",
+  "claim": "AI Quality Assurance: a hero (\"First 100 minutes of analysis is free\"; dimensions audio quality incl. overlapping speech, tone, WER; hallucinations; resolution accuracy; sentiment) over a populated Call QA Overview (68 of 240 calls analysed, Average Score 87.00, Call Resolution Rate 75.00%, Transfer Success Rate 70%, Transfer Wait Time 4.0s, Top Questions). Its date range is 09/01/2025 to 10/01/2025 and Call History and Analytics show 0 calls, so the figures are sample data.",
+  "grade": "inferred",
+  "evidence": [
+   "46-quality-assurance.png",
+   "41-call-history.png",
+   "43-analytics.png"
+  ]
+ },
+ {
+  "id": "wt-retell-38",
+  "area": "testing",
+  "claim": "Alerting lists four rows (Payment Failure Rate Spike, High Concurrency Spike, LLM Retell Failure Surge, TTS Provider Error Rate High) with Edit buttons and an Alert history tab; delivery is email or webhook. Titles and metric lines do not match (the TTS row shows Concurrency used count), which suggests templates or seeded entries; whether any is a live rule is unknown.",
+  "grade": "inferred",
+  "evidence": [
+   "47-alerting.png",
+   "99-all-page-text.txt[47-alerting]"
+  ]
+ },
+ {
+  "id": "wt-retell-39",
+  "area": "telephony",
+  "claim": "The Phone Numbers + menu offers Buy New Number and Connect to your number via SIP trunking. Choosing Buy New Number opens an Identity Verification Required modal (Powered by Persona) before any country, number list or price is shown; verification was not started. No India or country option is visible anywhere on this path.",
+  "grade": "observed",
+  "evidence": [
+   "29-phone-add-shot.png",
+   "30-buy-number-shot.png",
+   "99-all-page-text.txt[30-buy-number-dialog]"
+  ]
+ },
+ {
+  "id": "wt-retell-40",
+  "area": "campaigns",
+  "claim": "The Create a batch call page is one form, not a wizard: Batch Call Name, From number (empty list), Upload Recipients (Download the template, CSV up to 50 MB, Recipients preview pane), When to send (Send Now default or Schedule with date and timezone), When Calls Can Run, Reserved Concurrency for Other Calls (5), terms sentence, Save as draft and Send. Price shown once: Batch call cost $0.005 per dial.",
+  "grade": "observed",
+  "evidence": [
+   "24-batch-create-shot.png",
+   "27-batch-upload-shot.png",
+   "99-all-page-text.txt[24-batch-create-shot]"
+  ]
+ },
+ {
+  "id": "wt-retell-41",
+  "area": "campaigns",
+  "claim": "The batch form has no field for consent, DND or NCPR scrub, DLT or sender header, retries or attempt budget, pacing, per-lead calling windows or an agent selector (the agent is presumably bound to the From number). Send stays disabled with no message naming the missing field.",
+  "grade": "observed",
+  "evidence": [
+   "24-batch-create-shot.png",
+   "25-calls-can-run-shot.png",
+   "27-batch-upload-shot.png"
+  ]
+ },
+ {
+  "id": "wt-retell-42",
+  "area": "campaigns",
+  "claim": "Calling-window defaults: 00:00-23:59, Mon-Sun, editable in a Select Time Range popover (start, end, + Add for more ranges, Days of Week) with no legal-hours warning. Schedule mode defaults the timezone to Asia/Calcutta, which differs from the earlier API default of America/Los_Angeles; the dashboard value is probably taken from the browser or workspace, which the capture does not show.",
+  "grade": "observed",
+  "evidence": [
+   "25-calls-can-run-shot.png",
+   "27-batch-upload-shot.png",
+   "99-all-page-text.txt[26-schedule]"
+  ]
+ },
+ {
+  "id": "wt-retell-43",
+  "area": "campaigns",
+  "claim": "Concurrency allocated to batch calling is 15 with 5 reserved for other calls and a concurrent-call limit of 20; 15 = 20 - 5. The page does not say so, and Purchase more concurrency links out.",
+  "grade": "inferred",
+  "evidence": [
+   "24-batch-create-shot.png",
+   "5x-settings.png"
+  ]
+ },
+ {
+  "id": "wt-retell-44",
+  "area": "campaigns",
+  "claim": "The flow was blocked before any CSV upload: From number had no options because the workspace owns no number, and buying one is behind Persona KYC. The CSV template columns, the recipients preview and the dedupe, number-format and DNC behaviour of an upload were never seen.",
+  "grade": "observed",
+  "evidence": [
+   "24-batch-create-shot.png",
+   "30-buy-number-shot.png",
+   "99-all-page-text.txt[28-from-number]"
+  ]
+ },
+ {
+  "id": "wt-retell-45",
+  "area": "analytics",
+  "claim": "Analytics has Call Dashboard and Chat Dashboard tabs, a + for more dashboards, date range (default 28 days, Sep 24 - Oct 21, 2026), Filter, Breakdown and Add Chart. The default call dashboard has 15 widgets: Call Counts (tile and chart), Call Duration, Call Latency, Concurrency Used, Call Successful, Disconnection Reason, User Sentiment, Phone inbound/outbound, Call Picked Up Rate, Call Successful Rate, Call Transfer Rate, Voicemail Rate, Average call duration, Average Latency. Empty cards are blank with no empty-state message.",
+  "grade": "observed",
+  "evidence": [
+   "43-analytics.png",
+   "99-all-page-text.txt[43-analytics]"
+  ]
+ },
+ {
+  "id": "wt-retell-46",
+  "area": "analytics",
+  "claim": "Call History is a 13-column table (Time, Duration, Channel Type, Cost, Session ID, End Reason, Session Status, User Sentiment, From, To, Direction, Session Outcome, End to End Latency) with Date Range, Filter, three icon buttons (copy, column settings, hide) and an Actions menu; page size 50; footer says Total Session: 0. Chat History has 7 columns. What Session Outcome contains is unknown; it may partly cover the business-outcome gap noted in earlier research.",
+  "grade": "observed",
+  "evidence": [
+   "41-call-history.png",
+   "5x-chat-history.png",
+   "99-all-page-text.txt[41-call-history]"
+  ]
+ },
+ {
+  "id": "wt-retell-47",
+  "area": "analytics",
+  "claim": "Live Monitoring is a 6-column table (Time, Call Duration, Type, From, To, Call ID) with an empty state No Ongoing Calls. Listen and take-over controls are not visible; they appear only as Conductor suggestions (Describe call takeover, Show live-call controls).",
+  "grade": "observed",
+  "evidence": [
+   "45-live-monitoring.png",
+   "99-all-page-text.txt[45-live-monitoring]"
+  ]
+ },
+ {
+  "id": "wt-retell-48",
+  "area": "analytics",
+  "claim": "Contacts has 9 columns including Do Not Call (with an info icon) and External ID, a New banner Connect your CRM to keep contacts in sync (View demo, Connect), Filter, Search, Actions; the table is empty with no add-contact button. Integrations has Connected and Available tabs and an Add integration button; nothing is connected.",
+  "grade": "observed",
+  "evidence": [
+   "42-contacts.png",
+   "48-integrations.png",
+   "99-all-page-text.txt[42-contacts]"
+  ]
+ },
+ {
+  "id": "wt-retell-49",
+  "area": "compliance",
+  "claim": "Do-not-contact Handling is an OFF toggle in Security & fallback settings; a two-step tour describes it as confirming a stop request, ending the call, marking the contact do-not-call and skipping DNC contacts in outbound calls. The earlier docs reading said batch calls do not check do_not_call, so the dashboard copy and the docs disagree and which is true is unknown without a batch test.",
+  "grade": "observed",
+  "evidence": [
+   "12-settings-panel.png",
+   "13-security-shot.png",
+   "99-all-page-text.txt[13-security-shot]"
+  ]
+ },
+ {
+  "id": "wt-retell-50",
+  "area": "compliance",
+  "claim": "Security & fallback defaults: Data Storage Everything with Retention Keep forever (alternatives Everything except PII, Basic Attributes Only); PII Redaction Set Up offers 14 categories in 6 groups (SSN, Passport, Driver License, Credit Card, Bank Account and others, none India-specific such as Aadhaar or PAN) all unchecked; Safety Guardrails offers 10 options (1 input, 9 output) all unchecked; Opt In Secure URLs OFF (24-hour expiry); Fallback Voice ID Automatic fallback. Nothing is pre-enabled for privacy.",
+  "grade": "observed",
+  "evidence": [
+   "13-security-shot.png",
+   "14-state.png",
+   "14b-guardrails.png",
+   "99-all-page-text.txt[14-state]"
+  ]
+ },
+ {
+  "id": "wt-retell-51",
+  "area": "billing",
+  "claim": "Billing shows Credits Balance $10.00, buttons Buy credits, Auto recharge and Budget Setting, an Enable auto-recharge banner, Change payment methods and Manage billing info (both external links), a Billing History table with one Upcoming Invoice at $0.00 (Ongoing) and a Usage tab (not captured). All amounts are USD; no INR, UPI or GST field is visible.",
+  "grade": "observed",
+  "evidence": [
+   "5x-billing.png",
+   "99-all-page-text.txt[5x-billing]"
+  ]
+ },
+ {
+  "id": "wt-retell-52",
+  "area": "billing",
+  "claim": "Limits page: Concurrent Calls Limit 20; Reserve Inbound Capacity Not Set; Concurrency Burst toggle ON (\"up to 3x your normal limit (max 300 additional calls) at $0.10 per minute\"); Conductor credits toggle OFF (30 free credits per user per day); LLM Token Limit 32768 (read-only); Telnyx, Twilio and Custom Telephony CPS each 1. Burst being ON by default means metered surcharge exposure on a trial; the earlier API read also showed burst enabled.",
+  "grade": "observed",
+  "evidence": [
+   "5x-settings.png",
+   "99-all-page-text.txt[5x-settings]"
+  ]
+ },
+ {
+  "id": "wt-retell-53",
+  "area": "billing",
+  "claim": "Reliability has a single Opt in Stable Server toggle (OFF) with the note that it routes to a lagging-version cluster for stability and adds $0.02/min.",
+  "grade": "displayed-by-vendor",
+  "evidence": [
+   "6x-settings_reliability.png",
+   "99-all-page-text.txt[6x-settings_reliability]"
+  ]
+ },
+ {
+  "id": "wt-retell-54",
+  "area": "team",
+  "claim": "Users shows one member (the signed-in admin) with a role badge and an Invite a member button; Roles lists three System roles (Admin, Developer, Member) described in prose, and Add Role is greyed out with no stated reason. No SSO or audit page exists in Settings. This partly contradicts the earlier claim that RBAC is Enterprise-only: fixed-role RBAC is visible on the free trial.",
+  "grade": "observed",
+  "evidence": [
+   "6y-users.png",
+   "6z-roles.png",
+   "99-all-page-text.txt[6z-roles]"
+  ]
+ },
+ {
+  "id": "wt-retell-55",
+  "area": "team",
+  "claim": "API Keys has API Keys and Public Keys tabs; the two keys shown are fully masked [secret redacted] with only Name and Created at columns (no last-used or scope), and one key carries a Webhook badge marking the key that signs webhooks. Account-level Webhooks has a URL field (empty), a Test button and a Timeout of 5s; Workspace General has a name field and read-only workspace ID.",
+  "grade": "observed",
+  "evidence": [
+   "6x-settings_api-keys.png",
+   "6x-settings_webhooks.png",
+   "6x-settings_workspace.png"
+  ]
+ },
+ {
+  "id": "wt-retell-56",
+  "area": "conductor",
+  "claim": "Conductor is an in-product AI assistant: a Home chat with history, quick actions (Build agents, Test & debug, Analyze calls, QnA), a credit badge (30), a model selector (Default), page-aware suggestion chips (for example Improve using failures, Map agents to KBs, Reduce spam labeling, Filter failed calls) and a floating Ask Conductor box on every page, plus a Build with AI button in the builder. Output quality was not tested.",
+  "grade": "observed",
+  "evidence": [
+   "71-home-onboarding-conductor.png",
+   "04-agent-builder-top.png",
+   "99-all-page-text.txt[71-home-onboarding-conductor]"
+  ]
+ },
+ {
+  "id": "wt-retell-57",
+  "area": "ux",
+  "claim": "A product-tour tooltip reading Test This Voice Agent / Wait for the test panel to finish loading. is stuck on every non-builder page captured, none of which has a test panel (Knowledge Base, Phone Numbers, Batch Call, Call History, Analytics, Billing, Settings), and a second tour (Do Not Call handling) competes with it in the builder. The expanded checklist also covers the lower-left of the builder.",
+  "grade": "observed",
+  "evidence": [
+   "21-knowledgeBase.png",
+   "24-batch-create-shot.png",
+   "12-settings-panel.png",
+   "5x-billing.png"
+  ]
+ },
+ {
+  "id": "wt-retell-58",
+  "area": "ux",
+  "claim": "At 1280 px width the layout overflows: the primary Create an Agent button is clipped to a letter and the test panel and header buttons are cut off (02, 75, 76, 77); the full-size 1920 captures render correctly.",
+  "grade": "observed",
+  "evidence": [
+   "02-agents-empty.png",
+   "75-agent-page.png",
+   "77-simulation-tab.png"
+  ]
+ },
+ {
+  "id": "wt-retell-59",
+  "area": "ux",
+  "claim": "Strong patterns: price on every model row; cost, latency and tokens visible in the builder strip; per-feature price at the toggle ($0.005 per memory run, $0.10 burst, $0.02 stable server); plain-language explanations on transfer modes; 1-2 line descriptions under every setting; slider end labels in text; a lifecycle Workflow canvas.",
+  "grade": "observed",
+  "evidence": [
+   "09-model-dropdown.png",
+   "76-workflow-tab.png",
+   "08-call-transfer-form.png",
+   "05-settings-state.png"
+  ]
+ },
+ {
+  "id": "wt-retell-60",
+  "area": "ux",
+  "claim": "Weak or broken patterns: empty states are inconsistent (Call History and Analytics blank, KB / Phones / Batch with a message but no button); Send disabled without a reason; slider ends are labelled in words only (More waiting / Less waiting), so a far-right handle beside 0ms reads as inverted until the end labels are noticed; icon-only toolbar buttons; unlabelled green marks and dots in pickers; sample data on QA and Alerting without a Sample label.",
+  "grade": "observed",
+  "evidence": [
+   "41-call-history.png",
+   "43-analytics.png",
+   "24-batch-create-shot.png",
+   "46-quality-assurance.png",
+   "47-alerting.png"
+  ]
+ }
+]

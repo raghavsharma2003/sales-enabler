@@ -1,0 +1,19 @@
+{
+ "nodes": [
+  {
+   "id": "rejected.2026-10-21.approve-before-details",
+   "type": "rejection",
+   "title": "An approval sheet that offers the hold before the change's details have loaded",
+   "status": "rejected",
+   "date": "2026-10-21",
+   "source": "web builder (531517e)",
+   "tried": "The approval sheet fetched the change's arguments (amount, cap, audience) in a useEffect, while 'Hold to approve' was available at once.",
+   "broke": "On a slow request a person could approve a ₹500 top-up without the ₹500 on screen. The web builder found it in the audit for the run-before-library pattern.",
+   "instead": "The sheet shows a loading line and no hold until the arguments are in. If they fail to load, the hold is disabled with a reason: not safe to approve blind. A 14th browser flow holds /v1/actions back 1.5 s; it failed on the old sheet and passes on the fix. The audit of the other screens was by code reading only, not runtime delays."
+  }
+ ],
+ "edges": [
+  { "from": "rejected.2026-10-21.approve-before-details", "to": "rejected.2026-10-21.run-before-library", "relation": "extends" }
+ ],
+ "events": []
+}

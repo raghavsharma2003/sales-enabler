@@ -1,0 +1,106 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-21.operator-module",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Operator module: threads, SSE turn, tool loop with role-filtered tools, approval/receipt/plan cards, A0 wrap, per-turn caps, cost lines (16/16 tests with a scripted model; no real-model run)",
+      "path": "product/server/modules/operator/"
+    },
+    {
+      "id": "decision.2026-10-21.operator-plan-stops-at-first-tap",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "An Operator plan runs its A1 steps in order and stops at the first step that needs a tap; later steps are held, not pre-proposed",
+      "rationale": "Later steps often depend on the result of the approved one; proposing them early would bind approvals to args computed before the tap. There is no resume yet, so held steps are re-planned on the next message.",
+      "reverse_if": "Plans with several independent A2 steps are common in the Operator bench, or a plan-resume after approval is built (then 'Approve plan' under one hash, workspace.md \u00a74.4)"
+    },
+    {
+      "id": "decision.2026-10-21.operator-a0-in-module",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-21",
+      "title": "A0 ('ask before drafts') is enforced in the Operator module by writing a kernel action row for draft/test calls; lowering autonomy and forgetting a preference are exempt; raising back to A1 is a policy A2",
+      "rationale": "The owner's brief says enforce by wrapping execute for Operator calls; the kernel's approve path then runs the action once, hash-bound.",
+      "reverse_if": "A0 must also bind non-Operator callers (API, UI), in which case it moves into Registry.execute"
+    },
+    {
+      "id": "risk.2026-10-21.kernel-approve-draft-any-member",
+      "type": "risk",
+      "status": "closed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "Registry.approve checks approver roles only for A2 risk classes, so any active member (a viewer too) can approve an A0-held draft",
+      "mitigation": "Done by the kernel: Registry.approve checks canApprove for every risk class (integrator, 2026-10-21)"
+    },
+    {
+      "id": "decision.2026-10-21.operator-no-credentials",
+      "type": "decision",
+      "status": "proposed",
+      "source": "verified",
+      "date": "2026-10-21",
+      "title": "The Operator never handles credentials: integration.stage_secrets is screen-only; at A0 it would otherwise have stored plaintext secrets in action.args and the card diff",
+      "rationale": "Verified in code: proposeA0 persisted validated input to action.args and copied args into the approval card diff; any Operator call also puts the secret in the model's context. Redacting after the fact still leaves it with the model provider.",
+      "reverse_if": "A sealed-input path exists where the model only ever sees a reveal/stash handle the person created on screen, never the secret text"
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.2026-10-21.operator-module",
+      "to": "evidence.2026-10-21.vp-blueprint",
+      "relation": "implements"
+    },
+    {
+      "from": "decision.2026-10-21.operator-plan-stops-at-first-tap",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-21.operator-a0-in-module",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "risk.2026-10-21.kernel-approve-draft-any-member",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.2026-10-21.operator-no-credentials",
+      "to": "component.2026-10-21.operator-module",
+      "relation": "part-of"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-21",
+      "event": "operator-module-built",
+      "details": "Operator module (threads, SSE turn, tool loop, cards, A0, caps, cost lines, brief.today and 9 more tools) built; tsc clean; 16/16 node tests green against vp_mod_operator with a scripted model. Not verified: any real model, incremental streaming (kernel router buffers), conduct predicates."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-streaming",
+      "details": "Operator turn now streams over the kernel's Res.stream and llm.stream, passes the curated workspace brain as the per-request model; 19/19 operator tests green (incremental-frame test included). Not verified: a real provider's delta stream."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-ma01-aligned",
+      "details": "Operator tool list and plan view use the kernel's heldForApproval (MA-01); test shows a plan with attempt.retry_per_ladder stops at a tap and nobody is re-dialled, while campaign.pause runs at A3. 20/20 operator tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-no-credentials",
+      "details": "Review item verified (A0 would have stored stage_secrets plaintext in action.args and the card diff) and fixed by making the tool screen-only for the Operator; test checks action, audit_event, message and SSE at A1 and A0; 21/21 operator tests."
+    },
+    {
+      "date": "2026-10-21",
+      "event": "operator-chat-secrets-masked",
+      "details": "Operator masks digit secrets (shared/safety redact) and credential-shaped strings in every incoming message and upload before storage, SSE echo, thread title and model input; one notice to use Settings \u2192 Integrations. 22/22 operator tests. Not verified: detector precision on real chat (synthetic strings only)."
+    }
+  ]
+}

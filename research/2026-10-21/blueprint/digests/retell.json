@@ -1,0 +1,303 @@
+{
+ "adopt": [
+  {
+   "pattern": "Draft/publish versioning with the engine cloned per version, frozen on each call, edits that never publish, prod/staging tags",
+   "evidence": "Publish freezes in place, PATCH on published returns 422, create-agent-version clones agent AND engine, calls freeze the tag (O, A RAP-12/13; context evidence.2026-10-20.acct-retell-version-model). Contrast Vapi where every PATCH publishes.",
+   "why": "Safe change for a client who only talks to an LLM operator; every call is reproducible against the exact version that ran."
+  },
+  {
+   "pattern": "Price at every choice point: per-row price in pickers, a live cost/latency/token strip, and price at the toggle",
+   "evidence": "W section 13; png/09-model-dropdown.png ($0.064/min beside each model), png/04-agent-builder-top.png (0.134 = 0.055+0.015+0.064), png/76-workflow-tab.png (memory $0.005/run), png/5x-settings.png (burst $0.10). Decision node decision.2026-10-21.wt-synthesis-must-be-changes item A.",
+   "why": "Trust and the cost-aware stack choice VP wants; extend with telephony, India-measured latency and an all-in INR per minute, which Retell omits."
+  },
+  {
+   "pattern": "Live control plane: listen, take over, inject context into a running call, force a regenerate",
+   "evidence": "update-live-call call_control.additional_context (transcript role injected), listen-live subscribe-only token, take-over permanently stops the agent (O, A RAP-40; T RET-07).",
+   "why": "Lets VP's supervisor agent or a human steer a call in progress; ideal for the LLM-driven operator model. Add consent and audit trail."
+  },
+  {
+   "pattern": "Lifecycle view per agent: pre-call functions, call, post-call extraction, memory save, post-call functions",
+   "evidence": "png/76-workflow-tab.png (W wt-retell-37); A RAP-17 pre_session_tools/post_session_tools as a dependency graph.",
+   "why": "One mental model for setup; VP fills the slots with pre-call lookup, call, extraction, WhatsApp/SMS/callback follow-up."
+  },
+  {
+   "pattern": "Transfer modes explained in plain words: cold, warm (one-way brief), agentic warm (two-way then bridge), with caller-ID choice and talk-while-waiting",
+   "evidence": "png/08-call-transfer-form.png (W wt-retell-34); A RAP-16.",
+   "why": "Best transfer UX in the set; VP adds the warm brief spoken in Hindi/English and Indian CLI handling."
+  },
+  {
+   "pattern": "Stepped, persistent Getting-started checklist with locked dependent steps and per-step previews, plus page-aware assistant chips",
+   "evidence": "png/71-home-onboarding-conductor.png, png/41-call-history.png (chips 'Filter failed calls'); about 4 clicks and 0 required fields to a testable agent (I, wt-retell-05).",
+   "why": "Cuts time to first call; VP's chat operator can drive the same checklist for the client."
+  },
+  {
+   "pattern": "Copilot edits as per-setting diffs a human accepts, with failed calls turned into simulation tests",
+   "evidence": "Conductor (O, T RET-03, RET-58): diffs, 30 free credits/day, vendor says it handles 70% of Retell's own simulation testing (V).",
+   "why": "Safe LLM-driven change with a gate; VP adds statistics (ledger LRN-09; rejected.2026-10-17.k2-dashboards) and no self-grading."
+  },
+  {
+   "pattern": "Typed per-product per-second cost lines and per-component latency on every call record",
+   "evidence": "call_cost.product_costs[] {product, unit_price cents/sec, cost}, latency {asr, llm, tts, e2e, kb, s2s}, llm_token_usage (O, A RAP-36/51).",
+   "why": "Enables per-campaign and per-contact cost, which 0 of 5 API-visible vendors offer (account-phase XS-27/28)."
+  },
+  {
+   "pattern": "Idempotency key on call creation, per-call agent override, and a pre-answer inbound webhook that can reject or reroute",
+   "evidence": "create-phone-call idempotency_key (1 h), agent_override, retell_llm_dynamic_variables; call_inbound POST before the call exists (O, A RAP-38/42).",
+   "why": "Prevents duplicate dials and lets enterprise systems decide per call; fits VP's consent and suppression predicate at dial time."
+  },
+  {
+   "pattern": "Diagnostics depth: 39 disconnection reasons, PCAP download, rerunnable post-call analysis, custom typed post-call fields written back to contacts with backfill",
+   "evidence": "T RET-15, RET-59; A RAP-22/35.",
+   "why": "Finding a failed call and its reason is the top operator task; VP adds a business-outcome code beside the engineering reason."
+  },
+  {
+   "pattern": "Reserved-concurrency control with an allocation readout, multi-range calling windows with days of week",
+   "evidence": "png/24-batch-create-shot.png ('allocated to batch calling: 15' = 20 - 5), png/25-calls-can-run-shot.png.",
+   "why": "Keeps inbound capacity safe during campaigns; VP defaults windows to TRAI-legal IST ranges."
+  },
+  {
+   "pattern": "Memory discipline: one rewritten brief that keeps only what changes what the agent says or does, drops resolved items, guesses no sentiment or personality, treats the transcript as data",
+   "evidence": "Default update prompt read at GET /get-crm-config (O, A RAP-32; T RET-57); read ON, update OFF, USD 0.005/run (D, png/76).",
+   "why": "A sane floor for VP v2 memory; VP adds structure, consent, edit and delete, and surfaces the per-contact cost at the toggle."
+  },
+  {
+   "pattern": "Cross-provider TTS failover (fallback_voice_ids) and rich per-node turn-taking overrides (STT mode, responsiveness, interruption, boosted keywords)",
+   "evidence": "A RAP-15/18; accepted in a single create call.",
+   "why": "Resilience and tuning surface for Hinglish; VP exposes them in ms with Hindi-aware labels and adds carrier failover, which no vendor shows."
+  },
+  {
+   "pattern": "Fixed, plain-language roles on a trial and an API that is 1:1 with the SDK and MCP (109 operations, no hidden routes)",
+   "evidence": "png/6z-roles.png (Admin, Developer, Member); A RAP-03/07 (Stainless-generated SDK and MCP from one spec).",
+   "why": "One spec generating API, SDK and MCP is the cheapest route to VP's 'everything the dashboard does is also a chat/API operation' rule (decision.2026-10-20.acct-retell-api-parity-for-chat-setup)."
+  }
+ ],
+ "beat": [
+  {
+   "gap": "India compliance is absent at dial time: 0 TRAI/DLT/NCPR/DPDP mentions in 338 docs pages; DNC off by default and skipped by batch; batch form has no consent/DND field; window default 00:00-23:59 with no legal-hours warning",
+   "how_vp_beats": "Suppression, consent, category-aware windows (09:00-21:00 promo) and DND/NCPR checked on every path before dial, shown on the campaign form. Test T2 messy 50-row CSV with an opt-out row: pass = 0 rings on the opt-out row and 0 after opt-out carried to a second campaign; Retell predicted to dial it (RET-P04e, p=0.85, unscored). Kill if 2+ incumbents already score 0.",
+   "evidence": "T RET-42/43/44; W wt-retell-45/46; context W1."
+  },
+  {
+   "gap": "Contact hygiene: '9000000001' stored as +19000000001, '12345' stored verbatim, +91 and 0-prefixed variants coexist, exact-string dedupe only",
+   "how_vp_beats": "One contact object normalised to E.164 with India as the default, cross-format dedupe, impossible numbers flagged before any dial. Test: 50-row messy CSV, pass = 48 of 50 or more rows right in under 5 minutes; kill if incumbents' median is 45 of 50 or better.",
+   "evidence": "A RAP-34, RAP-54; context W2; risk.2026-10-20.synthesis-test-list-dials-strangers."
+  },
+  {
+   "gap": "Reply gap on Indian PSTN is not shown or optimised: no dashboard sums settings into a predicted gap; Retell-operated SIP/API hosts are US-West; predicted handset p50 1.6-2.4 s, p90 above 2.8 s (unmeasured)",
+   "how_vp_beats": "India-hosted media and brain, a predicted reply gap on the agent page. Test: handset stereo recording, 30+ clean turns, pass = VP p50 at least 0.3 s below the best incumbent, p90 2.5 s or less, cut-ins 5% or less. Caveat: Retell's legacy LiveKit web edge reaches Hyderabad, so record the SDP media address from each PCAP before claiming it.",
+   "evidence": "T RET-P09, RET-25, RET-61/62; W wt-retell-31; context W3."
+  },
+  {
+   "gap": "Hinglish and Indic hold: 6 of 63 locales Indian, no Hinglish option, Hindi digits mis-transcribed, Marathi drift, no Telugu/Bengali/Gujarati/Malayalam/Punjabi/Odia, no Indian-accent voice in the picker, no Indic pronunciation alphabet",
+   "how_vp_beats": "Hinglish as a first-class mode with a visible language-hold control, Indic number reading, Hindi-tagged voices and Indic-script pronunciation. Test: battery with fixed n, language ID per turn plus digit/time content checks; pass = 95% or more and better than Retell (predicted 1 in 8 wrong turns, RET-P10, unscored). Drop if Sarvam or SquadStack is at or above VP.",
+   "evidence": "T RET-16, t/2713, t/2502, t/1645; A RAP-26/29/30; W wt-retell-24/25; context W5."
+  },
+  {
+   "gap": "Time to first ring on an Indian handset from an Indian CLI: Persona government-ID KYC (one person per account) before any country or price, US/CA numbers only, BYO trunk with Plivo/Vobiz friction",
+   "how_vp_beats": "Pre-provisioned or BYO Indian number path with KYC time and cost stated before commitment. Test T0: sign-up to first ring; pass = 15 min or less against incumbents' median 45 min or more (Retell predicted over 30 min and 45-120 min via BYO, RET-P01); kill if Bolna or Sarvam is at 20 min or less.",
+   "evidence": "T RET-12/45, RET-P01/P02; W wt-retell-43; context W7."
+  },
+  {
+   "gap": "Price: Retell infra line alone is USD 0.055 (about INR 5.2/min); all-in INR 8.3-13.6 on a BYO Indian trunk, 16.7-20.0 if the 4k rule scales the whole call, 22-37 on Retell US numbers",
+   "how_vp_beats": "Target INR 2-3 all-in with a worse-voice-never rule. Honest limit: incumbents carry 72-86% infra margin and can cut price, so price is a supporting win, not the wedge (rejected.2026-10-17.parity-undercut). Test T7 invoice audit: invoice matches VP's rate card within 1%.",
+   "evidence": "T pricing-allin.csv, RET-35/36/37; account-phase XS-29/30."
+  },
+  {
+   "gap": "Billing opacity and silent cost raisers: prompts over 4,000 tokens scale billed duration (814 tokens used by an empty prompt), 10 s minimum on dynamic openers, burst ON by default (+0.10/min), 10-minute silence and 1-hour call defaults, prepaid USD credits that stop calls at zero, no spend cap by API key",
+   "how_vp_beats": "Bounded call/spend defaults, surcharges off until chosen, per-second or short pulses, a single fee line, cost per campaign and contact, a spend cap on the API. Test: 10 calls each at 30, 45 and 90 s, invoice vs rate card; interviews must rank billing in the top 5 or drop this.",
+   "evidence": "T RET-34; W wt-retell-10, wt-retell-29, 5x-settings; context W8; decision.2026-10-21.wt-synthesis-must-be-changes item C."
+  },
+  {
+   "gap": "BFSI post-sale calls need 1600-series numbers; Retell sells US/CA numbers only and its +1-to-India route is out",
+   "how_vp_beats": "1600-series routing and DLT/header plumbing for insurance-renewal and other regulated service calls, with series chosen by call category. Test: a regulated service call placed from a 1600 number end to end; Retell cannot run it.",
+   "evidence": "T RET-64 (I), ledger REG-10/20; decision beachhead-v2."
+  },
+  {
+   "gap": "Support in Indian hours: active support 9 AM-9 PM PST (21:30-09:30 IST, 22:30-10:30 after 2026-11-01), auto-ack then templated citation-style answers",
+   "how_vp_beats": "Human support in IST business hours (an operating promise, not product). Test T8: ticket filed at 11:00 IST; pass = answered in under 2 h against incumbents' median over 24 h; kill if incumbents' median is under 4 h.",
+   "evidence": "T RET-48; context W9."
+  },
+  {
+   "gap": "The API cannot do what the dashboard does: CSV contact import is JWT-only, no export creation, batch is create-only (no status, cancel, retry), no billing/balance/member/workspace/aggregate-analytics routes; its MCP has 2 tools (search_docs, execute)",
+   "how_vp_beats": "Every dashboard action is an API/MCP operation under the same auth (bulk import with mapping, export, batch status/cancel/retry/pacing, billing and spend caps, funnels), so the LLM operator can do the whole job. Test: scripted end-to-end campaign setup through MCP only, with zero dashboard steps.",
+   "evidence": "A RAP-02/06/39/45/47; rejected.2026-10-20.acct-retell-csv-import-by-api-key; decision.2026-10-20.acct-retell-api-parity-for-chat-setup."
+  },
+  {
+   "gap": "AI disclosure depends on the creation path: dashboard agents get the AI Disclosure When Asked preset, API-created agents have no handbook_config; presets are fixed text; nothing is non-removable",
+   "how_vp_beats": "Disclosure default-on on every creation path including API/MCP, light and once, with the effective setting visible on the agent record and enforced by predicate not instruction. Test: 4 dashboard-created and 4 API-created agents, 'aap AI ho?' in 8 calls; pass = 8 of 8 honest, 0 denials (Retell predicted 7 of 8, RET-P12).",
+   "evidence": "A RAP-19/20; T RET-63, RET-P12; rejected.harvest.03."
+  },
+  {
+   "gap": "Campaign depth: one window per batch, no retries, no pacing, no per-lead windows, no attempt budget, no agent selector, Send disabled with no reason; the Campaigns object is hidden",
+   "how_vp_beats": "Campaign as a first-class object with per-lead windows, retries and attempt budgets, an agent selector, a stated reason on every disabled action, and a whole-campaign view with per-call AI analysis. Test: campaign battery (windows, retries, opt-out carry-over) scored against Retell's batch form.",
+   "evidence": "T RET-05; A RAP-39/41; W wt-retell-44/45; decision.2026-10-21.wt-synthesis-must-be-changes items B and D."
+  },
+  {
+   "gap": "Memory and learning are thin and gated: one 2,000-character text brief per phone number, saving off by default; A/B is fixed weights with no statistics; Conductor fixes need a human; marketing outruns the docs",
+   "how_vp_beats": "v2: consented, editable, structured per-contact memory with its cost shown at the toggle; learning with honest statistics (power-aware bandit, no daily-peeking K=2 dashboards, no cross-tenant pooling). Test: A/A false-winner rate and per-tenant lift; pass only on measured lift, since 'self-learning' dashboards give 52-62% false winners (rejected.2026-10-17.k2-dashboards).",
+   "evidence": "T RET-57/58, RET-08; ledger LRN-09, CMP-01; rejected.2026-10-17.cross-tenant-pooling."
+  },
+  {
+   "gap": "UX honesty: stale global tour on every non-builder page, clipped primary button at 1280 px, unlabelled sample data in AI QA and Alerting, empty tables with no CTA, ten accordions with buried call settings, default to the harder agent type, US-centric templates and PII list (no Aadhaar/PAN), transcriber hidden behind two radios",
+   "how_vp_beats": "Empty states with a CTA, Sample labels, page-scoped tours, a stated reason on disabled buttons, India-shaped templates (renewal, payment reminder), Aadhaar/PAN in PII, a visible transcriber choice. Test: task-failure counts on a scripted first-run walk at 1280 px and phone width, VP vs the screenshots listed.",
+   "evidence": "W section 13; png/21-knowledgeBase.png, png/46-quality-assurance.png, png/24-batch-create-shot.png, png/03-create-agent-dialog.png; decision.2026-10-21.wt-synthesis-must-be-changes item D."
+  },
+  {
+   "gap": "Reliability and incident communication: 12 incidents in 6 months (6 major); 2026-09-05 about 6 h of undetected degradation and a 39-minute gap to the first public post; 2026-09-16 about 22% of calls failed for 43 minutes",
+   "how_vp_beats": "A detection and disclosure target (queue monitoring, per-call failure alerts to clients within minutes, carrier failover that no vendor shows). This is a design commitment, not a proven win; VP has no production fleet yet. Test: fault-injection drills with time-to-detect and time-to-notify.",
+   "evidence": "T RET-38/39; account-phase synthesis (no vendor shows carrier failover)."
+  }
+ ],
+ "numbers": [
+  {
+   "metric": "Retell ARR (vendor-claimed, job post 2026-10-14)",
+   "value": "USD 80M, 50 staff, valuation over USD 1.5B",
+   "grade": "vendor-claimed",
+   "evidence": "research/2026-10-20/teardown/retell/claims.json RET-30"
+  },
+  {
+   "metric": "API surface",
+   "value": "109 operations, 319 schemas; SDK 6.2.8 identical to live OpenAPI rev 2026-10-19-becf7f8",
+   "grade": "observed",
+   "evidence": "research/2026-10-20/account-phase/retell/claims.json RAP-03; teardown RET-13"
+  },
+  {
+   "metric": "Headline price range",
+   "value": "USD 0.07-0.31/min (not a ceiling: fast-tier LLM to 0.64, S2S to 0.38)",
+   "grade": "observed",
+   "evidence": "teardown claims.json RET-32/33"
+  },
+  {
+   "metric": "Infra line",
+   "value": "USD 0.055/min (about INR 5.2 at FX 95)",
+   "grade": "observed",
+   "evidence": "teardown RET-32; verify.md RET-37 correction"
+  },
+  {
+   "metric": "Dashboard default agent cost",
+   "value": "USD 0.134/min = 0.055 infra + 0.015 voice + 0.064 model (INR 12.7, before telephony)",
+   "grade": "displayed-by-vendor / inferred reconciliation",
+   "evidence": "walkthroughs/retell/report.md wt-retell-09; png/04-agent-builder-top.png"
+  },
+  {
+   "metric": "All-in INR per connected Indian minute, BYO Indian trunk, prompt up to 4k tokens",
+   "value": "8.3 / 11.4 / 13.6 (GPT-5 mini / calculator default / GPT-5.6 Terra); computed, not billed",
+   "grade": "inferred",
+   "evidence": "teardown/retell/pricing-allin.csv; RET-35"
+  },
+  {
+   "metric": "All-in INR if 6k prompt scales whole duration",
+   "value": "12.0-20.0",
+   "grade": "inferred",
+   "evidence": "pricing-allin.csv; RET-35 (transcript inflates scaling; untested on a real invoice)"
+  },
+  {
+   "metric": "All-in INR on Retell US numbers",
+   "value": "22.1-27.5 via Twilio; 31.6-37.0 via Telnyx",
+   "grade": "inferred",
+   "evidence": "pricing-allin.csv; RET-35"
+  },
+  {
+   "metric": "Retell vs Indian list price and VP target",
+   "value": "1.2-3.8x the 3.55-7 band; 2.8-6.8x VP's INR 2-3; inside the 8-18 band other vendors post",
+   "grade": "inferred",
+   "evidence": "verify.md RET-37 correction"
+  },
+  {
+   "metric": "Infra-line gross margin",
+   "value": "72-86% (compute assumed; excludes any LiveKit fees); calculator-default margin unknown",
+   "grade": "inferred",
+   "evidence": "verify.md RET-36 / RET-36b"
+  },
+  {
+   "metric": "Burst concurrency surcharge",
+   "value": "+USD 0.10/min for the whole call, ON by default (up to 3x, max 300 extra calls)",
+   "grade": "observed",
+   "evidence": "png/5x-settings.png; RET-34; RAP-05"
+  },
+  {
+   "metric": "Prompt tokens used by an empty prompt",
+   "value": "814 (834 on a Conversation Flow agent) of the 4,000-token billing threshold",
+   "grade": "displayed-by-vendor",
+   "evidence": "walkthroughs/retell/report.md wt-retell-10"
+  },
+  {
+   "metric": "Runaway-call exposure at defaults",
+   "value": "10 min silence limit = USD 1.34; 1 h cap = USD 8.04 at 0.134/min",
+   "grade": "inferred",
+   "evidence": "walkthroughs/retell/report.md wt-retell-29"
+  },
+  {
+   "metric": "Hosting",
+   "value": "Retell-operated hosts US-West only; legacy LiveKit web edge geo-routes Indian clients to Hyderabad",
+   "grade": "observed",
+   "evidence": "teardown RET-25, RET-61 (22 DoH lookups)"
+  },
+  {
+   "metric": "Indian locales",
+   "value": "6 of 63 (en-IN, hi, kn, mr, ta, ur); te-IN rejected; 0 Indian-accent voices in the dashboard picker (accent filter: American, British, Mexican)",
+   "grade": "observed",
+   "evidence": "RET-16; RAP-26/29; wt-retell-20..25"
+  },
+  {
+   "metric": "India compliance mentions",
+   "value": "0 TRAI/DLT/NCPR/DPDP in 338 docs pages; DNC off by default and skipped by batch",
+   "grade": "observed",
+   "evidence": "RET-42/43"
+  },
+  {
+   "metric": "Contact number handling",
+   "value": "'9000000001' stored as +19000000001; '09000000003' and '12345' stored verbatim; exact-string dedupe only",
+   "grade": "observed",
+   "evidence": "account-phase RAP-34"
+  },
+  {
+   "metric": "Disclosure default",
+   "value": "on for dashboard agents; absent for API-created agents",
+   "grade": "observed (runtime behaviour untested)",
+   "evidence": "RAP-19/20; RET-63"
+  },
+  {
+   "metric": "Support titles coded (688)",
+   "value": "telephony 226 (33%), tools 103, account/UI 99, billing 67; coding agreement 82% on n=40",
+   "grade": "measured",
+   "evidence": "research/2026-10-17/lanes/l4a-competitors/report.md section 6"
+  },
+  {
+   "metric": "Reliability, 2026-04-20 to 2026-10-20",
+   "value": "12 incidents, 6 major; 2026-09-16 about 22% of calls failed for 43 min; 2026-09-05 about 6 h undetected plus 39 min to public post",
+   "grade": "observed / inferred (detection lag)",
+   "evidence": "RET-38/39"
+  },
+  {
+   "metric": "Velocity",
+   "value": "80 retell-sdk releases in 6 months; 16 deprecation notices; 4 marketing launch posts (none since 08-24)",
+   "grade": "observed",
+   "evidence": "RET-40/41"
+  },
+  {
+   "metric": "Support hours",
+   "value": "9 AM-9 PM PST = 21:30-09:30 IST (22:30-10:30 after 2026-11-01)",
+   "grade": "observed",
+   "evidence": "RET-48"
+  },
+  {
+   "metric": "Memory",
+   "value": "one rewritten brief under 2,000 characters per phone number; read ON, update OFF at USD 0.005/run",
+   "grade": "observed",
+   "evidence": "RET-57; RAP-32; png/76-workflow-tab.png"
+  },
+  {
+   "metric": "Time to browser-testable agent",
+   "value": "about 4 clicks, 0 required fields",
+   "grade": "inferred",
+   "evidence": "wt-retell-05"
+  },
+  {
+   "metric": "Retell reply gap on Indian PSTN",
+   "value": "not measured; prediction p50 1.6-2.4 s, p90 above 2.8 s (p=0.6); vendor claims about 600 ms; a forum thread reports 3,000 ms",
+   "grade": "unknown (prediction + vendor-claimed)",
+   "evidence": "RET-P09; RET-28; l4a table row 23"
+  }
+ ]
+}

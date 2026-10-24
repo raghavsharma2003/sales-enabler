@@ -1,0 +1,50 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.whatsapp-memory-seam",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "WhatsApp feeds memory through the same gates as a call. memory.extract_thread {threadId} (system actor; the channels module calls it when a thread goes quiet or its 24-hour window ends) reads the thread's messages since a per-thread cursor (memory_thread_cursor).\n- Inbound person messages are the person's lines; outbound messages (her, templates, team members) are not.\n- A quote must be an exact substring of ONE inbound message, and the fact keeps span {messageId, start, end}.\n- The gates are the call's: refused categories, basis, purpose (the connection's agent), personal agreement, undo or review.\n- The forget phrases apply too: keep nothing, or forget the person now.\n- Only a verified sender (channel_thread.contact_id) is ever remembered; an opted-out thread (STOP, or a WhatsApp withdrawal in consent_record) never is.\n- Facts are marked channel 'whatsapp' and live only in the tenant's rows; no pooled path reads memory (Meta s.4.7).\n- storeFacts is the one write path for calls and threads.\n- The model is asked outside the transaction; a changed thread commits nothing; a failed run keeps the cursor.",
+   "rationale": "The integrator asked for the seam for the channels builder: one contact timeline, one memory, the same exact-quote and span rule.",
+   "reverse_if": "Threads need memory while the conversation is still going (not after it goes quiet): then extract per inbound message with a short debounce. Or Meta's terms change on using message content for AI features: then switch the channel off by default per workspace.",
+   "path": "product/server/modules/memory/whatsapp.ts"
+  },
+  {
+   "id": "measure.2026-10-24.whatsapp-memory-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-whatsapp.test.ts 4/4:\n(1) An inbound message proposes 'shaam 6 baje ke baad'. It is stored with channel 'whatsapp', its message id and the exact span. Her words and a paraphrase are dropped (2). The model sees PERSON and BUSINESS lines, and the next call's brief carries it.\n(2) The cursor: a second run with nothing new is 'no_new_messages' with 0 model calls; a new message is read alone, and old ones are not resent.\n(3) A sender not on file gets 'sender_not_verified' with 0 model calls; a WhatsApp withdrawal gives 'whatsapp_opted_out'. A health fact is refused and a relocation without agreement is dropped. 'Mere baare mein kuch yaad mat rakhna' forgets them (requested_via 'whatsapp') with 0 model calls.\n(4) A member actor and another workspace are refused, and the facts stay in the tenant.",
+   "n": 4,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test), channel fixtures in SQL, scripted model",
+   "path": "product/tests/memory-whatsapp.test.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.whatsapp-memory-tests",
+   "to": "decision.2026-10-24.whatsapp-memory-seam",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.whatsapp-memory-seam",
+   "to": "decision.2026-10-24.channels-seam",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.whatsapp-memory-seam",
+   "to": "rejected.2026-10-17.cross-tenant-pooling",
+   "relation": "constrained-by"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "whatsapp-memory-seam",
+   "details": "memory.extract_thread: WhatsApp messages propose facts through the call's gates (exact quote within one inbound message, span, verified sender only, never opted out, cursor), with storeFacts shared with calls; migration 0705. Verified: tests/memory-whatsapp.test.ts 4/4 plus memory suites and the gates. Not verified: the channels module calling it (its trigger is theirs to wire), and real WhatsApp text (emoji, voice-note transcripts)."
+  }
+ ]
+}

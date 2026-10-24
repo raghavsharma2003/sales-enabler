@@ -1,0 +1,383 @@
+{
+ "reconstructed_from": "runlogs/vps8-smoke.out step lines (smoke8.py stopped at usage.get before writing its JSON) + vps8-smoke8b",
+ "workspaceId": "6d74ea36-e34e-4c38-98bd-4ea5943e1e1d",
+ "steps": [
+  {
+   "step": "signup",
+   "pass": true,
+   "status": 201,
+   "note": "workspace 6d74ea36-e34e-4c38-98bd-4ea5943e1e1d created",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "login",
+   "pass": true,
+   "status": 200,
+   "note": "signed in with a fresh session cookie",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "me",
+   "pass": true,
+   "status": 200,
+   "note": "workspace 'Smoke Test Co' plan base status active; member 'Smoke Tester' role owner; via session",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "tools",
+   "pass": true,
+   "status": 200,
+   "note": "241 tools; the 20 this smoke uses are all listed",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "wallet",
+   "pass": true,
+   "status": 200,
+   "note": "balance 5000000 milli (INR 5000.0), state ok",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "invoice.get (statement shows the credit)",
+   "pass": true,
+   "status": 200,
+   "note": "money in: Trial credit ₹5,000.00; cost ₹0.00; period {\"from\": \"2026-10-01\", \"to\": \"2026-10-24\"}",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "wallet caps (the product's own limits)",
+   "pass": true,
+   "status": 200,
+   "note": "Workspace daily cap: ₹0 of ₹5,000 spent today. New calls stop at the cap; calls already running finish. It res; Workspace in-flight limit: At most ₹2,000 can be held at once for calls in progress (₹0 now). New calls wait u",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "guided start reads",
+   "pass": true,
+   "status": "200/200/200/200",
+   "note": "no onboarding tool at 9b34ff7: web/src/pages/start.tsx reads agent.list, call.search, contact.list, campaign.list; all empty {'agents': 0, 'calls': 0, 'contacts': 0, 'campaigns': 0}",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "brief.today (Today)",
+   "pass": true,
+   "status": 200,
+   "note": "keys ['asOf', 'changed', 'issues', 'liveCampaigns', 'needsTap', 'since', 'spendToday', 'wallet']",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "template.list",
+   "pass": true,
+   "status": 200,
+   "note": "16 templates; using 'insurance-renewal' (the reply-gap / verify_calls template)",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "agent.create (template)",
+   "pass": true,
+   "status": 200,
+   "note": "draft 8e99899c-4422-4672-8d16-f252466c723c; compiles True; lint 0; stackChosen True; review {\"mode\": \"rules_only\", \"label\": \"AI-honesty review: rules only (no model configured)\", \"findings\": []}",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "brief.edit (adopt business name, as the web does after Create draft)",
+   "pass": true,
+   "status": 200,
+   "note": "0 change(s)",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "agent.get (read back)",
+   "pass": true,
+   "status": 200,
+   "note": "name 'Smoke Agent', stack v2-flashlite, voice None, compiles True, brief 8424 bytes, lint 0 (0 blocking)",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "brief.compile (the one compile)",
+   "pass": true,
+   "status": 200,
+   "note": "hash c105b9c5bd71",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "voice.set (default voice of the default stack)",
+   "pass": true,
+   "status": 200,
+   "note": "Despina",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "knowledge.ingest",
+   "pass": true,
+   "status": 200,
+   "note": "source 0bf453f0-ebfa-421a-a98d-e110e60c6b5a; {\"title\": \"smoke-note.txt\", \"format\": \"text\", \"pages\": null, \"spanCount\": 1, \"duplicate\": false, \"next\": \"Review the passages and approve the ones the agent may",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "knowledge passages approved",
+   "pass": true,
+   "status": "200/200",
+   "note": "1 passage(s) approved",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "test.simulate",
+   "pass": false,
+   "status": 409,
+   "note": "caller default:busy_20s: no model is configured for simulate on this server",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "test.chat (one exchange)",
+   "pass": false,
+   "status": 409,
+   "note": "no model is configured for simulate on this server",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "source.upload",
+   "pass": true,
+   "status": 200,
+   "note": "upload 2993167c-5eae-413f-9432-19dadf3c135a; source c26af095-a3ca-4f74-9e74-1e1fb2b7fbcb",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "source.map (preview)",
+   "pass": true,
+   "status": 200,
+   "note": "rows 3, phones {\"ok\": 3, \"duplicatesInFile\": 0, \"rejected\": {}}, columns ['name', 'phone', 'language', 'attribute'], preview rows 3",
+   "at": "09:43:40",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "source.commit",
+   "pass": true,
+   "status": 200,
+   "note": "ran at once (risk draft, no approval card); audience baf0c6fc-d3ba-41c3-b4a0-9017064ee2d2; {\"receiptId\": \"aa66676f-5aba-4f64-86f9-2f754042c5b9\", \"counts\": {\"rows\": 3, \"new\": 3, \"updated\": 0, \"unchanged\": 0, \"duplicate_in_file\": 0, \"tombstoned\": 0, \"su",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "contact.list after import",
+   "pass": true,
+   "status": 200,
+   "note": "3 contacts: Arjun Sethi +919000000023, Meera Pillai +919000000022, Rohan Kapoor +919000000021",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "version.publish (approved)",
+   "pass": true,
+   "status": 200,
+   "note": "card 'Publish Smoke Agent, version 1 (Smoke version 1). Voice: Azure speech recognition + Gemini 3.5 Flash-Lite + Gemini voice. No practice call has been run. This is the first version. AI-honesty review: rules only (no model configured).'; version bc40d4c2-96d6-4976-8379-b339c09088b0",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "campaign.draft (hours, retries, cap)",
+   "pass": true,
+   "status": 200,
+   "note": "campaign e58c550b-0f23-462f-b915-865d8b870228, policy v1, warnings []",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "campaign.get",
+   "pass": true,
+   "status": 200,
+   "note": "state draft; cap 500000; retry {\"gapsMin\": [120, 1440], \"pattern\": \"standard\", \"retryOn\": [\"busy\", \"no_answer\",; 2 launch blocker(s): You need a 1600-series number. Regulated businesses must call customer; Nobody on this list has values for renewal due, premium, which the age",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "campaign.estimate",
+   "pass": true,
+   "status": 200,
+   "note": "{\"range\": \"₹6.60 to ₹16.49 (incl. GST)\", \"perMinute\": \"₹2.26 a connected minute\", \"suggestedCap\": \"₹100\", \"note\": \"fields ending InrMilli are thousandths of a rupee\"}",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "campaign.launch: approval card read, NOT approved",
+   "pass": true,
+   "status": 202,
+   "note": "card: 'Launch the campaign Smoke campaign: dial its audience under the approved policy and agent version' (risk external); not approved",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "GET /v1/actions (the card waits)",
+   "pass": true,
+   "status": 200,
+   "note": "1 proposed: campaign.launch",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "campaign still a draft",
+   "pass": true,
+   "status": 200,
+   "note": "state draft",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "Operator chat",
+   "pass": false,
+   "status": 200,
+   "note": "no answer; error: The assistant's brain did not answer (no model is configured for operator on this server). Nothing was changed by this message; try again or switch brain.; frames ['message', 'error', 'done']",
+   "at": "09:43:41",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "browser test call (placed and closed)",
+   "pass": true,
+   "status": 200,
+   "note": "83e5fd2e-de83-4e01-b903-3dc9b9a95803: v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina, 111 s, end caller_hung_up, agent/caller turns 7/7, reply gaps [None, 2150, 1924, 611, 2162, 2227, 2407]",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "call log: transcript",
+   "pass": true,
+   "status": 200,
+   "note": "13 transcript lines; first agent text 'मैं Smoke Test Co की AI असिस्टेंट हूँ। नमस्ते स्मोके, मैं रिया हूँ Smoke Test Co से आपकी A'",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "call log: recording link answers through :8443",
+   "pass": false,
+   "status": null,
+   "note": "no link: No recording was made on this call.",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "call log: analysis and outcome",
+   "pass": false,
+   "status": 200,
+   "note": "analysis not_configured (no model is configured for analysis); outcome None; reason code END_HUNG_UP_MID",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "call log: cost",
+   "pass": true,
+   "status": 200,
+   "note": "INR 2.23 in 20 lines: {\"ears\": 714, \"voice\": 943, \"brain\": 568}",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "settings: team/roles (member.list)",
+   "pass": true,
+   "status": 200,
+   "note": "members 1; Smoke Tester (owner)",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "settings: API keys (apikey.list)",
+   "pass": true,
+   "status": 200,
+   "note": "keys 0",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "settings: webhooks (webhook.list)",
+   "pass": true,
+   "status": 200,
+   "note": "webhooks 0",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "settings: integrations (integration.list)",
+   "pass": true,
+   "status": 200,
+   "note": "integrations 0",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": "settings: billing statement (invoice.get)",
+   "pass": true,
+   "status": 200,
+   "note": "byComponent 3",
+   "at": "09:45:36",
+   "run": "vps8-smoke"
+  },
+  {
+   "step": ":8443 / without auth",
+   "pass": true,
+   "status": 401,
+   "note": "basic auth demanded",
+   "at": "09:48:19",
+   "run": "vps8-smoke8b"
+  },
+  {
+   "step": ":8443 / with auth (the app)",
+   "pass": true,
+   "status": 200,
+   "note": "title 'Vyakti · व्यक्ति'",
+   "at": "09:48:19",
+   "run": "vps8-smoke8b"
+  },
+  {
+   "step": ":8443 JS and CSS assets",
+   "pass": true,
+   "status": "200/200",
+   "note": "/assets/main-HCMNWGW2.js 215372 bytes, /assets/main-XJNCFNIC.css 40362 bytes",
+   "at": "09:48:19",
+   "run": "vps8-smoke8b"
+  },
+  {
+   "step": ":8443 /v1/health",
+   "pass": true,
+   "status": 200,
+   "note": "control plane through Caddy",
+   "at": "09:48:19",
+   "run": "vps8-smoke8b"
+  },
+  {
+   "step": ":8443 /rt/v1/health",
+   "pass": true,
+   "status": 200,
+   "note": "voice runtime through Caddy",
+   "at": "09:48:19",
+   "run": "vps8-smoke8b"
+  }
+ ],
+ "summary": {
+  "steps": 46,
+  "pass": 41,
+  "fail": 5
+ },
+ "smokeCall": {
+  "conversationId": "83e5fd2e-de83-4e01-b903-3dc9b9a95803"
+ },
+ "note": "smoke8.py crashed at its last read (usage.get, not in the brief: it answers a list) before writing its own JSON; the step lines above are its printed records (runlogs/vps8-smoke.out). The :8443 checks it had not reached ran in vps8-smoke8b with curl. The smoke was not re-run."
+}

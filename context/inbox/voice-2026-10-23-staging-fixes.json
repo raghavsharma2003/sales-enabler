@@ -1,0 +1,28 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-23.voice-fixed-disclosure-line",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "When her first sentence does not say she is an AI, the runtime's RD1 fallback prefixes a fixed, speakable line from shared/safety/disclosure.json, built from the brand's spoken name, in the call's language and her script. agent.opening.disclosureClause is guidance for the brief compiler and is never spoken. lexicon.ai_affirm recognises first-person disclosure in Roman, Devanagari, English, Tamil and Bengali, and refuses mentions ('about the assistant') and denials. Shared vectors keep the Python and TS sides in parity",
+   "rationale": "Staging 2026-10-23: 17 of 18 openings read the template guidance 'that you are its AI assistant, mentioned in passing' aloud, because the fallback prefixed the clause verbatim and affirms_ai missed the brain's Devanagari disclosure.",
+   "reverse_if": "agent configs start carrying a speakable, owner-approved disclosure sentence (then the fallback may use it, after a lint that it affirms); or a language is added that has no checked line (then add one rather than use the Hinglish fallback)"
+  },
+  {
+   "id": "measure.2026-10-23.ingest-refuses-whole-batch-for-one-field",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Confirmed: calls' validateRuntimeBatch refuses a whole event batch when one turn's tone exceeds 50 characters ('events[0].tone: must be at most 50 characters'), and the runtime accepted tone notes up to 80. This explains the 2 dropped v2-mai batches on staging. The runtime now trims every limited field to ingest's limits before sending",
+   "n": 1,
+   "method": "A batch of two turns, one with a 79-character tone, through product/server/modules/calls/ingest.ts validateRuntimeBatch, 2026-10-23. Regression: product/voice/tests/test_event_limits.py, which runs the runtime's real batches through the same validator when node and tsx are present.",
+   "path": "product/voice/vpvoice/events.py",
+   "value": "one over-long field drops the whole batch; runtime trims to fit"
+  }
+ ],
+ "edges": [],
+ "events": []
+}

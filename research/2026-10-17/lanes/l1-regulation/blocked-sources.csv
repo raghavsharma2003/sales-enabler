@@ -1,0 +1,7 @@
+host,failure,what_it_would_have_given
+egazette.gov.in,TLS chain verification failure via proxy (curl 60 / Playwright: 'unable to verify the first certificate'; browser nav 502),DPDP Rules G.S.R. 846(E); Telecom Act 2023 gazette
+meity.gov.in,Akamai 'Access Denied' to headless browser; static HTML is a JS shell,"DPDP Rules, IT Rules 2026 text"
+rbi.org.in / rbidocs.rbi.org.in,CAPTCHA ('What code is in the image?') - not attempted to bypass,RBI/2026-27/223-231 recovery directions; RBC Directions 2025
+eservices.dot.gov.in,HTTP 403,VNO authorisation fee schedule
+indiacode.nic.in,HTTP 504,Telecommunications Act 2023 as enacted
+dot.gov.in,404 on guessed path; no document found,Telecom Act / OSP guidelines

@@ -1,0 +1,5 @@
+stratum,label,register_listed,register_valid_today,in_reach_firms_low,in_reach_firms_mode,in_reach_firms_high,in_reach_basis,motor_share_among_intermediaries,health_share,life_share,active_targets,wave1,firm_weight_ABC_mode
+A,small/mid retail brokers,874,696,130,200,260,assumption: 15-30% of 874 brokers are retail-focused and below platform scale (l3v: 791 direct brokers are mostly commercial lines),0.893 (A+D together),0.869 (A+D),0.57 (A+D),6,5,0.211
+B,non-bank corporate agents,448,391,175,250,391,computed: valid non-bank CAs by name heuristic (other non-bank = low; + NBFC/finance CAs = high); NBFC CAs mostly sell credit-linked cover to their own borrowers,0.107,0.115,0.411,5,4,0.264
+C,IMFs,940,496,496,496,799,computed: register entries with validity on/after 2026-10-17 (low/mode); IRDAI Handbook T98 count at 31-03-2025 = 799 (high),not separately reported (inside 'Others' in T103),0.016,0.019,6,4,0.524
+D,large brokers and PoSP platforms,(inside A's broker count),,12,20,30,assumption: the named platforms and group/OEM-linked brokers in targets.csv plus peers,(see A),(see A),(see A),3,2,excluded from firm weights

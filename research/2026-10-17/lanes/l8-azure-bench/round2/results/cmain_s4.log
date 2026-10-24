@@ -1,0 +1,74 @@
+B_seg800_fast P1-pass1 P1_t01 lat 1455.6 stt 1020.6 ttft 358.0 tts 63.6 cut 0 spec 0 / 0 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | धन्यवाद,
+B_seg800_fast P1-pass1 P1_t02 lat 1319.3 stt 975.8 ttft 297.4 tts 40.2 cut 0 spec 0 / 0 | हम। | ठीक है,
+B_seg800_fast P1-pass1 P1_t03 lat 1362.8 stt 1021.5 ttft 303.9 tts 37.1 cut 0 spec 0 / 0 | प्रीमियम कितना आएगा इस बार? ला | समझ गया,
+B_seg800_fast P1-pass1 P1_t04 lat 1452.8 stt 1028.7 ttft 277.9 tts 88.6 cut 0 spec 0 / 0 | सॉरी सॉरी एक सेकंड बीच में बोल | आपकी claim limit पूरे साल के ल
+B_seg800_fast P1-pass1 P1_t05 lat 1394.1 stt 999.3 ttft 341.6 tts 43.3 cut 0 spec 0 / 0 | ओके? | ठीक है,
+B_seg800_fast P1-pass1 P1_t06 lat 1333.3 stt 973.7 ttft 325.4 tts 30.1 cut 0 spec 0 / 0 | वेट, आप रोबॉट हो क्या? एआई हो? | जी हाँ,
+B_seg800_fast P1-pass1 P1_t08 lat 1272.8 stt 958.7 ttft 278.6 tts 30.1 cut 0 spec 0 / 0 | ठीक है, कल 3:30 बजे कॉल कर लेन | समझ गया,
+B_seg800_fast P1-pass1 P1_t09 lat 1379.1 stt 1004.4 ttft 321.2 tts 38.3 cut 0 spec 0 / 0 | बीटी डब्ल्यू आज दिल्ली का एक्स | माफ़ कीजिए,
+B_seg800_fast P1-pass1 P1_t10 lat 1311.6 stt 906.4 ttft 375.6 tts 19.2 cut 0 spec 0 / 0 | हाँ और रिन्यूअल का लिंक, व्हाट | जी हाँ,
+B_seg800_fast P1-pass1 P1_t11 lat 1403.9 stt 1044.6 ttft 314.6 tts 38.3 cut 0 spec 0 / 0 | ओके, थैंक यू बाई। | धन्यवाद,
+B_seg800_fast P2-pass1 P2_t01 lat 1277.2 stt 953.5 ttft 276.0 tts 43.3 cut 0 spec 0 / 0 | हाँ, हैलो। के बोलक बानी। का बा | शुक्रिया,
+B_seg800_fast P2-pass1 P2_t02 lat 1343.3 stt 1015.5 ttft 282.2 tts 36.0 cut 0 spec 0 / 0 | हाँ। | ठीक है,
+B_seg800_fast P2-pass1 P2_t03 lat 1311.8 stt 904.5 ttft 355.8 tts 40.3 cut 0 spec 0 / 0 | हमरा बाबूजी के भी एह में जोड़ल | जी हाँ,
+B_seg800_fast P2-pass1 P2_t04 lat 1322.1 stt 1009.6 ttft 262.5 tts 30.3 cut 0 spec 0 / 0 | रुकी रुकी पहले ही बताएं 1,50,0 | जी हाँ,
+B_seg800_fast P2-pass1 P2_t05 lat 1414.6 stt 1028.5 ttft 360.8 tts 21.2 cut 0 spec 0 / 0 | ठीक बात। | शुक्रिया,
+B_seg800_fast P2-pass1 P2_t06 lat 1322.6 stt 972.5 ttft 329.6 tts 13.0 cut 0 spec 0 / 0 | प्रीमियम 25,000 से ज़्यादा हुई | समझ गया,
+B_seg800_fast P2-pass1 P2_t08 lat 1438.4 stt 972.3 ttft 389.5 tts 15.9 cut 0 spec 0 / 0 | रउआ मशीन हई की आदमी। सच सच बता | मैं Suraksha Health की AI assi
+B_seg800_fast P2-pass1 P2_t09 lat 1431.3 stt 1064.6 ttft 331.9 tts 26.1 cut 0 spec 0 / 0 | परसों 3:30 बजे फ़ोन करें, वो घ | ठीक है,
+B_seg800_fast P2-pass1 P2_t10 lat 1386.6 stt 977.7 ttft 358.6 tts 26.0 cut 0 spec 0 / 0 | अच्छा कि बताएं आज सिवान में बर | माफ़ कीजिए,
+B_seg800_fast P2-pass1 P2_t11 lat 1414.6 stt 967.1 ttft 398.8 tts 37.2 cut 0 spec 0 / 0 | ठीक बा राखत बानी। प्रणाम। | धन्यवाद,
+B_seg800_fast P4-pass1 P4_t01 lat 1353.4 stt 1014.4 ttft 316.4 tts 19.0 cut 2 spec 0 / 0 | हाँ। हैलो कौन? ज़रा ज़ोर से बो | समझ गई,
+B_seg800_fast P4-pass1 P4_t02 lat 1221.6 stt 919.6 ttft 286.7 tts 11.0 cut 0 spec 0 / 0 | हाँ। | धन्यवाद,
+B_seg800_fast P4-pass1 P4_t03 lat 1486.1 stt 1041.5 ttft 307.7 tts 71.5 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | आपकी policy 15 नवंबर 2026 को ख
+B_seg800_fast P4-pass1 P4_t04 lat 1361.1 stt 1016.6 ttft 309.6 tts 28.1 cut 1 spec 0 / 0 | पिछली बार। 25,000 नहीं, नहीं।  | जी हाँ,
+B_seg800_fast P4-pass1 P4_t05 lat 1332.6 stt 981.4 ttft 319.8 tts 12.0 cut 0 spec 0 / 0 | बेटा, रुको, इतना जल्दी जल्दी म | जी,
+B_seg800_fast P4-pass1 P4_t06 lat 1281.2 stt 956.8 ttft 296.5 tts 26.1 cut 0 spec 0 / 0 | तुम मशीन हो क्या आजकल फ़ोन पे  | जी,
+B_seg800_fast P4-pass1 P4_t08 lat None stt None ttft None tts None cut 0 spec 0 / 0 |  | 
+B_seg800_fast P4-pass1 P4_t09 lat 1297.5 stt 953.7 ttft 321.3 tts 18.0 cut 1 spec 0 / 0 | सोमवार को। 3:30 बजे मेरे बेटे  | ठीक है,
+B_seg800_fast P4-pass1 P4_t10 lat 1382.9 stt 1022.0 ttft 326.5 tts 13.0 cut 0 spec 0 / 0 | अच्छा बेटा, तुमने खाना खा लिया | माफ़ कीजिए,
+B_seg800_fast P4-pass1 P4_t11 lat None stt 966.5 ttft None tts None cut 1 spec 0 / 0 | अच्छा। ठीक है, भगवान भला करें। | 
+B_seg800_fast P4pause-1 P4_t03 lat None stt 1010.7 ttft None tts None cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | 
+B_seg800_fast P4pause-1 P4_t03 lat 1475.1 stt 1057.7 ttft 355.7 tts 46.4 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | बिल्कुल,
+B_seg800_fast P4pause-1 P4_t03 lat 1360.9 stt 1017.5 ttft 323.3 tts 12.2 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | धन्यवाद,
+B_seg800_fast P4pause-1 P4_t03 lat 1339.9 stt 973.7 ttft 324.7 tts 17.0 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | समझ गई,
+B_seg800_fast P4pause-1 P4_t03 lat 1370.9 stt 1057.7 ttft 280.7 tts 26.1 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | धन्यवाद,
+cold synths created during run: 0
+B_seg800_fast P1-pass2 P1_t01 lat 1348.5 stt 1024.8 ttft 297.2 tts 20.2 cut 0 spec 0 / 0 | हाँ, हैलो। हाँ, बोलिए कौन बोल  | धन्यवाद,
+B_seg800_fast P1-pass2 P1_t02 lat 1299.5 stt 1013.4 ttft 248.8 tts 32.2 cut 0 spec 0 / 0 | हम। | ठीक है,
+B_seg800_fast P1-pass2 P1_t03 lat 1413.8 stt 1064.5 ttft 326.9 tts 14.1 cut 0 spec 0 / 0 | प्रीमियम कितना आएगा इस बार? ला | समझ गया,
+B_seg800_fast P1-pass2 P1_t04 lat 1419.5 stt 1059.7 ttft 310.6 tts 43.6 cut 0 spec 0 / 0 | सॉरी सॉरी एक सेकंड बीच में बोल | ध्यान दें,
+B_seg800_fast P1-pass2 P1_t05 lat 1326.3 stt 973.6 ttft 327.4 tts 17.9 cut 0 spec 0 / 0 | ओके? | ठीक है,
+B_seg800_fast P1-pass2 P1_t06 lat 1352.5 stt 998.9 ttft 302.4 tts 45.7 cut 0 spec 0 / 0 | वेट, आप रोबॉट हो क्या? एआई हो? | जी हाँ,
+B_seg800_fast P1-pass2 P1_t08 lat 1336.1 stt 986.5 ttft 319.8 tts 23.2 cut 0 spec 0 / 0 | ठीक है, कल 3:30 बजे कॉल कर लेन | समझ गया,
+B_seg800_fast P1-pass2 P1_t09 lat 1506.3 stt 1138.2 ttft 328.5 tts 25.2 cut 0 spec 0 / 0 | बीटी डब्ल्यू आज दिल्ली का एक्स | माफ़ कीजिए,
+B_seg800_fast P1-pass2 P1_t10 lat 1413.9 stt 993.5 ttft 378.8 tts 36.2 cut 0 spec 0 / 0 | हाँ और रिन्यूअल का लिंक, व्हाट | जी हाँ,
+B_seg800_fast P1-pass2 P1_t11 lat 1478.3 stt 1080.8 ttft 368.1 tts 19.0 cut 0 spec 0 / 0 | ओके, थैंक यू बाई। | धन्यवाद,
+B_seg800_fast P2-pass2 P2_t01 lat 1298.9 stt 946.4 ttft 299.2 tts 44.3 cut 0 spec 0 / 0 | हाँ, हैलो। के बोलक बानी। का बा | शुक्रिया,
+B_seg800_fast P2-pass2 P2_t02 lat 1357.9 stt 1027.7 ttft 292.6 tts 36.2 cut 0 spec 0 / 0 | हाँ। | धन्यवाद,
+B_seg800_fast P2-pass2 P2_t03 lat 1326.6 stt 930.4 ttft 359.0 tts 14.1 cut 0 spec 0 / 0 | हमरा बाबूजी के भी एह में जोड़ल | जी हाँ,
+B_seg800_fast P2-pass2 P2_t04 lat 1367.7 stt 1019.7 ttft 321.9 tts 19.0 cut 0 spec 0 / 0 | रुकी रुकी पहले ही बताएं 1,50,0 | जी हाँ,
+B_seg800_fast P2-pass2 P2_t05 lat 1403.8 stt 1053.4 ttft 313.7 tts 31.2 cut 0 spec 0 / 0 | ठीक बात। | शुक्रिया,
+B_seg800_fast P2-pass2 P2_t06 lat 1343.3 stt 1018.4 ttft 301.3 tts 16.0 cut 0 spec 0 / 0 | प्रीमियम 25,000 से ज़्यादा हुई | समझ गई,
+B_seg800_fast P2-pass2 P2_t08 lat 1288.5 stt 909.3 ttft 328.3 tts 11.0 cut 0 spec 0 / 0 | रउआ मशीन हई की आदमी। सच सच बता | मैं Suraksha Health की AI assi
+B_seg800_fast P2-pass2 P2_t09 lat 1343.8 stt 973.7 ttft 351.2 tts 15.0 cut 0 spec 0 / 0 | परसों 3:30 बजे फ़ोन करें, वो घ | ठीक है,
+B_seg800_fast P2-pass2 P2_t10 lat 1419.9 stt 1000.8 ttft 350.6 tts 41.2 cut 0 spec 0 / 0 | अच्छा कि बताएं आज सिवान में बर | मुझे मौसम की जानकारी नहीं है,
+B_seg800_fast P2-pass2 P2_t11 lat 1336.1 stt 1013.3 ttft 294.0 tts 18.0 cut 0 spec 0 / 0 | ठीक बा राखत बानी। प्रणाम। | धन्यवाद,
+B_seg800_fast P4-pass2 P4_t01 lat 1328.6 stt 1011.5 ttft 289.2 tts 22.2 cut 2 spec 0 / 0 | हाँ। हैलो कौन? ज़रा ज़ोर से बो | समझ गई,
+B_seg800_fast P4-pass2 P4_t02 lat 1254.1 stt 942.5 ttft 287.9 tts 20.0 cut 0 spec 0 / 0 | हाँ। | धन्यवाद,
+B_seg800_fast P4-pass2 P4_t03 lat 1475.8 stt 991.6 ttft 282.1 tts 121.9 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | आपकी policy 15 नवंबर 2026 को r
+B_seg800_fast P4-pass2 P4_t04 lat 1362.1 stt 1013.7 ttft 312.8 tts 30.1 cut 1 spec 0 / 0 | पिछली बार। 25,000 नहीं, नहीं 2 | जी हाँ,
+B_seg800_fast P4-pass2 P4_t05 lat 1320.7 stt 982.6 ttft 296.3 tts 31.1 cut 0 spec 0 / 0 | बेटा, रुको, इतना जल्दी जल्दी म | ठीक है,
+B_seg800_fast P4-pass2 P4_t06 lat 1332.3 stt 984.7 ttft 298.2 tts 39.3 cut 0 spec 0 / 0 | तुम मशीन हो क्या आजकल फ़ोन पे  | जी हाँ,
+B_seg800_fast P4-pass2 P4_t08 lat None stt None ttft None tts None cut 0 spec 0 / 0 |  | 
+B_seg800_fast P4-pass2 P4_t09 lat 1332.6 stt 991.7 ttft 304.5 tts 28.1 cut 0 spec 0 / 0 | सोमवार को। 3:30 बजे मेरे बेटे  | ठीक है,
+B_seg800_fast P4-pass2 P4_t10 lat 1467.5 stt 1008.7 ttft 356.9 tts 71.5 cut 0 spec 0 / 0 | अच्छा बेटा, तुमने खाना खा लिया | मैं आपकी renewal में मदद कर रह
+B_seg800_fast P4-pass2 P4_t11 lat 1332.4 stt 982.7 ttft 329.9 tts 13.0 cut 1 spec 0 / 0 | अच्छा। ठीक है, भगवान भला करें। | धन्यवाद,
+B_seg800_fast P4pause-2 P4_t03 lat 1333.4 stt 1005.6 ttft 310.6 tts 12.0 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | समझ गई,
+B_seg800_fast P4pause-2 P4_t03 lat 1382.2 stt 1048.4 ttft 295.7 tts 23.4 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | ध्यान देने के लिए धन्यवाद,
+B_seg800_fast P4pause-2 P4_t03 lat 1363.0 stt 1002.7 ttft 315.5 tts 18.9 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | ध्यान देने के लिए धन्यवाद,
+B_seg800_fast P4pause-2 P4_t03 lat 1368.1 stt 1004.4 ttft 313.5 tts 34.1 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | ध्यान देने के लिए धन्यवाद,
+B_seg800_fast P4pause-2 P4_t03 lat 1342.1 stt 988.5 ttft 316.0 tts 30.1 cut 1 spec 0 / 0 | हमारी पॉलिसी। कब खत्म हो रही ह | समझ गई,
+cold synths created during run: 0
+cascade-main2-done
+all-done

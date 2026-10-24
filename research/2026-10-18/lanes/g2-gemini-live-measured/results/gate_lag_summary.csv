@@ -1,0 +1,7 @@
+vantage,model,responses,words,share_first_tx_after_first_audio,first_tx_minus_first_audio_p50_ms,first_tx_minus_first_audio_p90_ms,clause_gate_audio_played_p50_ms,clause_gate_audio_played_p90_ms,clause_gate_words_played_p50,clause_gate_words_played_p90,hold_needed_p50_ms,hold_needed_p90_ms,hold_needed_max_ms,share_words_late_hold0,share_words_late_hold200,share_words_late_hold500,responses_with_late_words_hold0
+india-centralindia-vm,gemini-2.5-flash-native-audio-latest,109,1355,0.0,-447.9,-344.2,0.0,305.3,0.0,0.82,0,0.0,0,0.0,0.0,0.0,0.0
+india-centralindia-vm,gemini-3.1-flash-live-preview,72,2010,0.0,-5.3,0.0,0.0,382.0,0.0,1.13,0.0,0.0,0,0.0,0.0,0.0,0.0
+india-centralindia-vm,gemini-3.8-live,223,3586,0.0,0.0,0.0,68.7,267.7,0.18,0.83,0,0.0,0,0.0,0.0,0.0,0.0
+sandbox-us-east-proxy,gemini-2.5-flash-native-audio-latest,158,2369,0.0,-580.9,-329.0,0.0,375.9,0.0,1.11,0.0,0.0,0,0.0,0.0,0.0,0.0
+sandbox-us-east-proxy,gemini-3.1-flash-live-preview,126,4106,0.0,-0.5,0.0,0.0,440.7,0.0,1.42,0.0,0.0,703.7,0.002,0.0,0.0,0.04
+sandbox-us-east-proxy,gemini-3.8-live,264,4554,0.0,0.0,0.0,22.1,259.1,0.07,0.81,0.0,0.0,0,0.0,0.0,0.0,0.0
