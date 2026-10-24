@@ -100,7 +100,9 @@ test('the window holds; a preview writes nothing; approval writes only matched r
 
   const stored = (await one<any>(pool, 'SELECT status, rows FROM outcome_import WHERE id = $1', [pv.result.importId]))!;
   assert.equal(stored.status, 'committed');
-  assert.doesNotMatch(JSON.stringify(stored.rows), new RegExp(`${near.national}|CUST-77|TX-|1200`), 'no phone, id, reference or amount stays on the import');
+  // Our own uuids are allowed (contact and call ids) and are masked first: a random uuid can hold "1200" (CI, 7bcdc7c).
+  const kept = JSON.stringify(stored.rows).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g, '<uuid>');
+  assert.doesNotMatch(kept, new RegExp(`${near.national}|CUST-77|TX-|1200`), 'no phone, id, reference or amount stays on the import');
   const list = await w.call('outcome.import.list', {});
   assert.equal(list.result.imports.find((i: any) => i.id === pv.result.importId).counts.disagreements, 1, 'disagreement is counted and visible');
 

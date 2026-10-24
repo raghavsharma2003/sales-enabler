@@ -108,7 +108,9 @@ class StackParity(unittest.TestCase):
     """product/shared/stacks.ts is the contract; this mirror must name the same stacks with the same components."""
     def test_same_stacks_and_combination_ids(self):
         with open(os.path.join(ROOT, 'product', 'shared', 'stacks.ts')) as f: src = f.read()
-        body = src[src.index('export const STACKS'):src.index('export function getStack')]
+        # The literals live in WRITTEN since the speed gate (f8448dd); STACKS maps them. Read whichever holds them.
+        start = src.index('const WRITTEN') if 'const WRITTEN' in src else src.index('export const STACKS')
+        body = src[start:src.index('export function getStack')]
         ts = {}
         for m in re.finditer(r"id:\s*'([^']+)'.*?kind:\s*'(\w+)'.*?components:\s*\{([^}]*)\}", body, re.S):
             comps = dict(re.findall(r"(\w+):\s*'([^']+)'", m.group(3)))

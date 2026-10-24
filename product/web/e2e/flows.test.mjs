@@ -1488,7 +1488,9 @@ test('Outcomes and checks: values, fields, judge and calibration as the server h
   await card.getByRole('button', { name: 'Change how it is judged' }).click();
   await card.getByLabel('Instructions').fill('A payment link sent and accepted counts as promised.');
   await card.getByRole('button', { name: 'Save as a new version' }).click();
-  await card.getByText('A payment link sent and accepted counts as promised.').waitFor({ timeout: 10000 });
+  // The saved rule renders in a blockquote only once the server's list carries the new judge. A bare getByText also
+  // matches the textarea (React mirrors its value into the text), which passed before the save committed (CI, 974a652).
+  await card.locator('blockquote', { hasText: 'A payment link sent and accepted counts as promised.' }).waitFor({ timeout: 10000 });
   const def = (await tool('outcome.list')).result.definitions.find(d => d.id === made.result.outcomeDefinitionId);
   assert.equal(def.judge.instructions, 'A payment link sent and accepted counts as promised.');
   assert.equal(def.calibration.status, 'uncalibrated', 'a new judge version starts uncalibrated');
