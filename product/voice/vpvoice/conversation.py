@@ -2,7 +2,7 @@
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
 import asyncio, contextlib, logging, re
-from . import brief, caller_state, judge, judge_event, names, rules, safety, ticket as tk, tools as tools_mod
+from . import brief, caller_state, judge, memory_use, judge_event, names, rules, safety, ticket as tk, tools as tools_mod
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -78,6 +78,7 @@ class Conversation:
         self.state = {'disclosed': False, 'asked_ai': False, 'crisis': False, 'crisis_lines_given': False, 'opt_out': False,
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
                       'identity_verified': False, 'caller_state': 'neutral',
+                      'memory_forgot': None, 'forget_ack_due': False, 'memory_used': False, 'keep_due': False, 'keep_asked': False,
                       'checkin': None}   # judge-only crisis check-in: None -> 'due' -> 'asked' -> 'answer' -> None
         self.signalled = set()           # one-shot events already emitted (crisis, recording, opt_out)
         self.judge_complete = None; self.judge_env = None; self.judge_raised = False; self.opt_out_confirm_due = False
@@ -91,7 +92,7 @@ class Conversation:
     # ---------------------------------------------------------------- prompt
     def system_messages(self):
         out = [{'role': 'system', 'content': self.t['brief']['text']}]
-        mem = tk.memory_block(self.t)
+        mem = memory_use.prompt_block(tk.memory_block(self.t), self.state['identity_verified'], self.state['memory_forgot'])   # memory_use.py: the gate
         if mem: out.append({'role': 'system', 'content': 'Memory brief for this person (from earlier calls):\n' + mem})
         out.append({'role': 'system', 'content': contact_rows(self.contact.get('facts') or {})})
         return out
@@ -420,6 +421,14 @@ class Conversation:
         if clean.strip().endswith('?') and not sig['asksIfAi']:
             self.sink.emit('moment', kind='question', atMs=e_ms, note=clean[:120])
         self.state['asked_ai'] = sig['asksIfAi']
+        fk = memory_use.forget_kind(clean)
+        if fk and self.state['memory_forgot'] != 'all':
+            first = self.state['memory_forgot'] is None
+            self.state['memory_forgot'] = fk; self.state['forget_ack_due'] = True; self.state['keep_due'] = False
+            if first or fk == 'all': self.sink.emit('moment', kind='forget_request', atMs=e_ms, note=fk)
+        elif (not self.state['keep_asked'] and not self.state['memory_forgot'] and not self.state['crisis']
+              and memory_use.keep_ask_allowed(self.agent, self.no_marketing) and memory_use.personal_detail(clean, sig)):
+            self.state['keep_due'] = True
         her = [t for t in self.trace.turns if t.get('speaker') == 'agent'][-3:]
         self.state['caller_state'] = caller_state.read([t['text'] for t in self.transcript if t['speaker'] == 'caller'][-3:],
                                                        cut_ins=sum(1 for t in her if t.get('interrupted')))
@@ -459,6 +468,11 @@ class Conversation:
         if not self.state['disclosed'] and any(safety.affirms_ai(s, clause) for s in draft.sentences):
             self.disclosure_tries += 1
             if safety.affirms_ai(text or '', clause) or self.disclosure_tries >= 2: self.state['disclosed'] = True
+        if text:
+            if self.state['forget_ack_due']: self.state['forget_ack_due'] = False         # the acknowledgement had its turn
+            if self.state['keep_due']: self.state['keep_due'] = False; self.state['keep_asked'] = True   # offered once per call
+            if (self.state['identity_verified'] and not self.state['memory_forgot'] and not self.state['memory_used']
+                    and memory_use.used(text, tk.memory_block(self.t))): self.state['memory_used'] = True
         if self.state['checkin'] == 'answer': self.state['checkin'] = None        # the check-in round is over
         elif self.state['checkin'] == 'due' and draft.checkin and text: self.state['checkin'] = 'asked'
         self.state['asked_ai'] = False

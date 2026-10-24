@@ -53,3 +53,9 @@ test('the hook refuses a malformed or oversized trace and takes a good one', () 
   assert.throws(() => check([]), /must be an object/);
   assert.throws(() => check({ ...trace, events: [{ atMs: 0, kind: 'error', note: 'x'.repeat(500_000) }] }), /over 400000 bytes/);
 });
+
+test("the hook takes a forget_request moment (note 'call' or 'all', never the caller's words)", () => {
+  const b = { protocol: 1, conversationId: '0b6f6e1a-1c2d-4e5f-8a9b-000000000009',
+    events: [{ seq: 1, type: 'moment', at: new Date().toISOString(), kind: 'forget_request', atMs: 1200, note: 'call' }] };
+  assert.doesNotThrow(() => validateRuntimeBatch(b));
+});

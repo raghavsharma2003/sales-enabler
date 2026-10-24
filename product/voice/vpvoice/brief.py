@@ -197,6 +197,12 @@ def ledger(transcript, agent, contact, state):
                     'no words; choose what reaches a person or the purpose of this call; never enter numbers you were not told')
     read = [name for name, rx in CUES if any(rx.search(c) for c in callers[-3:])]
     if read: rows.append('lately they sound: ' + ', '.join(read))
+    from . import memory_use                  # relational memory (memory_use.py): shapes, never lines
+    mem = contact.get('memoryBrief') if contact.get('memoryStatus') == 'loaded' else ''
+    if state.get('forget_ack_due') and not paused: rows.append(memory_use.SHAPES['forget_ack'])
+    elif mem and memory_use.items(mem) and state.get('identity_verified') and not state.get('memory_forgot') and not paused:
+        rows.append(memory_use.SHAPES['used' if state.get('memory_used') else 'one_item'])
+    if state.get('keep_due') and not paused: rows.append(memory_use.SHAPES['keep_ask'])
     from .caller_state import SHAPES          # how they sound now (caller_state.read): the shape of this reply
     shape = None if paused else SHAPES.get(state.get('caller_state'))
     if shape: rows.append(shape)

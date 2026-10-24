@@ -1,0 +1,9 @@
+{
+  "_doc": "Relational memory phrase lists, owned by the memory module (extraction) and read as-is by the voice runtime (vpvoice/memory_use.py). Lowercase substrings, Latin and Devanagari. forget: this call must not be remembered; forgetAll: nothing about the person (also files a forget request); keepAsk/keepAffirm: her ask to keep a detail and the caller's yes (memory's extraction checks the pair); personalCues: a volunteered personal, non-sensitive detail; sensitiveCues: never asked to keep. STUB from the voice builder 2026-10-24 with memory's examples; memory overwrites.",
+  "forget": ["yeh yaad mat rakhna", "ye yaad mat rakhna", "yaad mat rakhna", "note mat karna", "mat likhna", "don't remember this", "dont remember this", "do not remember", "याद मत रखना", "नोट मत करना", "मत लिखना"],
+  "forgetAll": ["mere baare mein kuch yaad mat rakhna", "sab bhool jao", "bhool jao sab", "forget everything about me", "मेरे बारे में कुछ याद मत रखना", "सब भूल जाओ"],
+  "keepAsk": ["yaad rakhun", "yaad rakhoon", "note kar loon", "note kar lun", "shall i remember", "may i remember", "याद रखूँ", "याद रखूं", "नोट कर लूँ"],
+  "keepAffirm": ["haan", "ji zaroor", "zaroor", "yes", "bilkul", "हाँ", "जी ज़रूर", "ज़रूर", "बिल्कुल"],
+  "personalCues": ["shaadi", "wedding", "birthday", "janamdin", "new job", "nayi job", "naukri lagi", "baby", "beta hua", "beti hui", "exam", "vacation", "trip", "ghar shift", "naya ghar", "promotion", "शादी", "जन्मदिन", "नई नौकरी", "परीक्षा", "नया घर", "छुट्टी"],
+  "sensitiveCues": ["hospital", "bimar", "बीमार", "अस्पताल", "operation", "death", "guzar", "गुज़र", "निधन", "loan nahi bhar", "paise nahi", "पैसे नहीं", "karz", "कर्ज़", "divorce", "तलाक"]
+}

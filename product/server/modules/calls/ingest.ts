@@ -94,7 +94,7 @@ const EVENTS: Record<RuntimeEvent['type'], Validator<unknown>> = {
     quantity: num({ min: 0 }), unit: str({ oneOf: ['second', 'token', 'char', 'call', 'request'] }), inrMilli: num({ int: true, min: 0 }), detail: opt(record(any())) }),
   safety: obj({ seq, type: str(), at, rule: str({ oneOf: RULES }), action: str({ oneOf: ['blocked', 'replaced', 'flagged', 'redacted', 'suspended_goal'] }), detail: str({ max: 2000 }) }),
   moment: noWhisperText(obj({ seq, type: str(), at, kind: str({ oneOf: ['objection', 'question', 'commitment', 'opt_out', 'callback_request', 'confusion', 'laughter',
-    'live_listen_started', 'live_listen_ended', 'whisper', 'takeover'] }), atMs: ms, note: opt(str({ max: 2000 })) })),
+    'live_listen_started', 'live_listen_ended', 'whisper', 'takeover', 'forget_request'] }), atMs: ms, note: opt(str({ max: 2000 })) })),
   tool: obj({ seq, type: str(), at, name: str({ max: 100 }), args: record(any()), status: str({ oneOf: ['requested', 'done', 'failed'] }) }),
   hand_off: obj({ seq, type: str(), at, reason: str({ max: 500 }), target: str({ max: 200 }), summary: str({ max: 2000 }) }),
   judge: judgeEvent(),

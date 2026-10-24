@@ -89,7 +89,10 @@ export type RuntimeEvent =
   // call page's timeline. A whisper moment NEVER carries the whisper: its note must be absent or empty.
   | { seq: number; type: 'moment'; at: string;
       kind: 'objection' | 'question' | 'commitment' | 'opt_out' | 'callback_request' | 'confusion' | 'laughter'
-        | 'live_listen_started' | 'live_listen_ended' | 'whisper' | 'takeover';
+        | 'live_listen_started' | 'live_listen_ended' | 'whisper' | 'takeover'
+        // the caller asked her not to remember (shared/memory/phrases.json): note 'call' (this call) or 'all' (anything
+        // about them; memory files a forget request). Never their words.
+        | 'forget_request';
       atMs: number; note?: string }
   | { seq: number; type: 'tool'; at: string; name: string; args: Record<string, unknown>; status: 'requested' | 'done' | 'failed' }
   | { seq: number; type: 'hand_off'; at: string; reason: string; target: string; summary: string }

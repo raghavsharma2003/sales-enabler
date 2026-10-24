@@ -55,7 +55,7 @@ class EndToEnd(unittest.TestCase):
 
     def test_brief_used_as_given_and_tail_goes_last(self):
         brain = FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।', 'जी, premium 18,450 है।', 'ठीक है।'])
-        t = ticket(); t['contact']['memoryBrief'] = 'prefers short calls'; t['contact']['memoryStatus'] = 'loaded'
+        t = ticket(); t['contact']['memoryBrief'] = 'prefs: prefers short calls'; t['contact']['memoryStatus'] = 'loaded'
         run(call(None, ['हाँ जी', 'premium कितना है?'], t=t, brain=brain))
         msgs = brain.calls[-1]
         self.assertEqual(msgs[0], {'role': 'system', 'content': t['brief']['text']})
@@ -70,7 +70,7 @@ class EndToEnd(unittest.TestCase):
 
     def test_contact_rows_reach_the_model_after_brief_and_memory_before_the_tail(self):
         brain = FakeBrain(['नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ, क्या Asha जी बोल रही हैं?', 'जी, आपकी EMI 4,200 rupaye 5 November ko due hai.'])
-        t = ticket(); t['contact']['memoryBrief'] = 'prefers short calls'; t['contact']['memoryStatus'] = 'loaded'
+        t = ticket(); t['contact']['memoryBrief'] = 'prefs: prefers short calls'; t['contact']['memoryStatus'] = 'loaded'
         t['contact']['facts'] = {'policy_no': 'SH-DEMO-0042', 'emi_due_date': '5 November', 'emi_amount': '₹4,200'}
         sess, p, replies = run(call(None, ['हाँ जी, बोलिए'], t=t, brain=brain))
         msgs = brain.calls[-1]

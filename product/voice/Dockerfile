@@ -16,6 +16,7 @@ COPY product/shared/safety/judge.json /app/vpvoice/judge.json
 COPY product/shared/judge-event.json /app/vpvoice/judge-event.json
 COPY product/shared/safety/disclosure.json /app/vpvoice/disclosure.json
 COPY product/shared/safety/fixed-lines.json /app/vpvoice/fixed-lines.json
+COPY product/shared/memory/phrases.json /app/vpvoice/memory-phrases.json
 RUN useradd --system --uid 10001 vp && chown -R vp /app
 USER vp
 EXPOSE 8080
