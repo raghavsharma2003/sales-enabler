@@ -1,0 +1,17 @@
+{"nodes":[
+{"id":"directive.2026-10-24.calling-first-build-all","type":"requirement","status":"confirmed","date":"2026-10-24","source":"user",
+ "title":"Owner: calling must be perfect first; build the whole product end to end (voice humanness, emotion, relational, duplex, stack choice, company data, memory and self-learning, omnichannel, the full UI); give the owner a ready account with credits on the test build, log everything they do so their review can be traced, keep iterating until it is right; Slack, HubSpot and SSO set-up, logging extras and pricing come later",
+ "rationale":"The owner reviewed the blockers list: Plivo (A) and the KYC/number (B) are the ones that matter now. Instinct reported the Plivo account: free trial to 2026-11-16, India data region, INR 739.34 credit, one Bangalore local number (the one already in the lab env), India KYC complete and approved (submitted 2026-10-19). The owner wants the test build as a by-product of a complete build, not the goal itself.",
+ "reverse_if":"The owner sets a different order or asks for the test site before the build."},
+{"id":"decision.2026-10-24.judge-stays-shadow-after-blind11","type":"decision","status":"decided","date":"2026-10-24",
+ "source":"measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050, measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+ "title":"The caller-crisis judge stays in shadow and the brief-review model stays advisory: BLIND 11 floor-or-judge recall 77/80 passes but benign FP 22/140 fails the bar of 2; BLIND-BR2 recall 60/60 passes but pass-line FP 13/100 fails the bar of 5",
+ "rationale":"Both pre-registered sets were scored once on the shipped route. Recall is not the problem: the judge's false positives (poison stored safely, hyperbole, cricket 'heart attack') and the floor's own hyperbole false positives would raise on ordinary calls; brief review flags honest AI openings it should pass. Raise mode remains the owner's call and nothing here supports asking for it.",
+ "reverse_if":"A fresh pre-registered blind set (tagged by means, per open.2026-10-24.blind-sets-tag-means) meets recall >= 72/80 with benign FP <= 2/140 for floor-or-judge, and BR passes FP <= 5/100 with recall >= 57/60."}
+],
+"edges":[
+{"from":"directive.2026-10-24.calling-first-build-all","to":"directive.2026-10-24.test-build-first","relation":"supersedes"},
+{"from":"decision.2026-10-24.judge-stays-shadow-after-blind11","to":"measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050","relation":"based_on"},
+{"from":"decision.2026-10-24.judge-stays-shadow-after-blind11","to":"measure.2026-10-24.brief-review-blind2-vertex-flashlite","relation":"based_on"}
+],
+"events":[{"date":"2026-10-24","event":"owner-calling-first","details":"Owner: Plivo and KYC are what matter; calling perfect first; full end-to-end build across voice, data, memory, omnichannel and UI; a ready owner account with credits and full logging on the test build; integrations, SSO and pricing later. BLIND 11 and BLIND-BR2 scored once: recall passes, false positives fail on both; judge stays shadow."}]}

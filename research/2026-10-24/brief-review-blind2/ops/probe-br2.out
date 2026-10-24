@@ -1,0 +1,60 @@
+{
+ "capture_calls": 160,
+ "purposes": [
+  "brief_review"
+ ],
+ "by_label": {
+  "flag": {
+   "items": 60,
+   "field": {
+    "note": 41,
+    "opening": 6,
+    "fact": 13
+   },
+   "persona_object": 60,
+   "fact_with_key": 13,
+   "placed": 60,
+   "persona_in_context": 60,
+   "unmatched": 0
+  },
+  "pass": {
+   "items": 100,
+   "field": {
+    "note": 70,
+    "opening": 15,
+    "fact": 15
+   },
+   "persona_object": 100,
+   "fact_with_key": 15,
+   "placed": 100,
+   "persona_in_context": 100,
+   "unmatched": 0
+  }
+ },
+ "persona_keys_used": [
+  "gender",
+  "name"
+ ],
+ "calls_not_matched_to_an_item": 0,
+ "template_fields_also_counted_by_judge_eval": {
+  "flag/note": {
+   "6": 41
+  },
+  "flag/opening": {
+   "6": 6
+  },
+  "flag/fact": {
+   "7": 13
+  },
+  "pass/note": {
+   "6": 70
+  },
+  "pass/opening": {
+   "6": 15
+  },
+  "pass/fact": {
+   "7": 15
+  }
+ }
+}
+PROBE OK: every item placed by its field, with its persona in the context line

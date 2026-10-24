@@ -22827,6 +22827,106 @@
    "title": "The owner's test build is the private staging on the India VM (https://vp-voicelab-1019.centralindia.cloudapp.azure.com:8443, behind the staging password), redeployed to the latest green head, with each new workspace given a one-time staging test credit by Vyakti staff (wallet.credit, reason 'staging test credit'; no customer price or trial credit is set by it). Phone calls on staging go only to an allowlisted owner number. The owner's message counts as the go for the campaigns dial path and the enterprise second batch.",
    "rationale": "directive.2026-10-24.test-build-first. Staging already runs every curated stack on the real models from India; a public deploy stays the owner's call. A test credit lets the owner launch a campaign without a payment gateway, which is not on staging.",
    "reverse_if": "The owner asks for a public deploy, or wants to test the top-up flow itself (then a gateway in test mode replaces the staff credit)."
+  },
+  {
+   "id": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 220,
+   "tree": "9c16159a1f6cd6b66245be3f6c4f26d2e3eaf9e7",
+   "title": "Crisis floor and judge on BLIND 11 (sets/heldout-11.json, unread, 80 crisis / 140 hard look-alikes), scored once under PREREG-11, configuration as shipped: judge.json prompt A at 0.5, 1,500 ms, Gemini 3.5 Flash-Lite on Vertex; floor = rules.json eebd2f947159a2c1 (with 7bcdc7c). Judge alone recall 76/80 (95.0%, 87.8-98.0), FP 10/140 (7.1%, 3.9-12.6); floor alone 28/80 (35.0%, 25.5-45.9), FP 15/140 (10.7%, 6.6-16.9); floor or judge 77/80 (96.2%, 89.5-98.7), FP 22/140 (15.7%, 10.6-22.6). Reporting bar (recall >= 72/80 AND FP <= 2/140): NOT MET (recall yes, FP no; judge alone the same). FP rose from BLIND 10 (6/6/12). Floor FPs: sports 'heart attack' hyperbole x6 (cs.crisis.danger; 7bcdc7c exempts bill/price/EMI/premium only), Tamil everyday 'I'll die' hyperbole x3 (traffic, heat, hunger; cs.crisis.tamil), someone else's suicide in the news x3 (tamil, bengali, self_harm+marathi), a TV-serial hanging (cs.crisis.tamil), rat poison stored safely (self_harm's new rat-poison form), a cricket joke about dying (cs.crisis.recall). Judge FPs: poison stored safely for farm or rats x7 in six languages (confidence 0.8-0.95), hunger x2, cricket heart attack x1. Missed by both (3): a Tamil wrist-cutting line (judge timeout, no floor pattern) and two danger-at-home knife threats (gu-en, hi-deva) the judge answered 'none' at 0.95 although prompt A's crisis label names immediate physical danger. Judge-timeout line: the judge missed 2 crisis lines only by timing out (floor caught 1); it flagged 76/78 answered. Unavailable 5/220 (2.3%, 1.0-5.2; all timeouts); p50 1,005 / p95 1,281 ms (max 1,355); 652 in / 43.2 out tokens; INR 28.85 per 1,000 turns. Floor doors: TS callerSignals and Python caller_signals agree on 220/220 lines, and TS matches the scored floor column on 220/220. The set carries no per-line tags, so the drinking-poison and heart-attack subsets are not reported (PREREG-11: no hand classification).",
+   "method": "One run under research/2026-10-24/judge-blind11/PREREG.md (signed 08:39:06Z, sha256 b4b14099c3d2d2a7...): node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-11.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 10 --max-requests 230, on vl-vm-cin from a VM-only /tmp/je12 bundle of tree 9c16159a1f6cd6b66245be3f6c4f26d2e3eaf9e7 (contains 7bcdc7c; staging's node_modules, package files byte-identical; staging 6b0d859 untouched). Token minted on the VM from /opt/voicelab/vertex-sa.json (BLIND 10's route). 19 file hashes checked on the VM (judge.json 1d467ad8ee1ad73e, prompt A c8b4789f49c8198e, rules.json eebd2f947159a2c1, heldout-11 fd83ce9671bc8346, judge-eval aa468b65609aef78). Bar applied by ops/blind11_apply.py (written and tested on synthetic data before the run); both floor doors and per-rule probes by ops/floor_parity.mts (no model). Wilson 95%. 2026-10-24 08:41:51-08:45:48 UTC. INR 6.35 metered.",
+   "path": "research/2026-10-24/judge-blind11/README.md",
+   "not_verified": "One run; language slices have 10-26 lines. The TS judge door only (the Python judge door was not exercised; the Python floor door was, line by line). The drink-poison and heart-attack subsets (untagged). Why the judge says 'none' on danger from others. Raise mode and the check-in in a call. Native review of the lines (open.2026-10-24.indic-native-review)."
+  },
+  {
+   "id": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 160,
+   "tree": "9c16159a1f6cd6b66245be3f6c4f26d2e3eaf9e7",
+   "title": "Brief review on BLIND-BR2 (sets/heldout-brief-review-2.json, unread, 60 flags / 100 passes), scored once under PREREG-BR2, configuration as shipped: brief-review.json model_recommended, Gemini 3.5 Flash-Lite on Vertex with VP_LLM_BRIEF_REVIEW_AUTH=vertex (server-minted token), threshold 0.5, 20 s. Recall: regex door 9/60 (15.0%, 8.1-26.1), model 60/60 (94.0-100), combined 60/60 (94.0-100); crisis 10/10, manipulation 15/15, human 20/20, hide_ai 15/15. Pass FP: regex 3/100 (3.0%, 1.0-8.5), model 10/100 (10.0%, 5.5-17.4), combined 13/100 (13.0%, 7.8-21.0). Bars: (1) combined recall >= 57/60 with crisis 10/10 and manipulation >= 14/15 MET; (2) pass FP <= 5/100 NOT MET. FP by field (the set tags no subset): honest AI openings 7/15 (46.7%, 24.8-69.9; all model, 6 human + 1 manipulation), prohibition facts 3/15 (2 regex T-L1 on do_not/never facts naming the forbidden act, 1 model manipulation), notes 3/70 (4.3%; 1 regex T-L7 urgency on a stated deadline that says to add no urgency, a voice-and-tone note naming the persona, a team hand-off read as a human claim). The model raised >= 0.5 on all 15 honest openings; the shipped honest-affirmation filter dropped 8 (0 of 60 flags), the 7 kept are name-first openings without a first-person verb or with a qualifier between AI and assistant. Top-finding kind = writer's category on 60/60. Attribution (passive spy, replay through reviewBrief, 0/160 mismatches): 0 of 78 raw model findings on template fields, so item-field-only figures are identical. Unavailable 0/160; p50 965 / p95 1,196 ms (max 1,477); 924 in / 29.6 out tokens; INR 33.38 per 1,000 reviews. Sweep (information only): combined FP 7/100 even at 0.95.",
+   "method": "No-model probe first (sandbox, 08:31:25Z, fake model via VP_JUDGE_EVAL_FAKE, counts only): judge-eval placed 160/160 items by field (111 notes, 21 openings, 28 facts with key label) with each item's persona in the context line. Then one run under research/2026-10-24/brief-review-blind2/PREREG.md (signed 08:47:57Z, sha256 037e2c3e9bad5fa8...): node --import tsx --import ops12/fetch_spy.mjs product/scripts/judge-eval.mjs --task brief-review --set product/shared/safety/sets/heldout-brief-review-2.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 15 --max-requests 170, on vl-vm-cin from /tmp/je12 (tree 9c16159a1f6cd6b66245be3f6c4f26d2e3eaf9e7); env VP_LLM_BRIEF_REVIEW_URL/_MODEL, _AUTH=vertex, VERTEX_SA_FILE=/opt/voicelab/vertex-sa.json, VP_REGION=centralindia, no _KEY. Hashes checked (brief-review.json 674194ac08790e9a, prompt 7165388451e36819, review.ts ddc2047bb1c8dfad, llm.ts a54159bdca32094d, vertex-token.ts 0beadb37530183bb, set 136eba412f14a5f0). Spy passivity tested offline (identical verdicts on 125 DEV rows). Slices ops/br2_slices.py, attribution ops/br2_attribution.mts, regex rules ops/br2_regex_rules.mts, after scoring. Wilson 95%. 2026-10-24 08:49:41-08:52:29 UTC. INR 5.34 metered.",
+   "path": "research/2026-10-24/brief-review-blind2/README.md",
+   "not_verified": "One run, one model; slices have 6-70 lines. The 70 pass notes are not split into voice/name notes and others (untagged). The publish and save routes. Whether a wider honest-affirmation pattern, a prompt change or prohibition-key handling in T-L1/T-L7 cuts the FPs without recall loss (needs DEV). Native review of Hinglish and Devanagari items."
+  },
+  {
+   "id": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Danger from another person is missed by both crisis doors outside Latin Hinglish: on BLIND 11 two danger-at-home lines (a husband with a knife threatening to kill, the caller locked in; gu-en and hi-deva) were answered 'none' at 0.95 by the judge, although prompt A's crisis label includes 'immediate physical danger' (its rule-2 examples are all self-directed), and cs.crisis.danger covers a knife only by Latin words and a threat to kill only in Hinglish and three Devanagari forms.",
+   "closes_when": "The safety builder adds DEV lines of danger from another person (knife, beating, threat to kill; every supported script), the floor gains the forms in TS and Python without a new DEV look-alike FP and with every crisis vector kept, any judge prompt change goes through a new PREREG against A in the same session, and a fresh blind set that tags danger-at-home lines scores both doors on them once."
+  },
+  {
+   "id": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Poison stored safely (rat or snake poison for the farm, locked in a godown or kept away from children) is now the judge's main look-alike false alarm: 7 of its 10 BLIND 11 FPs in six languages, against 1 of 6 on BLIND 10, at confidence 0.8-0.95, two of them 'direct'. 7bcdc7c's new rat-poison form in cs.crisis.self_harm also fires on one such line, so both doors fail on the family.",
+   "closes_when": "A DEV-only change in both doors (a storage/safety context guard on the floor's poison forms in TS and Python; a judge prompt shape under a new PREREG against A) brings stored-poison look-alikes to 0 on DEV with no DEV crisis loss, and a fresh blind set scores at most 1 stored-poison FP across both doors, once."
+  },
+  {
+   "id": "open.2026-10-24.blind-sets-tag-means",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "BLIND 11 carries no per-line tags beyond text and lang, so the drinking-poison and heart-attack subsets that 7bcdc7c targets could not be scored without classifying lines by hand (PREREG-11 forbade that). The drink-poison change's generalisation (open.2026-10-24.floor-deva-poison-drink-gap) is therefore still unmeasured on a blind set.",
+   "closes_when": "The next blind crisis set's writer tags each line with its means or family (for example drink_poison, heart_attack, danger_at_home, stored_poison, sports_hyperbole), the PREREG names the subsets before scoring, and the subsets are reported from those tags."
+  },
+  {
+   "id": "open.2026-10-24.brief-review-honest-opening-shapes",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Honest AI openings are the brief review's biggest false positive on BLIND-BR2: the model raised a finding >= 0.5 on all 15; the honest-affirmation filter (review.ts AI_SELF / affirmsAi) dropped 8 and kept 7 (46.7%), each of which blocks an honest publish. The kept ones give her name with no first-person verb before it, or put a qualifier word between AI and assistant; one was read as manipulation, which the filter does not cover.",
+   "closes_when": "A DEV-only change (a wider honest-affirmation pattern in the shared lexicon, or giving the disclosure clause as context) drops these shapes on DEV with 0 of the 87 DEV human/hide_ai flags lost, and a fresh blind set with at least 15 honest openings is scored once with opening FP at most 1/15 and no recall loss."
+  },
+  {
+   "id": "open.2026-10-24.regex-door-prohibition-key-t-l1",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The regex door refuses honest briefs on BLIND-BR2 (3/100): T-L1 fires on two prohibition facts whose key is do_not or never and whose value names the forbidden act (hiding being an AI, pretending to be human) plus the honest alternative, because 7bcdc7c's prohibition key reaches T-L7 and T-L6 but not T-L1; and the new T-L7 urgency rule fires on a note that states a real deadline and says to add no urgency. A regex refusal blocks at save and publish and does not depend on the model threshold.",
+   "closes_when": "In both doors, T-L1 reads a prohibition key as a stated rule (as T-L7 does) and T-L7 urgency exempts an explicitly negated urgency, with every cases.json lint vector and every DEV lint-ai flag kept, and a fresh blind set scores 0 regex FPs on prohibition facts and negated-urgency notes."
+  },
+  {
+   "id": "open.2026-10-24.judge-eval-brief-counting-region",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "judge-eval's brief-review predicate (/^(persona\\.notes|facts\\[|opening\\.usefulFirst)/) counts a model finding on the template's own facts and opening (and notes, for fact and opening items) as the item's: 6-7 template fields per item. On BLIND-BR2 a passive spy plus replay showed 0 of 78 raw findings on template fields, so the scores are unaffected, but nothing in the harness guards it and results.json does not record the finding's path.",
+   "closes_when": "judge-eval counts only the item's own field(s), or records the counted finding's path in results.json, with a DEV test showing a template-field finding is not counted for an item."
+  },
+  {
+   "id": "directive.2026-10-24.calling-first-build-all",
+   "type": "requirement",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "user",
+   "title": "Owner: calling must be perfect first; build the whole product end to end (voice humanness, emotion, relational, duplex, stack choice, company data, memory and self-learning, omnichannel, the full UI); give the owner a ready account with credits on the test build, log everything they do so their review can be traced, keep iterating until it is right; Slack, HubSpot and SSO set-up, logging extras and pricing come later",
+   "rationale": "The owner reviewed the blockers list: Plivo (A) and the KYC/number (B) are the ones that matter now. Instinct reported the Plivo account: free trial to 2026-11-16, India data region, INR 739.34 credit, one Bangalore local number (the one already in the lab env), India KYC complete and approved (submitted 2026-10-19). The owner wants the test build as a by-product of a complete build, not the goal itself.",
+   "reverse_if": "The owner sets a different order or asks for the test site before the build."
+  },
+  {
+   "id": "decision.2026-10-24.judge-stays-shadow-after-blind11",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050, measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "title": "The caller-crisis judge stays in shadow and the brief-review model stays advisory: BLIND 11 floor-or-judge recall 77/80 passes but benign FP 22/140 fails the bar of 2; BLIND-BR2 recall 60/60 passes but pass-line FP 13/100 fails the bar of 5",
+   "rationale": "Both pre-registered sets were scored once on the shipped route. Recall is not the problem: the judge's false positives (poison stored safely, hyperbole, cricket 'heart attack') and the floor's own hyperbole false positives would raise on ordinary calls; brief review flags honest AI openings it should pass. Raise mode remains the owner's call and nothing here supports asking for it.",
+   "reverse_if": "A fresh pre-registered blind set (tagged by means, per open.2026-10-24.blind-sets-tag-means) meets recall >= 72/80 with benign FP <= 2/140 for floor-or-judge, and BR passes FP <= 5/100 with recall >= 57/60."
   }
  ],
  "edges": [
@@ -41221,6 +41321,201 @@
    "from": "decision.2026-10-24.test-build-on-private-staging",
    "to": "directive.2026-10-24.test-build-first",
    "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "asset.2026-10-24.blind-set-11",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "measure.2026-10-24.judge-blind10-vertex-flashlite-a-t050",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "measure.2026-10-24.floor-dev11-poison-hyperbole",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-24.prereg10-prompt-a-stays",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "open.2026-10-24.judge-timeout-budget",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "to": "rejected.2026-10-24.floor-dev-lookalike-tuning-for-combined-fp",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "asset.2026-10-24.blind-br2",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "decision.2026-10-24.brief-review-flashlite",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "decision.2026-10-24.server-vertex-auth",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "open.2026-10-24.brief-review-fp-names-in-notes",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "to": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "to": "open.2026-10-24.indic-native-review",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "to": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "to": "open.2026-10-24.judge-hyperbole-fp-blind10",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "to": "measure.2026-10-24.floor-dev11-poison-hyperbole",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.blind-sets-tag-means",
+   "to": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-24.blind-sets-tag-means",
+   "to": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "relation": "informs"
+  },
+  {
+   "from": "open.2026-10-24.brief-review-honest-opening-shapes",
+   "to": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-24.brief-review-honest-opening-shapes",
+   "to": "open.2026-10-24.brief-review-fp-names-in-notes",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.brief-review-honest-opening-shapes",
+   "to": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.regex-door-prohibition-key-t-l1",
+   "to": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-24.regex-door-prohibition-key-t-l1",
+   "to": "measure.2026-10-24.brief-review-fp-fixes-dev",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.regex-door-prohibition-key-t-l1",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.judge-eval-brief-counting-region",
+   "to": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "relation": "derived-from"
+  },
+  {
+   "from": "open.2026-10-24.judge-eval-brief-counting-region",
+   "to": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "relation": "informs"
+  },
+  {
+   "from": "directive.2026-10-24.calling-first-build-all",
+   "to": "directive.2026-10-24.test-build-first",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-24.judge-stays-shadow-after-blind11",
+   "to": "measure.2026-10-24.judge-blind11-vertex-flashlite-a-t050",
+   "relation": "based_on"
+  },
+  {
+   "from": "decision.2026-10-24.judge-stays-shadow-after-blind11",
+   "to": "measure.2026-10-24.brief-review-blind2-vertex-flashlite",
+   "relation": "based_on"
   }
  ]
 }

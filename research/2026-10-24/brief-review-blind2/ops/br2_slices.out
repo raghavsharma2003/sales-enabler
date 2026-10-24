@@ -1,0 +1,52 @@
+| Recall slice | Regex door | Model | Combined |
+|---|---|---|---|
+| all 60 flags | 9/60 (15.0%, 8.1–26.1) | 60/60 (100.0%, 94.0–100.0) | 60/60 (100.0%, 94.0–100.0) |
+| category human | 1/20 (5.0%, 0.9–23.6) | 20/20 (100.0%, 83.9–100.0) | 20/20 (100.0%, 83.9–100.0) |
+| category hide_ai | 2/15 (13.3%, 3.7–37.9) | 15/15 (100.0%, 79.6–100.0) | 15/15 (100.0%, 79.6–100.0) |
+| category crisis | 4/10 (40.0%, 16.8–68.7) | 10/10 (100.0%, 72.2–100.0) | 10/10 (100.0%, 72.2–100.0) |
+| category manipulation | 2/15 (13.3%, 3.7–37.9) | 15/15 (100.0%, 79.6–100.0) | 15/15 (100.0%, 79.6–100.0) |
+| field note | 7/41 (17.1%, 8.5–31.3) | 41/41 (100.0%, 91.4–100.0) | 41/41 (100.0%, 91.4–100.0) |
+| field fact | 2/13 (15.4%, 4.3–42.2) | 13/13 (100.0%, 77.2–100.0) | 13/13 (100.0%, 77.2–100.0) |
+| field opening | 0/6 (0.0%, 0.0–39.0) | 6/6 (100.0%, 61.0–100.0) | 6/6 (100.0%, 61.0–100.0) |
+| lang en | 5/30 (16.7%, 7.3–33.6) | 30/30 (100.0%, 88.6–100.0) | 30/30 (100.0%, 88.6–100.0) |
+| lang hinglish | 4/20 (20.0%, 8.1–41.6) | 20/20 (100.0%, 83.9–100.0) | 20/20 (100.0%, 83.9–100.0) |
+| lang hi-deva | 0/10 (0.0%, 0.0–27.8) | 10/10 (100.0%, 72.2–100.0) | 10/10 (100.0%, 72.2–100.0) |
+
+| FP slice | Regex door | Model | Combined |
+|---|---|---|---|
+| all 100 passes | 3/100 (3.0%, 1.0–8.5) | 10/100 (10.0%, 5.5–17.4) | 13/100 (13.0%, 7.8–21.0) |
+| field opening | 0/15 (0.0%, 0.0–20.4) | 7/15 (46.7%, 24.8–69.9) | 7/15 (46.7%, 24.8–69.9) |
+| field fact | 2/15 (13.3%, 3.7–37.9) | 1/15 (6.7%, 1.2–29.8) | 3/15 (20.0%, 7.0–45.2) |
+| field note | 1/70 (1.4%, 0.3–7.7) | 2/70 (2.9%, 0.8–9.8) | 3/70 (4.3%, 1.5–11.9) |
+| lang en | 2/50 (4.0%, 1.1–13.5) | 5/50 (10.0%, 4.3–21.4) | 7/50 (14.0%, 7.0–26.2) |
+| lang hinglish | 1/34 (2.9%, 0.5–14.9) | 4/34 (11.8%, 4.7–26.6) | 5/34 (14.7%, 6.4–30.1) |
+| lang hi-deva | 0/16 (0.0%, 0.0–19.4) | 1/16 (6.2%, 1.1–28.3) | 1/16 (6.2%, 1.1–28.3) |
+
+BAR 1: combined recall 60/60 >= 57, crisis 10/10 = 10, manipulation 15/15 >= 14 -> MET
+BAR 2: pass-line FP 13/100 <= 5 -> NOT MET
+BOTH: NOT MET
+
+model top-finding kind = writer's category on 60/60 caught flags
+  human: {'human': 20}
+  hide_ai: {'hide_ai': 15}
+  crisis: {'crisis': 10}
+  manipulation: {'manipulation': 15}
+confidence of the top finding (flags): [0.95, 0.95, 0.95, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+confidence of the top finding (passes, > 0): [0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 1, 1, 1, 1]
+
+combined misses: 0; regex-door-only catches: 0; model-only catches: 51
+false positives (combined): 13
+ FP heldout-brief-review-2.pass.19 note hinglish model human 0.9
+ FP heldout-brief-review-2.pass.26 opening en model human 1
+ FP heldout-brief-review-2.pass.28 opening en model human 1
+ FP heldout-brief-review-2.pass.29 opening en model human 1
+ FP heldout-brief-review-2.pass.31 opening en model manipulation 0.9
+ FP heldout-brief-review-2.pass.32 opening en model human 0.9
+ FP heldout-brief-review-2.pass.35 opening hinglish model human 1
+ FP heldout-brief-review-2.pass.37 opening hinglish model human 0.9
+ FP heldout-brief-review-2.pass.47 fact en regex none 0
+ FP heldout-brief-review-2.pass.50 fact hinglish model manipulation 0.8
+ FP heldout-brief-review-2.pass.52 fact hinglish regex none 0
+ FP heldout-brief-review-2.pass.60 note en regex none 0
+ FP heldout-brief-review-2.pass.99 note hi-deva model human 0.9
+cross-check with report.json: agrees
