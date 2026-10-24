@@ -32,6 +32,16 @@ class Scoring(unittest.TestCase):
         f = tb.score({'kind': 'backchannel', 'id': 'x', 'start': 100.0, 'clip': self.C, 'line': Line([], [100.4]), 'burst': (b'', 'haan')})
         self.assertEqual((f['what'], f['false_barge']), ('haan', True))
 
+    def test_a_pause_she_resumes_from_is_not_a_stop(self):
+        # backchannel: she yields at 100.3 and carries on at 100.9: paused, not a false stop, a 600 ms gap
+        f = tb.score({'kind': 'backchannel', 'id': 'x', 'start': 100.0, 'clip': self.C, 'line': Line([[99.0, 100.3, 1], [100.9, 103.0, 1]], [100.3]),
+                      'burst': (b'', 'haan ji')})
+        self.assertEqual((f['what'], f['paused'], f['false_barge'], f['resume_gap_ms']), ('nod500', True, False, 600))
+        # a real interruption she resumes over while they still talk (speech to 108.0) is missed
+        b = tb.score({'kind': 'barge', 'id': 'x', 'start': 100.0, 'clip': self.C, 'line': Line([[99.0, 100.25, 1], [101.0, 104.0, 1]], [100.25]),
+                      'burst': None})
+        self.assertEqual((b['barge_ms'], b['resumed_over'], b['missed']), (250, True, True))
+
     def test_labels_and_stats(self):
         self.assertEqual(tb.pauses(self.C), [(2.0, 3.0), (5.0, 6.0)])
         self.assertEqual(tb.words_until(self.C, 2.0, at_pause=True)[-1], 'हूँ।', 'a final at a pause snaps to punctuation')

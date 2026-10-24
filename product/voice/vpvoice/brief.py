@@ -153,6 +153,11 @@ def ledger(transcript, agent, contact, state):
     if not state.get('disclosed'):
         clause = ((agent.get('opening') or {}).get('disclosureClause') or '').strip()
         rows.append('this breath must carry the brand and your one AI clause' + (f' ({clause})' if clause else '') + ', lightly, in passing')
+        from .names import brand_forms
+        roman, deva, given = brand_forms(agent.get('brand'))
+        if roman:
+            rows.append(f'the brand, as you write it: {roman}' + (f' (in Devanagari exactly: {deva})' if given else
+                        ' (keep it in these Latin letters, also inside Devanagari; never respell it)'))
     if state.get('asked_ai'):
         rows.append('they just asked if you are an AI: say yes plainly first, lightly, then carry on')
     if state.get('opt_out'):

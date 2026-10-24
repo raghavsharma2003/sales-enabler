@@ -67,7 +67,8 @@ class Conversation:
         self.transcript = []; self.agent_turns = 0; self.disclosure_tries = 0
         self.gender = (self.agent.get('persona') or {}).get('gender', 'female')
         b = self.agent.get('brand') or {}
-        self.own_names = [(self.agent.get('persona') or {}).get('name', ''), b.get('spokenName', ''), b.get('name', '')]
+        self.own_names = [(self.agent.get('persona') or {}).get('name', ''), b.get('spokenName', ''), b.get('name', ''),
+                          names.brand_forms(b)[1]]
         self.state = {'disclosed': False, 'asked_ai': False, 'crisis': False, 'crisis_lines_given': False, 'opt_out': False,
                       'recording_refused': False, 'goals_done': {}, 'turns_since_goal': 0,
                       'identity_verified': False,
@@ -123,6 +124,8 @@ class Conversation:
             if m: draft.style = m.group(1).strip().lower()
         text = brief.spoken(sentence, keep_sounds=self.keep_sounds)
         if not text: return None, {'action': 'pass'}
+        text, bad_brand = names.repair_brand(text, self.agent.get('brand'))
+        if bad_brand: log.info('brand respelled %s: %d word(s) repaired to the stored form', self.t['conversationId'], len(bad_brand))
         text, wrong = names.repair(text, self.contact.get('displayName', ''), own=self.own_names)
         if wrong:                # a wrong name in a question would let a "haan" verify the wrong person (RD11)
             self.sink.emit('safety', rule='RD11', action='replaced',
@@ -141,8 +144,8 @@ class Conversation:
             self.sink.emit('safety', rule=v['rule'], action='blocked', detail=v['reason'])
             draft.blocked.append(v['rule'])
             return None, v
-        if wrong and v['action'] == 'pass':          # s2s speaks the model's own audio: it must cut and say the repaired line
-            v = {'action': 'replace', 'rule': 'RD11', 'reason': "a name that is not the contact's", 'text': text}
+        if (wrong or bad_brand) and v['action'] == 'pass':          # s2s speaks the model's own audio: it must cut and say the repaired line
+            v = {'action': 'replace', 'rule': 'RD11' if wrong else 'brand', 'reason': "a name that is not the contact's" if wrong else 'the brand respelled', 'text': text}
         if '14416' in text and '112' in text: self.state['crisis_lines_given'] = True
         draft.sentences.append(text)
         return text, v

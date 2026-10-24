@@ -29,7 +29,13 @@ KNOWN = {'asha': 'आशा', 'aarti': 'आरती', 'arti': 'आरती', '
          'yadav': 'यादव', 'rao': 'राव', 'reddy': 'रेड्डी', 'nair': 'नायर', 'iyer': 'अय्यर', 'das': 'दास', 'khan': 'ख़ान', 'mishra': 'मिश्रा',
          'tiwari': 'तिवारी', 'pandey': 'पांडे', 'joshi': 'जोशी', 'kapoor': 'कपूर', 'malhotra': 'मल्होत्रा', 'chauhan': 'चौहान',
          'vikram': 'विक्रम', 'amit': 'अमित', 'anil': 'अनिल', 'sanjay': 'संजय', 'deepak': 'दीपक', 'manoj': 'मनोज', 'vijay': 'विजय',
-         'lakshmi': 'लक्ष्मी', 'radha': 'राधा', 'sita': 'सीता', 'savita': 'सविता', 'rekha': 'रेखा', 'usha': 'उषा', 'nisha': 'निशा'}
+         'lakshmi': 'लक्ष्मी', 'radha': 'राधा', 'sita': 'सीता', 'savita': 'सविता', 'rekha': 'रेखा', 'usha': 'उषा', 'nisha': 'निशा',
+         # English words common in Indian business names, as Hindi speakers write them
+         'services': 'सर्विसेज', 'service': 'सर्विस', 'health': 'हेल्थ', 'insurance': 'इंश्योरेंस', 'finance': 'फ़ाइनेंस', 'foods': 'फ़ूड्स',
+         'solar': 'सोलर', 'homes': 'होम्स', 'bank': 'बैंक', 'clinic': 'क्लिनिक', 'dental': 'डेंटल', 'overseas': 'ओवरसीज़', 'care': 'केयर',
+         'capital': 'कैपिटल', 'motors': 'मोटर्स', 'hospital': 'हॉस्पिटल', 'hospitals': 'हॉस्पिटल्स', 'life': 'लाइफ़', 'general': 'जनरल',
+         'group': 'ग्रुप', 'india': 'इंडिया', 'limited': 'लिमिटेड', 'technologies': 'टेक्नोलॉजीज़', 'realty': 'रियल्टी', 'pharma': 'फ़ार्मा',
+         'labs': 'लैब्स', 'travels': 'ट्रैवल्स', 'electronics': 'इलेक्ट्रॉनिक्स', 'credit': 'क्रेडिट', 'loans': 'लोन्स', 'money': 'मनी'}
 
 
 def to_devanagari(name):
@@ -48,7 +54,9 @@ def to_devanagari(name):
                 after_cons = False; continue
             c = next((x for x in _CONS if w.startswith(x[0], i)), None)
             if not c: i += 1; continue                                     # not a letter we know: dropped
-            if after_cons: s += VIRAMA                                     # a cluster: Priya -> प्रिया
+            if after_cons and s.endswith('न') and len(s) > 1 and c[0] not in ('n', 'y', 'h', 'v', 'w', 'r'):
+                s = s[:-1] + 'ं'                                            # n before a consonant: Saanjh -> सांझ, Sanjay -> संजय
+            elif after_cons: s += VIRAMA                                   # a cluster: Priya -> प्रिया
             s += c[1]; i += len(c[0]); after_cons = True
         out.append(s)
     return ' '.join(x for x in out if x)
@@ -157,3 +165,49 @@ def repair(text, display_name, own=()):
                      lambda m: 'क्या अभी आपसे दो मिनट बात हो सकती है?' if DEVA.search(m.group(0)) else 'Kya abhi aapse do minute baat ho sakti hai?', out, flags=re.I)
         out = re.sub(r'\s{2,}', ' ', out).replace(' ,', ',').strip()
     return out, [' '.join(ws) for _, _, ws in wrong]
+
+
+# ---------------------------------------------------------------- the brand, in the script she writes
+def brand_forms(brand):
+    """(roman, devanagari, set_by_workspace) of the brand's spoken name. brand.spokenNameDevanagari, when the workspace
+    set it, is the form she writes in Devanagari; otherwise the transliteration is only for matching (it can be off,
+    "Gharana" -> "घरना"), and she writes the brand in its own Latin letters. Staging 2026-10-24: the brain wrote
+    "सांच" for "सांझ" in 2 of 3 openings."""
+    b = brand or {}; roman = (b.get('spokenName') or b.get('name') or '').strip()
+    given = (b.get('spokenNameDevanagari') or '').strip()
+    if DEVA.search(roman): return to_roman(roman).title(), roman, True
+    return roman, given or to_devanagari(roman), bool(given)
+
+
+def _lev(a, b):
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1): cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+WORD = re.compile(r'[A-Za-z]+|' + DW + '+')
+
+
+def repair_brand(text, brand):
+    """A word one or two letters off a word of the brand, with different consonants (so not an inflection: "घराने"
+    for "घराना" stays), is the brand misspelled. It becomes the brand's word: the workspace's Devanagari form when set,
+    else the Latin one (never a transliteration we are unsure of). Returns (text, [wrong words])."""
+    roman, deva, given = brand_forms(brand)
+    rw, dw = roman.split(), deva.split()
+    pairs = [(r, r) for r in rw] + [(d, dw[i] if given or i >= len(rw) else rw[i]) for i, d in enumerate(dw)]
+    pairs = [(f, to) for f, to in pairs if len(f) >= 4]
+    if not pairs: return text, []
+    out = []; wrong = []; last = 0
+    for m in WORD.finditer(text or ''):
+        w = m.group(0); lw = w.lower()
+        if lw in NOT_NAMES or any(lw == f.lower() for f, _ in pairs): continue
+        for f, to in pairs:
+            if bool(DEVA.search(f)) != bool(DEVA.search(w)): continue
+            d = _lev(lw, f.lower()); limit = 1 if len(f) <= 6 else 2
+            if 0 < d <= limit and key(w) != key(f) and abs(len(w) - len(f)) <= 1:
+                out.append(text[last:m.start()] + to); last = m.end(); wrong.append(w); break
+    if not wrong: return text, []
+    return ''.join(out) + text[last:], wrong

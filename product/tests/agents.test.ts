@@ -176,3 +176,11 @@ test('a stack built from parts compiles exactly like the curated stack with the 
   }
   assert.ok(compileReport({ ...base(), voice: { stackId: 'custom', components: requireStack('v2-mai').components } }).sections.some(x => x.name === 'DELIVERY'));
 });
+
+test('brand.spokenNameDevanagari is optional and Devanagari only (voice/vpvoice/names.py writes the brand with it)', () => {
+  const b = base();
+  const withDeva = { ...b, brand: { ...b.brand, spokenNameDevanagari: 'सांझ सर्विसेज' } };
+  assert.deepEqual(validateConfig(withDeva).brand.spokenNameDevanagari, 'सांझ सर्विसेज');
+  assert.equal(validateConfig(b).brand.spokenNameDevanagari, undefined);
+  assert.throws(() => validateConfig({ ...b, brand: { ...b.brand, spokenNameDevanagari: 'Saanjh' } }), /spokenNameDevanagari/);
+});

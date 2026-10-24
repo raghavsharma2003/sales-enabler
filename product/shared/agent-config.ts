@@ -70,7 +70,9 @@ export interface AgentConfig {
   agentId: string;
   version: number;
   versionHash: string;         // sha256 of the canonical config minus this field; the run manifest records it
-  brand: { name: string; spokenName: string; verifiedDomains: string[] };
+  // spokenNameDevanagari: how she writes the spoken name in Devanagari (e.g. 'सांझ सर्विसेज'); unset, she keeps the
+  // spoken name in Latin letters and the runtime repairs a respelled brand to it (voice/vpvoice/names.py)
+  brand: { name: string; spokenName: string; spokenNameDevanagari?: string; verifiedDomains: string[] };
   job: Job;
   jobDescription?: string;     // required when job = 'custom'
   category: CallCategory;

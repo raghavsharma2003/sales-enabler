@@ -36,6 +36,7 @@ SHORT_OPENING = 'Namaste, main Riya, AI assistant.'
 LONG_OPENING = ('Namaste, main Suraksha ki AI assistant Riya bol rahi hoon. Aapki policy ka renewal agle hafte hai, aur main aapko '
                 'do teen cheezein batana chahti thi jo is baar badli hain, taaki aapko koi pareshani na ho.')
 REPLY = 'Ji, samajh gayi. Main abhi aapko details bhejti hoon.'
+BENCH_ENV = {}         # --env K=V: the runtime env each scenario's session sees (e.g. VP_SPECULATE_PARTIAL=1)
 PARTIAL_LAG = 0.0      # --partial-ms / 1000: how long after a word is spoken the recogniser's partial carries it
 NODS = [(0.3, 'haan'), (0.5, 'haan ji'), (0.7, 'achha haan ji')]
 
@@ -185,7 +186,7 @@ async def run_one(kind, clip, burst=None):
     def make_ears(p, f, e, lang='hi-IN'):
         ears_holder['e'] = Ears(p, f, e, lang, clip=clip if kind != 'backchannel' else None, pos=lambda: feed['pos']); return ears_holder['e']
     comp = components(brain=Brain(SHORT_OPENING if kind == 'turn' else LONG_OPENING), voice=Voice(), ears=make_ears)
-    sess = CascadeSession(t, comp, s, line, env={}, watchdog_s=0.05, tick_s=0.03)
+    sess = CascadeSession(t, comp, s, line, env=dict(BENCH_ENV), watchdog_s=0.05, tick_s=0.03)
     await sess.start()
     t0 = clock()
     async def wait_audio(timeout=10.0):
@@ -210,7 +211,7 @@ async def run_one(kind, clip, burst=None):
         if kind in ('turn', 'statement') and i > frames and line.first_after(start + clip['speech'][-1][1]) is not None and clock() > line.until + 0.3: break
         if kind in ('barge', 'backchannel') and i > frames + 100: break
     await sess.end('completed')
-    return {'kind': kind, 'id': clip['id'], 'start': start, 'line': line, 'clip': clip, 'burst': burst}
+    return {'kind': kind, 'id': clip['id'], 'start': start, 'line': line, 'clip': clip, 'burst': burst, 'spec': dict(sess.spec)}
 
 
 def score(r):
@@ -223,15 +224,23 @@ def score(r):
         over = sum(max(0.0, min(e, st + b) - max(s, st + a)) for s, e in play for a, b in c['speech'])
         fa = line.first_after(last - 0.05)
         return {'kind': r['kind'], 'id': r['id'], 'premature': cut, 'pauses': len(pauses(c)), 'cut_pauses': cut_pauses,
-                'talk_over': over >= 0.3, 'overlap_s': round(over, 3), 'no_reply': fa is None, 'eot_ms': None if fa is None or cut else round((fa - last) * 1000)}
+                'talk_over': over >= 0.3, 'overlap_s': round(over, 3), 'no_reply': fa is None, 'eot_ms': None if fa is None or cut else round((fa - last) * 1000),
+                'spec': r.get('spec') or {'started': 0, 'kept': 0, 'discarded': 0, 'withdrawn': 0}}
     if r['kind'] == 'barge':
         onset = st + c['speech'][0][0]
         fl = [f for f in line.flushes if f >= onset]
         lat = (fl[0] - onset) if fl else None
-        return {'kind': 'barge', 'id': r['id'], 'missed': lat is None or lat > 1.5, 'barge_ms': None if lat is None else round(lat * 1000)}
+        # she must stay stopped while they talk: audio of hers starting after she yielded and before they finish is a
+        # resume over a real interruption (BARGE_AUDIO), which counts as missed
+        over = bool(fl) and any(fl[0] < a < st + c['speech'][-1][1] for a, b, _ in line.segs if b > a)
+        return {'kind': 'barge', 'id': r['id'], 'missed': lat is None or lat > 1.5 or over, 'resumed_over': over,
+                'barge_ms': None if lat is None else round(lat * 1000)}
     fl = [f for f in line.flushes if st <= f <= st + 2.5]
     what = 'noise' if r['burst'][1] == '' else {'haan': 'haan', 'haan ji': 'nod500', 'achha haan ji': 'nod700'}[r['burst'][1]]
-    return {'kind': 'backchannel', 'id': r['id'], 'what': what, 'false_barge': bool(fl)}
+    # a pause she resumes from is not a stop: false_barge = she yielded and never carried on with her opening
+    back = [a for a, b, _ in line.segs if fl and a > fl[0] and b > a]
+    return {'kind': 'backchannel', 'id': r['id'], 'what': what, 'paused': bool(fl), 'false_barge': bool(fl) and not back,
+            'resume_gap_ms': round((back[0] - fl[0]) * 1000) if fl and back else None}
 
 
 def bursts(c):
@@ -277,6 +286,14 @@ def summarise(rows):
         'barge_in_ms': {'n': len(bl), 'median': round(statistics.median(bl)) if bl else None, 'median_ci95': boot_median(bl)},
         'false_barge_in_backchannel': prop([r for r in C if r['what'] == 'haan'], 'false_barge'),
         'false_barge_in_noise': prop([r for r in C if r['what'] == 'noise'], 'false_barge'),
+        'speculation_keep_rate': (lambda k, d: {'k': k, 'n': k + d, 'rate': round(k / (k + d), 3) if k + d else None, 'ci95': wilson(k, k + d)})(
+            sum(r['spec']['kept'] for r in T + S), sum(r['spec']['discarded'] for r in T + S)),
+        'speculation_started_per_turn': {'n': len(T + S), 'median': round(statistics.mean([r['spec']['started'] for r in T + S]), 2) if T + S else None,
+                                         'median_ci95': [None, None], 'note': 'mean starts per turn'},
+        'paused_on_nod_any': prop([r for r in C if r['what'] != 'noise'], 'paused'),
+        'nod_resume_gap_ms': (lambda g: {'n': len(g), 'median': round(statistics.median(g)) if g else None, 'median_ci95': boot_median(g)})(
+            [r['resume_gap_ms'] for r in C if r['resume_gap_ms'] is not None]),
+        'false_barge_in_nod_any': prop([r for r in C if r['what'] != 'noise'], 'false_barge'),
         'false_barge_in_nod_500ms': prop([r for r in C if r['what'] == 'nod500'], 'false_barge'),
         'false_barge_in_nod_700ms': prop([r for r in C if r['what'] == 'nod700'], 'false_barge'),
     }
@@ -297,23 +314,28 @@ async def run_all(clips, conc, only=None):
 
 
 def main():
+    global PARTIAL_LAG, FINAL_MS
     ap = argparse.ArgumentParser()
     ap.add_argument('--split', choices=['dev', 'test', 'all'], default='dev'); ap.add_argument('--limit', type=int)
     ap.add_argument('--conc', type=int, default=8); ap.add_argument('--vad', choices=['silero', 'energy'], default='silero')
     ap.add_argument('--set', action='append', default=[], help='CascadeSession attribute=value, e.g. HOLD_MS=400')
     ap.add_argument('--out', help='write <out>.json and <out>.md')
+    ap.add_argument('--env', action='append', default=[], help='runtime env for every session, e.g. VP_SPECULATE_PARTIAL=1')
+    ap.add_argument('--final-ms', type=int, default=FINAL_MS, help="the fake recogniser's final, after the VAD's end of speech")
     ap.add_argument('--partial-ms', type=int, default=0, help='how late the fake recogniser\'s partials carry each word')
     ap.add_argument('--only', nargs='*', choices=['turn', 'statement', 'barge', 'backchannel'], help='run only these scenarios (tuning sweeps)')
     a = ap.parse_args()
     if a.vad == 'energy': os.environ['VP_VAD'] = 'energy'
-    global PARTIAL_LAG; PARTIAL_LAG = a.partial_ms / 1000
+    PARTIAL_LAG = a.partial_ms / 1000; FINAL_MS = a.final_ms
+    BENCH_ENV.update(kv.split('=', 1) for kv in a.env)
     from vpvoice import audio
     from vpvoice.cascade import CascadeSession
     for kv in a.set:
         k, v = kv.split('='); setattr(CascadeSession, k, int(v))
     clips = [c for c in load_clips() if a.split == 'all' or c['split'] == a.split][:a.limit]
-    params = {k: getattr(CascadeSession, k) for k in ('HOLD_MS', 'STATEMENT_HOLD_MS', 'LONG_HOLD_MS', 'BARGE_MS', 'BARGE_WORDS', 'BARGE_LONG_MS', 'BARGE_NOD', 'BARGE_NOD_LONG_MS')}
-    params['partial_ms'] = a.partial_ms
+    params = {k: getattr(CascadeSession, k) for k in ('HOLD_MS', 'STATEMENT_HOLD_MS', 'LONG_HOLD_MS', 'BARGE_MS', 'BARGE_WORDS', 'BARGE_LONG_MS', 'BARGE_NOD', 'BARGE_NOD_LONG_MS',
+                                              'BARGE_AUDIO', 'BARGE_AUDIO_MS', 'RESUME_MS', 'BARGE_PAUSED_MS', 'SPECULATE_STABLE_MS')}
+    params.update({'partial_ms': a.partial_ms, 'final_ms': FINAL_MS, 'env': dict(BENCH_ENV)})
     vad = type(audio.make_vad()).__name__
     t0 = time.time(); rows = asyncio.run(run_all(clips, a.conc, a.only))
     sha = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], cwd=HERE, capture_output=True, text=True).stdout.strip()
@@ -326,6 +348,7 @@ def main():
     for k, v in m.items():
         if not v.get('n'): continue
         if 'rate' in v: md.append(f"| {k} | {v['rate']} ({v['k']}) | {v['n']} | {v['ci95']} |")
+        elif 'note' in v and v['note'].startswith('mean'): md.append(f"| {k} (mean) | {v['median']} | {v['n']} | |")
         else: md.append(f"| {k} (median ms) | {v['median']} | {v['n']} | {v['median_ci95']} |")
     print('\n'.join(md), flush=True)
     if a.out:

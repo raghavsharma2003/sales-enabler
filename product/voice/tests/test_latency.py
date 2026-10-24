@@ -11,14 +11,20 @@ from vpvoice.cascade import CascadeSession, same_words      # noqa: E402
 OPEN = 'नमस्ते, मैं Suraksha की AI असिस्टेंट हूँ।'
 
 
-def make(script, env=None):
-    t = ticket(transport={'kind': 'webrtc', 'offerUrl': 'https://control.example/join'})
+# These tests exercise the flags themselves, so no provider counts as paced unless a test says so (Provider below
+# covers the provider-aware defaults), and a partial counts as settled at once unless a test says otherwise.
+UNPACED = {'VP_PACED_PROVIDERS': 'none', 'VP_SPECULATE_STABLE_MS': '0', 'VP_SPECULATE_PARTIAL': '1'}
+
+
+def make(script, env=None, stack='v2-flashlite', raw_env=False):
+    env = dict(env or {}) if raw_env else {**UNPACED, **(env or {})}
+    t = ticket(stack, transport={'kind': 'webrtc', 'offerUrl': 'https://control.example/join'})
     ears = {}
     def make_ears(p, f, e, lang='hi-IN'):
         ears['e'] = FakeEars(p, f, e); return ears['e']
-    comp = components(brain=FakeBrain(script), ears=make_ears, voice=FakeVoice())
+    comp = components(stack, brain=FakeBrain(script), ears=make_ears, voice=FakeVoice())
     s, p = sink(t['conversationId'])
-    sess = CascadeSession(t, comp, s, FakeLine(), env=env or {}, watchdog_s=0.02, tick_s=0.01)
+    sess = CascadeSession(t, comp, s, FakeLine(), env=env, watchdog_s=0.02, tick_s=0.01)
     return sess, ears, comp
 
 
@@ -147,7 +153,7 @@ class Prewarm(unittest.TestCase):
 
     def test_each_caller_turn_warms_the_voice(self):
         self.assertEqual(self.run_turns({}), 3, 'at the start, then once per caller turn')
-        self.assertEqual(self.run_turns({'VP_PREWARM': '0'}), 1, 'only the start-of-call warm')
+        self.assertEqual(self.run_turns({'VP_PREWARM': '0'}), 0, 'none, not even at the start of the call')
 
     def test_warm_hosts_is_throttled_and_never_raises(self):
         from vpvoice.providers import warm
@@ -229,15 +235,17 @@ class BargeIn(unittest.TestCase):
         self.assertEqual(turn_words('हाँ जी, एक मिनट'), ['एक', 'मिनट'])
         self.assertEqual(turn_words('nahi nahi'), ['nahi', 'nahi'])
 
+    WORDS = {'VP_BARGE_AUDIO': '0'}                 # the word-based rule (before BARGE_AUDIO)
+
     def test_words_stop_her_soon_after_barge_ms(self):
-        ms = self.talk_over('ek minute ruko')
+        ms = self.talk_over('ek minute ruko', env=self.WORDS)
         self.assertIsNotNone(ms)
         self.assertGreaterEqual(ms, CascadeSession.BARGE_MS - 40)
         self.assertLessEqual(ms, CascadeSession.BARGE_MS + 200, 'stopped within the VAD onset of BARGE_MS')
 
     def test_a_nod_does_not_stop_her(self):
-        self.assertIsNone(self.talk_over('haan ji', frames=50))              # 1 s of "haan ji" over her
-        self.assertIsNotNone(self.talk_over('haan ji', frames=50, env={'VP_BARGE_NOD': '0'}), 'old rule: two words stop her')
+        self.assertIsNone(self.talk_over('haan ji', frames=50, env=self.WORDS))              # 1 s of "haan ji" over her
+        self.assertIsNotNone(self.talk_over('haan ji', frames=50, env={**self.WORDS, 'VP_BARGE_NOD': '0'}), 'old rule: two words stop her')
 
     def test_partial_lag_and_threshold_override(self):
         async def go():
@@ -252,8 +260,130 @@ class BargeIn(unittest.TestCase):
         self.assertEqual(CascadeSession.BARGE_LONG_MS, 700, 'the override is per call, never the class default')
 
     def test_a_long_nod_still_stops_her_eventually(self):
-        ms = self.talk_over('haan ji', frames=100)
+        ms = self.talk_over('haan ji', frames=100, env=self.WORDS)
         self.assertIsNotNone(ms); self.assertGreaterEqual(ms, CascadeSession.BARGE_NOD_LONG_MS - 40)
+
+
+class Provider(unittest.TestCase):
+    """Staging 2026-10-24: on a paced Vertex the extra speculative and warm requests queued ahead of the real one."""
+    def flags(self, stack, env=None):
+        sess, _, _ = make([OPEN], env=env, stack=stack, raw_env=True)
+        return sess.speculate, sess.prewarm_brain, sess.prewarm_voice
+
+    def test_paced_vertex_turns_them_off_and_unpaced_azure_keeps_them(self):
+        self.assertEqual(self.flags('v2-flashlite'), (False, False, False), 'Vertex brain and voice: paced by default')
+        self.assertEqual(self.flags('v2-54mini'), (False, True, False), 'Azure brain unpaced (warm); Gemini voice paced')
+        self.assertEqual(self.flags('v2-mai'), (False, False, True), 'Vertex brain; Azure voice')
+        self.assertEqual(self.flags('v2-flashlite', {'VP_PACED_PROVIDERS': 'none'}), (False, True, True), 'speculation is off by default')
+        self.assertEqual(self.flags('v2-54mini', {'VP_SPECULATE_PARTIAL': '1'}), (True, True, False), 'on when asked, where unpaced')
+        self.assertEqual(self.flags('v2-flashlite', {'VP_SPECULATE_PARTIAL': '1'}), (True, False, False), 'an explicit flag wins over pacing')
+        self.assertEqual(self.flags('v2-54mini', {'VP_PACED_PROVIDERS': 'vertex,azure'}), (False, False, False))
+        self.assertEqual(self.flags('v2-flashlite', {'VP_SPECULATE_PARTIAL': '1', 'VP_PREWARM': '1'}), (True, True, True), 'an explicit flag wins')
+
+    def test_the_call_start_warm_obeys_the_flag(self):
+        for env, want in (({}, 0), ({'VP_PREWARM': '1'}, 1), ({'VP_PACED_PROVIDERS': 'none'}, 1)):
+            class Warm(FakeVoice):
+                warms = 0
+                async def warm(self): Warm.warms += 1
+            async def go():
+                sess, ears, comp = make([OPEN], env=env, raw_env=True); comp.voice = Warm()
+                await sess.start(); await wait_until(lambda: sess.conv.agent_turns == 1); await sess.end('caller_hung_up')
+            asyncio.run(go())
+            self.assertEqual(Warm.warms, want, env)
+
+
+class KeepRate(unittest.TestCase):
+    def test_outcomes_are_counted(self):
+        async def go():
+            sess, ears, comp = make([OPEN, 'जी।', 'जी।', 'जी।'])
+            await sess.start(); await wait_until(lambda: sess.conv.agent_turns == 1)
+            await caller_turn(sess, ears, 'हाँ जी बोलिए', 'हाँ जी, बोलिए।'); await quiet_until(sess, lambda: sess.conv.agent_turns == 2)
+            await caller_turn(sess, ears, 'हाँ जी', 'नहीं जी, अभी नहीं।'); await quiet_until(sess, lambda: sess.conv.agent_turns == 3)
+            await sess.end('caller_hung_up')
+            return sess.timing_summary()['speculation']
+        sp = asyncio.run(go())
+        self.assertEqual((sp['started'], sp['kept'], sp['discarded']), (2, 1, 1)); self.assertEqual(sp['keepRate'], 0.5)
+        self.assertTrue(sp['enabled'])
+
+    def test_a_partial_still_moving_is_not_speculated_on(self):
+        async def go():
+            sess, ears, comp = make([OPEN, 'जी।'], env={'VP_SPECULATE_STABLE_MS': '300'})
+            await sess.start(); await wait_until(lambda: sess.conv.agent_turns == 1)
+            await feed(sess, 25); ears['e'].on_p('हाँ जी')
+            await feed(sess, 30, QUIET)                       # end of speech, but the partial changed just now
+            early = sess.pending is not None and sess.pending.speculative
+            await asyncio.sleep(0.35); await feed(sess, 2, QUIET)
+            late = sess.pending is not None and sess.pending.speculative
+            ears['e'].on_p('हाँ जी, बोलिए')                    # ends at a clause boundary: settled at once
+            await sess.end('caller_hung_up')
+            return early, late
+        early, late = asyncio.run(go())
+        self.assertFalse(early, 'not before the partial has held still for SPECULATE_STABLE_MS')
+        self.assertTrue(late)
+
+
+class AudioBarge(unittest.TestCase):
+    """BARGE_AUDIO: she yields on the audio alone and resumes after a nod (staging partialLagMs median 858 ms)."""
+    LONG = BargeIn.LONG
+
+    def over(self, speech_frames, heard=None, heard_at=3, quiet_frames=40, env=None):
+        """She is mid-opening; the caller speaks `speech_frames` x 20 ms, heard as `heard` at frame `heard_at` (counted
+        from the first speech frame, so it may fall in the quiet after), then is quiet. Returns what happened."""
+        async def go():
+            sess, ears, comp = make([self.LONG], env=env); line = sess.line
+            await sess.start()
+            await wait_until(lambda: sess.active is not None and sess.active.first is not None)
+            await asyncio.sleep(0.2)
+            pause_ms = None; audio_at_pause = None
+            for i in range(speech_frames + quiet_frames):
+                if heard is not None and i == heard_at: ears['e'].on_p(heard)
+                await feed(sess, 1, SPEECH if i < speech_frames else QUIET); await asyncio.sleep(0.004)
+                if line.flushes and pause_ms is None: pause_ms = (i + 1) * 20; audio_at_pause = line.audio
+            await asyncio.sleep(0.05)
+            out = {'pause_ms': pause_ms, 'stopped': sess.barge_ins > 0, 'resumed': sess.resumes > 0,
+                   'played_on': audio_at_pause is not None and line.audio > audio_at_pause, 'summary': sess.timing_summary()['barge']}
+            await sess.end('caller_hung_up')
+            return out
+        return asyncio.run(go())
+
+    def test_she_yields_within_barge_audio_ms_without_any_words(self):
+        r = self.over(40)                                     # 0.8 s of speech, no words yet (the recogniser trails)
+        self.assertIsNotNone(r['pause_ms'])
+        self.assertLessEqual(r['pause_ms'], CascadeSession.BARGE_AUDIO_MS + 120, 'yields on the audio, before any word')
+
+    def test_a_nod_pauses_her_and_she_carries_on(self):
+        r = self.over(30, 'haan ji', heard_at=20)             # 0.6 s nod; its words arrive while it is still going
+        self.assertIsNotNone(r['pause_ms']); self.assertTrue(r['resumed']); self.assertFalse(r['stopped'])
+        self.assertTrue(r['played_on'], 'her audio continues after the nod')
+
+    def test_a_noise_or_cough_with_no_words_pauses_and_resumes(self):
+        r = self.over(15)                                     # 0.3 s, never any words
+        self.assertTrue(r['resumed']); self.assertFalse(r['stopped'])
+
+    def test_real_words_stop_her(self):
+        r = self.over(40, 'ek minute ruko', heard_at=20)
+        self.assertTrue(r['stopped']); self.assertFalse(r['resumed'])
+
+    def test_long_speech_with_no_words_yet_stops_her(self):
+        r = self.over(int(CascadeSession.BARGE_PAUSED_MS / 20) + 10)
+        self.assertTrue(r['stopped'])
+
+    def test_late_words_that_are_not_a_nod_stop_her_after_she_resumed(self):
+        r = self.over(15, 'ruko', heard_at=15 + int(CascadeSession.RESUME_MS / 20) + 5)
+        self.assertTrue(r['resumed']); self.assertTrue(r['stopped'])
+
+    def test_heard_text_counts_only_what_played(self):
+        async def go():
+            sess, ears, comp = make([self.LONG]); line = sess.line
+            await sess.start()
+            await wait_until(lambda: sess.active is not None and sess.active.first is not None)
+            await asyncio.sleep(0.2); a = sess.active
+            await a.pause(); at_pause = a.played(); await asyncio.sleep(0.2)
+            self.assertEqual(a.played(), at_pause, 'nothing plays while she is paused')
+            await a.resume(); await asyncio.sleep(0.1)
+            self.assertGreater(a.played(), at_pause)
+            await sess.end('caller_hung_up')
+        asyncio.run(go())
 
 
 if __name__ == '__main__':

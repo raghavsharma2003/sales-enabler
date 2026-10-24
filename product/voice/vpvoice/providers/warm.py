@@ -5,6 +5,27 @@
 import asyncio, time
 
 MIN_GAP_S = 8.0
+
+# Providers whose requests are paced or rate-limited (VP_PACED_PROVIDERS, comma-separated; 'none' for none). Vertex is
+# paced by default: the appeal commitment holds Vertex to about 1 request per second from India, and on staging the
+# extra speculative and warm requests queued ahead of the real brain request (2026-10-24: flashlite p50 2.30 -> 3.20 s).
+PACED_DEFAULT = ('vertex',)
+
+
+def paced_providers(env):
+    raw = env.get('VP_PACED_PROVIDERS')
+    if raw is None: return set(PACED_DEFAULT)
+    return {x.strip().lower() for x in raw.split(',') if x.strip() and x.strip().lower() != 'none'}
+
+
+def route_of(part, cid):
+    """The provider route a brain or voice component's requests go to: 'vertex', 'azure', 'openrouter', 'sarvam'."""
+    from .. import catalog
+    if part == 'brain':
+        h = (catalog.BRAINS.get(cid) or {}).get('host')
+        return {'gm': 'vertex', 'sin': 'azure', 'sea': 'azure', 'or': 'openrouter', 'sv': 'sarvam'}.get(h, h or '')
+    k = (catalog.TTS.get(cid) or {}).get('kind', '')
+    return 'vertex' if k == 'gemini' else k
 _last = {}            # host -> monotonic time of the last warm started
 
 

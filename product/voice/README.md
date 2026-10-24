@@ -211,18 +211,23 @@ Each reply's gap (caller end of speech to her first audio) is split into stages 
 first data), `sentence`, `voice` (request to first audio), `hold` and `out`. A stage is negative when work started
 early. `partialLagMs` is how long after speech starts the recogniser's first words arrive.
 
-The cuts, each behind a flag (`'1'`/`'0'` in the env override the default):
+The cuts, each behind a flag (`'1'`/`'0'` in the env override the default). Speculation and pre-warm are
+provider-aware: a provider listed in `VP_PACED_PROVIDERS` (default `vertex`, which is held to about 1 request a second;
+`none` for none) gets no extra requests, because on staging they queued ahead of the real one (flashlite p50 2.30 →
+3.20 s, 2026-10-24).
 
 | Flag | Default | What it does |
 |---|---|---|
-| `VP_SPECULATE_PARTIAL` | on | Starts the reply on the caller's partial at end of speech; kept only if the final has the same words, else discarded unheard. Never on digits, secrets, action signals or a raising judge. |
-| `VP_PREWARM` | on | When the caller starts speaking: refreshes the Vertex token and sends one HEAD to each brain and voice host (at most one per host per 8 s), so requests skip the TLS handshake. |
+| `VP_SPECULATE_PARTIAL` | off | Starts the reply on the caller's settled partial at end of speech (unchanged for `VP_SPECULATE_STABLE_MS`, default 400, or ending at a clause boundary); kept only if the final has the same words. Off everywhere: with partials that trail speech it saved nothing on the bench and kept 5–16% (`bench/results/turn-2026-10-24-dev-speculation.md`). Never on digits, secrets, action signals or a raising judge. |
+| `VP_PREWARM` | on where unpaced | When the caller starts speaking (and at call start for the voice): refreshes the Vertex token and sends one HEAD to each brain and voice host (at most one per host per 8 s). |
 | `VP_FIRST_CLAUSE` | off | Voices a reply's first clause on its own (at a comma, 24+ characters). Never the opening. Off until a listening check. |
-| `VP_BARGE_NOD` | on | Nods ("haan ji", "achha") never count toward a barge-in's words; speech heard only as nods stops her after 1.5 s. |
+| `VP_BARGE_AUDIO` | on | She yields on `VP_BARGE_AUDIO_MS` (200) of caller speech from the audio alone, keeping her place; after `VP_RESUME_MS` (400) of quiet she resumes if all she heard was a nod or nothing, else she gives way. `VP_BARGE_PAUSED_MS` (900) of speech with no words yet also gives way, and late words that are not a nod stop her after she resumed. |
+| `VP_BARGE_NOD` | on | Nods ("haan ji", "achha") never count as words, in either barge-in rule. |
 
-`VP_BARGE_LONG_MS` (default 700) sets how much speech stops her whatever the words. On the bench, 500 cuts the
-barge-in time from about 730 to 535 ms with no false stops while partials lag 300 ms, but stops her on most nods at
-a 500 ms lag (`bench/results/turn-2026-10-23-dev-barge-sweep.md`). Read `partialLagMs` before lowering it.
+The timing summary also carries `speculation` (started, kept, discarded, withdrawn, keepRate), `prewarm` (brain,
+voice) and `barge` (pauses, resumes, stops). With `VP_BARGE_AUDIO=0` the word rule applies: `BARGE_MS` of speech with
+`BARGE_WORDS` words, or `VP_BARGE_LONG_MS` (700) of speech; staging's partials trail speech by a median 858 ms, so
+words alone cannot stop her quickly.
 
 ## Voice samples for the stack cards
 
