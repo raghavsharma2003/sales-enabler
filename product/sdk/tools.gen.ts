@@ -189,6 +189,10 @@ export type ToolName =
   | "thread.get"
   | "thread.list"
   | "tool.attach"
+  | "tool.create"
+  | "tool.edit"
+  | "tool.list"
+  | "tool.test"
   | "usage.get"
   | "version.candidate"
   | "version.diff"
@@ -393,7 +397,7 @@ export interface ToolInput {
     expectDraftHash?: string;
     patch: ({
       op: "set" | "remove" | "append" | "add" | "replace";
-      /** a draft field: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording; use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-] */
+      /** a draft field: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording, knowledge; use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-] */
       path: string;
       /** the new value */
       value?: unknown;
@@ -1064,28 +1068,6 @@ export interface ToolInput {
     /** the contact attribute holding the external id (default external_id) */
     idKey?: string;
   };
-  /** Record the matched rows of a previewed file as verified outcomes (policy, waits for approval) */
-  "outcome.import": {
-    importId: string;
-  };
-  /** Files of verified results imported, with matched, unmatched and ambiguous rows and how often the AI read disagreed (read) */
-  "outcome.import.list": {
-    limit?: number;
-  };
-  /** Read a file of results from your own system (paid, renewed, booked) and show which call each row matches; nothing is recorded yet (draft) */
-  "outcome.import.preview": {
-    fileName: string;
-    /** a CSV or TSV file as text: a header row, then one outcome per row */
-    csv?: string;
-    /** an Excel (.xlsx) file, base64; its first sheet is read */
-    xlsxBase64?: string;
-    definitionId?: string;
-    campaignId?: string;
-    /** how many days before the row date a call may be (default 14) */
-    windowDays?: number;
-    /** the contact attribute holding the external id (default external_id) */
-    idKey?: string;
-  };
   /** Record a manager's outcome label for a call (used to calibrate judges) (draft) */
   "outcome.label": {
     conversationId: string;
@@ -1465,6 +1447,83 @@ export interface ToolInput {
     config?: Record<string, unknown>;
     remove?: boolean;
   };
+  /** Define an in-call tool: an https request to your system (read, or write a note), its arguments and the fields she may use (draft) */
+  "tool.create": {
+    /** the function name she calls: lowercase letters, digits and underscores */
+    name: string;
+    /** when she should use it, in plain words */
+    description: string;
+    input: {
+      type: "object";
+      properties: Record<string, {
+        type: "string" | "number" | "integer" | "boolean";
+        description?: string;
+        enum?: unknown[];
+        maxLength?: number;
+        minimum?: number;
+        maximum?: number;
+      }>;
+      required?: string[];
+    };
+    method: "GET" | "POST";
+    /** https URL; {argument} placeholders are filled in */
+    url: string;
+    query?: string[];
+    body?: string[];
+    integrationId?: string;
+    authHeader?: string;
+    secretKey?: string;
+    authPrefix?: string;
+    timeoutMs?: number;
+    /** 'read' looks something up; 'draft' writes a note or record */
+    risk: "read" | "draft";
+    resultFields: string[];
+  };
+  /** Change an in-call tool; versions already published keep the spec they were published with (draft) */
+  "tool.edit": {
+    toolId: string;
+    /** the function name she calls: lowercase letters, digits and underscores */
+    name?: string;
+    /** when she should use it, in plain words */
+    description?: string;
+    input?: {
+      type: "object";
+      properties: Record<string, {
+        type: "string" | "number" | "integer" | "boolean";
+        description?: string;
+        enum?: unknown[];
+        maxLength?: number;
+        minimum?: number;
+        maximum?: number;
+      }>;
+      required?: string[];
+    };
+    method?: "GET" | "POST";
+    /** https URL; {argument} placeholders are filled in */
+    url?: string;
+    query?: string[];
+    body?: string[];
+    integrationId?: string;
+    authHeader?: string;
+    secretKey?: string;
+    authPrefix?: string;
+    timeoutMs?: number;
+    /** 'read' looks something up; 'draft' writes a note or record */
+    risk?: "read" | "draft";
+    resultFields?: string[];
+  };
+  /** This workspace's in-call tools, with what each sends and what she may use from the answer (read) */
+  "tool.list": Record<string, never>;
+  /** Dry-run an in-call tool: the exact request it would send (secret masked) and what she would get from a sample answer (test) */
+  "tool.test": {
+    toolId: string;
+    args: Record<string, unknown>;
+    fakeResponse?: {
+      status?: number;
+      body?: unknown;
+    };
+    timeout?: boolean;
+  };
   /** show metered provider cost grouped by component, campaign or day (read) */
   "usage.get": {
     groupBy: "component" | "campaign" | "day";
@@ -1764,6 +1823,10 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "thread.get": { risk: "read", needsApproval: false },
   "thread.list": { risk: "read", needsApproval: false },
   "tool.attach": { risk: "draft", needsApproval: false },
+  "tool.create": { risk: "draft", needsApproval: false },
+  "tool.edit": { risk: "draft", needsApproval: false },
+  "tool.list": { risk: "read", needsApproval: false },
+  "tool.test": { risk: "test", needsApproval: false },
   "usage.get": { risk: "read", needsApproval: false },
   "version.candidate": { risk: "draft", needsApproval: false },
   "version.diff": { risk: "read", needsApproval: false },

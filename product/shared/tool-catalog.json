@@ -1111,7 +1111,7 @@
          "type": "string",
          "minLength": 1,
          "maxLength": 120,
-         "description": "a draft field: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording; use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-]"
+         "description": "a draft field: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording, knowledge; use persona.notes[0], persona.notes.0 or /persona/notes/0; append to a list with /facts/- or facts[-]"
         },
         "value": {
          "description": "the new value"
@@ -1130,7 +1130,7 @@
      "agentId",
      "patch"
     ],
-    "description": "Read the draft with agent.get first and patch only fields it has. Editable top-level fields: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording. voice: use stack.set or voice.set; tools: use tool.attach."
+    "description": "Read the draft with agent.get first and patch only fields it has. Editable top-level fields: brand, job, jobDescription, category, sectorPacks, languages, persona, goals, facts, neverSay, opening, objections, handOff, memory, limits, recording, knowledge. voice: use stack.set or voice.set; tools: use tool.attach."
    }
   },
   {
@@ -7340,6 +7340,410 @@
     "required": [
      "agentId"
     ]
+   }
+  },
+  {
+   "name": "tool.create",
+   "risk": "draft",
+   "summary": "Define an in-call tool: an https request to your system (read, or write a note), its arguments and the fields she may use",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "description": "the function name she calls: lowercase letters, digits and underscores"
+     },
+     "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "when she should use it, in plain words"
+     },
+     "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "type": {
+        "type": "string",
+        "enum": [
+         "object"
+        ]
+       },
+       "properties": {
+        "type": "object",
+        "additionalProperties": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "type": {
+           "type": "string",
+           "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean"
+           ]
+          },
+          "description": {
+           "type": "string",
+           "maxLength": 200
+          },
+          "enum": {
+           "type": "array",
+           "items": {},
+           "maxItems": 20
+          },
+          "maxLength": {
+           "type": "integer",
+           "minimum": 1,
+           "maximum": 500
+          },
+          "minimum": {
+           "type": "number"
+          },
+          "maximum": {
+           "type": "number"
+          }
+         },
+         "required": [
+          "type"
+         ]
+        }
+       },
+       "required": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "maxLength": 40
+        },
+        "maxItems": 8
+       }
+      },
+      "required": [
+       "type",
+       "properties"
+      ]
+     },
+     "method": {
+      "type": "string",
+      "enum": [
+       "GET",
+       "POST"
+      ]
+     },
+     "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 500,
+      "description": "https URL; {argument} placeholders are filled in"
+     },
+     "query": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 40
+      },
+      "maxItems": 8
+     },
+     "body": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 40
+      },
+      "maxItems": 8
+     },
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "authHeader": {
+      "type": "string",
+      "maxLength": 40
+     },
+     "secretKey": {
+      "type": "string",
+      "maxLength": 60
+     },
+     "authPrefix": {
+      "type": "string",
+      "maxLength": 20
+     },
+     "timeoutMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 2500
+     },
+     "risk": {
+      "type": "string",
+      "enum": [
+       "read",
+       "draft"
+      ],
+      "description": "'read' looks something up; 'draft' writes a note or record"
+     },
+     "resultFields": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "minItems": 1,
+      "maxItems": 12
+     }
+    },
+    "required": [
+     "name",
+     "description",
+     "input",
+     "method",
+     "url",
+     "risk",
+     "resultFields"
+    ],
+    "description": "Define a tool she can use during a call: an https request to your system that reads something or writes a note."
+   }
+  },
+  {
+   "name": "tool.edit",
+   "risk": "draft",
+   "summary": "Change an in-call tool; versions already published keep the spec they were published with",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "toolId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "description": "the function name she calls: lowercase letters, digits and underscores"
+     },
+     "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "when she should use it, in plain words"
+     },
+     "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "type": {
+        "type": "string",
+        "enum": [
+         "object"
+        ]
+       },
+       "properties": {
+        "type": "object",
+        "additionalProperties": {
+         "type": "object",
+         "additionalProperties": false,
+         "properties": {
+          "type": {
+           "type": "string",
+           "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean"
+           ]
+          },
+          "description": {
+           "type": "string",
+           "maxLength": 200
+          },
+          "enum": {
+           "type": "array",
+           "items": {},
+           "maxItems": 20
+          },
+          "maxLength": {
+           "type": "integer",
+           "minimum": 1,
+           "maximum": 500
+          },
+          "minimum": {
+           "type": "number"
+          },
+          "maximum": {
+           "type": "number"
+          }
+         },
+         "required": [
+          "type"
+         ]
+        }
+       },
+       "required": {
+        "type": "array",
+        "items": {
+         "type": "string",
+         "maxLength": 40
+        },
+        "maxItems": 8
+       }
+      },
+      "required": [
+       "type",
+       "properties"
+      ]
+     },
+     "method": {
+      "type": "string",
+      "enum": [
+       "GET",
+       "POST"
+      ]
+     },
+     "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 500,
+      "description": "https URL; {argument} placeholders are filled in"
+     },
+     "query": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 40
+      },
+      "maxItems": 8
+     },
+     "body": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 40
+      },
+      "maxItems": 8
+     },
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "authHeader": {
+      "type": "string",
+      "maxLength": 40
+     },
+     "secretKey": {
+      "type": "string",
+      "maxLength": 60
+     },
+     "authPrefix": {
+      "type": "string",
+      "maxLength": 20
+     },
+     "timeoutMs": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 2500
+     },
+     "risk": {
+      "type": "string",
+      "enum": [
+       "read",
+       "draft"
+      ],
+      "description": "'read' looks something up; 'draft' writes a note or record"
+     },
+     "resultFields": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 120
+      },
+      "minItems": 1,
+      "maxItems": 12
+     }
+    },
+    "required": [
+     "toolId"
+    ]
+   }
+  },
+  {
+   "name": "tool.list",
+   "risk": "read",
+   "summary": "This workspace's in-call tools, with what each sends and what she may use from the answer",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "tool.test",
+   "risk": "test",
+   "summary": "Dry-run an in-call tool: the exact request it would send (secret masked) and what she would get from a sample answer",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "toolId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "args": {
+      "type": "object",
+      "additionalProperties": {}
+     },
+     "fakeResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "status": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 599
+       },
+       "body": {}
+      },
+      "required": []
+     },
+     "timeout": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "toolId",
+     "args"
+    ],
+    "description": "A dry run: builds the exact request (the secret masked) and reads a fake answer. Nothing is sent."
    }
   },
   {
