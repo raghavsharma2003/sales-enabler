@@ -90,6 +90,14 @@ export function explainRefusal(code: GateCode, detail: string | undefined, o: { 
         : { code, message: 'This agent is not ready to make calls yet.', fix: { tool: 'version.publish', label: 'Publish the agent', role: 'builder' } };
     case 'pack_missing': return { code, message: 'This agent needs industry rules your workspace has not turned on yet.' };
     case 'predial_veto': return { code, message: 'Your own system asked us not to call this person.' };
+    case 'already_paid': {
+      const m = /paid (\d+|unknown) inr_milli via (\w+) at (\S+)/.exec(d);
+      const amount = m && m[1] !== 'unknown' ? `₹${(Number(m[1]) / 1000).toLocaleString('en-IN', { maximumFractionDigits: 2 })} ` : '';
+      const via = m ? ({ razorpay: 'Razorpay', cashfree: 'Cashfree', payu: 'PayU' } as Record<string, string>)[m[2]] ?? 'a payment gateway' : 'a payment gateway';
+      const on = m ? new Date(m[3]).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', timeZone: 'Asia/Kolkata' }) : null;
+      return { code, message: `They already paid ${amount}through ${via}${on ? ` on ${on}` : ''}, after this list was imported, so they are not called.`,
+        why: 'A payment newer than the list stops campaign and API calls. A callback they asked for still happens; a newer list starts the next cycle.' };
+    }
     case 'predial_timeout': return { code, message: 'Your system did not answer in time, so we did not call.', why: 'We only call when your check says yes.' };
     case 'deferred_concurrency': return { code, message: 'All your lines are busy right now. We will call shortly.' };
     case 'check_unavailable': return { code, message: 'A safety check could not run, so we did not call. We will try again in a few minutes.' };

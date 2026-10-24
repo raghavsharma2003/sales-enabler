@@ -12,6 +12,7 @@ import { FakeRuntime, setRuntime, type Runtime } from '../server/runtime-client.
 import { Registry, tool, type Actor } from '../server/tools.ts';
 import { module as campaigns } from '../server/modules/campaigns/index.ts';
 import { allowedByWords } from '../server/modules/calls/gate-trace.ts';
+import { explainRefusal } from '../server/modules/campaigns/explain.ts';
 import { runGate, tombstoneHashes, type AttemptRow, type GateVerdict, type PredialFn } from '../server/modules/campaigns/gate.ts';
 import { FakeTelephony, setTelephony } from '../server/modules/campaigns/telephony.ts';
 import { claimNext, tick, type WorkerDeps } from '../server/modules/campaigns/worker.ts';
@@ -150,6 +151,21 @@ test('a passing check stores what it found (decision 5): the basis and DND resul
   assert.match(t('G9'), /^Rs 30 was held in the wallet for up to 5 minutes, within the workspace's spend cap\.$/);
   assert.match(t('G7'), /^The number had been rung 0 times today, under the limit of 3/);
   assert.doesNotMatch(JSON.stringify(words.checks.map(c => c.text)), /\bG\d+\b|_/);
+});
+
+test('G4 already_paid: a payment newer than the list stops campaign, API and retry calls; a callback, a member\'s one call and a newer list still go', { skip }, async () => {
+  const w = await world();
+  await pool.query(`INSERT INTO contact_payment (workspace_id, integration_id, provider, ref, status, contact_id, reference_key, reference, amount_inr_milli, paid_at)
+    VALUES ($1, gen_random_uuid(), 'razorpay', 'pay_synthetic1', 'matched', $2, 'policy_number', 'SH-2026-40110', 14250000, '2025-12-30T06:00:00Z')`, [w.ws, w.contact]);
+  const api = await gate(await attempt(w, { kind: 'api' }));
+  assert.equal(code(api), 'already_paid');
+  if (api.allowed) return;
+  assert.equal(api.outcome, 'blocked', 'not retried');
+  assert.equal(explainRefusal('already_paid', api.detail).message, 'They already paid ₹14,250 through Razorpay on 30 December, after this list was imported, so they are not called.');
+  for (const kind of ['callback', 'single']) assert.equal(code(await gate(await attempt(w, { kind }))), 'allowed', `${kind}: still goes`);
+  // A list imported more than a day after the payment opens the next cycle.
+  await pool.query("INSERT INTO attribute (contact_id, key, value, observed_at) VALUES ($1,'policy_number',$2,'2026-01-01T00:00:00Z')", [w.contact, JSON.stringify('SH-2026-40110')]);
+  assert.equal(code(await gate(await attempt(w, { kind: 'api' }))), 'allowed');
 });
 
 test('G1 workspace_not_verified: suspended workspace, or no verified brand for production', { skip }, async () => {

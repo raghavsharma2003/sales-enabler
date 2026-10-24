@@ -60,7 +60,7 @@ function days(d: number[]): string {
 function noteWords(gate: string, n: Record<string, any> | undefined, test: boolean): string | null {
   if (!n || test) return null;
   if (gate === 'G4' && Array.isArray(n.lists))
-    return `The number is on no do-not-call list: the workspace's${n.lists.includes('campaign') ? ', the campaign\'s' : ''}${n.ownDnd ? ' and the business\'s own' : ''}.`;
+    return `The number is on no do-not-call list: the workspace's${n.lists.includes('campaign') ? ', the campaign\'s' : ''}${n.ownDnd ? ' and the business\'s own' : ''}${n.paidChecked ? '; and no payment from them has come in since this list was imported' : ''}.`;
   if (gate === 'G5' && n.basis && CATEGORY[n.category]) {
     const dnd = n.dnd === 'not_required' ? 'Do Not Disturb does not apply to it'
       : `the number was ${DND[n.dnd] ?? 'checked on the Do Not Disturb list'}${n.dndCheckedAt ? ` (checked ${istDate(n.dndCheckedAt)})` : ''}`;

@@ -2,6 +2,7 @@
 // every path: campaign, api, single, test, retry, callback, transfer. It holds money before any I/O (G9) and
 // releases the hold itself when a later check refuses. Every check fails closed: a check that cannot run (a bad
 // time zone, a query error) refuses with check_unavailable, inside a savepoint so the claim can still record why.
+import { paidSinceImport } from '../intake/payments.ts';
 import type { RetryPolicy } from './retry.ts';
 import { createHash, createHmac } from 'node:crypto';
 import type { AgentConfig, CallCategory } from '../../../shared/agent-config.ts';
@@ -26,7 +27,8 @@ export type GateCode =
   | 'workspace_not_verified' | 'identifier_invalid' | 'destination_blocked' | 'erased' | `suppressed:${string}`
   | 'no_basis' | 'consent_expired' | 'dnd_blocked_by_operator' | 'out_of_window' | 'budget_exhausted'
   | 'cli_wrong_series' | 'cli_undeclared' | 'cli_paused' | 'kyc_lapsed' | 'cap_reached' | 'wallet_low'
-  | 'version_not_publishable' | 'pack_missing' | 'predial_veto' | 'predial_timeout' | 'deferred_concurrency' | 'check_unavailable';
+  | 'version_not_publishable' | 'pack_missing' | 'predial_veto' | 'predial_timeout' | 'deferred_concurrency' | 'check_unavailable'
+  | 'already_paid';
 
 /** note: what a passing check found (the consent basis, the DND result, the hours, the hold), stored with the trace so
  *  "Why this call was allowed" (calls/gate-trace.ts) reads it back and never re-derives it. */
@@ -227,7 +229,14 @@ export async function runGate(q: Queryable, a: AttemptRow, deps: GateDeps): Prom
         const d = await one<{ internal: boolean }>(q, 'SELECT internal FROM dnd_status WHERE contact_id = $1', [contact.id]);
         if (d?.internal) throw new Refuse('suppressed:internal_dnd', 'on the business\'s own do-not-call list');
       }
-      notes.G4 = { lists: campaign ? ['workspace', 'campaign'] : ['workspace'], ownDnd: !!contact && !test };
+      // They already paid (intake's verified payment webhooks, matched by the workspace's record key, newer than the list
+      // this call came from): a campaign, API or retry call stops. A callback they asked for, a member's one call and a
+      // test still happen.
+      if (contact && !test && ['campaign', 'api', 'retry'].includes(a.kind)) {
+        const paid = await paidSinceImport(q, ws, contact.id);
+        if (paid) throw new Refuse('already_paid', `paid ${paid.amount ?? 'unknown'} inr_milli via ${paid.provider} at ${paid.paidAt.toISOString()} (ref ${paid.reference})`);
+      }
+      notes.G4 = { lists: campaign ? ['workspace', 'campaign'] : ['workspace'], ownDnd: !!contact && !test, paidChecked: !!contact && !test && ['campaign', 'api', 'retry'].includes(a.kind) };
     }],
     ['G5', async () => {
       if (test) { consent = { basis: 'consent' }; notes.G5 = { basis: 'member_phone' }; return; }   // a member's own verified phone
