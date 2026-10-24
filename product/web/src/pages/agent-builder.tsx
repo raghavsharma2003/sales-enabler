@@ -89,6 +89,8 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
             : !doc.compiles ? <Btn disabled fix={null} reason="The brief does not compile yet. See the checks below.">Publish</Btn>
             : <Btn kind="primary" busy={busy === 'publish'} onClick={publish}>Publish…</Btn>}
         </>} />
+      {doc.archived && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Archived</strong><span>This agent makes no calls and takes no changes. Her versions, tests and calls are kept.</span>
+        <Btn size="sm" onClick={async () => { const r = await act('agent.restore', { agentId: doc.id }, { describe: `${doc.name} is restored.` }); if (r.ok) reload(); }}>Restore</Btn></div>}
       {draftStack?.status === 'beta' && <div className="state state-missing" role="note" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Test calls only</strong><span>This agent's stack is in beta. You can publish it and test it, but a campaign will refuse it. {BETA_REASON}</span> <Link to={`/agents/${doc.id}?tab=voice`}>Choose another stack</Link></div>}
       {doc.lint.length > 0 && <div className="state state-failed" role="alert" style={{ marginBottom: 16, textAlign: 'left', justifyItems: 'start' }}><strong>Checks on the draft</strong><ul style={{ margin: 0, paddingLeft: 20 }}>{[...new Map(doc.lint.map(l => [`${l.path ?? ''}|${l.message}`, l])).values()].map((l, i) => { const w = lintWhere(l.path); const msg = l.message.charAt(0).toUpperCase() + l.message.slice(1); return <li key={i}>{w ? <><Link to={`?tab=${w.tabId}`}>{w.tab}, {w.field}</Link>: {msg}</> : msg}</li>; })}</ul></div>}
       <Tabs label="Builder sections" value={tab} onChange={t => setQs({ tab: t === 'basics' ? null : t })} items={TABS} />
@@ -98,7 +100,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
       {tab === 'company' && <Suspense fallback={<Skeleton rows={4} />}><AgentCompany agentId={doc.id} linked={cfg.knowledge} onLinked={onLinked} /></Suspense>}
       {tab === 'rules' && <Rules cfg={cfg} set={set} />}
       {tab === 'tools' && <Tools cfg={cfg} set={set} />}
-      {tab === 'voice' && <Card><StackPicker agentId={doc.id} stackId={cfg.voice.stackId} components={cfg.voice.components} voiceId={cfg.voice.voiceId ?? null} onChanged={onVoiceChanged} />
+      {tab === 'voice' && <Card><StackPicker agentId={doc.id} published={doc.latestVersion} stackId={cfg.voice.stackId} components={cfg.voice.components} voiceId={cfg.voice.voiceId ?? null} onChanged={onVoiceChanged} />
         <hr className="rule" /><div className="formgrid"><Toggle checked={cfg.recording.enabled} onChange={v => set(c => { c.recording.enabled = v; if (!v) c.recording.announce = false; })} label="Record calls" hint="Recordings stay in India. Retention is set in Settings, Privacy." />
             <Toggle checked={cfg.recording.announce} onChange={v => set(c => { c.recording.announce = v; })} label="Say that the call is recorded" hint={cfg.recording.enabled ? undefined : 'Turn recording on first.'} /></div></Card>}
       {tab === 'versions' && <><Versions doc={doc} dirty={dirty} reload={reload} /><Suspense fallback={null}><AgentChanges agentId={doc.id} onChanged={reload} /></Suspense></>}

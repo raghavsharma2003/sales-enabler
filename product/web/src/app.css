@@ -330,3 +330,6 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .why-said { margin-top: 6px; font-size: 0.875rem; } .why-said summary { cursor: pointer; min-height: 24px; color: var(--peacock); font-weight: 600; }
 .why-said ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; } .why-said li { overflow-wrap: anywhere; }
 .why-said blockquote { margin: 4px 0 0; padding: 4px 8px; border-left: 3px solid var(--line); color: var(--ink-2); white-space: pre-wrap; }
+.traits { display: grid; gap: 8px; margin: 8px 0; } .traits h5 { margin: 0 0 4px; font-size: 0.8125rem; }
+.traits ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; } .traits li { overflow-wrap: anywhere; } .traits svg { vertical-align: -2px; flex: none; }
+.traits li:not(.risk) svg { color: var(--leaf); }

@@ -4,7 +4,7 @@
 import { label } from '../../labels.ts';
 import type { AgentConfig, ToolGrant } from '../../../shared/agent-config.ts';
 import { RISK_CLASSES } from '../../../shared/approval.ts';
-import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackLanguages, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
+import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, getStack, resolveStack, stackLanguages, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
 import { COMPONENTS, getComponent, type Component } from '../../../shared/components.ts';
 import { lintAgentConfig, redact } from '../../../shared/safety/index.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
@@ -26,6 +26,7 @@ import { checkSpec, HttpToolError } from '../../../shared/contracts/http-tool.ts
 import { agentLanguages, languageName, languageProblems } from './languages.ts';
 import { stackLanguage } from '../../../shared/stacks.ts';
 import { gateStatus } from '../../../shared/stack-gate.ts';
+import { cutInFigure, plainTraits } from '../../../shared/stack-traits.ts';
 import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
 import { chatTurn } from './chat.ts';
 import { factUses } from '../../../shared/company-facts.ts';
@@ -34,6 +35,8 @@ import { getTemplate, TEMPLATES } from './templates.ts';
 import { LIBRARY, libraryCaller, toSimCaller, type CallerShape, type LibraryCaller } from './library.ts';
 
 interface AgentRow { id: string; name: string; job: string | null; status: string; draft: AgentConfig; updated_at: Date }
+
+const ARCHIVED = 'this agent is archived; restore it before changing or publishing it (agent.restore)';
 
 async function loadAgent(ctx: ToolCtx, agentId: string, lock = false): Promise<AgentRow> {
   const a = await one<AgentRow>(ctx.q, `SELECT id, name, job, status, draft, updated_at FROM agent WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [agentId, ctx.workspaceId]);
@@ -50,7 +53,8 @@ async function saveDraft(ctx: ToolCtx, agentId: string, input: AgentConfig, prev
   if (draft.knowledge?.offeringIds.length) await withKnowledge(ctx.q, ctx.workspaceId, draft);
   guardDraft(prev, draft);
   guardLanguages(prev, draft);
-  await ctx.q.query('UPDATE agent SET draft = $3, job = $4, updated_at = now() WHERE id = $1 AND workspace_id = $2', [agentId, ctx.workspaceId, JSON.stringify(draft), draft.job]);
+  const r = await ctx.q.query("UPDATE agent SET draft = $3, job = $4, updated_at = now() WHERE id = $1 AND workspace_id = $2 AND status <> 'archived'", [agentId, ctx.workspaceId, JSON.stringify(draft), draft.job]);
+  if (!r.rowCount) throw new ValidationError('agentId', ARCHIVED);
 }
 
 /** Refuse a write that leaves the agent with a language its voice stack cannot hear or speak (only problems this write
@@ -174,6 +178,8 @@ function stackCard(s: VoiceStack, h: RuntimeHealth | null = null, pricePerMinute
     availability: availabilityOf(s.id, h, s.components),
     // Blueprint decision 4: the speed and turn-taking gate, from staging measurements (shared/stack-gate.ts). Shown, never blocking.
     gate: gateStatus(s.id),
+    // Talking over the caller as a figure of its own, and what the stack is good and weak at, in plain English (shared/stack-traits.ts).
+    cutIn: cutInFigure(s.id), ...plainTraits(s),
     components: s.components,
     // Languages this stack serves end to end, graded: 'measured' only where every part ran in it in our tests.
     languages: stackLanguages(s).filter(l => l.ok).map(l => ({ language: l.language, name: languageName(l.language), grade: l.grade })),
@@ -318,6 +324,14 @@ function changePhrase(ch: Change, cfg: AgentConfig): string {
   const idx = (p: string) => Number(/\[(\d+)\]/.exec(p)?.[1] ?? -1);
   const short = (v: unknown) => { const t = typeof v === 'string' ? v : JSON.stringify(v); return t.length > 40 ? t.slice(0, 37) + '…' : t; };
   const [head, ...rest] = ch.path.split('.');
+  // The voice stack in its own words: what calls will sound like, never a stack id (they are not people's words).
+  if (head === 'voice') {
+    const name = (id: unknown) => typeof id !== 'string' || !id ? 'none' : id === CUSTOM_STACK_ID ? 'a stack built from parts' : getStack(id)?.label ?? 'another stack';
+    if (rest[0] === 'stackId') return `voice stack: ${name(ch.from)} to ${name(ch.to)}`;
+    if (rest[0] === 'components') return 'the parts of the voice stack';
+    if (rest[0] === 'voiceId') return 'her voice';
+    if (rest[0] === 'speed') return 'how fast she speaks';
+  }
   let what: string;
   if (head.startsWith('facts[')) what = `fact "${(cfg.facts[idx(head)]?.key ?? 'a fact').replace(/_/g, ' ')}"`;
   else if (head.startsWith('goals[')) what = `goal "${(cfg.goals[idx(head)]?.id ?? 'a goal').replace(/_/g, ' ')}"`;
@@ -418,6 +432,7 @@ async function asCompiled(ctx: ToolCtx, c: AgentConfig): Promise<AgentConfig> {
 
 async function createVersion(ctx: ToolCtx, agentId: string, input: AgentConfig, parentId: string | null, note: string | null, kind: 'published' | 'candidate' | 'variant' = 'published',
   knowledge: 'resolve' | 'keep' = 'resolve') {
+  if ((await one<{ status: string }>(ctx.q, 'SELECT status FROM agent WHERE id = $1', [agentId]))?.status === 'archived') throw new ValidationError('agentId', ARCHIVED);
   // 'keep' (restore, language variants) reuses the snapshot the source version was published with, so it equals it.
   const known = knowledge === 'resolve' ? await withKnowledge(ctx.q, ctx.workspaceId, input) : input;
   // Each granted workspace tool is snapshotted into its grant (config.spec), so the version and its tickets carry the
@@ -506,11 +521,59 @@ export function registerAgentTools(r: Registry): void {
     run: async () => ({ schema: agentConfigV.schema }),
   }));
 
-  r.register(tool(obj({}), {
-    name: 'agent.list', risk: 'read', summary: "List this workspace's agents",
-    run: async ctx => ({ agents: await many(ctx.q, `SELECT a.id, a.name, a.job, a.status, a.updated_at, (SELECT max(number) FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published') AS latest_version,
+  r.register(tool(obj({ archived: opt(bool()) }), {
+    name: 'agent.list', risk: 'read', summary: "List this workspace's agents (archived ones only when asked)",
+    run: async (ctx, i) => ({ agents: await many(ctx.q, `SELECT a.id, a.name, a.job, a.status, a.updated_at, a.archived_at, a.archive_reason, (SELECT max(number) FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published') AS latest_version,
         (SELECT v.id FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published' ORDER BY v.number DESC LIMIT 1) AS live_version_id
-      FROM agent a WHERE a.workspace_id = $1 ORDER BY a.updated_at DESC LIMIT 200`, [ctx.workspaceId]) }),
+      FROM agent a WHERE a.workspace_id = $1 AND (a.status = 'archived') = $2 ORDER BY a.updated_at DESC LIMIT 200`, [ctx.workspaceId, !!i.archived]) }),
+  }));
+
+  // Set up, reset, set up again: archive (never delete), restore, duplicate. An archived agent keeps its versions, tests and
+  // calls; nothing of it reaches a new agent (a duplicate copies the draft only, a template starts from the template).
+  const inUse = async (ctx: ToolCtx, agentId: string) => {
+    const campaigns = await many<{ name: string; state: string }>(ctx.q, `SELECT c.name, c.state FROM campaign c JOIN agent_version v ON v.id = c.agent_version_id
+      WHERE v.agent_id = $1 AND c.workspace_id = $2 AND c.state IN ('scheduled', 'running', 'paused') ORDER BY c.created_at`, [agentId, ctx.workspaceId]);
+    const lines = await many<{ e164: string }>(ctx.q, `SELECT n.e164 FROM inbound_route r JOIN deployment d ON d.id = r.deployment_id JOIN phone_number n ON n.id = r.number_id
+      WHERE d.agent_id = $1 AND r.workspace_id = $2`, [agentId, ctx.workspaceId]);
+    return { campaigns, lines };
+  };
+  r.register(tool(obj({ agentId: uuid(), reason: opt(str({ max: 300 })) }), {
+    name: 'agent.archive', risk: 'draft', summary: 'Archive an agent: it leaves the list and makes no calls; its versions, tests and calls are kept, and it can be restored',
+    describe: async (i, ctx) => `Archive ${await label(ctx, 'agent', i.agentId)}`,
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId, true);
+      if (a.status === 'archived') return { agentId: a.id, status: 'archived', already: true };
+      const u = await inUse(ctx, a.id);
+      if (u.campaigns.length) throw new ValidationError('agentId', `it is used by the campaign "${u.campaigns[0].name}" (${u.campaigns[0].state}); stop or finish that campaign first`);
+      if (u.lines.length) throw new ValidationError('agentId', `it answers calls to ${u.lines.length === 1 ? 'a number' : `${u.lines.length} numbers`}; give those numbers another agent first`);
+      await ctx.q.query("UPDATE agent SET status = 'archived', archived_from = status, archived_at = now(), archived_by = $3, archive_reason = $4, updated_at = now() WHERE id = $1 AND workspace_id = $2",
+        [a.id, ctx.workspaceId, ctx.actor.id ?? ctx.actor.type, i.reason ?? null]);
+      return { agentId: a.id, status: 'archived', kept: 'its versions, tests and calls' };
+    },
+  }));
+  r.register(tool(obj({ agentId: uuid() }), {
+    name: 'agent.restore', risk: 'draft', summary: 'Restore an archived agent to the status it had',
+    run: async (ctx, i) => {
+      const a = await one<{ id: string; status: string; archived_from: string | null }>(ctx.q, 'SELECT id, status, archived_from FROM agent WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.agentId, ctx.workspaceId]);
+      if (!a) throw new ValidationError('agentId', 'no such agent in this workspace');
+      if (a.status !== 'archived') return { agentId: a.id, status: a.status, already: true };
+      const to = a.archived_from === 'live' ? 'live' : 'draft';
+      await ctx.q.query('UPDATE agent SET status = $3, archived_at = NULL, archived_from = NULL, archived_by = NULL, archive_reason = NULL, updated_at = now() WHERE id = $1 AND workspace_id = $2', [a.id, ctx.workspaceId, to]);
+      return { agentId: a.id, status: to };
+    },
+  }));
+  r.register(tool(obj({ agentId: uuid(), name: str({ min: 1, max: 80 }) }), {
+    name: 'agent.duplicate', risk: 'draft', summary: 'Start a new draft agent from a copy of this one\'s draft (no versions, tests or calls come with it)',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const draft: AgentConfig = structuredClone(a.draft);
+      delete (draft as Partial<AgentConfig>).version; delete (draft as Partial<AgentConfig>).versionHash;
+      guardDraft(null, draft);
+      const row = (await one<{ id: string }>(ctx.q, "INSERT INTO agent (workspace_id, name, job, status, draft) VALUES ($1,$2,$3,'draft','{}') RETURNING id", [ctx.workspaceId, i.name, draft.job]))!;
+      draft.agentId = row.id;
+      await saveDraft(ctx, row.id, draft, null);
+      return { agentId: row.id, status: 'draft', from: 'duplicate', draftHash: draftHash(draft), draft, ...(await previewOf(ctx, draft)), stackChosen: !!stackOf(draft.voice) };
+    },
   }));
 
   r.register(tool(obj({ agentId: uuid() }), {

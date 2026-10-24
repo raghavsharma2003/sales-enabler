@@ -13,7 +13,8 @@
     },
     {
       "name": "agent.list",
-      "risk": "read"
+      "risk": "read",
+      "note": "archived: true lists archived agents"
     },
     {
       "name": "agent.get",
@@ -28,7 +29,7 @@
     {
       "name": "stack.list",
       "risk": "read",
-      "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured; gate per stack (meets / not_yet / not_measured) from shared/stack-measures.json against GATE in shared/stack-gate.ts"
+      "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured; gate per stack (meets / not_yet / not_measured) from shared/stack-measures.json against GATE in shared/stack-gate.ts; cutIn figure (never zero), goodAt and weakAt in plain English (shared/stack-traits.ts)"
     },
     {
       "name": "stack.set",
@@ -147,6 +148,21 @@
       "name": "call.why_said",
       "risk": "read",
       "note": "per agent line on a call, the facts used and their source (title, page or row, passage), from the version that ran"
+    },
+    {
+      "name": "agent.archive",
+      "risk": "draft",
+      "note": "archive, never delete: leaves the list, no edits, publishes or calls; refused while a scheduled, running or paused campaign or an inbound line uses it"
+    },
+    {
+      "name": "agent.restore",
+      "risk": "draft",
+      "note": "back to the status it had (live or draft)"
+    },
+    {
+      "name": "agent.duplicate",
+      "risk": "draft",
+      "note": "a new draft from a copy of the draft; no versions, tests or calls"
     }
   ],
   "tests": {
@@ -160,7 +176,8 @@
       "product/tests/agents-library.test.ts",
       "product/tests/stack-gate.test.ts",
       "product/tests/agents-chat.test.ts",
-      "product/tests/company-data.test.ts"
+      "product/tests/company-data.test.ts",
+      "product/tests/agents-lifecycle.test.ts"
     ],
     "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
   },

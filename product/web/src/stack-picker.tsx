@@ -39,11 +39,11 @@ interface PartRow { part: Part; id: string; label: string; maker: string; proces
 interface Gate { state: 'meets' | 'not_yet' | 'not_measured'; label: string; detail: string; target: { replyGapP50Ms: number; cutInRateMax: number } }
 // A language the stack serves end to end, graded by its weakest part: 'measured' only where every part ran in it in our tests.
 interface StackLang { language: string; name: string; grade: 'measured' | 'stated' }
-interface StackRow { id: string; label: string; kind: 'cascade' | 's2s'; status: 'available' | 'beta'; note: string; replyGap: Fig; risks: string[]; availability: Avail; components: Parts; parts: PartRow[]; languages?: StackLang[]; gate?: Gate }
+interface StackRow { id: string; label: string; kind: 'cascade' | 's2s'; status: 'available' | 'beta'; note: string; replyGap: Fig; risks: string[]; availability: Avail; components: Parts; parts: PartRow[]; languages?: StackLang[]; gate?: Gate; cutIn?: Fig; goodAt?: string[]; weakAt?: string[] }
 interface StackList { default: string | null; stacks: StackRow[]; components: CompRow[] }
 
 export type StackChange = { stackId: string; components?: Parts; voiceId?: string | null };
-type Props = { agentId: string; stackId: string | null; components?: Parts; voiceId?: string | null; onChanged: (c: StackChange) => void };
+type Props = { agentId: string; stackId: string | null; components?: Parts; voiceId?: string | null; onChanged: (c: StackChange) => void; published?: number | null };
 
 const CUSTOM = 'custom';
 const find = (list: CompRow[], part: Part, id?: string) => (id ? list.find(c => c.part === part && c.id === id) : undefined);
@@ -63,7 +63,7 @@ export function StackPicker(p: Props) {
   return <Async q={q} what="Voice stacks" tool="stack.list" rows={5}>{d => <Loaded {...p} d={d} />}</Async>;
 }
 
-function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props & { d: StackList }) {
+function Loaded({ agentId, stackId, components, voiceId, onChanged, d, published }: Props & { d: StackList }) {
   const { act } = useApp();
   const prices = usePrices(d.stacks);
   const samples = useData('voice-samples', loadSamples).data ?? {};
@@ -109,6 +109,7 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
   return (
     <div className="stack">
       <Summary d={d} stackId={stackId} curated={curated} parts={parts} isCustom={isCustom} />
+      {published ? <p className="small muted" role="note">Choosing a stack changes the draft only. Campaigns and inbound lines keep the stack of published version {published} until you publish again, which asks for approval and names the change.</p> : null}
       {refusal && <p className="hint hint-bad" role="alert">{refusal}</p>}
 
       <div className="stackbar">
@@ -160,7 +161,7 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
 function StatusChips({ status, avail, isDefault }: { status: 'available' | 'beta'; avail?: Avail; isDefault?: boolean }) {
   const down = avail?.state === 'unavailable';
   return <>
-    {isDefault && <Chip tone="neutral">Default</Chip>}
+    {isDefault && <Chip tone="neutral" title="New agents start on this stack for now. It changes when another stack meets the speed and turn-taking target.">Provisional default</Chip>}
     {status === 'beta' ? <Chip tone="marigold" title={BETA_REASON}>Beta: test calls only</Chip> : !down && <Chip tone="leaf">Available</Chip>}
     {down && <Chip tone="brick">Unavailable</Chip>}
   </>;
@@ -218,7 +219,7 @@ function PartPicker({ part, options, value, onChange }: { part: Part; options: C
 function PriceView({ price }: { price?: Price }) {
   if (!price || price.state === 'loading') return <span className="muted">Checking…</span>;
   if (price.perMinuteInrMilli != null) return <><span className="fig-v tnum">{inr(price.perMinuteInrMilli, { paise: true })}</span> <Chip tone="peacock">Computed</Chip><details className="how"><summary>Basis</summary><p>{price.basis}</p></details></>;
-  return <><NotMeasured />{price.basis && <details className="how"><summary>Why</summary><p>{price.basis}</p></details>}</>;
+  return <><NotMeasured>Price not set yet</NotMeasured>{price.basis && <details className="how"><summary>Why</summary><p>{price.basis}</p></details>}</>;
 }
 
 /** The provider cost per minute of the parts chosen so far, asked of the server each time the choice changes. A refused combination
@@ -261,18 +262,22 @@ function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s:
           </div>
         </div>
       </div>
-      <p className="small">{s.note}</p>
+      {!s.goodAt && <p className="small">{s.note}</p>}
       <dl className="kv small">
         {s.languages && s.languages.length > 0 && <div><dt>Languages</dt><dd><Languages list={s.languages} /></dd></div>}
         <div><dt>Reply gap</dt><dd><Figure m={s.replyGap} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
         {s.gate && <div><dt>Speed and turn-taking</dt><dd><Chip wrap tone={s.gate.state === 'meets' ? 'leaf' : s.gate.state === 'not_yet' ? 'marigold' : 'neutral'}>{s.gate.label}</Chip>
           <details className="how"><summary>How we know</summary><p>{s.gate.detail} The target is a median reply within {(s.gate.target.replyGapP50Ms / 1000).toFixed(1)} s and at most {Math.round(s.gate.target.cutInRateMax * 100)}% of turns where she talks over the caller. Calls still run on a stack that does not meet it.</p></details></dd></div>}
+        <div><dt>Talking over the caller</dt><dd>{s.cutIn ? <Figure m={s.cutIn} /> : <NotMeasured />}{s.cutIn && <details className="how"><summary>How we know</summary><p>{s.cutIn.source}</p></details>}</dd></div>
         <div><dt>Provider cost per minute</dt><dd><PriceView price={price} /></dd></div>
         {s.parts.map(c => <div key={c.part}><dt>{PART_WORD[c.part]}</dt><dd>{c.label}<span className="small muted"> · {c.processedIn}</span></dd></div>)}
         <div><dt>Hear it</dt><dd>{sample ? <SamplePlayer sample={sample} label={s.label} /> : <span className="dotted nm" title="No sample clip has been recorded for this stack yet"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> No sample recorded yet</span>}</dd></div>
       </dl>
       {down && selected && <p className="risk small"><AlertTriangle size={14} aria-hidden /> {s.availability.reason}</p>}
-      {s.risks.map(r => <p key={r} className="risk small"><AlertTriangle size={14} aria-hidden /> {r}</p>)}
+      {s.goodAt ? <div className="traits small">
+        {s.goodAt.length > 0 && <div><h5>Good at</h5><ul>{s.goodAt.map(g => <li key={g}><Check size={14} aria-hidden /> {g}</li>)}</ul></div>}
+        {s.weakAt && s.weakAt.length > 0 && <div><h5>Weak at</h5><ul>{s.weakAt.map(r => <li key={r} className="risk"><AlertTriangle size={14} aria-hidden /> {r}</li>)}</ul></div>}
+      </div> : s.risks.map(r => <p key={r} className="risk small"><AlertTriangle size={14} aria-hidden /> {r}</p>)}
       <div className="stackcard-foot">
         {down && !selected ? <Btn disabled fix={null} reason={s.availability.reason ?? 'This stack is unavailable right now.'}>Choose this stack</Btn>
           : <button type="button" className={`pickbtn${selected ? ' on' : ''}`} aria-pressed={selected} aria-disabled={busy || undefined} onClick={() => { if (!selected && !busy) onPick(); }}>{selected ? <><Check size={16} aria-hidden /> Chosen</> : busy ? 'Saving…' : 'Choose this stack'}</button>}

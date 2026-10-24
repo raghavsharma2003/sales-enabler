@@ -387,6 +387,80 @@ test('Stack picker: beta stacks say "test calls only", and an unmeasured reply g
   assert.equal(await page.locator('.stackcard[aria-pressed], .pickbtn.on').count(), 0, 'nothing is preselected');
 });
 
+test('Stack picker: each stack shows the provisional default, the measured reply gap, talking over the caller, the price or that it is not set, a sample, and what it is good and weak at', async () => {
+  const riya = await riyaId();
+  await page.goto(`${BASE}/agents/${riya}?tab=voice`);
+  const def = page.locator('.stackcard', { has: page.getByText('Provisional default') });
+  await def.waitFor();
+  await def.getByText('Talking over the caller').waitFor();
+  assert.match(await def.locator('dd', { has: page.locator('.fig') }).nth(1).innerText(), /Not measured/i, 'an unmeasured cut-in rate says so, never 0%');
+  await def.getByRole('heading', { name: 'Weak at' }).waitFor();
+  await def.getByText(/Slower than our target: a median reply of \d\.\d s on test calls, against 1\.5 s$/).waitFor();
+  await def.getByRole('heading', { name: 'Good at' }).waitFor();
+  const price = await def.locator('dt', { hasText: 'Provider cost per minute' }).locator('xpath=following-sibling::dd').innerText();
+  assert.ok(/₹/.test(price) || /Price not set yet/.test(price), `a price, or plainly not set: ${price}`);
+  await def.locator('dt', { hasText: 'Hear it' }).waitFor();
+  await page.getByText(/Choosing a stack changes the draft only\. Campaigns and inbound lines keep the stack of published version \d+/).waitFor();
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  fs.mkdirSync(shotDir, { recursive: true });
+  await def.screenshot({ path: path.join(shotDir, 'stack-card-default-1440.png') });
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce', storageState: await ctx.storageState() });
+  try {
+    const p = await phone.newPage();
+    await p.goto(`${BASE}/agents/${riya}?tab=voice`);
+    const card = p.locator('.stackcard', { has: p.getByText('Provisional default') });
+    await card.waitFor();
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'no sideways scroll at 390');
+    await card.screenshot({ path: path.join(shotDir, 'stack-card-default-390.png') });
+  } finally { await phone.close(); }
+});
+
+test('Agents: duplicate, archive (nothing deleted) and restore; a fresh agent from a starter is clean', async () => {
+  const riya = await riyaId();
+  await page.goto(`${BASE}/agents`);
+  const card = page.locator('.agentcard', { has: page.getByRole('link', { name: 'Renewals, Pune', exact: true }) });
+  await card.getByRole('button', { name: 'Duplicate' }).click();
+  await sheet().getByLabel('Name of the copy').fill('Renewals, Nashik');
+  await sheet().getByRole('button', { name: 'Make the copy' }).click();
+  await page.waitForURL(/\/agents\/[0-9a-f-]{36}$/);
+  const copyId = page.url().split('/').pop();
+  assert.notEqual(copyId, riya);
+  const copy = (await pool.query('SELECT name, status, draft FROM agent WHERE id = $1', [copyId])).rows[0];
+  assert.deepEqual([copy.name, copy.status, copy.draft.agentId], ['Renewals, Nashik', 'draft', copyId]);
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM agent_version WHERE agent_id = $1', [copyId])).rows[0].n, 0, 'no versions come with a copy');
+  // Archive the copy: it leaves the list, keeps its rows, and shows under Archived with a way back.
+  await page.goto(`${BASE}/agents`);
+  const c2 = page.locator('.agentcard', { has: page.getByRole('link', { name: 'Renewals, Nashik', exact: true }) });
+  await c2.getByRole('button', { name: 'Archive' }).click();
+  await sheet().getByLabel('Reason (optional)').fill('Starting again');
+  await sheet().getByRole('button', { name: 'Archive' }).click();
+  await c2.waitFor({ state: 'detached' });
+  assert.equal((await pool.query('SELECT status, archive_reason FROM agent WHERE id = $1', [copyId])).rows[0].status, 'archived');
+  await page.getByRole('radio', { name: 'Archived' }).click();
+  const arch = page.locator('.agentcard', { has: page.getByRole('link', { name: 'Renewals, Nashik', exact: true }) });
+  await arch.getByText(/Reason: Starting again/).waitFor();
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  fs.mkdirSync(shotDir, { recursive: true });
+  await page.screenshot({ path: path.join(shotDir, 'agents-archived-1440.png') });
+  // Opened by link, an archived agent says so and offers Restore.
+  await page.goto(`${BASE}/agents/${copyId}`);
+  await page.getByText('This agent makes no calls and takes no changes.').waitFor();
+  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce', storageState: await ctx.storageState() });
+  try {
+    const p = await phone.newPage();
+    await p.goto(`${BASE}/agents`);
+    await p.getByRole('radio', { name: 'Archived' }).click();
+    await p.getByText(/Reason: Starting again/).waitFor();
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'no sideways scroll at 390');
+    await p.screenshot({ path: path.join(shotDir, 'agents-archived-390.png'), fullPage: true });
+  } finally { await phone.close(); }
+  await page.getByRole('button', { name: 'Restore' }).click();
+  await page.getByText('This agent makes no calls and takes no changes.').waitFor({ state: 'detached' });
+  assert.equal((await pool.query('SELECT status FROM agent WHERE id = $1', [copyId])).rows[0].status, 'draft');
+  // Leave the workspace as it was for the flows after this one: the copy goes back to Archived.
+  assert.equal((await tool('agent.archive', { agentId: copyId, reason: 'e2e copy' })).status, 'confirmed');
+});
+
 test('Copy: no tool id, raw argument name, internal code or milli-unit reaches a person, on any screen', async () => {
   const tools = (await (await ctx.request.get(`${BASE}/v1/tools`)).json()).tools.map(t => t.name);
   const ids = {
@@ -567,7 +641,7 @@ test('Voice stack: a new agent starts on the default and the summary says so, in
   assert.equal((await draftVoice(stackAgent)).stackId, list.default, 'the server put the new agent on the default');
   await openVoiceTab(stackAgent);
   const sum = page.locator('.stacksum');
-  await sum.getByText('Default', { exact: true }).waitFor();
+  await sum.getByText('Provisional default', { exact: true }).waitFor();
   const text = await sum.innerText();
   assert.match(text, /Speech recognition/); assert.match(text, /Language model/); assert.match(text, /Voice/);
   assert.ok(!/\b(ears|brain|s2s)\b/i.test(await page.locator('main, .page').first().innerText()), 'the API part names never reach the screen');
@@ -625,7 +699,7 @@ test('Voice stack: switching back to a recommended stack drops the parts', async
   await openVoiceTab(stackAgent);
   const card = page.locator('.stackcard', { hasText: 'Gemini 3.5 Flash-Lite + Gemini voice' }).first();
   await card.getByRole('button', { name: 'Choose this stack' }).click();
-  await page.locator('.stacksum').getByText('Default', { exact: true }).waitFor({ timeout: 10000 });
+  await page.locator('.stacksum').getByText('Provisional default', { exact: true }).waitFor({ timeout: 10000 });
   const v = await draftVoice(stackAgent);
   assert.equal(v.stackId, 'v2-flashlite');
   assert.equal(v.components, undefined, 'the custom parts are gone');

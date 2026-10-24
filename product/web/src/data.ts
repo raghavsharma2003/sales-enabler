@@ -26,7 +26,7 @@ export async function agentGet(id: string): Promise<AgentDoc> {
   const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' || v.author_type === 'agent' ? 'The assistant' : 'Vyakti', authorId: v.author_type === 'member' ? v.author_id ?? null : null, candidate: v.kind === 'candidate' }))
     .sort((a, b) => b.number - a.number);
   return {
-    id, name: r.agent.name, updatedAt: r.agent.updatedAt, draftHash: r.draftHash, config: normaliseConfig(r.draft), compiles: !!r.compiles,
+    id, name: r.agent.name, archived: r.agent.status === 'archived', updatedAt: r.agent.updatedAt, draftHash: r.draftHash, config: normaliseConfig(r.draft), compiles: !!r.compiles,
     lint: arr<any>(r.lint).map(l => (typeof l === 'string' ? { message: l } : { message: l.message ?? l.rule ?? JSON.stringify(l), severity: l.severity, path: typeof l.path === 'string' ? l.path : undefined })),
     briefBytes: r.brief?.bytes ?? null, versions, latestVersionId: r.liveVersion?.id ?? null, latestVersion: r.liveVersion?.number ?? null,
   };

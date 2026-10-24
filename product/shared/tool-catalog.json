@@ -132,6 +132,34 @@
    }
   },
   {
+   "name": "agent.archive",
+   "risk": "draft",
+   "summary": "Archive an agent: it leaves the list and makes no calls; its versions, tests and calls are kept, and it can be restored",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
    "name": "agent.config.schema",
    "risk": "read",
    "summary": "The agent draft's fields as JSON Schema, with each field's limits and allowed values",
@@ -206,6 +234,36 @@
    }
   },
   {
+   "name": "agent.duplicate",
+   "risk": "draft",
+   "summary": "Start a new draft agent from a copy of this one's draft (no versions, tests or calls come with it)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "agentId",
+     "name"
+    ]
+   }
+  },
+  {
    "name": "agent.get",
    "risk": "read",
    "summary": "Read one agent: its draft, lint, brief preview and versions",
@@ -260,7 +318,7 @@
   {
    "name": "agent.list",
    "risk": "read",
-   "summary": "List this workspace's agents",
+   "summary": "List this workspace's agents (archived ones only when asked)",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -272,8 +330,36 @@
    "input": {
     "type": "object",
     "additionalProperties": false,
-    "properties": {},
+    "properties": {
+     "archived": {
+      "type": "boolean"
+     }
+    },
     "required": []
+   }
+  },
+  {
+   "name": "agent.restore",
+   "risk": "draft",
+   "summary": "Restore an archived agent to the status it had",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
    }
   },
   {

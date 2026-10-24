@@ -23,10 +23,13 @@
  ],
  "tools_used": [
   "activity.list",
+  "agent.archive",
   "agent.create",
+  "agent.duplicate",
   "agent.get",
   "agent.knowledge",
   "agent.list",
+  "agent.restore",
   "alert.ack",
   "alert.list",
   "analysis.settings.get",

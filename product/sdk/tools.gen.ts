@@ -5,11 +5,14 @@ export type ToolName =
   | "action.get"
   | "action.undo"
   | "activity.list"
+  | "agent.archive"
   | "agent.config.schema"
   | "agent.create"
+  | "agent.duplicate"
   | "agent.get"
   | "agent.knowledge"
   | "agent.list"
+  | "agent.restore"
   | "alert.ack"
   | "alert.list"
   | "analysis.model.set"
@@ -311,6 +314,11 @@ export interface ToolInput {
     actionPrefix?: string;
     actorId?: string;
   };
+  /** Archive an agent: it leaves the list and makes no calls; its versions, tests and calls are kept, and it can be restored (draft) */
+  "agent.archive": {
+    agentId: string;
+    reason?: string;
+  };
   /** The agent draft's fields as JSON Schema, with each field's limits and allowed values (read) */
   "agent.config.schema": Record<string, never>;
   /** Create a draft agent from a template or from a plain-words description (draft) */
@@ -321,6 +329,11 @@ export interface ToolInput {
     /** the job in plain words (who is called, why, what counts as done); leave out when giving a templateId */
     description?: string;
   };
+  /** Start a new draft agent from a copy of this one's draft (no versions, tests or calls come with it) (draft) */
+  "agent.duplicate": {
+    agentId: string;
+    name: string;
+  };
   /** Read one agent: its draft, lint, brief preview and versions (read) */
   "agent.get": {
     agentId: string;
@@ -329,8 +342,14 @@ export interface ToolInput {
   "agent.knowledge": {
     agentId: string;
   };
-  /** List this workspace's agents (read) */
-  "agent.list": Record<string, never>;
+  /** List this workspace's agents (archived ones only when asked) (read) */
+  "agent.list": {
+    archived?: boolean;
+  };
+  /** Restore an archived agent to the status it had (draft) */
+  "agent.restore": {
+    agentId: string;
+  };
   /** Mark an alert as seen (taking its hand-off does this too) (draft) */
   "alert.ack": {
     alertId: string;
@@ -2161,11 +2180,14 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "action.get": { risk: "read", needsApproval: false },
   "action.undo": { risk: "draft", needsApproval: false },
   "activity.list": { risk: "read", needsApproval: false },
+  "agent.archive": { risk: "draft", needsApproval: false },
   "agent.config.schema": { risk: "read", needsApproval: false },
   "agent.create": { risk: "draft", needsApproval: false },
+  "agent.duplicate": { risk: "draft", needsApproval: false },
   "agent.get": { risk: "read", needsApproval: false },
   "agent.knowledge": { risk: "read", needsApproval: false },
   "agent.list": { risk: "read", needsApproval: false },
+  "agent.restore": { risk: "draft", needsApproval: false },
   "alert.ack": { risk: "draft", needsApproval: false },
   "alert.list": { risk: "read", needsApproval: false },
   "analysis.model.set": { risk: "spend", needsApproval: true },

@@ -94,6 +94,8 @@ export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): 
   const agent = v?.config?.agent;
   if (!v) out.push({ code: 'no_version', message: 'Choose which version of your agent this campaign uses.',
     why: 'Calls run only on a published version, so you know exactly what people will hear.', fix: { tool: 'campaign.draft', label: 'Pick the agent', role: 'builder' } });
+  else if (v.agent_status === 'archived') out.push({ code: 'agent_archived', message: 'This campaign\'s agent is archived, so it makes no calls.',
+    why: 'An archived agent keeps its versions and calls but takes no new calls until it is restored.', fix: { tool: 'agent.restore', label: 'Restore the agent', role: 'builder' } });
   else if (!agent || !v.config.brief?.text) out.push({ code: 'version_not_publishable', message: 'This agent version is not ready to call people yet.',
     fix: { tool: 'version.publish', label: 'Publish the agent', role: 'builder' } });
   else if (stackOf(agent.voice)?.status === 'beta') out.push({ code: 'beta_stack', message: 'The voice this agent uses is still in beta, so it can only make test calls.',
