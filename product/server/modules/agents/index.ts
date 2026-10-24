@@ -25,6 +25,7 @@ import { loadHttpTool, registerHttpTools } from './httptools.ts';
 import { checkSpec, HttpToolError } from '../../../shared/contracts/http-tool.ts';
 import { agentLanguages, languageName, languageProblems } from './languages.ts';
 import { stackLanguage } from '../../../shared/stacks.ts';
+import { gateStatus } from '../../../shared/stack-gate.ts';
 import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
 import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
@@ -154,6 +155,8 @@ async function pricedParts<T extends { part: string; id: string; price: string }
 function stackCard(s: VoiceStack, h: RuntimeHealth | null = null, pricePerMinute: Figure = NOT_PRICED) {
   return { id: s.id, label: s.label, kind: s.kind, status: s.status, note: s.note, replyGap: s.replyGap, requires: s.requires ?? [], risks: s.risks ?? [],
     availability: availabilityOf(s.id, h, s.components),
+    // Blueprint decision 4: the speed and turn-taking gate, from staging measurements (shared/stack-gate.ts). Shown, never blocking.
+    gate: gateStatus(s.id),
     components: s.components,
     // Languages this stack serves end to end, graded: 'measured' only where every part ran in it in our tests.
     languages: stackLanguages(s).filter(l => l.ok).map(l => ({ language: l.language, name: languageName(l.language), grade: l.grade })),

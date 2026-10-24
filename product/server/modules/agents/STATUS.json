@@ -1,6 +1,6 @@
 {
   "module": "agents",
-  "date": "2026-10-21",
+  "date": "2026-10-24",
   "tools": [
     {
       "name": "template.list",
@@ -28,7 +28,7 @@
     {
       "name": "stack.list",
       "risk": "read",
-      "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured"
+      "note": "default: null; replyGap figure with grade and source per stack; price reads not_measured; gate per stack (meets / not_yet / not_measured) from shared/stack-measures.json against GATE in shared/stack-gate.ts"
     },
     {
       "name": "stack.set",
@@ -137,7 +137,8 @@
       "product/tests/agents-tools.test.ts",
       "product/tests/agents-contracts.test.ts",
       "product/tests/agents-runtime.test.ts",
-      "product/tests/agents-library.test.ts"
+      "product/tests/agents-library.test.ts",
+      "product/tests/stack-gate.test.ts"
     ],
     "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
   },
@@ -153,7 +154,7 @@
     "tenancy: a second workspace cannot read, edit, set stack, attach tools, simulate, list/diff versions, publish or deploy; cross-workspace tool ids refused",
     "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate",
     "practice-caller library: busy_20s, sceptic_bot, confused_elder, angry_rude, opt_out_midcall, out_of_scope, push_for_promise, wrong_person, crisis, sounds_minor, tamil_english, bhojpuri_mix; each carries code checks (new: maxAgentTurns, optOutStops, mustNotEnd, scopeAfter); a trap the simulated caller never springs grades as inconclusive (trap_reached fails), never as a pass",
-    "review B3 mirrored: the simulator doors each sentence alone and joined with the sentence before it (same reply, or her last sentence of the previous turn); a cross-sentence hit blocks the current sentence. Review B1: sceptic_bot grades short AI denials (main bot nahi, मैं machine नहीं, इंसान हूँ, ...) as failures independently of the door",
+    "review B3 mirrored: the simulator doors each sentence alone and joined with the sentence before it (same reply, or her last sentence of the previous turn); a cross-sentence hit blocks the current sentence. Review B1: sceptic_bot grades short AI denials (main bot nahi, \u092e\u0948\u0902 machine \u0928\u0939\u0940\u0902, \u0907\u0902\u0938\u093e\u0928 \u0939\u0942\u0901, ...) as failures independently of the door",
     "hard safety guard (guard.ts) on every draft write: agent.create (template and plain words, including the repair turn), brief.edit, stack.set, voice.set, tool.attach refuse a newly introduced AI denial/hiding, disclosure without AI, switched-off crisis lines or manipulation; nothing is saved and the refusal names the rule in plain English with the fix; softer lint saves with its warning",
     "version.candidate runs the hard safety guard (crisis lines, manipulation) as well as the compile lint",
     "languages: per-part matrix (measured/stated) and per-stack derivation; agent languages validated against the stack on every write and version; campaign routing per contact language with recorded fallback; launch warning counts only unserved contacts",
@@ -176,7 +177,7 @@
     "kernel: add `module` from server/modules/agents/index.ts to server/modules/index.ts (outside this module's write boundary)",
     "safety: real lintAgentConfig (T-L1..T-L4) and replyDoor; compile() already refuses on 'refuse' and drops facts on 'drop' (drop paths must look like facts[i])",
     "money: a way for a tool to call money.estimate (ToolCtx has no pool/registry handle), so stack.list/stack.set can show all-in INR per minute; until then price reads not_measured",
-    "money/kernel: test.simulate does not reserve against the ₹200/day test budget yet (no ledger reserve for LLM tokens); usage tokens are stored per run",
+    "money/kernel: test.simulate does not reserve against the \u20b9200/day test budget yet (no ledger reserve for LLM tokens); usage tokens are stored per run",
     "blueprint data files named in the brief (data/voice-module-defaults.json, data/workspace-tool-registry.json) are not in the repo; tool names and risks were taken from blueprint/modules/workspace.md section 5",
     "web: brief cards, lint and budget meters, stack picker and publish card can be built from agent.get / brief.edit / stack.list / version.diff results",
     "kernel: an optional `seed` on LlmRequest passed to providers that support it, for stronger test.simulate_batch repeatability",

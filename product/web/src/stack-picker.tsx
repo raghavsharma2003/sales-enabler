@@ -37,7 +37,8 @@ type Fig = { value: string; grade: 'measured' | 'computed' | 'vendor' | 'not_mea
 export interface Parts { ears?: string; brain?: string; voice?: string; s2s?: string }
 interface CompRow { id: string; part: Part; label: string; maker: string; processedIn: string; latency: Fig; price: string; status: 'available' | 'beta'; note: string | null; voices: string[]; defaultVoice: string | null; availability: Avail }
 interface PartRow { part: Part; id: string; label: string; maker: string; processedIn: string }
-interface StackRow { id: string; label: string; kind: 'cascade' | 's2s'; status: 'available' | 'beta'; note: string; replyGap: Fig; risks: string[]; availability: Avail; components: Parts; parts: PartRow[] }
+interface Gate { state: 'meets' | 'not_yet' | 'not_measured'; label: string; detail: string; target: { replyGapP50Ms: number; cutInRateMax: number } }
+interface StackRow { id: string; label: string; kind: 'cascade' | 's2s'; status: 'available' | 'beta'; note: string; replyGap: Fig; risks: string[]; availability: Avail; components: Parts; parts: PartRow[]; gate?: Gate }
 interface StackList { default: string | null; stacks: StackRow[]; components: CompRow[] }
 
 export type StackChange = { stackId: string; components?: Parts; voiceId?: string | null };
@@ -237,6 +238,8 @@ function StackCard({ s, selected, isDefault, price, sample, busy, onPick }: { s:
       <p className="small">{s.note}</p>
       <dl className="kv small">
         <div><dt>Reply gap</dt><dd><Figure m={s.replyGap} /><details className="how"><summary>How we know</summary><p>{s.replyGap.source}</p></details></dd></div>
+        {s.gate && <div><dt>Speed and turn-taking</dt><dd><Chip tone={s.gate.state === 'meets' ? 'leaf' : s.gate.state === 'not_yet' ? 'marigold' : 'neutral'}>{s.gate.label}</Chip>
+          <details className="how"><summary>How we know</summary><p>{s.gate.detail} The target is a median reply within {(s.gate.target.replyGapP50Ms / 1000).toFixed(1)} s and at most {Math.round(s.gate.target.cutInRateMax * 100)}% of turns where she talks over the caller. Calls still run on a stack that does not meet it.</p></details></dd></div>}
         <div><dt>Provider cost per minute</dt><dd><PriceView price={price} /></dd></div>
         {s.parts.map(c => <div key={c.part}><dt>{PART_WORD[c.part]}</dt><dd>{c.label}<span className="small muted"> · {c.processedIn}</span></dd></div>)}
         <div><dt>Hear it</dt><dd>{sample ? <SamplePlayer sample={sample} label={s.label} /> : <span className="dotted nm" title="No sample clip has been recorded for this stack yet"><Volume2 size={14} aria-hidden style={{ verticalAlign: '-2px' }} /> No sample recorded yet</span>}</dd></div>

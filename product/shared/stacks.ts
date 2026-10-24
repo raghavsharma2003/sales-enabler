@@ -6,6 +6,7 @@
 
 import { getComponent, type Component, type Part } from './components.ts';
 import { LANGUAGES, type Language } from './agent-config.ts';
+import { MEASURES } from './stack-gate.ts';
 
 export type Grade = 'measured' | 'computed' | 'vendor' | 'not_measured';
 
@@ -48,7 +49,20 @@ const PRODUCT = (replies: number, calls: number, p90: string) => `Measured on ou
   + `the median of ${replies} replies over ${calls} test calls, from the caller finishing to her first audio; 9 in 10 replies came within ${p90}. `
   + `Not yet timed on a phone line.`;
 
-export const STACKS: readonly VoiceStack[] = [
+// The reply gap a stack card shows comes from the same measurements the gate reads (stack-measures.json), so the two
+// can never disagree; a stack with no entry keeps its written figure.
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function measuredGap(id: string, written: Figure): Figure {
+  const m = MEASURES[id]?.replyGapP50Ms;
+  if (!m) return written;
+  const [y, mo, d] = m.date.split('-').map(Number);
+  return { value: `${(m.value / 1000).toFixed(1)} s`, grade: 'measured',
+    source: `Measured on our own voice engine from a server in India on ${d} ${MONTHS[mo - 1]} ${y}: the median of ${m.n} replies` +
+      (m.calls ? ` over ${m.calls} test calls` : '') + `, from the caller finishing to her first audio` +
+      (m.p90Ms ? `; 9 in 10 replies came within ${(m.p90Ms / 1000).toFixed(1)} s` : '') + '. Not yet timed on a phone line.' };
+}
+
+const WRITTEN: readonly VoiceStack[] = [
   {
     id: 'v2-live', label: 'Gemini 3.8 Live (speech-to-speech)', kind: 's2s', brief: 'v2',
     components: { s2s: 'gemini-3.8-live' },
@@ -98,6 +112,8 @@ export const STACKS: readonly VoiceStack[] = [
     note: 'Runs in India end to end. Sarvam may train on your call data unless you opt out with them.', requires: ['SARVAM'], status: 'beta',
   },
 ];
+
+export const STACKS: readonly VoiceStack[] = WRITTEN.map(s => ({ ...s, replyGap: measuredGap(s.id, s.replyGap) }));
 
 /** Provisional: new agents start here, and the user may change it (decision.2026-10-22.default-stack). */
 export const DEFAULT_STACK_ID = 'v2-flashlite';

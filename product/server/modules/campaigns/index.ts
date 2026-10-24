@@ -31,6 +31,7 @@ import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
 import { factColumns, missingFactsSentence } from '../agents/columns.ts';
 import { agentLanguages, languageName, routeContact, serves, toLanguage } from '../agents/languages.ts';
 import { languageOptions } from './languages.ts';
+import { GATE, gateStatus } from '../../../shared/stack-gate.ts';
 import { announcementXml, routeSeries, SERIES, SERIES_GUIDE, SPEAK_PATH, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
@@ -139,6 +140,14 @@ export async function launchWarnings(q: Queryable, ws: string, c: CampaignRow): 
   const options = await languageOptions(q, ws, v, c.policy);
   const people = await many<{ language: string | null }>(q, `SELECT ct.language FROM audience_member m JOIN audience au ON au.id = m.audience_id
     JOIN contact ct ON ct.id = m.contact_id WHERE au.id = $1 AND au.workspace_id = $2`, [c.audience_id, ws]);
+  // Blueprint decision 4: a stack that does not meet the speed and turn-taking gate still launches (the owner sanctioned the
+  // provisional default), but the launch check says so with the numbers.
+  const stack = stackOf(agent.voice);
+  const g = stack ? gateStatus(stack.id) : null;
+  if (stack && g && g.state !== 'meets') out.push({ code: 'stack_gate',
+    message: g.state === 'not_yet' ? `This agent's voice is slower than our target: ${g.label.replace(/^Not yet: /, '')}.` : `This agent's voice has not been measured against our speed and turn-taking target yet.`,
+    why: `${g.detail} Calls still go ahead; the target is a median reply within ${(GATE.replyGapP50Ms / 1000).toFixed(1)} s and at most ${Math.round(GATE.cutInRateMax * 100)}% of turns where she talks over the caller.`,
+    fix: { tool: 'stack.set', label: 'Compare voice stacks', role: 'builder' } });
   const unserved = people.map(p => routeContact(p.language, main, options)).filter(r => r.servedBy === 'fallback');
   if (unserved.length) {
     const names = [...new Set(unserved.map(r => languageName(r.language!)))].sort();
