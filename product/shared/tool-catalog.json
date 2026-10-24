@@ -6668,6 +6668,40 @@
    }
   },
   {
+   "name": "version.restore",
+   "risk": "external",
+   "summary": "Roll an agent back: publish a new version equal to an earlier one and send its calls there",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "versionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "reason": {
+      "type": "string",
+      "maxLength": 300
+     }
+    },
+    "required": [
+     "agentId",
+     "versionId"
+    ],
+    "description": "Roll the agent back: publish a new version equal to an earlier published one, and point its deployments at it."
+   }
+  },
+  {
    "name": "voice.set",
    "risk": "draft",
    "summary": "Choose the agent's voice and speed within its chosen stack",
