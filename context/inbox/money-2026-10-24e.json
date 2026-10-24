@@ -1,14 +1,39 @@
 {
-  "nodes": [
-    {"id": "decision.2026-10-24.test-budget-is-a-cap", "type": "decision", "title": "The daily test-call budget is a workspace cap (budget scope 'test', daily, with a per-call hold): default ₹200 a day and ₹50 held per test call, a deployment default via VP_TEST_BUDGET_DEFAULT_INR for workspaces created there, raised by an owner's approval (cap.raise scope test, card names both amounts), lowered at once; calls reads it through the registry tool test.budget and falls back to its constants without the money module", "status": "active", "date": "2026-10-24", "source": "agent",
-     "rationale": "directive.2026-10-24.calling-first-build-all: the owner tests long real calls on staging; a constant ₹200/day allowed about four. Spend is the calls module's recorded test-call cost since IST midnight (unchanged semantics), so the cap resets at IST midnight by construction and the ledger never counts it against real calls", "reverse_if": "test calls start reserving through the ledger (then the test cap becomes a real ledger cap with spent tracking), or the owner wants test spend charged to the wallet (open.2026-10-24.test-spend-vs-empty-wallet)", "path": "product/server/modules/money/test-budget.ts"}
-  ],
-  "edges": [
-    {"from": "decision.2026-10-24.test-budget-is-a-cap", "to": "directive.2026-10-24.calling-first-build-all", "rel": "implements"},
-    {"from": "decision.2026-10-24.test-budget-is-a-cap", "to": "open.2026-10-24.test-spend-vs-empty-wallet", "rel": "informs"},
-    {"from": "decision.2026-10-24.test-budget-is-a-cap", "to": "component.2026-10-21.money-module", "rel": "part-of"}
-  ],
-  "events": [
-    {"date": "2026-10-24", "what": "Money: the daily test budget became a workspace cap (0910): ₹200/₹50 defaults, VP_TEST_BUDGET_DEFAULT_INR deployment default (ops/STAGING.md), owner-approved raises, Billing shows it with each test call's cost; calls reads test.budget (seam proposed to the calls session; ~6-line edit, constants kept as fallback)."}
-  ]
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.test-budget-is-a-cap",
+   "type": "decision",
+   "title": "The daily test-call budget is a workspace cap (budget scope 'test', daily, with a per-call hold): default ₹200 a day and ₹50 held per test call, a deployment default via VP_TEST_BUDGET_DEFAULT_INR for workspaces created there, raised by an owner's approval (cap.raise scope test, card names both amounts), lowered at once; calls reads it through the registry tool test.budget and falls back to its constants without the money module",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "directive.2026-10-24.calling-first-build-all: the owner tests long real calls on staging; a constant ₹200/day allowed about four. Spend is the calls module's recorded test-call cost since IST midnight (unchanged semantics), so the cap resets at IST midnight by construction and the ledger never counts it against real calls",
+   "reverse_if": "test calls start reserving through the ledger (then the test cap becomes a real ledger cap with spent tracking), or the owner wants test spend charged to the wallet (open.2026-10-24.test-spend-vs-empty-wallet)",
+   "path": "product/server/modules/money/test-budget.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.test-budget-is-a-cap",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.test-budget-is-a-cap",
+   "to": "open.2026-10-24.test-spend-vs-empty-wallet",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.test-budget-is-a-cap",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "money-test-budget-cap",
+   "details": "Money: the daily test budget became a workspace cap (0910): ₹200/₹50 defaults, VP_TEST_BUDGET_DEFAULT_INR deployment default (ops/STAGING.md), owner-approved raises, Billing shows it with each test call's cost; calls reads test.budget (seam proposed to the calls session; ~6-line edit, constants kept as fallback)."
+  }
+ ]
 }

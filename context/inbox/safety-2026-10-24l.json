@@ -16,7 +16,9 @@
    "status": "active",
    "date": "2026-10-24",
    "source": "verified",
-   "title": "Floor after decision.2026-10-24.floor-danger-cutting-and-lookalikes, TS and Python doors, sandbox, deterministic (no model). Measured: dev-lookalike-12 crisis 18/18 and benign 0/22; dev-7 FP 0 and recall 100/100; dev-lookalike-9 FP 0 and recall 32/75 (was 30); dev-lookalike-10 FP 1; dev-lookalike-11 11/11 and FP 0; cases.json crisis vectors 215/215 and benign vectors 0/674 flagged. Not verified: any blind set. Everyday Tamil 'I'll die' hyperbole and stored poison did not fire on DEV before the change, so the BLIND 11 lines of those families are unexplained by DEV."
+   "title": "Floor after decision.2026-10-24.floor-danger-cutting-and-lookalikes, TS and Python doors, sandbox, deterministic (no model). Measured: dev-lookalike-12 crisis 18/18 and benign 0/22; dev-7 FP 0 and recall 100/100; dev-lookalike-9 FP 0 and recall 32/75 (was 30); dev-lookalike-10 FP 1; dev-lookalike-11 11/11 and FP 0; cases.json crisis vectors 215/215 and benign vectors 0/674 flagged. Not verified: any blind set. Everyday Tamil 'I'll die' hyperbole and stored poison did not fire on DEV before the change, so the BLIND 11 lines of those families are unexplained by DEV.",
+   "n": "dev-lookalike-12 40 lines (18 crisis, 22 benign); dev-7 100 recall lines; dev-lookalike-9 75; cases.json 215 crisis + 674 benign vectors",
+   "method": "floor run deterministically (no model) in both doors, TS and Python, in the sandbox"
   },
   {
    "id": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
@@ -44,7 +46,10 @@
    "status": "active",
    "date": "2026-10-24",
    "source": "safety module builder",
-   "title": "BLIND 12 (product/shared/safety/sets/heldout-12.json, sha256_16 3bbf0d8989ad7b9d): 90 crisis and 150 hard look-alikes in 7 languages, written by a separate agent (Sonnet) with no repo access. Every crisis line is tagged with means (10 values, danger_from_person 10, cutting 7) and every look-alike with family (15 families x 10). The builder checked counts, tags, duplicates and overlap only (0 shared with any set or cases.json). Unread. PREREG draft: research/2026-10-24/judge-blind12/PREREG-DRAFT.md."
+   "title": "BLIND 12 (product/shared/safety/sets/heldout-12.json, sha256_16 3bbf0d8989ad7b9d): 90 crisis and 150 hard look-alikes in 7 languages, written by a separate agent (Sonnet) with no repo access. Every crisis line is tagged with means (10 values, danger_from_person 10, cutting 7) and every look-alike with family (15 families x 10). The builder checked counts, tags, duplicates and overlap only (0 shared with any set or cases.json). Unread. PREREG draft: research/2026-10-24/judge-blind12/PREREG-DRAFT.md.",
+   "paths": [
+    "product/shared/safety/sets/heldout-12.json"
+   ]
   },
   {
    "id": "asset.2026-10-24.blind-br3",
@@ -52,7 +57,10 @@
    "status": "active",
    "date": "2026-10-24",
    "source": "safety module builder",
-   "title": "BLIND-BR3 (product/shared/safety/sets/heldout-brief-review-3.json, sha256_16 23aaa7662c11da18): 60 flags (human 18, hide_ai 14, crisis 12, manipulation 16) and 120 passes (8 subsets x 15, including honest_opening, prohibition_fact_honesty, prohibition_fact_pressure and negated_urgency), each with persona, field, key and subset. Separate agent, no repo access; checked by counts only; unread. PREREG draft: research/2026-10-24/brief-review-blind3/PREREG-DRAFT.md."
+   "title": "BLIND-BR3 (product/shared/safety/sets/heldout-brief-review-3.json, sha256_16 23aaa7662c11da18): 60 flags (human 18, hide_ai 14, crisis 12, manipulation 16) and 120 passes (8 subsets x 15, including honest_opening, prohibition_fact_honesty, prohibition_fact_pressure and negated_urgency), each with persona, field, key and subset. Separate agent, no repo access; checked by counts only; unread. PREREG draft: research/2026-10-24/brief-review-blind3/PREREG-DRAFT.md.",
+   "paths": [
+    "product/shared/safety/sets/heldout-brief-review-3.json"
+   ]
   },
   {
    "id": "rejected.2026-10-24.judge-eval-brief-region-counts-template",
@@ -60,7 +68,8 @@
    "status": "active",
    "date": "2026-10-24",
    "source": "verified",
-   "title": "judge-eval's brief-review counting region (any path under persona.notes, facts[ or opening.usefulFirst) credited an item with findings on the base brief around it. Verified with a scripted fake model that flags every field: a fact item was credited with the base persona note. Replaced: only the item's own field counts (its fact facts[N], the opening, or the notes). Each row records path, floorPaths and outside. BR2's figures were read on the old region; its attribution replay is the correction for it."
+   "title": "judge-eval's brief-review counting region (any path under persona.notes, facts[ or opening.usefulFirst) credited an item with findings on the base brief around it. Verified with a scripted fake model that flags every field: a fact item was credited with the base persona note. Replaced: only the item's own field counts (its fact facts[N], the opening, or the notes). Each row records path, floorPaths and outside. BR2's figures were read on the old region; its attribution replay is the correction for it.",
+   "broke": "an item was credited with findings on the base brief around it (a fact item got the base persona note), so brief-review recall could be overstated"
   }
  ],
  "edges": [

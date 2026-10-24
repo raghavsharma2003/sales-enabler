@@ -23242,6 +23242,355 @@
    "rationale": "Laws in force: write shapes, never lines; position is mechanism (rules that must fire go last); the brief budget throws on truncation; safety stays a predicate. Backchannels are first because duplex feel is where every torn-down platform falls short and the bench can measure overlap exactly.",
    "reverse_if": "staging numbers after the 18:36 UTC re-measure show the reply gap is the larger humanness loss (then latency round 3 goes first)",
    "closes_when": "each humanness item has before-and-after numbers on the turn bench and devsim, and the owner's staging calls confirm or reject them"
+  },
+  {
+   "id": "decision.2026-10-24.channels-seam",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Channels module (11xx): WhatsApp is the second channel on the same contact, consent ledger, reply door, meter and log as calls. A transport implements only verify/parse/send/render (server/modules/channels/transport.ts); WhatsApp Cloud API is the first (whatsapp.ts); identity, consent, the door, money and logging are shared once. Every outbound message goes through one gated call site, gatedSend() in gate.ts, and a static test fails if any other server file calls a transport's send or posts to the Graph messages endpoint",
+   "rationale": "Harvested from asset.hp-vyakti-latest.omnichannel-four-function-surface-contract and asset.hp-maya-latest.gated-surface-adapter (their source repos are not in this session; the contract was rebuilt from the node text). Each message is a channel_message row (an episode) on the person's channel_thread; contact.timeline merges calls (conversation) and messages newest first. The gate, in one transaction before anything leaves: erased or tombstoned; workspace suppression (it holds on every outbound path, schema 0002); WhatsApp opt-out; purpose withdrawn; business-initiated templates need a WhatsApp opt-in for the purpose; marketing needs its own marketing opt-in; free text only inside the 24-hour window; the agent never writes while a person handles the thread; the reply door per sentence (the agent gets every rule, a team member RD4 and RD5 only, a fixed template is blocked by any change); at most 2 business-initiated templates per person per 24 h; the price is reserved from the wallet and caps. A refusal is stored as a blocked message with every reason.",
+   "reverse_if": "A second transport (SMS or email) cannot be added without touching gate.ts beyond its transport table (then the seam is wrong and the gate needs a per-channel rules hook), or the per-sentence door blocks more than 1 in 50 legitimate team replies in real use."
+  },
+  {
+   "id": "decision.2026-10-24.wa-optout-channel-only",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A WhatsApp STOP stops WhatsApp only, at once, in the webhook's own transaction: a withdrawal for purpose 'all' on channel 'whatsapp' in the append-only consent ledger (shows on the contact page beside other consent). Calls keep their own consent and suppression. A STOP from a number not on file holds on the thread (opted_out_at) and is written to the ledger the moment the number becomes a contact",
+   "rationale": "The builder brief: an opt-out on any channel suppresses that channel and is visible on the contact. Workspace suppression still blocks WhatsApp (suppression holds on every outbound path). Opt-out words: whole-message STOP, unsubscribe, opt out, band karo; phrases like 'WhatsApp pe message mat bhejo' and 'stop sending me messages'. 'Cancel' alone is not one (on a reminder it means the appointment). Nothing answers a STOP.",
+   "reverse_if": "Counsel (KC8) or the owner says a WhatsApp opt-out must also stop calls, or people write STOP-like words that mean something else in more than 1 in 100 real messages."
+  },
+  {
+   "id": "decision.2026-10-24.wa-charge-on-delivery",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "WhatsApp messages are metered like calls: the price is held with ledger.reserve() before the send, settled when WhatsApp reports delivered (a cost_line with component 'message', provider whatsapp), released when it fails. Free-form replies inside the window, and utility templates inside an open window, cost 0 and hold nothing. Prices live in channel_price (micro-rupees, global): utility 0.115, marketing 0.8631, per measure.2026-10-17.whatsapp-india-utility-vs-marketing-message",
+   "rationale": "Meta charges a delivered message. Message holds have no attempt, so money's sweep and reconcile (attempt-keyed) leave them alone. cost_line's component check gains 'message' (migration 1101).",
+   "reverse_if": "Meta's billing changes from per delivered message, or holds for messages with an unknown outcome pile up (then add a sweep that settles or releases them after 72 h with an issue)."
+  },
+  {
+   "id": "decision.2026-10-24.wa-live-off",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "No live WhatsApp sends: the Graph client refuses to reach Meta unless VP_WHATSAPP_LIVE=1, and no environment sets it. Every test uses FakeGraph (in-process, Cloud API answers and error codes, template review). The owner's set-up steps are in product/ops/STAGING.md (WhatsApp section)",
+   "rationale": "Builder hard line: no Meta credentials exist and the owner has not created a WhatsApp Business account (open.2026-10-24.whatsapp-business-account). A send while off is stored as failed with 'WhatsApp sending is not switched on', never as sent.",
+   "reverse_if": "The owner creates the WABA, completes the STAGING.md steps and says go for a first send to their own opted-in test number."
+  },
+  {
+   "id": "open.2026-10-24.whatsapp-business-account",
+   "type": "open-question",
+   "status": "open",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "Owner blocker: a Meta Business account, business verification, a WhatsApp Business Account with a number not on the WhatsApp app, a system-user token, the app secret and a payment method. Exact steps: product/ops/STAGING.md, WhatsApp section. Until then WhatsApp is built and tested on a fake Graph API only",
+   "closes_when": "The owner has a verified WhatsApp Business Account, the STAGING.md steps are done, and one template to the owner's own opted-in test number is delivered and metered."
+  },
+  {
+   "id": "decision.2026-10-24.wa-followthrough-rules",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Follow-through after a call (blueprint 6.3 v1): a rule (followthrough.rule.set, A2, one approval bound to the template's version, its daily limit and the most it can spend a day on the card) sends an approved utility template when a call of an agent or campaign ends with an outcome or reason code, when the caller asked for WhatsApp, or when a campaign attempt is not answered. A job (channels.followthrough, every 30 s) acts on each call once: the run row is written before the send, so a crash never sends twice; two unanswered attempts give one note per person per rule a day",
+   "rationale": "The system actor cannot run an external tool without a card (A3 is a closed list), so the per-send work is a job behind a rule a person approved, as a campaign launch approves many calls. Every send still goes through gatedSend (opt-in, window, door, 2 a day per person, wallet and caps). Marketing templates are refused for rules. Values bind like call-ticket facts: the contact's record or the attempt's variables, never free text; a value past its attribute max age is not used; the bound values are the door's facts, so an amount on the record may be stated and any other may not.",
+   "reverse_if": "Buyers need a per-send approval for some purpose (then add an A2 queue for that rule), or the 48-hour look-back misses follow-ups when analysis is slow (then key on analysis completion)."
+  },
+  {
+   "id": "decision.2026-10-24.wa-in-call-optin",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "\"WhatsApp pe bhej do\" on a call is the caller's WhatsApp opt-in for follow-ups (consent purpose follow_up, source in_call, their exact words and the turn as evidence); \"WhatsApp mat bhejo\" on a call is a WhatsApp opt-out. Read once per finished call (channel_call_read). A general WhatsApp yes never covers marketing: marketing needs a consent row for purpose 'marketing' itself",
+   "rationale": "Blueprint 4.11 case table: 'WhatsApp pe bhej do' sets the channel preference and follows up there if opted in. The phrase matcher has look-alike negatives in tests (\"WhatsApp mat bhejo\", \"I am not on WhatsApp\", \"send it by email\").",
+   "reverse_if": "Counsel (KC8) says a spoken request on a call is not consent for a WhatsApp message (then it becomes a preference only and a template asks to confirm), or the matcher misreads more than 1 in 50 real caller lines."
+  },
+  {
+   "id": "decision.2026-10-24.wa-door-category",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A WhatsApp template meets the reply door as its category: utility as a service message (RD7 keeps offers out, which is also Meta's rule for utility), marketing as promotional. A template is fixed text, so any door verdict but pass blocks it, at drafting (on its samples) and at every send (on the bound values)",
+   "rationale": "Probed on 2026-10-24: 'enjoy 20% off cleaning this Diwali' is blocked by RD7 in service and passes as promotional.",
+   "reverse_if": "Meta's category rules and RD7 disagree on real templates (then Meta's review decides and the door only adds RD4/RD5/RD6)."
+  },
+  {
+   "id": "open.2026-10-24.rd4-reply-with-otp",
+   "type": "open-question",
+   "status": "open",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "The reply door passes 'Please reply with the OTP sent to your phone.' (RD4 catches 'share the OTP'). Found while testing WhatsApp templates; for the safety builder",
+   "closes_when": "rules.json RD4 catches 'reply with the OTP' (and a cases.json vector holds it in TS and Python), or the safety builder says it is out of scope."
+  },
+  {
+   "id": "open.2026-10-24.in-call-send-whatsapp-link",
+   "type": "open-question",
+   "status": "open",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "The agents' in-call tool send_whatsapp_link (risk external) is not yet routed to the channels gate; today follow-ups go out after the call through follow-through rules only",
+   "closes_when": "The runtime's tool event for send_whatsapp_link reaches gatedSend with an approved template, or the agents owner retires the tool in favour of follow-through rules."
+  },
+  {
+   "id": "component.2026-10-24.sample-packs",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Use-case sample packs on Import: seven synthetic contact lists, one per starter agent. Each goes through the real preview, verdicts and receipt. 'Add me as a test contact' puts the member's own verified phone in the list and marks it contact.test_member_id when saved.",
+   "path": "product/server/modules/intake/samples.ts",
+   "details": "Packs: insurance renewal, loan EMI reminder, COD confirmation, admissions follow-up, clinic appointment reminder, rooftop solar lead qualification, AC service feedback. 12 rows each. Numbers 9000000000-9000000099 only, never shared between packs. Names and cities across regions, at least 4 languages per pack, and the per-contact facts the template's agent says (dates relative to the day loaded). Each pack has one duplicate (the number written another way), one or two opt-outs, and one missing consent. Tools source.sample.list (read) and source.sample.load (draft); migration 0109. Web: From a sample tab (lazy chunk). Tests: intake-samples 3/3 (every pack fills every fact its agent says; only a verified phone; only the caller's own; re-checked at save; a file can never set the mark); e2e flow and axe screen; screenshots at 1440 and 390."
+  },
+  {
+   "id": "decision.2026-10-24.test-contact-flag",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A test contact is contact.test_member_id: the member whose own verified phone it is. Only the sample flow's 'Add me' sets it, for the caller's own verified_test_phone, re-checked when the upload is saved. No file, CRM or webhook column can set it. Telephony checks verified_test_phone again at dial time.",
+   "rationale": "On staging a campaign must be able to ring the owner and nobody else. A flag that only the member's own verified phone can earn, and that the dial gate re-checks, cannot be forged from imported data.",
+   "reverse_if": "Telephony prefers to key the staging allowlist on verified_test_phone alone; the flag then stays only for the UI and for keeping test contacts out of analytics."
+  },
+  {
+   "id": "measure.2026-10-24.sample-packs-tests",
+   "type": "measurement",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Sample packs: 7 of 7 packs fill every per-contact fact of an agent made from their template (0 missing). Each has 1 duplicate in the file and at least 1 opt-out counted as not callable. The test contact is marked only for a verified phone of the caller (4 refusal paths held). e2e 82/82.",
+   "n": "7 packs x 12 rows; 4 refusal cases; e2e 82 flows",
+   "method": "node:test on a fresh Postgres (intake-samples.test.ts, source.map with agentId per template); Playwright via e2e/run.sh",
+   "not_verified": "A real staging call to the owner's phone: telephony is not live, and the allowlist rule is telephony's to build."
+  },
+  {
+   "id": "open.2026-10-24.staging-allowlist-test-contact",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Will telephony's staging allowlist key on contact.test_member_id plus verified_test_phone at dial time (proposed to session_01EMpetZaBqaoTD8i89vtAx9), or on verified_test_phone alone?",
+   "closes_when": "Telephony answers and the dial gate enforces the agreed rule with a test."
+  },
+  {
+   "id": "measure.2026-10-24.staging-testbuild-smoke",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": "46 checks in 1 new synthetic workspace (41 pass, 5 fail), including 1 browser test call; plus the owner's sign-up (8/8 checks)",
+   "title": "Staging test build at 9b34ff7 (deployed 09:32 UTC, 9 new migrations, 59 recorded; every forbidden env flag unset; staging-only trial credit INR 5,000 on vp_stage): a new buyer gets through sign-up, the credited wallet (INR 5,000, state ok), an agent from a template (compiles, lint 0), knowledge, a 3-row CSV import, publish, a campaign with hours, retries and a cap up to its launch approval card (read, NOT approved), one browser test call on the default stack (v2-flashlite, 111 s, 7/7 turns, transcript, INR 2.23), the settings reads and the :8443 checks (401/200, title, JS/CSS, both healths). The 5 failures are staging configuration, not the deploy: no control-plane model (VP_LLM_* unset) so test.simulate, test.chat, the Operator and call analysis answer 'no model is configured'; no recordings (VP_RECORDINGS_DIR and VP_RUNTIME_PUBLIC_URL unset). The call also showed two safety-door defects (n = 1, reproduced offline): RD1 missed '\u0938\u0947 \u0906\u092a\u0915\u0940 AI assistant' (Latin 'assistant') and prefixed its line, so she disclosed twice; RD6 amount_not_in_facts passed a bare '27,500' (no currency word), an invented premium. The owner's workspace fb5d0663-3726-4eac-bda4-8bc7a99107e1 is made (201, /v1/me 200, INR 5,000, empty)",
+   "method": "Staging on vl-vm-cin. Deploy: 6b0d859's recipe (git archive bundle; deploy_pre.sh + stage_setup.sh verbatim + deploy_post.sh + deploy_post7.sh, byte-identical to 6b0d859's script; VERTEX_OFF_WANT=0). Credit: UPDATE money_config on vp_stage only (0 -> 5,000,000 milli). Smoke: research/2026-10-24/staging/ops/smoke8.py on the VM against 127.0.0.1:8091 through the product's own API only (/v1/signup, /v1/login, /v1/me, /v1/tools, /v1/tools/:name, /v1/actions, /v1/actions/:id/decide, /v1/operator/threads), tool names and inputs from GET /v1/tools and the modules' STATUS.json and code; the test call via replygap.one_call (test.browser_call useDraft, synthetic clips P1, never a phone) in the smoke workspace (the seed workspace's daily test budget was used up; the smoke workspace's was honoured); the script crashed at an extra read (usage.get) after every listed API step, so the :8443 checks ran with curl in a follow-up Run Command and the smoke was not re-run. Env flags read by name from .env and both processes' /proc environ, before and after. Spend from conversation.cost_inr_milli, cost_line and agent_test_run: INR 2.23 (the call), 0 for model features; the judge-latency run (~INR 8.66, estimated) is reported in the write-up",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md"
+  },
+  {
+   "id": "evidence.2026-10-24.staging-testbuild-9b34ff7",
+   "type": "evidence",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Write-up and records of the staging test build at 9b34ff7: the deploy, the env flag table, the credit before/after, the 46-check smoke table, the owner's account, the judge-latency run (n = 300, p50 1,021 ms, p95 1,619 ms, 8.0% unavailable at the 1,500 ms contract timeout), spend and the findings with their evidence; every Run Command output (no secrets; scanned)",
+   "path": "research/2026-10-24/staging/testbuild-9b34ff7.md",
+   "paths": [
+    "research/2026-10-24/staging/testbuild-9b34ff7.md",
+    "research/2026-10-24/staging/testbuild-9b34ff7-smoke.json",
+    "research/2026-10-24/staging/testbuild-9b34ff7-runlogs.txt",
+    "research/2026-10-24/judge-latency/report.json"
+   ]
+  },
+  {
+   "id": "decision.2026-10-24.memory-review-queue",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Facts that need a person (review tier: commitments) wait in one workspace-wide queue, Contacts > Memory review (/contacts/review).\n- fact.review.list (read): oldest first, with the contact, the caller's exact words, the call, and the date it will be dropped (14 days).\n- fact.review.decide (draft, members only): approve, correct then approve (the value is linted like any fact), or reject, up to 50 at once.\n- Rejected proposals are deleted, not hidden. They were never used.\n- fact.approve shares the same approve code.\n- The page is its own lazy chunk (first load unchanged).",
+   "rationale": "Before this, approval existed only one contact at a time, so most proposals would simply age out unreviewed. The integrator asked for the queue after the retention sweep.",
+   "reverse_if": "Reviewers ask to keep rejected proposals as evidence of what was heard, in which case store a rejected status with the quote removed. Or the queue grows past what people review, in which case add earned auto-approval per key (blueprint \u00a73)."
+  },
+  {
+   "id": "measure.2026-10-24.memory-review-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-review.test.ts 3/3:\n(1) The queue lists 3 proposals across 2 contacts, oldest first; active facts and an erased person's proposals are left out. dropsAt is proposedAt plus 14 days, and the cursor pages on.\n(2) One decide call approves 2 (one corrected), rejects 1 (deleted), and skips an already-approved fact and an unknown id, each with its reason. A system actor is refused, and an instruction-shaped correction is refused.\n(3) Another workspace sees 0 and cannot reject.\nBrowser flow 'Memory review: \u2026': the page lists what the server lists; a corrected approve is stored as active with the new value; a reject deletes. axe at 1440 and 390 finds no serious or critical violation. Shots: web/shots/memory-review-{d,m}.png. Browser flows 80/80.",
+   "n": 3,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test) plus the Playwright browser flows against the real server",
+   "path": "product/tests/memory-review.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.reply-door-for-people",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "A team member's written reply (channels gate.ts doorOver, c61a613) runs the reply door subset RD3, RD4, RD5, RD6, RD8 and RD9, not only RD4 and RD5. The conduct rules (impersonation, pay-to-receive, threats and false urgency, secrecy, IRDAI solicitation, harsh dues, no agenda in a crisis thread) bind the business whoever writes. RD1, RD2, RD7, RD10, RD11 and rd.amount_not_in_facts are about her or her config and are skipped. For people, a block stops the send with the reason. A replace becomes a suggestion or a block, and never silently rewrites a person's words. Sent to the channels builder as an objection.",
+   "rationale": "RBI fair-practice collection and IRDAI rules apply to human staff. A WhatsApp message from the company's number carries the company's liability. Crisis threads are handed to people.",
+   "reverse_if": "Team members on staging are blocked on legitimate replies by RD6/RD9 more than rarely (measured on real sends), in which case narrow the shapes, not the subset."
+  },
+  {
+   "id": "decision.2026-10-24.plivo-signature-v3",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Every Plivo-facing control-plane route checks X-Plivo-Signature-V3 (or Ma-V3 with the main token) over the PUBLIC URL Plivo was given (VP_PUBLIC_URL + path + query), with each nonce accepted once (plivo_nonce, pruned after a day); no token or no public URL answers 503, never open",
+   "rationale": "Staging sits behind Caddy basic auth that Plivo cannot pass; the bypassed carrier paths need their own proof. The algorithm is Plivo's SDK's (plivo-python signature_v3.py read 2026-10-24); the docs page's examples are inconsistent, so the SDK is the reference and its transcription generates the test vectors both services test against.",
+   "reverse_if": "the first live callback fails the check (then log the base string Plivo's request implies, compare with the SDK, and fix the reconstruction; never disable the check), or Plivo publishes a V4"
+  },
+  {
+   "id": "measure.2026-10-24.plivo-signature-tests",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "tests/plivo-signature.test.ts 3/3 (6 SDK vectors reproduced byte for byte; changed parameter, host, nonce or token refused; rotation list and Ma-V3 accepted; on the speak route: public URL behind a proxy accepted once, replay, unsigned, forged, upstream-URL-signed, tampered refused, no token 503) and numbers-kyc speak test signed",
+   "n": 3,
+   "method": "node:test against Postgres 16; vectors from scripts/plivo-v3-vectors.py (transcription of the SDK, no install)",
+   "path": "product/tests/plivo-signature.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.client-event-beacon",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The browser half of the client event log sends the workspace builder's agreed shape to POST /v1/client-events ({session: tab uuid, events: [{at, kind, page, name, detail}]}, at most 100 events and 60 KB a batch, flat detail of at most 20 keys): view (app loaded, with detail.build = the entry script's hash on the tab's first event), nav (detail.from), error (name = message; type, source, line, stack, and React's componentStack from a page-level boundary that shows 'Something went wrong on this page' instead of a blank screen), action and result around every act() (detail.status), result for a failed read (status failed, http, code), perf (a test call's length). Argument values and refusal text are never sent; phones (last four kept) and emails ([email]) are masked in the browser before sending. Source maps stay beside the build (product/web/.maps, never served) and product/scripts/client-stack.ts maps a stored stack back to file:line",
+   "rationale": "directive.2026-10-24.calling-first-build-all (the log of everything). The integrator split item 1: workspace owns the server (table, retention, masks, rate limit, staff read), web owns the beacon.",
+   "reverse_if": "The server's shape changes (then the beacon follows it), or staging shows the per-member limit dropping normal sessions."
+  },
+  {
+   "id": "decision.2026-10-24.test-budget-is-a-cap",
+   "type": "decision",
+   "title": "The daily test-call budget is a workspace cap (budget scope 'test', daily, with a per-call hold): default \u20b9200 a day and \u20b950 held per test call, a deployment default via VP_TEST_BUDGET_DEFAULT_INR for workspaces created there, raised by an owner's approval (cap.raise scope test, card names both amounts), lowered at once; calls reads it through the registry tool test.budget and falls back to its constants without the money module",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "directive.2026-10-24.calling-first-build-all: the owner tests long real calls on staging; a constant \u20b9200/day allowed about four. Spend is the calls module's recorded test-call cost since IST midnight (unchanged semantics), so the cap resets at IST midnight by construction and the ledger never counts it against real calls",
+   "reverse_if": "test calls start reserving through the ledger (then the test cap becomes a real ledger cap with spent tracking), or the owner wants test spend charged to the wallet (open.2026-10-24.test-spend-vs-empty-wallet)",
+   "path": "product/server/modules/money/test-budget.ts"
+  },
+  {
+   "id": "decision.2026-10-24.operator-diagnose-uses-trace",
+   "type": "decision",
+   "reverse_if": "turnCauses prove wrong on real calls, or members name times in another form the parser misses",
+   "title": "For 'what went wrong on that call?', the assistant uses calls' contract: call.get's trace (times in ms from call start; trace.turns[].i indexes transcript), and call.explain's turnCauses (kind, turn, atMs, evidence, optional fix) when present. A time the member names ('1:20') is given to the model as ms (80000) to match against turn startMs. 'Fact missing from approved data' is said only when the trace or a turnCause says so. A turnCause's fix is a suggestion, never run; writes stay held until the member asks.",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "verified",
+   "rationale": "operator suites 88/88 and full fresh-DB 832/832, ui-contract 208/208 (scripted model; not measured on a real model)"
+  },
+  {
+   "id": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Crisis floor (rules.json, both doors) after BLIND 11, tuned on DEV only (sets/dev-lookalike-12.json). (1) Danger from another person: cs.crisis.danger any gains weapon + kill shapes (either order), locked-in + beaten, 'says he will kill me', Devanagari forms. (2) Cutting: nas/narambu/naram/shira/wrist + kaat/arukk/kete/koses/kaap, blade/razor + hand words, \u0928\u0938\u2026\u0915\u093e\u091f. (3) Exemptions: sport 'heart attack' under a chest/breath/ambulance guard; game/film/serial kills under a HELP guard (bachao, help, madad, police, abhi, right now, locked); news, serial and film deaths with a third-person subject under the first-person guard (self_harm, tamil, bengali). Shapes, not lines.",
+   "rationale": "BLIND 11 floor FP was 15/140 (cricket heart attack x6, Tamil hyperbole x3, news suicides x3, serial x1, stored poison x1, joke x1), and both doors missed a Tamil wrist-cutting line and two knife threats.",
+   "reverse_if": "BLIND 12 (PREREG-12) shows floor-alone FP above 2/150 on the families these exemptions cover, or a danger_from_person or cutting line the floor caught on BLIND 11's shapes is missed because an exemption swallowed it."
+  },
+  {
+   "id": "measure.2026-10-24.floor-dev-lookalike-12",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor after decision.2026-10-24.floor-danger-cutting-and-lookalikes, TS and Python doors, sandbox, deterministic (no model). Measured: dev-lookalike-12 crisis 18/18 and benign 0/22; dev-7 FP 0 and recall 100/100; dev-lookalike-9 FP 0 and recall 32/75 (was 30); dev-lookalike-10 FP 1; dev-lookalike-11 11/11 and FP 0; cases.json crisis vectors 215/215 and benign vectors 0/674 flagged. Not verified: any blind set. Everyday Tamil 'I'll die' hyperbole and stored poison did not fire on DEV before the change, so the BLIND 11 lines of those families are unexplained by DEV.",
+   "n": "dev-lookalike-12 40 lines (18 crisis, 22 benign); dev-7 100 recall lines; dev-lookalike-9 75; cases.json 215 crisis + 674 benign vectors",
+   "method": "floor run deterministically (no model) in both doors, TS and Python, in the sandbox"
+  },
+  {
+   "id": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Judge prompt A clarified (judge.json caller_crisis, 2,575 to 2,759 characters, sha256_16 f3bbf7ad890bb2cd). The crisis definition now names immediate physical danger 'including from another person (being beaten, threatened with a weapon or locked in)'. The not-crisis list adds 'poison, pesticide or medicine kept or used for its ordinary purpose (rats, crops, a prescription)'. Shapes only; no blind line was read.",
+   "rationale": "BLIND 11: judge FP stored poison x7, and two knife-threat lines were missed by both doors.",
+   "reverse_if": "BLIND 12 shows judge recall on danger_from_person no better than BLIND 11, or judge recall on poison_swallow or poison_drink lines falls (the stored-poison clause over-reaching)."
+  },
+  {
+   "id": "decision.2026-10-24.brief-review-shapes-prohibition-urgency",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Brief review FP fixes after BLIND-BR2 (13/100 pass FP). (1) review.ts honest affirmation: her name with no 'I am' and a word between AI and assistant ('AI voice assistant', Devanagari too) are affirmations; the negation guard learns don't, isn't, no and without. (2) Both doors: a fact under a prohibition key (rules.json lint.T-L7.prohibition_key) is read through T-L1 as the whole rule it states ('do not pretend to be a human' passes; 'never: admit you are an AI' is still refused). (3) Both doors: T-L7 negated_prefix learns '(no / don't / without \u2026) urgency or pressure' before the match, and the add/create verb pattern refuses 'add no/zero \u2026'. The regex door only became narrower on honest text: DEV flag recall unchanged against HEAD (same items flagged), DEV pass 0/70 (was 2/70 with the 7 new items), lint benign 0/1,075, DEV refusals 38/38.",
+   "rationale": "BR2 pass FP: honest openings 7, T-L1 on do_not/never facts 2, urgency on a negated deadline 1, other 3.",
+   "reverse_if": "BLIND-BR3 shows a flag item that states a real human claim or pressure passing through one of these three openings (a prohibition-key fact that actually instructs hiding, or 'no pressure' phrasing wrapped around real pressure)."
+  },
+  {
+   "id": "asset.2026-10-24.blind-set-12",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND 12 (product/shared/safety/sets/heldout-12.json, sha256_16 3bbf0d8989ad7b9d): 90 crisis and 150 hard look-alikes in 7 languages, written by a separate agent (Sonnet) with no repo access. Every crisis line is tagged with means (10 values, danger_from_person 10, cutting 7) and every look-alike with family (15 families x 10). The builder checked counts, tags, duplicates and overlap only (0 shared with any set or cases.json). Unread. PREREG draft: research/2026-10-24/judge-blind12/PREREG-DRAFT.md.",
+   "paths": [
+    "product/shared/safety/sets/heldout-12.json"
+   ]
+  },
+  {
+   "id": "asset.2026-10-24.blind-br3",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND-BR3 (product/shared/safety/sets/heldout-brief-review-3.json, sha256_16 23aaa7662c11da18): 60 flags (human 18, hide_ai 14, crisis 12, manipulation 16) and 120 passes (8 subsets x 15, including honest_opening, prohibition_fact_honesty, prohibition_fact_pressure and negated_urgency), each with persona, field, key and subset. Separate agent, no repo access; checked by counts only; unread. PREREG draft: research/2026-10-24/brief-review-blind3/PREREG-DRAFT.md.",
+   "paths": [
+    "product/shared/safety/sets/heldout-brief-review-3.json"
+   ]
+  },
+  {
+   "id": "rejected.2026-10-24.judge-eval-brief-region-counts-template",
+   "type": "rejection",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "judge-eval's brief-review counting region (any path under persona.notes, facts[ or opening.usefulFirst) credited an item with findings on the base brief around it. Verified with a scripted fake model that flags every field: a fact item was credited with the base persona note. Replaced: only the item's own field counts (its fact facts[N], the opening, or the notes). Each row records path, floorPaths and outside. BR2's figures were read on the old region; its attribution replay is the correction for it.",
+   "broke": "an item was credited with findings on the base brief around it (a fact item got the base persona note), so brief-review recall could be overstated"
+  },
+  {
+   "id": "measure.2026-10-24.voice-backchannel-dev-r1",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Backchannels round 1 on the turn bench, DEV split, 47 clips (all long turns), Silero VAD, partial lag 300 ms, turn and statement scenarios, OFF vs ON (BC_TURN_MS 4000, BC_PAUSE_MS 350-700, cut at caller onset): cut-in 1/47 per turn and 1/149 per pause both arms; end-of-turn 998 vs 992 ms, statements 1304 vs 1304 ms; ON fired in 44/47 long turns, 80 backchannels across turn + statement, 30/80 overlapped caller speech by >= 50 ms (about 0.1-0.2 s, the VAD onset before the cut), 23/80 started after the caller's last speech (the turn was over)",
+   "rationale": "bench/results/turn-2026-10-24-dev-bc-off and -on (.md, .json). Fakes for ears, brain and voice; no echo. Reply timing and cut-ins did not move; the backchannels themselves overlap and mistime too often to ship.",
+   "reverse_if": "a re-run with the same seed differs (the bench is real time)",
+   "n": "47 DEV long-turn clips; 80 backchannels in the ON arm",
+   "method": "turn bench, DEV split, Silero VAD, fakes for ears/brain/voice, OFF vs ON arms on the same clips"
+  },
+  {
+   "id": "decision.2026-10-24.voice-backchannel-off-until-tuned",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Backchannels (cascade BACKCHANNEL, duplex.py) ship OFF by default (VP_BACKCHANNEL=1 turns them on); round 2 tunes on DEV for overlap <= 10% and after-end <= 10% with cut-in not above 1/47, then reports once on TEST",
+   "rationale": "measure.2026-10-24.voice-backchannel-dev-r1: no harm to replies but 37.5% overlap and 29% at turn end. Candidate levers: a longer pause floor, an incomplete-words requirement (cascade.incomplete), firing only on a pause the clip's pace says is mid-thought.",
+   "reverse_if": "a DEV/TEST round meets the bars"
+  },
+  {
+   "id": "decision.2026-10-24.voice-caller-state",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Caller state per turn (caller_state.py): upset > confused > rushed > warm > neutral, from words (brief.CUES plus a confusion pattern) and timing (they cut in on 2 of her last 3 turns -> rushed). It adds a reply-shape row to the ledger (none in crisis or check-in), a delivery note for styled voices (upset -> gentle, confused -> calm; the brain's own [tone:] wins), and the trace's agent-turn state. Gemini TTS takes no note (rejected.2026-10-20.gemini-tts-style-prefix): text shape is its only lever",
+   "rationale": "Integrator humanness item 'emotion and pacing'. Unit-tested reading and plumbing only; its effect on reply shape with a real brain, and how MAI softvoice sounds, are NOT measured (needs devsim with a model or staging).",
+   "reverse_if": "a devsim or staging review shows the shape rows make replies worse or get recited"
   }
  ],
  "edges": [
@@ -41990,6 +42339,176 @@
   {
    "from": "open.2026-10-24.voice-humanness-round",
    "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.channels-seam",
+   "to": "asset.hp-vyakti-latest.omnichannel-four-function-surface-contract",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.channels-seam",
+   "to": "asset.hp-maya-latest.gated-surface-adapter",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.wa-charge-on-delivery",
+   "to": "measure.2026-10-17.whatsapp-india-utility-vs-marketing-message",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.channels-seam",
+   "to": "rejected.2026-10-17.cross-tenant-pooling",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "decision.2026-10-24.wa-live-off",
+   "to": "open.2026-10-24.whatsapp-business-account",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.wa-followthrough-rules",
+   "to": "decision.2026-10-24.channels-seam",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.wa-followthrough-rules",
+   "to": "rejected.harvest.08",
+   "relation": "constrained-by"
+  },
+  {
+   "from": "decision.2026-10-24.wa-in-call-optin",
+   "to": "decision.2026-10-24.wa-optout-channel-only",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.wa-door-category",
+   "to": "decision.2026-10-24.channels-seam",
+   "relation": "extends"
+  },
+  {
+   "from": "component.2026-10-24.sample-packs",
+   "to": "decision.2026-10-24.test-contact-flag",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.sample-packs-tests",
+   "to": "component.2026-10-24.sample-packs",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-24.sample-packs",
+   "to": "open.2026-10-24.staging-allowlist-test-contact",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.staging-testbuild-smoke",
+   "to": "evidence.2026-10-24.staging-testbuild-9b34ff7",
+   "relation": "evidence"
+  },
+  {
+   "from": "measure.2026-10-24.memory-review-tests",
+   "to": "decision.2026-10-24.memory-review-queue",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.memory-review-queue",
+   "to": "decision.2026-10-24.memory-retention-sweep",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.plivo-signature-v3",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.plivo-signature-tests",
+   "to": "decision.2026-10-24.plivo-signature-v3",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.client-event-beacon",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.test-budget-is-a-cap",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.test-budget-is-a-cap",
+   "to": "open.2026-10-24.test-spend-vs-empty-wallet",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.test-budget-is-a-cap",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "to": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "to": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.floor-dev-lookalike-12",
+   "to": "decision.2026-10-24.floor-danger-cutting-and-lookalikes",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
+   "to": "open.2026-10-24.crisis-danger-from-others-blind11",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-danger-and-stored-poison",
+   "to": "open.2026-10-24.stored-poison-lookalikes-both-doors",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.brief-review-shapes-prohibition-urgency",
+   "to": "open.2026-10-24.brief-review-honest-opening-shapes",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.brief-review-shapes-prohibition-urgency",
+   "to": "open.2026-10-24.regex-door-prohibition-key-t-l1",
+   "relation": "implements"
+  },
+  {
+   "from": "asset.2026-10-24.blind-set-12",
+   "to": "open.2026-10-24.blind-sets-tag-means",
+   "relation": "implements"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-eval-brief-region-counts-template",
+   "to": "open.2026-10-24.judge-eval-brief-counting-region",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.voice-backchannel-off-until-tuned",
+   "to": "measure.2026-10-24.voice-backchannel-dev-r1",
+   "relation": "based_on"
+  },
+  {
+   "from": "decision.2026-10-24.voice-caller-state",
+   "to": "rejected.2026-10-20.gemini-tts-style-prefix",
+   "relation": "based_on"
+  },
+  {
+   "from": "decision.2026-10-24.voice-backchannel-off-until-tuned",
+   "to": "open.2026-10-24.voice-humanness-round",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.voice-caller-state",
+   "to": "open.2026-10-24.voice-humanness-round",
    "relation": "implements"
   }
  ]
