@@ -57,8 +57,9 @@ await writeFile(dist + 'index.html', html);
 // Static files served as they are (public/samples/: the stack voice samples and their manifest, dropped in from the lab VM).
 await cp(here + 'public', dist, { recursive: true });
 
-// The gated first load counts the entry JS and the CSS. The entry also imports shared chunks statically, and those load before
-// anything renders too: reported beside it as "with shared chunks" (measure.2026-10-24.web-first-load-true), not gated.
+// First load is everything that loads before anything renders: the entry JS, the CSS and every chunk the entry imports
+// statically (decision.2026-10-24.web-budget-per-chunk, as amended; measure.2026-10-24.web-first-load-true). Chunks reached
+// only through import() load when their page or panel opens.
 const firstLoad = new Set([css]);
 const visit = out => {
   const name = out.split('/').pop();
@@ -83,6 +84,6 @@ async function walk(dir) {
   }
 }
 await walk(dist + 'assets/');
-const report = { js, css, bytes: total, gzipBytes: gz, entryGzipBytes: entryGz, firstLoadWithSharedGzipBytes: withShared, largestChunk: largest };
+const report = { js, css, bytes: total, gzipBytes: gz, firstLoadGzipBytes: withShared, entryGzipBytes: entryGz, largestChunk: largest };
 await writeFile(dist + 'build.json', JSON.stringify(report));
-console.log(`web built: ${js} + ${css}; first load ${(entryGz / 1024).toFixed(1)} KB gzip (${(withShared / 1024).toFixed(1)} KB with the shared chunks it imports), largest chunk ${largest.name} ${(largest.gzipBytes / 1024).toFixed(1)} KB, all chunks ${(gz / 1024).toFixed(1)} KB gzip (${(total / 1024).toFixed(1)} KB raw)`);
+console.log(`web built: ${js} + ${css}; first load ${(withShared / 1024).toFixed(1)} KB gzip (entry file ${(entryGz / 1024).toFixed(1)} KB), largest chunk ${largest.name} ${(largest.gzipBytes / 1024).toFixed(1)} KB, all chunks ${(gz / 1024).toFixed(1)} KB gzip (${(total / 1024).toFixed(1)} KB raw)`);

@@ -12,7 +12,7 @@ const web = fileURLToPath(new URL('../web/', import.meta.url));
 // decision.2026-10-24.web-budget-per-chunk: what a person waits for is the first load plus the chunk of the page they
 // open, so those two are the gates. The total of every chunk grows with each lazy screen and is only a tripwire for
 // bloat (a library pulled in, code duplicated across chunks); raise it only with the measured cause in the graph.
-const FIRST_LOAD_GZIP_KB = 100;   // main JS + CSS a user downloads before any page chunk
+const FIRST_LOAD_GZIP_KB = 100;   // all that loads before anything renders: entry JS, CSS and the chunks the entry imports statically
 const CHUNK_GZIP_KB = 30;         // any one lazy chunk: the most a page adds on top of the first load
 const ALL_CHUNKS_GZIP_KB = 240;   // every chunk together (was 200, then 205; 205.6 on 2026-10-24 with the CRM import screen pending)
 
@@ -22,7 +22,7 @@ test('the app builds, dist is complete and the bundle stays under its stated siz
   const html = readFileSync(web + 'dist/index.html', 'utf8');
   for (const m of html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)) assert.ok(existsSync(web + 'dist' + m[1]), m[1] + ' exists');
   const r = JSON.parse(readFileSync(web + 'dist/build.json', 'utf8'));
-  assert.ok(r.entryGzipBytes / 1024 <= FIRST_LOAD_GZIP_KB, `first load ${(r.entryGzipBytes / 1024).toFixed(1)} KB gzip > ${FIRST_LOAD_GZIP_KB}`);
+  assert.ok(r.firstLoadGzipBytes / 1024 <= FIRST_LOAD_GZIP_KB, `first load ${(r.firstLoadGzipBytes / 1024).toFixed(1)} KB gzip > ${FIRST_LOAD_GZIP_KB}`);
   assert.ok(r.largestChunk.gzipBytes / 1024 <= CHUNK_GZIP_KB, `chunk ${r.largestChunk.name} ${(r.largestChunk.gzipBytes / 1024).toFixed(1)} KB gzip > ${CHUNK_GZIP_KB}: split it`);
   assert.ok(r.gzipBytes / 1024 <= ALL_CHUNKS_GZIP_KB, `all chunks ${(r.gzipBytes / 1024).toFixed(1)} KB gzip > ${ALL_CHUNKS_GZIP_KB}`);
 });

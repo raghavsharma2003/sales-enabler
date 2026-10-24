@@ -5,7 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import * as api from './api.ts';
 import { ApiError, ToolMissing, ToolRefused, type Me, type Receipt } from './api.ts';
 import type { OperatorCard, RequestedBy } from './types.ts';
-import { plainReason, requesterLine, toolAsk, toolDone } from './labels.ts';
+import { plainReason, requesterLine, toolAsk, toolDone } from './labels-core.ts';
 
 export interface ThreadMsg { id: string; role: 'user' | 'vp' | 'echo'; text: string; cards?: OperatorCard[]; streaming?: boolean; by?: string; step?: string; notice?: string }
 export interface Toast { id: number; kind: 'ok' | 'bad' | 'info'; text: string }

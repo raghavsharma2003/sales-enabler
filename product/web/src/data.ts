@@ -2,6 +2,7 @@
 // Pure TypeScript (no JSX). Every read goes through run(), so a tool that is not registered throws ToolMissing and the page
 // shows its "not switched on yet" state. Shapes here follow product/shared/tool-catalog.json and the module code.
 import { run, uploadContacts } from './api.ts';
+export { walletGet } from './wallet.ts';
 import { partsRan } from './catalog.ts';
 import type {
   ActivityRow, AgentConfigDraft, AgentDoc, AgentRow, ApiKey, AudienceRow, Blocker, CallDoc, CallExplain, CallRow, CallTurn, CampaignDoc, CampaignRow, ContactDoc, ContactRow,
@@ -232,10 +233,6 @@ export async function callGet(id: string): Promise<CallDoc> {
 export const callExplain = (id: string) => run<CallExplain>('call.explain', { conversationId: id });
 
 // ---------- money and settings ----------
-export async function walletGet(): Promise<Wallet> {
-  const w = await run<any>('wallet.get', {});
-  return { state: w.state, balanceMilli: w.balanceInrMilli, heldMilli: w.heldInrMilli, availableMilli: w.availableInrMilli, runwayDays: w.runwayDays ?? null, caps: arr(w.caps), warnings: arr(w.warnings), priceNotSet: w.price?.status === 'not_set', priceText: w.price?.text ?? '' };
-}
 export async function memberList(): Promise<Member[]> { return arr((await run<any>('member.list', {})).members); }
 export async function keyList(): Promise<ApiKey[]> {
   return arr<any>((await run<any>('apikey.list', {})).keys).map(k => ({ id: k.id, name: k.name ?? k.label, prefix: k.prefix ?? '', createdAt: k.created_at ?? k.createdAt, lastUsed: k.last_used_at ?? k.lastUsedAt ?? null, revoked: !!(k.revoked_at ?? k.revokedAt) }));

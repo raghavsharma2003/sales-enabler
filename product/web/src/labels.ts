@@ -1,79 +1,16 @@
 // Plain words for what the server says in developer terms. Rule: no tool id, raw argument name, internal code or milli-unit ever
 // reaches a person. Everything here is a fallback for text the server has not yet made human; the server's own plain text wins.
+export { plainReason, requesterLine, TOOL_LABEL, toolAsk, toolDone } from './labels-core.ts';
+import { TOOL_LABEL } from './labels-core.ts';
 import { inr, phone as fmtPhone } from './format.ts';
 import type { Blocker } from './types.ts';
 
-/** Server configuration is never a person's problem to read: a refusal that names an environment variable (or the telephony
- *  adapter being off) becomes what it means for them. Every other refusal is the server's own words, unchanged. */
-export function plainReason(reason: string): string {
-  if (/telephony provider is not enabled/i.test(reason)) return 'Phone lines are not switched on for this workspace yet, so numbers cannot be searched, rented or rung from here. Practice callers and browser test calls work without one.';
-  if (/\bVP_[A-Z0-9_]{3,}\b/.test(reason)) return 'This is not switched on for this workspace yet. Your Vyakti administrator can turn it on.';
-  return reason;
-}
 
 /** A cost line's part, as the stack picker names parts (the runtime reports ears / brain / voice / telephony / platform). */
 export const COST_PART: Record<string, string> = { ears: 'Speech recognition', brain: 'Language model', voice: 'Voice', s2s: 'Speech-to-speech model',
   telephony: 'Phone line', platform: 'Platform', analysis: 'Call analysis' };
 export const costPart = (component: string, fallback: (c: string) => string) => COST_PART[component] ?? fallback(component);
 
-/** A short human title per tool, for approval cards and receipts. `ask` = what the card asks, `done` = what the receipt says. */
-export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
-  'wallet.topup': { ask: 'Add money to the wallet', done: 'Money added to the wallet' },
-  'audience.create': { ask: 'Save an audience', done: 'Audience saved' },
-  'source.commit': { ask: 'Import this list', done: 'List imported' },
-  'campaign.launch': { ask: 'Launch the campaign', done: 'Campaign launched' },
-  'inbound.route.set': { ask: 'Answer calls to this number with this agent', done: 'This number now answers calls' },
-  'inbound.route.clear': { ask: 'Stop answering calls to this number', done: 'This number no longer answers calls' },
-  'campaign.pause': { ask: 'Pause the campaign', done: 'Campaign paused' },
-  'campaign.resume': { ask: 'Resume the campaign', done: 'Campaign resumed' },
-  'campaign.stop': { ask: 'Stop the campaign', done: 'Campaign stopped' },
-  'campaign.draft': { ask: 'Save the campaign draft', done: 'Campaign draft saved' },
-  'campaign.window.widen': { ask: 'Widen the calling window', done: 'Calling window widened' },
-  'campaign.window.narrow': { ask: 'Narrow the calling window', done: 'Calling window narrowed' },
-  'policy.window.set': { ask: 'Change the calling hours', done: 'Calling hours changed' },
-  'version.publish': { ask: 'Publish this agent', done: 'Agent published' },
-  'version.restore': { ask: 'Roll this agent back to an earlier version', done: 'Agent rolled back' },
-  'version.language_variant': { ask: 'Publish this agent in another language', done: 'Language version published' },
-  'brief.edit': { ask: 'Change the agent', done: 'Agent changed' },
-  'stack.set': { ask: 'Choose a voice stack', done: 'Voice stack chosen' },
-  'agent.create': { ask: 'Create an agent', done: 'Agent created' },
-  'number.rent': { ask: 'Rent a number', done: 'Number requested' },
-  'member.invite': { ask: 'Invite a teammate', done: 'Invitation sent' },
-  'member.role.set': { ask: 'Change a teammate\'s role', done: 'Role changed' },
-  'apikey.create': { ask: 'Create an API key', done: 'API key created' },
-  'apikey.revoke': { ask: 'Revoke an API key', done: 'API key revoked' },
-  'apikey.rotate': { ask: 'Rotate an API key', done: 'API key rotated' },
-  'sso.config.set': { ask: 'Change the single sign-on settings', done: 'Single sign-on settings saved' },
-  'sso.required.set': { ask: 'Change whether single sign-on is required', done: 'Single sign-on requirement changed' },
-  'scim.token.create': { ask: 'Create a provisioning token', done: 'Provisioning token created' },
-  'scim.token.rotate': { ask: 'Rotate a provisioning token', done: 'Provisioning token rotated' },
-  'scim.token.revoke': { ask: 'Revoke a provisioning token', done: 'Provisioning token revoked' },
-  'audit.export': { ask: 'Export the activity ledger', done: 'Activity ledger exported' },
-  'memory.policy.set': { ask: 'Change what is remembered', done: 'Memory setting changed' },
-  'dpdp.request.execute': { ask: 'Carry out a data request', done: 'Data request carried out' },
-  'fact.forget': { ask: 'Forget a remembered fact', done: 'Fact forgotten' },
-  'fact.approve': { ask: 'Approve a remembered fact', done: 'Fact approved' },
-  'proposal.accept': { ask: 'Test this change on real calls', done: 'Test approved' },
-  'experiment.start': { ask: 'Start the test on real calls', done: 'Test started' },
-  'script.pacing.restore': { ask: 'Restore full pacing to this script', done: 'Full pacing restored' },
-  'proposal.probe': { ask: 'Simulate this change', done: 'Change simulated' },
-  'operator.brain.set': { ask: 'Switch the model', done: 'Model switched' },
-  'operator.autonomy.raise': { ask: 'Let the assistant draft and test on its own', done: 'The assistant can draft and test on its own' },
-  'operator.autonomy.lower': { ask: 'Ask before every draft and test', done: 'The assistant now asks first' },
-  'knowledge.ingest': { ask: 'Add a knowledge source', done: 'Knowledge source added' },
-  'brand.update': { ask: 'Change the brand details', done: 'Brand details saved' },
-  'contact.merge': { ask: 'Merge two records of one person', done: 'Records merged' },
-  'contact.unsuppress': { ask: 'Allow calling this person again', done: 'Person can be called again' },
-  'contact.suppress': { ask: 'Stop calling this person', done: 'Person will not be called' },
-  'cap.raise': { ask: 'Raise a spend cap', done: 'Spend cap raised' },
-  'cap.lower': { ask: 'Lower a spend cap', done: 'Spend cap lowered' },
-  'campaign.burst.set': { ask: 'Let a campaign burst', done: 'Burst turned on' },
-  'campaign.burst.off': { ask: 'Turn a campaign\'s burst off', done: 'Burst turned off' },
-  'test.simulate': { ask: 'Run a practice call', done: 'Practice call run' },
-  'test.chat': { ask: 'Send a practice chat line', done: 'Practice chat answered' },
-  'test.chat_keep': { ask: 'Keep a practice chat for review', done: 'Practice chat kept' },
-  'monitor.create': { ask: 'Turn on a monitor', done: 'Monitor turned on' },
-};
 /** Activity's wording for an approval request whose card keeps the server's own sentence as its title (no TOOL_LABEL). */
 const PROPOSAL_ASK: Record<string, string> = {
   'webhook.create': 'add a webhook', 'webhook.delete': 'delete a webhook', 'webhook.replay': 'send a webhook event again', 'call.export': 'export calls as a file',
@@ -81,8 +18,6 @@ const PROPOSAL_ASK: Record<string, string> = {
   'duty.roster.set': 'change the duty hours', 'duty.override.add': 'add leave or cover to the duty roster', 'duty.override.remove': 'remove leave or cover from the duty roster',
   'source.hook_secret.rotate': "replace a contact webhook's signing secret",
 };
-export const toolAsk = (tool: string, fallback: string) => TOOL_LABEL[tool]?.ask ?? fallback;
-export const toolDone = (tool: string, fallback: string) => TOOL_LABEL[tool]?.done ?? fallback;
 
 const FIELD: Record<string, string> = { inrMilli: 'Amount', capInrMilli: 'Spend cap', e164: 'Phone number', phone: 'Phone number', name: 'Name', email: 'Email', role: 'Role', level: 'Level', note: 'Note', title: 'Title', text: 'Text', brain: 'Brain', enabled: 'Switched on', stackId: 'Voice stack', scope: 'Scope', evidence: 'Where it came from', requestedBy: 'Asked by', suppress: 'Keep the number suppressed', window: 'Calling window', days: 'Days', ranges: 'Hours', start: 'From', end: 'To', concurrency: 'Calls at once', category: 'Kind of call', audienceName: 'Audience name', consentPurpose: 'Consent recorded for', scopes: 'Access', undoMinutes: 'Undo window (minutes)',
   issuer: 'Identity provider address', clientId: 'Client ID', allowedDomains: 'Allowed email domains', defaultRole: 'Role for new people', emailVerified: 'Email verification', required: 'Required for everyone',
@@ -278,13 +213,6 @@ export function activitySentence(line: string, action: string, subject?: string 
   return `${actor} ${PAST[action] ?? 'made a change'}${subject ? `: ${subject}` : ''}${/\(approved\)/.test(line) ? ', after approval' : ''}`;
 }
 
-/** "Who asked" on the approval sheet, from brief.today's requestedBy (FRICTION R7). */
-export function requesterLine(r: { type: 'member' | 'assistant' | 'api_key' | 'system'; name: string | null; memberId: string | null }, meId?: string): string {
-  if (r.type === 'assistant') return r.memberId && r.memberId === meId ? 'The assistant asked for you' : r.name ? `The assistant asked for ${r.name}` : 'The assistant asked';
-  if (r.type === 'api_key') return r.name ? `API key "${r.name}" asked` : 'An API key asked';
-  if (r.type === 'system') return 'Vyakti asked';
-  return r.memberId && r.memberId === meId ? 'You asked for this' : r.name ? `${r.name} asked` : 'A team member asked';
-}
 
 /** The runtime reports cost per turn; a person reads one line per part and provider, summed, in the order first seen. */
 export function groupCost<T extends { component: string; provider: string; inr_milli: number }>(lines: T[]): T[] {

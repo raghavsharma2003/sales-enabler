@@ -1,6 +1,6 @@
 // The only network door of the UI. Every page action is one tool: POST /v1/tools/:name {args}.
 // The kernel answers with a Receipt (confirmed / needs_approval / not_executed / unknown); the UI never guesses a status.
-import { plainReason } from './labels.ts';
+import { plainReason } from './labels-core.ts';
 export type Risk = 'read' | 'draft' | 'test' | 'external' | 'spend' | 'destructive' | 'policy';
 
 export type Receipt<T = unknown> =

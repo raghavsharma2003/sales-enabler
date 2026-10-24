@@ -1,16 +1,22 @@
 // The app shell: rail (desktop) / bottom bar (phone), top bar with the Page | Assistant switch, the docked operator.
-import { useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { BarChart3, Bot, Hash, LifeBuoy, Megaphone, MessageCircle, MoreHorizontal, Newspaper, PhoneCall, Settings, Users } from 'lucide-react';
 import { AlertBanner } from './alerts.tsx';
 import { Link, usePath, usePendingLeave } from './router.tsx';
 import { useApp } from './store.tsx';
-import { Dock } from './operator.tsx';
-import { ApprovalSheet } from './approval.tsx';
-import { Btn, Segmented, SampleRibbon, Sheet } from './ui.tsx';
+import { Btn, Segmented, SampleRibbon, Sheet, Skeleton } from './ui.tsx';
+
+// Kept out of the first load (decision.2026-10-24.web-budget-per-chunk). The dock loads on its first open: at once where it
+// is always shown (1180 px and up), on the first tap of Assistant on a phone. The approval sheet loads when the browser is
+// idle, so Review opens at once, or immediately if an approval opens before then.
+const loadApproval = () => import('./approval.tsx');
+const Dock = lazy(() => import('./operator.tsx').then(m => ({ default: m.Dock })));
+const ApprovalSheet = lazy(() => loadApproval().then(m => ({ default: m.ApprovalSheet })));
+const WIDE = '(min-width: 1180px)';
 import { pageInfo } from './tools.ts';
 import { inr } from './format.ts';
 import { useData } from './store.tsx';
-import { walletGet } from './data.ts';
+import { walletGet } from './wallet.ts';
 
 const NAV = [
   { to: '/', label: 'Today', icon: Newspaper }, { to: '/campaigns', label: 'Campaigns', icon: Megaphone }, { to: '/calls', label: 'Calls', icon: PhoneCall }, { to: '/handoffs', label: 'Hand-offs', icon: LifeBuoy },
@@ -20,7 +26,9 @@ const NAV = [
 const isActive = (to: string, path: string) => (to === '/' ? path === '/' : path === to || path.startsWith(to + '/'));
 
 export function Shell({ children }: { children: ReactNode }) {
-  const { view, setView, sample, toasts, me } = useApp();
+  const { view, setView, sample, toasts, me, pending } = useApp();
+  const dockOpen = useDockOpened(view === 'talk');
+  const approvalReady = useIdle();
   const path = usePath();
   const [more, setMore] = useState(false);
   const info = pageInfo(path);
@@ -50,7 +58,7 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
           <main id="main" tabIndex={-1}>{children}</main>
         </div>
-        <Dock />
+        {dockOpen && <Suspense fallback={<aside className="dock" aria-busy="true" aria-label="Assistant loading"><div style={{ padding: 16 }}><Skeleton rows={3} /></div></aside>}><Dock /></Suspense>}
       </div>
       <nav className="bottombar" aria-label="Main">
         <Link to="/" aria-current={path === '/' && view === 'page' ? 'page' : undefined} onClick={() => setView('page')}><Newspaper size={20} aria-hidden />Today</Link>
@@ -64,7 +72,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <div className="more-list">{NAV.filter(n => !['/', '/campaigns', '/calls'].includes(n.to)).map(n => <Link key={n.to} to={n.to} onClick={() => { setMore(false); setView('page'); }}><n.icon size={20} aria-hidden />{n.label}</Link>)}</div>
         </Sheet>
       )}
-      <ApprovalSheet />
+      {(approvalReady || pending) && <Suspense fallback={null}><ApprovalSheet /></Suspense>}
       <LeaveQuestion />
       <div className="toasts" role="status" aria-live="polite">{toasts.map(t => <div key={t.id} className={`toast toast-${t.kind}`}>{t.text}</div>)}</div>
     </div>
@@ -85,4 +93,30 @@ function LeaveQuestion() {
       <div className="row" style={{ justifyContent: 'flex-end', marginTop: 16 }}><Btn kind="primary" onClick={stay}>Stay and keep editing</Btn><Btn kind="danger" onClick={leave}>Leave without saving</Btn></div>
     </Sheet>
   );
+}
+
+/** True once the dock has been shown: at once on a wide screen (it is always there), else from the first tap of Assistant. */
+function useDockOpened(talking: boolean) {
+  const [opened, setOpened] = useState(() => talking || matchMedia(WIDE).matches);
+  useEffect(() => {
+    if (opened) return;
+    if (talking) { setOpened(true); return; }
+    const m = matchMedia(WIDE), on = () => { if (m.matches) setOpened(true); };
+    m.addEventListener('change', on);
+    return () => m.removeEventListener('change', on);
+  }, [opened, talking]);
+  return opened;
+}
+
+/** True once the browser is idle after the first paint (Safari has no requestIdleCallback: a short timeout instead), and
+ *  the approval sheet's code is fetched then, so a tap on Review does not wait for it. */
+function useIdle() {
+  const [idle, setIdle] = useState(false);
+  useEffect(() => {
+    const done = () => { void loadApproval(); setIdle(true); };
+    if ('requestIdleCallback' in window) { const id = requestIdleCallback(done, { timeout: 2000 }); return () => cancelIdleCallback(id); }
+    const t = setTimeout(done, 600);
+    return () => clearTimeout(t);
+  }, []);
+  return idle;
 }

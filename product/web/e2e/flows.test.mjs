@@ -1924,3 +1924,24 @@ test('Unsaved changes: a link away asks first and Stay keeps the edit; a tab on 
   const draft = (await tool('agent.get', { agentId: id })).result;
   assert.ok(!JSON.stringify(draft).includes('unsaved walkthrough note'), 'nothing was saved');
 });
+
+// ---- First load (decision.2026-10-24.web-budget-per-chunk, as amended): the assistant and the approval sheet are not in it
+test('First load: on a phone the assistant loads on its first open and then works; on desktop it is there and Review opens at once', async () => {
+  const [pc, phone] = await phonePage();
+  await phone.goto(`${BASE}/`);
+  await phone.getByRole('heading', { name: 'Today', level: 1 }).waitFor();
+  assert.equal(await phone.locator('.dock').count(), 0, 'the assistant is not loaded before it is opened');
+  await phone.getByRole('button', { name: 'Assistant' }).click();
+  await phone.locator('#dock-input').waitFor({ timeout: 5000 });
+  await phone.locator('#dock-input').fill('What needs me today?');
+  assert.equal(await phone.locator('#dock-input').inputValue(), 'What needs me today?', 'the assistant works once loaded');
+  await pc.close();
+  await page.goto(`${BASE}/`);
+  await page.locator('#dock-input').waitFor({ timeout: 5000 });
+  await page.waitForTimeout(2500);   // past the idle prefetch of the approval sheet
+  const t0 = Date.now();
+  await page.getByRole('button', { name: 'Review' }).first().click();
+  await page.getByRole('dialog').waitFor({ timeout: 3000 });
+  assert.ok(Date.now() - t0 < 1500, `Review opened the sheet in ${Date.now() - t0} ms`);
+  await page.keyboard.press('Escape');
+});

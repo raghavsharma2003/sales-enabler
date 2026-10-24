@@ -1,0 +1,19 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.web-first-load-under-100",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Web first load, counted as everything that loads before anything renders (entry JS, CSS and the chunks the entry imports statically): 115.8 KB gzip -> 96.9 KB under a 100 KB cap. Three moves: (1) the dock (operator.tsx) and the approval sheet leave first load: the dock loads on its first open (at once at 1180 px and up where it is always shown, behind a same-size placeholder; on the first tap of Assistant on a phone), the approval sheet on browser idle or at once if an approval opens first; (2) labels-core.ts holds only plainReason, requesterLine and TOOL_LABEL for the store and api, the rest of labels.ts loads with the pages; (3) the shell's wallet read moved to wallet.ts, so data.ts and catalog.ts load with the pages. Largest chunk 17.5 KB of 30; all chunks 220.8 KB of the 240 tripwire. The entry file alone is 73.8 KB",
+   "n": 1,
+   "method": "node product/web/build.mjs, gzip level 6 per file, first load by walking the metafile's import-statement edges from the entry; one build before (stash) and after on the same tree (esbuild output is deterministic). Behaviour: flow 'First load: on a phone the assistant loads on its first open…' (fails on the old shell, passes now) and the full browser suite"
+  }
+ ],
+ "edges": [
+  { "from": "measure.2026-10-24.web-first-load-under-100", "to": "open.2026-10-24.web-first-load-counts-shared", "relation": "informs" },
+  { "from": "measure.2026-10-24.web-first-load-under-100", "to": "measure.2026-10-24.web-first-load-true", "relation": "extends" }
+ ],
+ "events": []
+}
