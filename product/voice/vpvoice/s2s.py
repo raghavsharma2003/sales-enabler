@@ -81,6 +81,7 @@ class GeminiLiveText:
 class LiveSession(Session):
     """A phone or browser call on Gemini Live. The session owns turn-taking (Live's own VAD); we own the door, the
     signals, the ledger notes, the events and the meter."""
+    CANNED_WAIT_S = 8.0     # how long a fixed line given to the model may take to be said before the call moves on
 
     def __init__(self, ticket, components, sink, line, clock=time.monotonic, env=None, watchdog_s=0.25, transport='webrtc'):
         super().__init__(ticket, components, sink, clock=clock, env=env, watchdog_s=watchdog_s)
@@ -91,6 +92,9 @@ class LiveSession(Session):
         self.agent_text = ''; self.user_text = ''; self.draft = None; self.cut = False; self.turn_start = None
         self.splitter = brief.Splitter(); self.live = None
         self.held = []          # this turn's audio, released only once the door has passed all of its transcript
+        # the silence hang-up (agent limits.maxSilenceS), as on the cascade: quiet since the caller's last words or her
+        # last audio, whichever is later; never in a crisis, never while she has a turn under way
+        self.silence_s = (ticket['agent'].get('limits') or {}).get('maxSilenceS') or 0; self.last_heard = None; self.turns_ended = 0
 
     def now(self): return self.clock()
     def agent_playing(self): return self.now() < self.rec.play_until
@@ -107,6 +111,7 @@ class LiveSession(Session):
         except Exception as e:
             await self.component_failed(ComponentError('s2s', 'gemini', repr(e)[:200])); return
         self.reader = asyncio.ensure_future(self.read()); self.tasks.append(self.reader)
+        self.last_heard = self.now(); self.tasks.append(asyncio.ensure_future(self._silence_loop()))
         await self.note(brief.tail(self.conv.transcript, self.conv.agent, self.conv.contact, self.conv.state))
         await self.up.send_json({'clientContent': {'turns': [{'role': 'user', 'parts': [{'text': self.conv.history[0]['content']}]}], 'turnComplete': True}})
 
@@ -168,6 +173,7 @@ class LiveSession(Session):
                             self.held.append(b)          # held until the door has passed the whole turn (review M3)
                     if 'inputTranscription' in sc:
                         self.user_text += sc['inputTranscription'].get('text', '')
+                        if sc['inputTranscription'].get('text', '').strip(): self.last_heard = self.now()
                     if 'outputTranscription' in sc:
                         t = sc['outputTranscription'].get('text', '')
                         self.agent_text += t
@@ -241,7 +247,20 @@ class LiveSession(Session):
                                            interrupted=interrupted)
             asyncio.ensure_future(self.note(brief.ledger(self.conv.transcript, self.conv.agent, self.conv.contact, self.conv.state)))
             if not interrupted: asyncio.ensure_future(self.after_reply(marks))
-        self.agent_text = ''; self.cur = None; self.draft = None; self.cut = False; self.splitter = brief.Splitter()
+        self.agent_text = ''; self.cur = None; self.draft = None; self.cut = False; self.splitter = brief.Splitter(); self.turns_ended += 1
+
+    async def _silence_loop(self, step=0.25):
+        while not self.ended:
+            await asyncio.sleep(step)
+            if not self.silence_s or self.ending or self.taken_over or self.conv.state['crisis'] or self.cur is not None or self.agent_playing():
+                continue
+            if self.now() - max(self.last_heard or self.t0, self.rec.play_until) >= self.silence_s:
+                before = self.turns_ended                                  # counted before asking: the answer can be quick
+                await self.speak_canned(self.fixed('silence'))
+                lim = self.now() + self.CANNED_WAIT_S                      # let her say it: a turn must end and play out
+                while not self.ended and self.now() < lim and not (self.turns_ended > before and not self.agent_playing()):
+                    await asyncio.sleep(step / 5)
+                await self.finish('silence_timeout'); return
 
     async def speak_canned(self, text):
         await self.note(f'say exactly this now: "{text}"', complete=True)
