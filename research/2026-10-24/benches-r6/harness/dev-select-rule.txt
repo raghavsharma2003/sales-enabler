@@ -1,0 +1,67 @@
+Pre-registered 2026-10-24 (the file's mtime is the time), before any round 6 model request: the r6 ledger
+(bench-tools-r6/ledger.jsonl) does not exist yet. Tree 839292db0bff5e5669beab2f5307e9ac9b213eeb
+(origin/claude/serene-franklin-9w7f1v), a detached worktree at /dev/shm/wt-bench6. It contains 95339a6.
+
+WHAT RUNS ON DEV (42 calls; 11 objection moments, 36 moments, 11 commitments; complaint and wrong_person 3 calls each)
+  gpt-4.1-mini single (--model <the gpt-4.1-mini deployment>, which pins single now that tiered is the product default;
+  the request is the same as round 5's mini single: same endpoint, same body), --split dev --prompt-variant <arm>, for:
+    current                (the product as shipped: 2cdf64b's KIND header and objection line, the b1a80cf outcome table)
+    r5-short-objection     (95339a6: the old KIND header, a one-clause objection line "... also when they agree later")
+    r5-outcome-first       (95339a6: current's lines, with the OUTCOME block before KIND)
+    r5-moment-not-outcome  (95339a6: current plus one OUTCOME line "a moment never decides or blocks the OUTCOME ...")
+  Two passes per arm. Each pass is its own process on its own freshly migrated database (round 5's method), not
+  --passes 2 in one process (which loops runBench against one database). Order: pass 1 of each arm in the order above,
+  then pass 2 of each arm in the same order. Strictly sequential, at most 1 request a second.
+
+SELECTION RULE (the integrator's, 2026-10-24)
+  An arm is ELIGIBLE only if, on BOTH of its DEV passes:
+    - objection recall is 11/11;
+    - moments found is >= 35/36;
+    - commitments found is 11/11.
+  The WINNER is the eligible arm with the highest mean DEV outcome over its two passes ((p1 + p2) / 2, out of 42).
+  TIES on that mean go to the arm closest to the current prompt. Closeness was measured before this rule was written
+  (variant-probe.ts on the bench's outcome definition; added + removed lines in a line diff against current):
+      current 0  <  r5-moment-not-outcome 1  <  r5-short-objection 4  <  r5-outcome-first 18
+  So the tie order is: current, r5-moment-not-outcome, r5-short-objection, r5-outcome-first.
+  If NO arm is eligible: report that and STOP before TEST (no TEST spend).
+  The complaint and wrong_person templates, reason codes, every-moment and grounding are reported per arm and pass but
+  do not enter the rule.
+
+WHAT RUNS ON TEST (only if a winner exists)
+  - The winning arm, gpt-4.1-mini single, two passes (42 calls; 10 objection moments, 36 moments, 10 commitments).
+  - Tiered once (gpt-4.1-mini first, gpt-4.1 on escalation, threshold 0.6) with the winning arm's prompt, as a check
+    that tiered still scores 42/42. In the product the one system prompt serves both passes of a call, so the arm is
+    also what gpt-4.1 reads on an escalation.
+  - If the winner is current, the product bench runs it unchanged. If the winner is another arm, the product bench
+    refuses it on TEST (analysis-bench.ts runBench: "a prompt ablation runs on DEV only"). TEST then runs a harness copy,
+    product/scripts/zz-r6-analysis-bench.ts, identical except that guard, which also lets through exactly the one arm
+    named in BENCH_R6_TEST_ARM (the DEV winner). The copy is removed after the runs and kept in harness/ with its diff.
+    The guard exists so contracts are not tuned on TEST; here the arm is chosen on DEV by this rule first, and TEST
+    runs the one winner only.
+
+HOW TEST WILL BE READ (written now, before TEST)
+  - Per pass: outcome, objections, moments, commitments, complaint and wrong_person templates, every moment found,
+    pass-to-pass disagreement (outcome value, moment set, reason code).
+  - Exact two-sided McNemar on the same 42 TEST ids, outcome, per-call objection and every-moment:
+      r6 winner p1 / p2 against round 5 mini single p1 / p2 (same pass number, and crossed);
+      r6 winner p1 / p2 against round 4 mini single p1 / p2 (same pass number, and crossed).
+  - REPLACE the current mini-single contract with the winner (when the winner is not current) only if all of these
+    hold, which is the closes_when of open.2026-10-24.analysis-contract-objections-and-outcome:
+      - mini single TEST outcome mean of the two passes >= 41/42;
+      - no false null on a complaint or wrong_person call in either TEST pass (6 calls x 2 passes);
+      - objections 10/10 on both TEST passes;
+      - objection recall over this round's mini-first runs (DEV winner p1, p2; TEST mini p1, p2; tiered) >= 51/52
+        (round 5's bar was >= 50/51: at most one miss);
+    and in addition: moments >= 35/36 and commitments 10/10 on both TEST passes, and no TEST pass loses against round
+    5 mini single with p < 0.05.
+    Otherwise the report says no arm should replace current yet, and why.
+  - decision.2026-10-24.analysis-default-tiered is read by its reverse_if: it reverses if tiered's measured cost
+    exceeds Rs 0.17 per 3-minute call, or a mini-single contract matches tiered on outcome (within 1/42 on the mean of
+    two TEST passes) in two consecutive rounds with no moment or objection loss. Round 5's mini single (current) was
+    38.5 against tiered 42.0, so round 6 can at most be the first of two such rounds: the decision stands this round
+    unless tiered's cost passes Rs 0.17. "Matches" here is read against this round's tiered pass (one pass) and round
+    5's tiered mean (42.0); "no moment or objection loss" as moments and objections on each mini TEST pass equal to
+    the tiered pass's.
+
+CAP: Rs 60 across the round (the guard's global cap), per run Rs 9.4 for mini and Rs 18.8 for tiered (round 4's), each
+lowered to what remains of Rs 60 if less.

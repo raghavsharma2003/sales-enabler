@@ -1,0 +1,67 @@
+{
+ "inputs": 2,
+ "variants": [
+  "current",
+  "r4-table",
+  "r3-stance",
+  "no-outcome-rules",
+  "r5-short-objection",
+  "r5-outcome-first",
+  "r5-moment-not-outcome"
+ ],
+ "current 839292d == ab5dade": {
+  "same": 2,
+  "differ": 0,
+  "firstDiff": null
+ },
+ "r4-table 839292d == ab5dade": {
+  "same": 2,
+  "differ": 0,
+  "firstDiff": null
+ },
+ "r3-stance 839292d == ab5dade": {
+  "same": 2,
+  "differ": 0,
+  "firstDiff": null
+ },
+ "no-outcome-rules 839292d == ab5dade": {
+  "same": 2,
+  "differ": 0,
+  "firstDiff": null
+ },
+ "r5-short-objection vs current": {
+  "onlyArm": [
+   "KIND (one entry per line that shows it):",
+   "- objection: PERSON gives a reason against, or a complaint, also when they agree later"
+  ],
+  "onlyCurrent": [
+   "KIND (one entry per PERSON line that shows it, whatever the OUTCOME; one line can show two kinds):",
+   "- objection: PERSON gives a reason against, complains or raises a concern. Every complaining PERSON line is an objection, even when the PERSON agrees later: then list both, the objection and the commitment."
+  ],
+  "sharedLinesInCurrentOrder": true,
+  "noQuestionPromptSameAsCurrent": false
+ },
+ "r5-outcome-first vs current": {
+  "onlyArm": [],
+  "onlyCurrent": [],
+  "sharedLinesInCurrentOrder": false,
+  "noQuestionPromptSameAsCurrent": false
+ },
+ "r5-moment-not-outcome vs current": {
+  "onlyArm": [
+   "- a moment never decides or blocks the OUTCOME: a complaint that asks for a human is an objection AND the needs-human VALUE"
+  ],
+  "onlyCurrent": [],
+  "sharedLinesInCurrentOrder": true,
+  "noQuestionPromptSameAsCurrent": true
+ },
+ "chars": {
+  "current": 2817,
+  "r4-table": 2611,
+  "r3-stance": 2362,
+  "no-outcome-rules": 1976,
+  "r5-short-objection": 2639,
+  "r5-outcome-first": 2817,
+  "r5-moment-not-outcome": 2941
+ }
+}

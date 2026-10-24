@@ -1,0 +1,4765 @@
+{
+ "tree": "839292db0bff5e5669beab2f5307e9ac9b213eeb",
+ "armsFrom": "95339a6",
+ "baseline": "round 5, tree ab5dade (research/2026-10-24/benches-r5); round 4, tree 8e3440a (research/2026-10-24/benches-r4)",
+ "selectionRule": "harness/dev-select-rule.txt",
+ "analysis": {
+  "dev": {
+   "r5": {
+    "current": {
+     "outcomeK": 40,
+     "objectionK": 11,
+     "momentK": 36,
+     "commitmentK": 11,
+     "templates": {
+      "complaint": {
+       "k": 2,
+       "n": 3,
+       "each": [
+        [
+         "complaint.lending.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.healthcare.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.telecom.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_NEEDS_HUMAN",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 2,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.lending.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.healthcare.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.telecom.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [
+      "wrong_person.telecom.hinglish",
+      "complaint.telecom.hinglish"
+     ]
+    },
+    "r4-table": {
+     "outcomeK": 42,
+     "objectionK": 11,
+     "momentK": 36,
+     "commitmentK": 11,
+     "templates": {
+      "complaint": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "complaint.lending.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.healthcare.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.telecom.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.lending.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.healthcare.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.telecom.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": []
+    },
+    "r3-stance": {
+     "outcomeK": 38,
+     "objectionK": 11,
+     "momentK": 36,
+     "commitmentK": 11,
+     "templates": {
+      "complaint": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "complaint.lending.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.healthcare.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.telecom.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 0,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.lending.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.healthcare.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.telecom.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [
+      "wrong_person.lending.hinglish",
+      "wrong_person.healthcare.hinglish",
+      "wrong_person.telecom.hinglish"
+     ]
+    },
+    "no-outcome-rules": {
+     "outcomeK": 37,
+     "objectionK": 9,
+     "momentK": 34,
+     "commitmentK": 11,
+     "templates": {
+      "complaint": {
+       "k": 1,
+       "n": 3,
+       "each": [
+        [
+         "complaint.lending.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.healthcare.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_COMPLAINT",
+         false
+        ],
+        [
+         "complaint.telecom.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 0,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.lending.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.healthcare.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.telecom.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [
+      "wrong_person.lending.hinglish",
+      "wrong_person.healthcare.hinglish",
+      "wrong_person.telecom.hinglish",
+      "complaint.lending.hinglish",
+      "complaint.healthcare.hinglish"
+     ]
+    }
+   },
+   "current": {
+    "p1": {
+     "metrics": {
+      "n": 42,
+      "outcome": "41/42, 97.6% (CI 87.7-99.6)",
+      "outcomeK": 41,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "113/113, 100.0% (CI 96.7-100.0)",
+      "extraMomentKinds": {
+       "confusion": 4,
+       "objection": 1,
+       "question": 2
+      },
+      "extraMoments": 7,
+      "templates": {
+       "complaint": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 2,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got None",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [
+       "wrong_person.telecom.hinglish"
+      ],
+      "outcomeMisses": {
+       "wrong_person: wrong_person->None": 1
+      },
+      "outcomeMissIds": [
+       "wrong_person.telecom.hinglish"
+      ],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "current",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 29454,
+      "outputTokens": 4611,
+      "tokensPerCall": 873.4615384615385,
+      "inrPerCall": 0.05133683076923077,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 755.2,
+      "outPerCall": 118.2
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 3,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 9,
+       "n": 9,
+       "rate": 1,
+       "ci95": [
+        0.700854948272956,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 320
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 32148,
+      "outputTokens": 4931,
+      "inr": 2.168,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 32148,
+        "outputTokens": 4931,
+        "inr": 2.168
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "wrong_person.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "wrong_person.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "p2": {
+     "metrics": {
+      "n": 42,
+      "outcome": "40/42, 95.2% (CI 84.2-98.7)",
+      "outcomeK": 40,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "108/108, 100.0% (CI 96.6-100.0)",
+      "extraMomentKinds": {
+       "confusion": 4,
+       "objection": 1,
+       "question": 1
+      },
+      "extraMoments": 6,
+      "templates": {
+       "complaint": {
+        "k": 2,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got None",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 2,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got None",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [
+       "wrong_person.healthcare.hinglish",
+       "complaint.healthcare.hinglish"
+      ],
+      "outcomeMisses": {
+       "wrong_person: wrong_person->None": 1,
+       "complaint: needs_human->None": 1
+      },
+      "outcomeMissIds": [
+       "wrong_person.healthcare.hinglish",
+       "complaint.healthcare.hinglish"
+      ],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "current",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 29454,
+      "outputTokens": 4480,
+      "tokensPerCall": 870.1025641025641,
+      "inrPerCall": 0.05077521025641025,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 755.2,
+      "outPerCall": 114.9
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 3,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 9,
+       "n": 9,
+       "rate": 1,
+       "ci95": [
+        0.700854948272956,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 320
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 32148,
+      "outputTokens": 4800,
+      "inr": 2.146,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 32148,
+        "outputTokens": 4800,
+        "inr": 2.146
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "wrong_person.healthcare.hinglish"
+       ],
+       "bOnly": [
+        "complaint.telecom.hinglish",
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "wrong_person.healthcare.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "wrong_person.healthcare.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "meanOutcome": 40.5,
+    "floors": {
+     "objections11_both": true,
+     "moments35_both": true,
+     "commitments11_both": true
+    },
+    "eligible": true,
+    "passToPass": {
+     "n": 42,
+     "outcomeValue": 3,
+     "outcomeValueIds": [
+      "complaint.healthcare.hinglish",
+      "wrong_person.healthcare.hinglish",
+      "wrong_person.telecom.hinglish"
+     ],
+     "outcomeScore": 3,
+     "outcomeScoreIds": [
+      "complaint.healthcare.hinglish",
+      "wrong_person.healthcare.hinglish",
+      "wrong_person.telecom.hinglish"
+     ],
+     "reasonCode": 0,
+     "momentSet": 3,
+     "momentSetIds": [
+      "agreed.telecom.marathi-english",
+      "not_interested.lending.tamil-english",
+      "not_interested.telecom.marathi-english"
+     ],
+     "any": 6,
+     "anyIds": [
+      "agreed.telecom.marathi-english",
+      "complaint.healthcare.hinglish",
+      "not_interested.lending.tamil-english",
+      "not_interested.telecom.marathi-english",
+      "wrong_person.healthcare.hinglish",
+      "wrong_person.telecom.hinglish"
+     ]
+    },
+    "templatesPooled": {
+     "complaint": "5/6",
+     "wrong_person": "4/6"
+    }
+   },
+   "r5-short-objection": {
+    "p1": {
+     "metrics": {
+      "n": 42,
+      "outcome": "40/42, 95.2% (CI 84.2-98.7)",
+      "outcomeK": 40,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "34/36, 94.4% (CI 81.9-98.5)",
+      "momentK": 34,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "9/11, 81.8% (CI 52.3-94.9)",
+      "objectionK": 9,
+      "objectionN": 11,
+      "allMomentsFound": "40/42, 95.2% (CI 84.2-98.7)",
+      "allMomentsK": 40,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "104/104, 100.0% (CI 96.4-100.0)",
+      "extraMomentKinds": {
+       "confusion": 4,
+       "objection": 1
+      },
+      "extraMoments": 5,
+      "templates": {
+       "complaint": {
+        "k": 1,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got None",
+          "CONV_COMPLAINT",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got None",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [
+       "complaint.lending.hinglish",
+       "complaint.healthcare.hinglish"
+      ],
+      "outcomeMisses": {
+       "complaint: needs_human->None": 2
+      },
+      "outcomeMissIds": [
+       "complaint.lending.hinglish",
+       "complaint.healthcare.hinglish"
+      ],
+      "reasonMisses": [],
+      "momentMisses": [
+       [
+        "objection_resolved.lending.hinglish",
+        [
+         "objection"
+        ]
+       ],
+       [
+        "objection_resolved.telecom.hinglish",
+        [
+         "objection"
+        ]
+       ]
+      ],
+      "objectionMissIds": [
+       "objection_resolved.lending.hinglish",
+       "objection_resolved.telecom.hinglish"
+      ],
+      "complaintReasonCodes": {
+       "CONV_COMPLAINT": 1,
+       "CONV_NEEDS_HUMAN": 2
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-short-objection",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 28128,
+      "outputTokens": 4391,
+      "tokensPerCall": 833.8205128205128,
+      "inrPerCall": 0.04897245128205128,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 721.2,
+      "outPerCall": 112.6
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 3,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 9,
+       "n": 9,
+       "rate": 1,
+       "ci95": [
+        0.700854948272956,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 328
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 30822,
+      "outputTokens": 4719,
+      "inr": 2.077,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 30822,
+        "outputTokens": 4719,
+        "inr": 2.077
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_current_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "complaint.lending.hinglish"
+       ],
+       "bOnly": [
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [
+        "objection_resolved.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [
+        "objection_resolved.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "complaint.lending.hinglish"
+       ],
+       "bOnly": [
+        "complaint.telecom.hinglish",
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [
+        "objection_resolved.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [
+        "objection_resolved.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "complaint.lending.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [
+        "objection_resolved.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [
+        "objection_resolved.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish",
+        "complaint.lending.hinglish"
+       ],
+       "bOnly": [],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [
+        "objection_resolved.lending.hinglish"
+       ],
+       "bOnly": [
+        "complaint.lending.hinglish"
+       ],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [
+        "objection_resolved.lending.hinglish"
+       ],
+       "bOnly": [
+        "complaint.lending.hinglish"
+       ],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "p2": {
+     "metrics": {
+      "n": 42,
+      "outcome": "41/42, 97.6% (CI 87.7-99.6)",
+      "outcomeK": 41,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "106/106, 100.0% (CI 96.5-100.0)",
+      "extraMomentKinds": {
+       "confusion": 4
+      },
+      "extraMoments": 4,
+      "templates": {
+       "complaint": {
+        "k": 2,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_COMPLAINT",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got None",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [
+       "complaint.telecom.hinglish"
+      ],
+      "outcomeMisses": {
+       "complaint: needs_human->None": 1
+      },
+      "outcomeMissIds": [
+       "complaint.telecom.hinglish"
+      ],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 2,
+       "CONV_COMPLAINT": 1
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-short-objection",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 28128,
+      "outputTokens": 4440,
+      "tokensPerCall": 835.0769230769231,
+      "inrPerCall": 0.04918252307692308,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 721.2,
+      "outPerCall": 113.8
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 3,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 9,
+       "n": 9,
+       "rate": 1,
+       "ci95": [
+        0.700854948272956,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 327
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 30822,
+      "outputTokens": 4767,
+      "inr": 2.085,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 30822,
+        "outputTokens": 4767,
+        "inr": 2.085
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_current_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.telecom.hinglish"
+       ],
+       "bOnly": [
+        "complaint.healthcare.hinglish",
+        "wrong_person.healthcare.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.telecom.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "meanOutcome": 40.5,
+    "floors": {
+     "objections11_both": false,
+     "moments35_both": false,
+     "commitments11_both": true
+    },
+    "eligible": false,
+    "passToPass": {
+     "n": 42,
+     "outcomeValue": 3,
+     "outcomeValueIds": [
+      "complaint.healthcare.hinglish",
+      "complaint.lending.hinglish",
+      "complaint.telecom.hinglish"
+     ],
+     "outcomeScore": 3,
+     "outcomeScoreIds": [
+      "complaint.healthcare.hinglish",
+      "complaint.lending.hinglish",
+      "complaint.telecom.hinglish"
+     ],
+     "reasonCode": 4,
+     "momentSet": 3,
+     "momentSetIds": [
+      "crisis.telecom.hinglish",
+      "objection_resolved.lending.hinglish",
+      "objection_resolved.telecom.hinglish"
+     ],
+     "any": 8,
+     "anyIds": [
+      "complaint.healthcare.hinglish",
+      "complaint.lending.hinglish",
+      "complaint.telecom.hinglish",
+      "crisis.telecom.hinglish",
+      "not_interested.healthcare.hinglish",
+      "not_interested.lending.tamil-english",
+      "objection_resolved.lending.hinglish",
+      "objection_resolved.telecom.hinglish"
+     ]
+    },
+    "templatesPooled": {
+     "complaint": "3/6",
+     "wrong_person": "6/6"
+    },
+    "vs_current_pooledPasses_exploratory": {
+     "n": 84,
+     "aOnly": [
+      "p1:complaint.healthcare.hinglish",
+      "p1:complaint.lending.hinglish",
+      "p2:complaint.telecom.hinglish"
+     ],
+     "bOnly": [
+      "p1:wrong_person.telecom.hinglish",
+      "p2:complaint.healthcare.hinglish",
+      "p2:wrong_person.healthcare.hinglish"
+     ],
+     "p": 1.0
+    }
+   },
+   "r5-outcome-first": {
+    "p1": {
+     "metrics": {
+      "n": 42,
+      "outcome": "42/42, 100.0% (CI 91.6-100.0)",
+      "outcomeK": 42,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "117/117, 100.0% (CI 96.8-100.0)",
+      "extraMomentKinds": {
+       "objection": 3,
+       "confusion": 3
+      },
+      "extraMoments": 6,
+      "templates": {
+       "complaint": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [],
+      "outcomeMisses": {},
+      "outcomeMissIds": [],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-outcome-first",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 29454,
+      "outputTokens": 4825,
+      "tokensPerCall": 878.9487179487179,
+      "inrPerCall": 0.05225428717948718,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 755.2,
+      "outPerCall": 123.7
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 4,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 4,
+       "n": 4,
+       "rate": 1,
+       "ci95": [
+        0.5101091596030786,
+        0.9999999999999999
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 11,
+       "n": 11,
+       "rate": 1,
+       "ci95": [
+        0.7411670300055737,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 399
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 32148,
+      "outputTokens": 5224,
+      "inr": 2.217,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 32148,
+        "outputTokens": 5224,
+        "inr": 2.217
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_current_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.telecom.hinglish",
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "p2": {
+     "metrics": {
+      "n": 42,
+      "outcome": "42/42, 100.0% (CI 91.6-100.0)",
+      "outcomeK": 42,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "115/115, 100.0% (CI 96.8-100.0)",
+      "extraMomentKinds": {
+       "objection": 2,
+       "confusion": 3
+      },
+      "extraMoments": 5,
+      "templates": {
+       "complaint": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [],
+      "outcomeMisses": {},
+      "outcomeMissIds": [],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-outcome-first",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 29454,
+      "outputTokens": 4792,
+      "tokensPerCall": 878.1025641025641,
+      "inrPerCall": 0.05211281025641025,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 755.2,
+      "outPerCall": 122.9
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 4,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 4,
+       "n": 4,
+       "rate": 1,
+       "ci95": [
+        0.5101091596030786,
+        0.9999999999999999
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 11,
+       "n": 11,
+       "rate": 1,
+       "ci95": [
+        0.7411670300055737,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 399
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 32148,
+      "outputTokens": 5191,
+      "inr": 2.212,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 32148,
+        "outputTokens": 5191,
+        "inr": 2.212
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_current_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.healthcare.hinglish",
+        "wrong_person.healthcare.hinglish"
+       ],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.telecom.hinglish",
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "meanOutcome": 42.0,
+    "floors": {
+     "objections11_both": true,
+     "moments35_both": true,
+     "commitments11_both": true
+    },
+    "eligible": true,
+    "passToPass": {
+     "n": 42,
+     "outcomeValue": 0,
+     "outcomeValueIds": [],
+     "outcomeScore": 0,
+     "outcomeScoreIds": [],
+     "reasonCode": 0,
+     "momentSet": 1,
+     "momentSetIds": [
+      "crisis.lending.hinglish"
+     ],
+     "any": 1,
+     "anyIds": [
+      "crisis.lending.hinglish"
+     ]
+    },
+    "templatesPooled": {
+     "complaint": "6/6",
+     "wrong_person": "6/6"
+    },
+    "vs_current_pooledPasses_exploratory": {
+     "n": 84,
+     "aOnly": [],
+     "bOnly": [
+      "p1:wrong_person.telecom.hinglish",
+      "p2:complaint.healthcare.hinglish",
+      "p2:wrong_person.healthcare.hinglish"
+     ],
+     "p": 0.25
+    }
+   },
+   "r5-moment-not-outcome": {
+    "p1": {
+     "metrics": {
+      "n": 42,
+      "outcome": "41/42, 97.6% (CI 87.7-99.6)",
+      "outcomeK": 41,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "108/108, 100.0% (CI 96.6-100.0)",
+      "extraMomentKinds": {
+       "objection": 3,
+       "confusion": 3
+      },
+      "extraMoments": 6,
+      "templates": {
+       "complaint": {
+        "k": 2,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got None",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [
+       "complaint.healthcare.hinglish"
+      ],
+      "outcomeMisses": {
+       "complaint: needs_human->None": 1
+      },
+      "outcomeMissIds": [
+       "complaint.healthcare.hinglish"
+      ],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-moment-not-outcome",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 30507,
+      "outputTokens": 4459,
+      "tokensPerCall": 896.5641025641025,
+      "inrPerCall": 0.05181377948717948,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 782.2,
+      "outPerCall": 114.3
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 4,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 4,
+       "n": 4,
+       "rate": 1,
+       "ci95": [
+        0.5101091596030786,
+        0.9999999999999999
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 11,
+       "n": 11,
+       "rate": 1,
+       "ci95": [
+        0.7411670300055737,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 407
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 33201,
+      "outputTokens": 4866,
+      "inr": 2.201,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 33201,
+        "outputTokens": 4866,
+        "inr": 2.201
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_current_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish"
+       ],
+       "bOnly": [
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish"
+       ],
+       "bOnly": [
+        "complaint.telecom.hinglish",
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "complaint.healthcare.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "p2": {
+     "metrics": {
+      "n": 42,
+      "outcome": "41/42, 97.6% (CI 87.7-99.6)",
+      "outcomeK": 41,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "commitmentK": 11,
+      "commitmentN": 11,
+      "objectionRecall": "11/11, 100.0% (CI 74.1-100.0)",
+      "objectionK": 11,
+      "objectionN": 11,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "4/4, 100.0% (CI 51.0-100.0)",
+      "optOutRecallFloor": "4/4, 100.0% (CI 51.0-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "109/109, 100.0% (CI 96.6-100.0)",
+      "extraMomentKinds": {
+       "objection": 3,
+       "confusion": 3
+      },
+      "extraMoments": 6,
+      "templates": {
+       "complaint": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "complaint.lending.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.healthcare.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.telecom.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 2,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.lending.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.healthcare.hinglish",
+          "key wrong_person",
+          "got None",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.telecom.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [
+       "wrong_person.healthcare.hinglish"
+      ],
+      "outcomeMisses": {
+       "wrong_person: wrong_person->None": 1
+      },
+      "outcomeMissIds": [
+       "wrong_person.healthcare.hinglish"
+      ],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-moment-not-outcome",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 30507,
+      "outputTokens": 4490,
+      "tokensPerCall": 897.3589743589744,
+      "inrPerCall": 0.051946682051282056,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 782.2,
+      "outPerCall": 115.1
+     },
+     "cross": {
+      "calls": 20,
+      "callsSampled": 20,
+      "themesReturned": 5,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 5,
+       "n": 5,
+       "rate": 1,
+       "ci95": [
+        0.5655175313406071,
+        1
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 13,
+       "n": 13,
+       "rate": 1,
+       "ci95": [
+        0.7719046248681997,
+        1
+       ]
+      },
+      "themesDropped": 0,
+      "usage": {
+       "inputTokens": 2694,
+       "outputTokens": 477
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 20,
+       "connected": 20,
+       "talked": 20,
+       "goalReached": 5,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 5
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 33201,
+      "outputTokens": 4967,
+      "inr": 2.218,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 33201,
+        "outputTokens": 4967,
+        "inr": 2.218
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_current_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.healthcare.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_current": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "wrong_person.healthcare.hinglish"
+       ],
+       "bOnly": [
+        "complaint.telecom.hinglish",
+        "wrong_person.telecom.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5dev_r4table": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "wrong_person.healthcare.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4dev": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [
+        "wrong_person.healthcare.hinglish"
+       ],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.lending.hinglish",
+        "objection_resolved.telecom.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 11,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "meanOutcome": 41.0,
+    "floors": {
+     "objections11_both": true,
+     "moments35_both": true,
+     "commitments11_both": true
+    },
+    "eligible": true,
+    "passToPass": {
+     "n": 42,
+     "outcomeValue": 2,
+     "outcomeValueIds": [
+      "complaint.healthcare.hinglish",
+      "wrong_person.healthcare.hinglish"
+     ],
+     "outcomeScore": 2,
+     "outcomeScoreIds": [
+      "complaint.healthcare.hinglish",
+      "wrong_person.healthcare.hinglish"
+     ],
+     "reasonCode": 0,
+     "momentSet": 0,
+     "momentSetIds": [],
+     "any": 2,
+     "anyIds": [
+      "complaint.healthcare.hinglish",
+      "wrong_person.healthcare.hinglish"
+     ]
+    },
+    "templatesPooled": {
+     "complaint": "5/6",
+     "wrong_person": "5/6"
+    },
+    "vs_current_pooledPasses_exploratory": {
+     "n": 84,
+     "aOnly": [
+      "p1:complaint.healthcare.hinglish"
+     ],
+     "bOnly": [
+      "p1:wrong_person.telecom.hinglish",
+      "p2:complaint.healthcare.hinglish"
+     ],
+     "p": 1.0
+    }
+   },
+   "selection": {
+    "rule": "eligible = objections 11/11, moments >= 35/36, commitments 11/11 on both DEV passes; winner = highest mean outcome; ties to the arm closest to current (current < r5-moment-not-outcome < r5-short-objection < r5-outcome-first)",
+    "perArm": {
+     "current": {
+      "meanOutcome": 40.5,
+      "outcome": [
+       41,
+       40
+      ],
+      "objections": [
+       11,
+       11
+      ],
+      "moments": [
+       36,
+       36
+      ],
+      "commitments": [
+       11,
+       11
+      ],
+      "eligible": true,
+      "floors": {
+       "objections11_both": true,
+       "moments35_both": true,
+       "commitments11_both": true
+      }
+     },
+     "r5-short-objection": {
+      "meanOutcome": 40.5,
+      "outcome": [
+       40,
+       41
+      ],
+      "objections": [
+       9,
+       11
+      ],
+      "moments": [
+       34,
+       36
+      ],
+      "commitments": [
+       11,
+       11
+      ],
+      "eligible": false,
+      "floors": {
+       "objections11_both": false,
+       "moments35_both": false,
+       "commitments11_both": true
+      }
+     },
+     "r5-outcome-first": {
+      "meanOutcome": 42.0,
+      "outcome": [
+       42,
+       42
+      ],
+      "objections": [
+       11,
+       11
+      ],
+      "moments": [
+       36,
+       36
+      ],
+      "commitments": [
+       11,
+       11
+      ],
+      "eligible": true,
+      "floors": {
+       "objections11_both": true,
+       "moments35_both": true,
+       "commitments11_both": true
+      }
+     },
+     "r5-moment-not-outcome": {
+      "meanOutcome": 41.0,
+      "outcome": [
+       41,
+       41
+      ],
+      "objections": [
+       11,
+       11
+      ],
+      "moments": [
+       36,
+       36
+      ],
+      "commitments": [
+       11,
+       11
+      ],
+      "eligible": true,
+      "floors": {
+       "objections11_both": true,
+       "moments35_both": true,
+       "commitments11_both": true
+      }
+     }
+    },
+    "eligible": [
+     "current",
+     "r5-outcome-first",
+     "r5-moment-not-outcome"
+    ],
+    "bestMean": 42.0,
+    "tiedAtBest": [
+     "r5-outcome-first"
+    ],
+    "winner": "r5-outcome-first",
+    "stopBeforeTest": false
+   }
+  },
+  "test": {
+   "r5_gpt-4.1-mini": {
+    "p1": {
+     "outcomeK": 38,
+     "objectionK": 10,
+     "momentK": 36,
+     "commitmentK": 10,
+     "allMomentsK": 42,
+     "templates": {
+      "complaint": {
+       "k": 0,
+       "n": 3,
+       "each": [
+        [
+         "complaint.ecommerce.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.education.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.realestate.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_NEEDS_HUMAN",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 2,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.ecommerce.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.education.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.realestate.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [
+      "wrong_person.realestate.hinglish",
+      "complaint.ecommerce.hinglish",
+      "complaint.education.hinglish",
+      "complaint.realestate.hinglish"
+     ]
+    },
+    "p2": {
+     "outcomeK": 39,
+     "objectionK": 10,
+     "momentK": 36,
+     "commitmentK": 10,
+     "allMomentsK": 42,
+     "templates": {
+      "complaint": {
+       "k": 1,
+       "n": 3,
+       "each": [
+        [
+         "complaint.ecommerce.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.education.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.realestate.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 2,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.ecommerce.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.education.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.realestate.hinglish",
+         "key wrong_person",
+         "got None",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [
+      "wrong_person.realestate.hinglish",
+      "complaint.ecommerce.hinglish",
+      "complaint.education.hinglish"
+     ]
+    }
+   },
+   "r4_gpt-4.1-mini": {
+    "p1": {
+     "outcomeK": 42,
+     "objectionK": 9,
+     "momentK": 35,
+     "commitmentK": 10,
+     "allMomentsK": 41,
+     "templates": {
+      "complaint": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "complaint.ecommerce.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.education.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.realestate.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.ecommerce.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.education.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.realestate.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": []
+    },
+    "p2": {
+     "outcomeK": 41,
+     "objectionK": 8,
+     "momentK": 34,
+     "commitmentK": 10,
+     "allMomentsK": 40,
+     "templates": {
+      "complaint": {
+       "k": 2,
+       "n": 3,
+       "each": [
+        [
+         "complaint.ecommerce.hinglish",
+         "key needs_human",
+         "got None",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.education.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ],
+        [
+         "complaint.realestate.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_COMPLAINT",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.ecommerce.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.education.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.realestate.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [
+      "complaint.ecommerce.hinglish"
+     ]
+    }
+   },
+   "r5_tiered": {
+    "p1": {
+     "outcomeK": 42,
+     "objectionK": 10,
+     "momentK": 36,
+     "commitmentK": 10,
+     "allMomentsK": 42
+    },
+    "p2": {
+     "outcomeK": 42,
+     "objectionK": 10,
+     "momentK": 36,
+     "commitmentK": 10,
+     "allMomentsK": 42
+    }
+   },
+   "gpt-4.1-mini": {
+    "arm": "r5-outcome-first",
+    "p1": {
+     "metrics": {
+      "n": 42,
+      "outcome": "42/42, 100.0% (CI 91.6-100.0)",
+      "outcomeK": 42,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "10/10, 100.0% (CI 72.2-100.0)",
+      "commitmentK": 10,
+      "commitmentN": 10,
+      "objectionRecall": "10/10, 100.0% (CI 72.2-100.0)",
+      "objectionK": 10,
+      "objectionN": 10,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "5/5, 100.0% (CI 56.6-100.0)",
+      "optOutRecallFloor": "5/5, 100.0% (CI 56.6-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "117/117, 100.0% (CI 96.8-100.0)",
+      "extraMomentKinds": {
+       "objection": 3,
+       "confusion": 3
+      },
+      "extraMoments": 6,
+      "templates": {
+       "complaint": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "complaint.ecommerce.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.education.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.realestate.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.ecommerce.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.education.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.realestate.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [],
+      "outcomeMisses": {},
+      "outcomeMissIds": [],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-outcome-first",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 29428,
+      "outputTokens": 4743,
+      "tokensPerCall": 876.1794871794872,
+      "inrPerCall": 0.051874871794871796,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 754.6,
+      "outPerCall": 121.6
+     },
+     "cross": {
+      "calls": 16,
+      "callsSampled": 16,
+      "themesReturned": 5,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 5,
+       "n": 5,
+       "rate": 1,
+       "ci95": [
+        0.5655175313406071,
+        1
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 13,
+       "n": 15,
+       "rate": 0.8666666666666667,
+       "ci95": [
+        0.6211801694601944,
+        0.9626387412357151
+       ]
+      },
+      "themesDropped": 2,
+      "usage": {
+       "inputTokens": 2208,
+       "outputTokens": 561
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 16,
+       "connected": 16,
+       "talked": 16,
+       "goalReached": 4,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 4
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 31636,
+      "outputTokens": 5304,
+      "inr": 2.209,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 31636,
+        "outputTokens": 5304,
+        "inr": 2.209
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_r5mini_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.ecommerce.hinglish",
+        "complaint.education.hinglish",
+        "complaint.realestate.hinglish",
+        "wrong_person.realestate.hinglish"
+       ],
+       "p": 0.125
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5mini_p2_crossed": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.ecommerce.hinglish",
+        "complaint.education.hinglish",
+        "wrong_person.realestate.hinglish"
+       ],
+       "p": 0.25
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4mini_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4mini_p2_crossed": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.ecommerce.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.ecommerce.hinglish",
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.ecommerce.hinglish",
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "p2": {
+     "metrics": {
+      "n": 42,
+      "outcome": "42/42, 100.0% (CI 91.6-100.0)",
+      "outcomeK": 42,
+      "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+      "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+      "momentK": 36,
+      "momentN": 36,
+      "commitmentRecall": "10/10, 100.0% (CI 72.2-100.0)",
+      "commitmentK": 10,
+      "commitmentN": 10,
+      "objectionRecall": "10/10, 100.0% (CI 72.2-100.0)",
+      "objectionK": 10,
+      "objectionN": 10,
+      "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+      "allMomentsK": 42,
+      "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+      "optOutRecallAnalysis": "5/5, 100.0% (CI 56.6-100.0)",
+      "optOutRecallFloor": "5/5, 100.0% (CI 56.6-100.0)",
+      "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+      "grounding": "120/120, 100.0% (CI 96.9-100.0)",
+      "extraMomentKinds": {
+       "objection": 3,
+       "confusion": 3
+      },
+      "extraMoments": 6,
+      "templates": {
+       "complaint": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "complaint.ecommerce.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.education.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ],
+         [
+          "complaint.realestate.hinglish",
+          "key needs_human",
+          "got needs_human",
+          "CONV_NEEDS_HUMAN",
+          true
+         ]
+        ]
+       },
+       "wrong_person": {
+        "k": 3,
+        "n": 3,
+        "each": [
+         [
+          "wrong_person.ecommerce.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.education.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ],
+         [
+          "wrong_person.realestate.hinglish",
+          "key wrong_person",
+          "got wrong_person",
+          "CONV_WRONG_PERSON",
+          false
+         ]
+        ]
+       }
+      },
+      "falseNulls": [],
+      "outcomeMisses": {},
+      "outcomeMissIds": [],
+      "reasonMisses": [],
+      "momentMisses": [],
+      "objectionMissIds": [],
+      "complaintReasonCodes": {
+       "CONV_NEEDS_HUMAN": 3
+      },
+      "status": {
+       "done": 39,
+       "skipped": 3
+      }
+     },
+     "promptVariant": "r5-outcome-first",
+     "analysisSetting": {
+      "mode": "single",
+      "model": "gpt-4.1-mini",
+      "escalateModel": null,
+      "threshold": 0.6
+     },
+     "cost": {
+      "modelCalls": 39,
+      "inputTokens": 29428,
+      "outputTokens": 4870,
+      "tokensPerCall": 879.4358974358975,
+      "inrPerCall": 0.05241934358974359,
+      "priced": true
+     },
+     "costTiered": null,
+     "tier": null,
+     "tokens": {
+      "modelCalls": 39,
+      "inPerCall": 754.6,
+      "outPerCall": 124.9
+     },
+     "cross": {
+      "calls": 16,
+      "callsSampled": 16,
+      "themesReturned": 4,
+      "themeRecall": {
+       "k": 3,
+       "n": 3,
+       "rate": 1,
+       "ci95": [
+        0.4385029643606803,
+        1
+       ]
+      },
+      "recalled": [
+       "price",
+       "already_have",
+       "trust"
+      ],
+      "pureThemes": {
+       "k": 4,
+       "n": 4,
+       "rate": 1,
+       "ci95": [
+        0.5101091596030786,
+        0.9999999999999999
+       ]
+      },
+      "quotesVerbatim": {
+       "k": 10,
+       "n": 11,
+       "rate": 0.9090909090909091,
+       "ci95": [
+        0.6226415608917041,
+        0.9837678272946746
+       ]
+      },
+      "themesDropped": 1,
+      "usage": {
+       "inputTokens": 2208,
+       "outputTokens": 413
+      },
+      "funnel": {
+       "agentVersionId": null,
+       "dialled": 16,
+       "connected": 16,
+       "talked": 16,
+       "goalReached": 4,
+       "goalByGrade": {
+        "verified": 0,
+        "manager": 0,
+        "ai_guess": 4
+       }
+      }
+     },
+     "truncated": false,
+     "ledger": {
+      "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+      "requests": 40,
+      "inputTokens": 31636,
+      "outputTokens": 5283,
+      "inr": 2.206,
+      "byModel": {
+       "gpt-4.1-mini": {
+        "requests": 40,
+        "inputTokens": 31636,
+        "outputTokens": 5283,
+        "inr": 2.206
+       }
+      },
+      "retries429": 0,
+      "httpErrors": 0,
+      "networkErrors": 0,
+      "refusedByCap": 0,
+      "servedModels": [
+       "gpt-4.1-mini-2025-04-14"
+      ]
+     },
+     "httpErrorDetails": [],
+     "vs_r5mini_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.ecommerce.hinglish",
+        "complaint.education.hinglish",
+        "wrong_person.realestate.hinglish"
+       ],
+       "p": 0.25
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r5mini_p1_crossed": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.ecommerce.hinglish",
+        "complaint.education.hinglish",
+        "complaint.realestate.hinglish",
+        "wrong_person.realestate.hinglish"
+       ],
+       "p": 0.125
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4mini_samePass": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "complaint.ecommerce.hinglish"
+       ],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.ecommerce.hinglish",
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 0.5
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.ecommerce.hinglish",
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 0.5
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     },
+     "vs_r4mini_p1_crossed": {
+      "outcome": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      },
+      "allMoments": {
+       "n": 42,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 1.0
+      },
+      "objectionPerCall": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [
+        "objection_resolved.realestate.hinglish"
+       ],
+       "p": 1.0
+      },
+      "commitments": {
+       "n": 10,
+       "aOnly": [],
+       "bOnly": [],
+       "p": 1.0
+      }
+     }
+    },
+    "meanOfPasses": {
+     "outcome": "42/42, 100.0% (CI 91.6-100.0)",
+     "outcomeMean": 42.0,
+     "r5outcomeMean": 38.5,
+     "r4outcomeMean": 41.5,
+     "note": "the CI is Wilson at the mean count over n (the two passes are not independent samples)"
+    },
+    "passToPass": {
+     "n": 42,
+     "outcomeValue": 0,
+     "outcomeValueIds": [],
+     "outcomeScore": 0,
+     "outcomeScoreIds": [],
+     "reasonCode": 0,
+     "momentSet": 0,
+     "momentSetIds": [],
+     "any": 0,
+     "anyIds": []
+    },
+    "vs_r5mini_pooled_exploratory": {
+     "n": 84,
+     "aOnly": [],
+     "bOnly": [
+      "p1:complaint.ecommerce.hinglish",
+      "p1:complaint.education.hinglish",
+      "p1:complaint.realestate.hinglish",
+      "p1:wrong_person.realestate.hinglish",
+      "p2:complaint.ecommerce.hinglish",
+      "p2:complaint.education.hinglish",
+      "p2:wrong_person.realestate.hinglish"
+     ],
+     "p": 0.0156,
+     "distinctCalls": {
+      "better": [
+       "complaint.ecommerce.hinglish",
+       "complaint.education.hinglish",
+       "complaint.realestate.hinglish",
+       "wrong_person.realestate.hinglish"
+      ],
+      "worse": [],
+      "signTestP": 0.125
+     }
+    },
+    "vs_r4mini_pooled_exploratory": {
+     "n": 84,
+     "aOnly": [],
+     "bOnly": [
+      "p2:complaint.ecommerce.hinglish"
+     ],
+     "p": 1.0,
+     "distinctCalls": {
+      "better": [
+       "complaint.ecommerce.hinglish"
+      ],
+      "worse": [],
+      "signTestP": 1.0
+     }
+    },
+    "templatesPooled": {
+     "complaint": "6/6",
+     "wrong_person": "6/6"
+    }
+   },
+   "tiered": {
+    "metrics": {
+     "n": 42,
+     "outcome": "42/42, 100.0% (CI 91.6-100.0)",
+     "outcomeK": 42,
+     "reasonCode": "42/42, 100.0% (CI 91.6-100.0)",
+     "momentRecall": "36/36, 100.0% (CI 90.4-100.0)",
+     "momentK": 36,
+     "momentN": 36,
+     "commitmentRecall": "10/10, 100.0% (CI 72.2-100.0)",
+     "commitmentK": 10,
+     "commitmentN": 10,
+     "objectionRecall": "10/10, 100.0% (CI 72.2-100.0)",
+     "objectionK": 10,
+     "objectionN": 10,
+     "allMomentsFound": "42/42, 100.0% (CI 91.6-100.0)",
+     "allMomentsK": 42,
+     "followUps": "42/42, 100.0% (CI 91.6-100.0)",
+     "optOutRecallAnalysis": "5/5, 100.0% (CI 56.6-100.0)",
+     "optOutRecallFloor": "5/5, 100.0% (CI 56.6-100.0)",
+     "crisis": "42/42, 100.0% (CI 91.6-100.0)",
+     "grounding": "119/119, 100.0% (CI 96.9-100.0)",
+     "extraMomentKinds": {
+      "objection": 3,
+      "confusion": 3
+     },
+     "extraMoments": 6,
+     "templates": {
+      "complaint": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "complaint.ecommerce.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.education.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ],
+        [
+         "complaint.realestate.hinglish",
+         "key needs_human",
+         "got needs_human",
+         "CONV_NEEDS_HUMAN",
+         true
+        ]
+       ]
+      },
+      "wrong_person": {
+       "k": 3,
+       "n": 3,
+       "each": [
+        [
+         "wrong_person.ecommerce.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.education.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ],
+        [
+         "wrong_person.realestate.hinglish",
+         "key wrong_person",
+         "got wrong_person",
+         "CONV_WRONG_PERSON",
+         false
+        ]
+       ]
+      }
+     },
+     "falseNulls": [],
+     "outcomeMisses": {},
+     "outcomeMissIds": [],
+     "reasonMisses": [],
+     "momentMisses": [],
+     "objectionMissIds": [],
+     "complaintReasonCodes": {
+      "CONV_NEEDS_HUMAN": 3
+     },
+     "status": {
+      "done": 39,
+      "skipped": 3
+     }
+    },
+    "promptVariant": "r5-outcome-first",
+    "analysisSetting": {
+     "mode": "tiered",
+     "model": "gpt-4.1-mini",
+     "escalateModel": "gpt-4.1",
+     "threshold": 0.6
+    },
+    "cost": {
+     "modelCalls": 39,
+     "inputTokens": 29428,
+     "outputTokens": 4779,
+     "tokensPerCall": 877.1025641025641,
+     "inrPerCall": null,
+     "priced": true,
+     "note": "bench single-rate INR not valid for a two-model run; see costTiered (per-call cost lines priced per model)"
+    },
+    "costTiered": {
+     "source": "the bench's per-call cost lines (analysis passes only; the cross-call insight excluded), priced per model at prices.ts list rates",
+     "calls": 42,
+     "inr": 2.0291,
+     "inrPerCall": 0.0483,
+     "byModel": {
+      "gpt-4.1-mini": {
+       "passes": 39,
+       "input": 29428,
+       "output": 4779,
+       "inr": 2.0291
+      }
+     }
+    },
+    "tier": {
+     "calls": 39,
+     "escalated": {
+      "k": 0,
+      "n": 39,
+      "rate": 0,
+      "ci95": [
+       0,
+       0.08966685499529356
+      ]
+     },
+     "why": {},
+     "secondFailed": 0,
+     "byModel": [
+      {
+       "model": "gpt-4.1-mini-2025-04-14",
+       "calls": 39,
+       "input": 29428,
+       "output": 4779
+      }
+     ]
+    },
+    "tokens": {
+     "modelCalls": 39,
+     "inPerCall": 754.6,
+     "outPerCall": 122.5
+    },
+    "cross": {
+     "calls": 16,
+     "callsSampled": 16,
+     "themesReturned": 3,
+     "themeRecall": {
+      "k": 3,
+      "n": 3,
+      "rate": 1,
+      "ci95": [
+       0.4385029643606803,
+       1
+      ]
+     },
+     "recalled": [
+      "price",
+      "already_have",
+      "trust"
+     ],
+     "pureThemes": {
+      "k": 3,
+      "n": 3,
+      "rate": 1,
+      "ci95": [
+       0.4385029643606803,
+       1
+      ]
+     },
+     "quotesVerbatim": {
+      "k": 8,
+      "n": 8,
+      "rate": 1,
+      "ci95": [
+       0.6755924316585925,
+       1
+      ]
+     },
+     "themesDropped": 0,
+     "usage": {
+      "inputTokens": 2208,
+      "outputTokens": 289
+     },
+     "funnel": {
+      "agentVersionId": null,
+      "dialled": 16,
+      "connected": 16,
+      "talked": 16,
+      "goalReached": 4,
+      "goalByGrade": {
+       "verified": 0,
+       "manager": 0,
+       "ai_guess": 4
+      }
+     }
+    },
+    "truncated": false,
+    "ledger": {
+     "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+     "requests": 40,
+     "inputTokens": 31636,
+     "outputTokens": 5068,
+     "inr": 2.17,
+     "byModel": {
+      "gpt-4.1-mini": {
+       "requests": 40,
+       "inputTokens": 31636,
+       "outputTokens": 5068,
+       "inr": 2.17
+      }
+     },
+     "retries429": 0,
+     "httpErrors": 0,
+     "networkErrors": 0,
+     "refusedByCap": 0,
+     "servedModels": [
+      "gpt-4.1-mini-2025-04-14"
+     ]
+    },
+    "httpErrorDetails": [],
+    "escalation": {
+     "rate": "0/39, 0.0% (CI 0.0-9.0)",
+     "escalated": 0,
+     "analysed": 39,
+     "why": {
+      "null": 25,
+      "the engine decided this call's reason; it is never escalated": 11,
+      "the first pass found a reason on which no outcome is recorded; it is never escalated": 3
+     },
+     "each": [],
+     "did": {},
+     "secondFailed": 0
+    },
+    "vs_r5tiered_p1": {
+     "outcome": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "allMoments": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "objectionPerCall": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "commitments": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     }
+    },
+    "vs_r4tiered_p1": {
+     "outcome": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "allMoments": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [
+       "complaint.realestate.hinglish",
+       "objection_resolved.realestate.hinglish"
+      ],
+      "p": 0.5
+     },
+     "objectionPerCall": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [
+       "complaint.realestate.hinglish",
+       "objection_resolved.realestate.hinglish"
+      ],
+      "p": 0.5
+     },
+     "commitments": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     }
+    },
+    "vs_r6mini_p1": {
+     "outcome": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "allMoments": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "objectionPerCall": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "commitments": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     }
+    },
+    "vs_r5tiered_p2": {
+     "outcome": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "allMoments": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "objectionPerCall": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "commitments": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     }
+    },
+    "vs_r4tiered_p2": {
+     "outcome": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "allMoments": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [
+       "objection_resolved.realestate.hinglish"
+      ],
+      "p": 1.0
+     },
+     "objectionPerCall": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [
+       "objection_resolved.realestate.hinglish"
+      ],
+      "p": 1.0
+     },
+     "commitments": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     }
+    },
+    "vs_r6mini_p2": {
+     "outcome": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "allMoments": {
+      "n": 42,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "objectionPerCall": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     },
+     "commitments": {
+      "n": 10,
+      "aOnly": [],
+      "bOnly": [],
+      "p": 1.0
+     }
+    }
+   }
+  },
+  "miniFirstObjections": {
+   "runs": [
+    "dev-p1",
+    "dev-p2",
+    "mini-p1",
+    "mini-p2",
+    "tiered-p1"
+   ],
+   "k": 52,
+   "n": 52,
+   "text": "52/52",
+   "misses": [],
+   "bar": ">= 51/52 (at most one miss)",
+   "meetsBar": true,
+   "miniRecordsOnly": {
+    "excludedEscalated": [],
+    "text": "52/52"
+   },
+   "r5": "51/51 (DEV current, mini p1/p2, tiered p1/p2)"
+  },
+  "replace": {
+   "arm": "r5-outcome-first",
+   "criteria": {
+    "meanOutcome_ge_41": true,
+    "noTemplateFalseNull_bothPasses": true,
+    "objections10_bothPasses": true,
+    "miniFirstObjections_ge_51of52": true,
+    "moments_ge_35_bothPasses": true,
+    "commitments10_bothPasses": true,
+    "noLossVsR5_p_lt_0.05": true
+   },
+   "templateFalseNulls": {
+    "p1": [],
+    "p2": []
+   },
+   "lossPvaluesVsR5": {},
+   "allMet": true,
+   "appliesOnlyIfWinnerIsNotCurrent": true
+  },
+  "cost3min": {
+   "model_a_ANALYSIS-COST.md": {
+    "gpt-4.1-mini": 0.073,
+    "gpt-4.1": 0.38
+   },
+   "model_b_rebased": {
+    "gpt-4.1-mini": 0.0772,
+    "gpt-4.1": 0.3808,
+    "miniTokensPerCall_meanOfPasses": [
+     754.6,
+     123.25
+    ],
+    "gpt-4.1_tokens_source": "this round's mini input per call; round 5's gpt-4.1 output per call (162.45, mean of its two TEST passes)"
+   },
+   "tiered": {
+    "e": 0.0,
+    "a": 0.073,
+    "b": 0.0772
+   }
+  },
+  "reverseIf_analysis-default-tiered": {
+   "reverse_if": "tiered measured cost > Rs 0.17 per 3-minute call, or a mini-single contract matches tiered on outcome (within 1/42 on the mean of two TEST passes) in two consecutive rounds with no moment or objection loss",
+   "thisRound": {
+    "miniMean": 42.0,
+    "tieredThisRound": 42,
+    "tieredR5Mean": 42.0,
+    "withinOne_vsThisRoundTiered": true,
+    "withinOne_vsR5TieredMean": true,
+    "noMomentOrObjectionLoss": true
+   },
+   "previousRound": {
+    "r5MiniMean": 38.5,
+    "r5TieredMean": 42.0,
+    "withinOne": false
+   },
+   "matchesThisRound": true,
+   "twoConsecutiveRounds": false,
+   "costOver017": {
+    "a": false,
+    "b": false
+   },
+   "reverses": false
+  },
+  "costPerCall": {
+   "dev-current-p1": 0.0513,
+   "dev-current-p2": 0.0508,
+   "dev-r5-short-objection-p1": 0.049,
+   "dev-r5-short-objection-p2": 0.0492,
+   "dev-r5-outcome-first-p1": 0.0523,
+   "dev-r5-outcome-first-p2": 0.0521,
+   "dev-r5-moment-not-outcome-p1": 0.0518,
+   "dev-r5-moment-not-outcome-p2": 0.0519,
+   "test-mini-r5-outcome-first-p1": 0.0519,
+   "test-mini-r5-outcome-first-p2": 0.0524,
+   "test-tiered-r5-outcome-first-p1": 0.052
+  }
+ },
+ "spend": {
+  "byRun": {
+   "analysis-dev-gpt-4.1-mini.current-p1": {
+    "requests": 40,
+    "inr": 2.17,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.r5-short-objection-p1": {
+    "requests": 40,
+    "inr": 2.08,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.r5-outcome-first-p1": {
+    "requests": 40,
+    "inr": 2.22,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.r5-moment-not-outcome-p1": {
+    "requests": 40,
+    "inr": 2.2,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.current-p2": {
+    "requests": 40,
+    "inr": 2.15,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.r5-short-objection-p2": {
+    "requests": 40,
+    "inr": 2.09,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.r5-outcome-first-p2": {
+    "requests": 40,
+    "inr": 2.21,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-dev-gpt-4.1-mini.r5-moment-not-outcome-p2": {
+    "requests": 40,
+    "inr": 2.22,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-gpt-4.1-mini.r5-outcome-first-p1": {
+    "requests": 40,
+    "inr": 2.21,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-gpt-4.1-mini.r5-outcome-first-p2": {
+    "requests": 40,
+    "inr": 2.21,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   },
+   "analysis-tiered.r5-outcome-first-p1": {
+    "requests": 40,
+    "inr": 2.17,
+    "httpErrors": 0,
+    "retries429": 0,
+    "refusedByCap": 0,
+    "networkErrors": 0
+   }
+  },
+  "total": {
+   "requests": 440,
+   "inr": 23.91,
+   "httpErrors": 0,
+   "retries429": 0,
+   "networkErrors": 0,
+   "refusedByCap": 0
+  },
+  "firstRequest": "2026-10-24T04:15:14.383Z",
+  "lastRequest": "2026-10-24T04:39:49.243Z",
+  "globalCap": 60,
+  "prices": "prices.ts list rates at Rs 95/$: gpt-4.1-mini Rs 41.8 in / 167.2 out per 1M tokens; gpt-4.1 Rs 190 / 760"
+ }
+}

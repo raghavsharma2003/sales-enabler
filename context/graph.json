@@ -20180,7 +20180,7 @@
   {
    "id": "open.2026-10-24.analysis-contract-objections-and-outcome",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "model",
    "title": "Which analysis contract keeps both mini's objections (round 5: 51/51) and its outcome (round 4: 41.5/42 mean on TEST)? Candidates [inference]: the 2cdf64b objection line without 'whatever the OUTCOME' in the KIND header; or the moment rules after OUTCOME (the alternative decision.2026-10-24.objection-always-a-moment names)",
@@ -20554,6 +20554,180 @@
    "source": "verified",
    "title": "The renderer wrote spokenText '' for v2-live, although the audio is the whole line (Azure Speech word error 0/17). speak_live stops reading at turnComplete and breaks on any non-text frame, where the runtime's s2s read loop continues; inference, not diagnosed: Live's outputTranscription arrives after the renderer stops reading. An empty spokenText reads as 'said nothing', and decision.2026-10-24.voice-stack-sample-renderer's reverse_if keys on spokenText. Web ignores spokenText, so the card is right",
    "closes_when": "speak_live collects Live's outputTranscription (reads on past turnComplete for it, continues past non-text frames) or omits spokenText when it is empty, and a re-render of v2-live on the VM shows Live's own transcript"
+  },
+  {
+   "id": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Analysis bench DEV (42 calls), gpt-4.1-mini single, two passes per 95339a6 contract arm, tree 839292d: current (the product) outcome 41, 40 (mean 40.5); r5-short-objection 40, 41 (40.5) but objections 9/11 and moments 34/36 on p1 (objection_resolved.lending, .telecom: complain-then-agree), so not eligible; r5-outcome-first (current's 26 lines, OUTCOME block before KIND) 42, 42 (42.0), objections 11/11, moments 36/36, commitments 11/11 both, 0/42 pass-to-pass outcome disagreement; r5-moment-not-outcome 41, 41 (41.0). Every miss is a false null with no outcome given (outcomeUnclear empty). Complaint + wrong_person (12 pairs per arm): current 9, short-objection 9, outcome-first 12, moment-not-outcome 10. Pre-registered winner: r5-outcome-first (no tie). current -> outcome-first pooled over both passes 3 gained, 0 lost, p = 0.25 [exploratory]. Rs 17.33",
+   "n": 42,
+   "method": "product/scripts/analysis-bench.ts --split dev --model <gpt-4.1-mini> --prompt-variant <arm>, two passes per arm (pass 1 of each arm, then pass 2), crisis judge off, through round 5's harness (research/2026-10-24/benches-r5/harness; azure-guard.mjs byte-identical to round 1's) with paths changed: private tmpfs Postgres, a fresh migrated DB per run (each pass its own process; --passes not used), its own ledger, global cap Rs 60, sequential, at most 1 request a second. Tree 839292d (contains 95339a6; detached). Cases and the DEV/TEST split byte-identical to round 5's tree ab5dade; current, r4-table, r3-stance and no-outcome-rules build byte-identical prompts to ab5dade (harness/variant-probe.ts). --model <gpt-4.1-mini> pins single (same request as round 5's mini single). Scored by code against hand-written keys; exact two-sided McNemar on the same ids. Selection rule written before the first request (harness/dev-select-rule.txt: eligible = objections 11/11, moments >= 35/36, commitments 11/11 on both passes; winner = highest mean outcome; ties to the arm closest to current by line diff). Misses read from each run database (harness/misses.py, db-misses.json).",
+   "path": "research/2026-10-24/benches-r6/README.md"
+  },
+  {
+   "id": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Analysis bench TEST (42 calls), gpt-4.1-mini single on the r5-outcome-first contract (current's lines, OUTCOME before KIND), two passes, tree 839292d: outcome 42/42 and 42/42 (mean 42.0, CI 91.6-100; round 5 current 38, 39; round 4 42, 41), objections 10/10, moments 36/36, commitments 10/10, every moment 42/42 both, 0/42 pass-to-pass disagreement on any field. Complaint 6/6 and wrong_person 6/6 (round 5: 1/6 and 4/6). Against round 5 mini single: p1 4 gained 0 lost p = 0.125, p2 3 gained p = 0.25; pooled 7 gained 0 lost p = 0.0156 [exploratory]; 4 distinct calls better, 0 worse. Against round 4: 1 gained, 0 lost. No loss on any field. Mini still names CONV_NEEDS_HUMAN on complaint calls and now records needs_human. Rs 0.052 per model-analysed call (+4% on current), about Rs 0.073-0.077 per 3-minute call [inference]",
+   "n": 42,
+   "method": "analysis-bench.ts --split test --model <gpt-4.1-mini> --prompt-variant r5-outcome-first, twice, through a harness copy (product/scripts/zz-r6-analysis-bench.ts) that differs from the product bench only in the DEV-only guard, letting through the one DEV winner named in BENCH_R6_TEST_ARM (harness/test-bench.diff; removed after the runs). Arm chosen by harness/dev-select-rule.txt (mtime 04:14:17Z, before the first request at 04:15:14Z). through round 5's harness (research/2026-10-24/benches-r5/harness; azure-guard.mjs byte-identical to round 1's) with paths changed: private tmpfs Postgres, a fresh migrated DB per run (each pass its own process; --passes not used), its own ledger, global cap Rs 60, sequential, at most 1 request a second. Tree 839292d (contains 95339a6; detached). Cases and the DEV/TEST split byte-identical to round 5's tree ab5dade; current, r4-table, r3-stance and no-outcome-rules build byte-identical prompts to ab5dade (harness/variant-probe.ts). --model <gpt-4.1-mini> pins single (same request as round 5's mini single). Scored by code against hand-written keys; exact two-sided McNemar on the same ids.",
+   "path": "research/2026-10-24/benches-r6/README.md"
+  },
+  {
+   "id": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Analysis bench TEST, tiered (gpt-4.1-mini first, gpt-4.1 at threshold 0.6) on the r5-outcome-first contract, one pass, tree 839292d: outcome 42/42, objections 10/10, moments 36/36, commitments 10/10; escalated 0/39 (CI 0.0-9.0; round 5 on current: 2/39 each pass), so gpt-4.1 read nothing and the escalation path on this prompt is untested; 0 discordant against round 5 tiered p1 and p2 and against round 6 mini p1 and p2. Rs 0.052 per model-analysed call, the same as mini single; about Rs 0.073-0.077 per 3-minute call [inference], inside the Rs 0.17 budget",
+   "n": 42,
+   "method": "analysis-bench.ts --split test --model <gpt-4.1-mini> --escalate-model <gpt-4.1> --threshold 0.6 --prompt-variant r5-outcome-first, once, both deployments priced, through the same harness copy as the mini TEST runs; the one system prompt serves both passes of a call. Escalation reasons read from the run database (25 calls had an outcome at confidence >= 0.9; 11 engine-decided; 3 no-decision codes). through round 5's harness (research/2026-10-24/benches-r5/harness; azure-guard.mjs byte-identical to round 1's) with paths changed: private tmpfs Postgres, a fresh migrated DB per run (each pass its own process; --passes not used), its own ledger, global cap Rs 60, sequential, at most 1 request a second. Tree 839292d (contains 95339a6; detached). Cases and the DEV/TEST split byte-identical to round 5's tree ab5dade; current, r4-table, r3-stance and no-outcome-rules build byte-identical prompts to ab5dade (harness/variant-probe.ts). --model <gpt-4.1-mini> pins single (same request as round 5's mini single). Scored by code against hand-written keys; exact two-sided McNemar on the same ids.",
+   "path": "research/2026-10-24/benches-r6/README.md"
+  },
+  {
+   "id": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Objection recall over round 6's mini-first analysis runs on the r5-outcome-first contract (DEV p1, p2; TEST mini p1, p2; tiered): 52/52 (round 5 on current 51/51, round 4 43/51); no escalation, so every pair is mini's own record. The pre-registered bar (>= 51/52) is met",
+   "n": 52,
+   "method": "(run, call) pairs of the 5 mini-first runs, each objection call has exactly one objection moment; per-call recall = 'objection' among the stored moment kinds; harness/stats.py (miniFirstObjections) over research/2026-10-24/benches-r6 JSONs.",
+   "path": "research/2026-10-24/benches-r6/comparison.json"
+  },
+  {
+   "id": "rejected.2026-10-24.analysis-contract-short-objection",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "95339a6's r5-short-objection analysis contract (the old KIND header plus a one-clause objection line) on gpt-4.1-mini single: it brings back the round-4 objection loss on complain-then-agree calls and keeps the complaint false nulls",
+   "tried": "calls/analysis.ts PROMPT_VARIANTS r5-short-objection: 'KIND (one entry per line that shows it):' and '- objection: PERSON gives a reason against, or a complaint, also when they agree later', with the b1a80cf outcome table kept. DEV, two passes, tree 839292d.",
+   "broke": "DEV p1: objections 9/11 (objection_resolved.lending and .telecom missed, the round-4 shape), moments 34/36, so it fails the pre-registered floors; complaint template 1/3 and 2/3 (false nulls), outcome 40 and 41. p2 was 11/11, so the loss is intermittent across passes, as it was in round 4."
+  },
+  {
+   "id": "rejected.2026-10-24.analysis-contract-moment-not-outcome",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "95339a6's r5-moment-not-outcome analysis contract (current plus a line saying a moment never decides or blocks the OUTCOME) on gpt-4.1-mini single: it keeps objections but does not remove the false nulls that moving the OUTCOME block removes",
+   "tried": "calls/analysis.ts PROMPT_VARIANTS r5-moment-not-outcome: current plus '- a moment never decides or blocks the OUTCOME: a complaint that asks for a human is an objection AND the needs-human VALUE' at the end of the OUTCOME block. DEV, two passes, tree 839292d.",
+   "broke": "Outcome 41 and 41 (mean 41.0, below r5-outcome-first's 42.0): false nulls on complaint.healthcare (p1) and wrong_person.healthcare (p2), 2 of 12 complaint/wrong_person pairs against outcome-first's 0 and current's 3; +27 input tokens per call. The added line names a value of the bench's outcome definition ('needs-human VALUE') [inference: inert or misleading where a workspace's definition has no such value]."
+  },
+  {
+   "id": "open.2026-10-24.analysis-outcome-first-second-round",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Does gpt-4.1-mini single on the OUTCOME-before-KIND contract match tiered again in a second round? Round 6 is the first round in which a mini-single contract matched tiered (42.0 vs 42 on TEST, no moment or objection loss); decision.2026-10-24.analysis-default-tiered reverses only after two consecutive rounds",
+   "closes_when": "Round 7, on the contract as shipped: two TEST passes each of gpt-4.1-mini single and tiered. Mini within 1/42 of tiered on the mean with no moment or objection loss meets the reverse_if; otherwise tiered stands and the round-6 result is logged as variance."
+  },
+  {
+   "id": "open.2026-10-24.analysis-outcome-first-client-rule",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "In the r5-outcome-first arm the OUTCOME block moves before KIND, but a workspace's 'OUTCOME, client rule: ...' line stays after CODE, two blocks away from the outcome rules it qualifies; the no-question prompt's 'OUTCOME: always null.' also moves. The bench sets no client rule and always has a question, so neither is measured [inference: move the client rule with the OUTCOME block when the arm ships]",
+   "closes_when": "The shipped contract keeps the client-rule line inside the OUTCOME block, and a bench run with a judge_version client rule (or a test that pins the line order) shows no outcome, objection or moment loss against round 6."
+  },
+  {
+   "id": "decision.2026-10-24.language-capability-matrix",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Every voice-stack part declares its languages as measured or stated; a stack serves a language only if every part does, graded by its weakest part",
+   "rationale": "Agents for multilingual lists need to know what each stack can hear, understand and speak. shared/components.ts gives each part a LanguageSupport {measured, stated, source}; shared/stacks.ts stackLanguage()/stackLanguages() derive the per-stack matrix. Measured is limited to what our lab and benches ran: Hinglish on Azure ears, the benched brains, Gemini 3.8 Flash-Lite voice, MAI voice and Gemini Live, plus Hindi on Azure ears and the two Gemini/MAI voices; a test refuses any other measured entry. Stated lists are the makers' published support as we understood it on 2026-10-24, restricted to VP's 12 codes, and NOT re-read from vendor docs today. Result on the curated stacks: Kannada, Malayalam, Gujarati, Punjabi and Odia are served only by the two beta stacks (Sarvam, Gemini Live), so none can call real people in those languages yet.",
+   "reverse_if": "A docs read or a test call shows a stated entry is wrong (fix the list and its source), or a language is run on our calls (then it moves to measured with the run named).",
+   "path": "product/shared/components.ts"
+  },
+  {
+   "id": "decision.2026-10-24.agent-languages-validated-against-stack",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "An agent may speak only languages its voice stack serves: draft writes and every version path refuse otherwise, naming the language, the stack and the part",
+   "rationale": "The agent's primary plus allowed languages are its languages. saveDraft refuses a write that introduces an unserved language (e.g. adding Kannada on a stack whose voice cannot speak it, or switching a Tamil agent to the MAI voice stack); createVersion refuses any unserved language for published, candidate, variant and restored versions. Message: 'Kannada is not supported by the voice stack <label>: its voice (<part>) does not support Kannada. Choose a stack that supports Kannada, or remove Kannada from the agent's languages.'",
+   "reverse_if": "Owners need to draft ahead of a stack that will support a language (then drafts warn and only versions refuse)."
+  },
+  {
+   "id": "decision.2026-10-24.language-variants-and-routing",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Language variants are immutable agent versions (kind 'variant') with the same facts and agenda; campaigns route each contact to a version that speaks their language, else the main one with the reason recorded",
+   "rationale": "version.language_variant (A2) copies a published version's config with languages {primary: L, allowed: [L, English if the stack serves it], mirrorCaller: true} and optionally another stack; it is refused when shared/safety has no checked disclosure line for L (disclosure.json has Hinglish, English, Hindi, Tamil and Bengali today; Kannada, Telugu and the rest need the safety team) and runs the hard guard and language validation. Variants never count as the live version. At claim the worker routes after the experiment or deployment choice (campaigns/languages.ts routeAttempt): explicit campaign.draft languageRoutes first, then the agent's newest variant per language; beta-stack versions are skipped because they cannot dial real people; Hindi and Hinglish serve each other, English is served by English or Hinglish; no match calls with the main version and stores precheck.language {preferred, servedBy, versionId, reason}. The R2 launch warning now counts only those fallbacks and points to version.language_variant.",
+   "reverse_if": "Fallback calls in the wrong language show worse outcomes than not calling (then fallback becomes skip-with-reason), or owners want variants as separate agents rather than versions.",
+   "path": "product/server/modules/campaigns/languages.ts"
+  },
+  {
+   "id": "measure.2026-10-24.languages-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Languages: tests/agents-languages.test.ts 8/8 (matrix honesty, stack grading, normalisation and routing rules, validation wording, draft refusals, variants, routing at claim with fallback reasons, the warning count 2 of 6 with Tamil and Bengali variants, explicit route checks); fresh-DB suite 576 pass, 0 fail, 4 skipped; ui-contract 179/179; browser flows 54 pass, 0 fail, 2 skipped",
+   "n": 8,
+   "method": "node:test on throwaway Postgres 16; gates tsc --noEmit, node scripts/test.mjs on a fresh DB (skips: voice runtime Python), tsx scripts/ui-contract.ts --strict, web/e2e/run.sh with VP_VOICE_PYTHON=/bin/false (skips: no devsim runtime). Routing is exercised through routeAttempt, the function claimNext calls; a full claim with dialing is not exercised in these tests.",
+   "path": "product/tests/agents-languages.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.languages-runtime-and-disclosure",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "What remains for multilingual calls: the voice runtime per language, disclosure lines for Kannada, Telugu and others, and a docs read of the stated lists",
+   "closes_when": "Voice configures ears and voices per ticket language and a test call runs in Tamil and Bengali; safety adds checked disclosure lines (disclosure.json) for kn-IN, te-IN, ml-IN, mr-IN, gu-IN, pa-IN, or-IN plus crisis and opt-out lexicons per language; the stated lists in components.ts are re-checked against the vendors' current docs and corrected where wrong."
+  },
+  {
+   "id": "decision.2026-10-24.draft-exists-only-after-done",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Operator conduct: draft without asking permission, but a change exists only once its tool returned DONE this turn; never describe a change not made",
+   "rationale": "Op5: the 'do it now and say so' line made gpt-4.1 describe drafts it never made (21 claimed writes after zero tool calls); the ablation without it gave 6/6 tool calls.",
+   "reverse_if": "The next two-run bench shows the confirm-first asks coming back above round-4 levels, in which case strengthen the nudge, not the conduct line"
+  },
+  {
+   "id": "decision.2026-10-24.protective-unasked-is-proposal",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A protective write (suppress, pause, stop, forget, erase, DPDP) that the member's words do not ask for becomes an approval card from the Operator, even where the kernel would run it at once",
+   "rationale": "Op5: 'Delete all my contacts' led to contact.suppress on a seeded contact with no card; the noun 'contacts' passed the scope guard. Matching the action keeps 'Stop calling X' immediate.",
+   "reverse_if": "Real threads show members asking for a stop in words the action match misses, so stops that should be immediate wait for a tap"
+  },
+  {
+   "id": "decision.2026-10-24.brief-review-persona-settings",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "The brief review never judges persona or brand settings. persona.name, gender, register, energy, humour and honorific, and brand.name and spokenName, are given to the model as one context line ('the agent is the AI assistant of <brand>; its persona is named <name> (<gender>)'), never as numbered fields, so a finding can never cite them. The prompt says a persona's name, gender, voice or tone is not a breach, and drops 'If unsure ... report it with a lower confidence' for 'report a field only when its own words claim, imply or instruct a breach'. Notes and guidance are still judged in full.",
+   "rationale": "rejected.2026-10-24.brief-review-flags-persona-names: gpt-4.1 flagged persona.name or gender as 'human' in 12 of 81 bench reviews at 0.6-0.7, which would block an honest publish.",
+   "reverse_if": "The blind brief-review score shows that real human-claim backstories are missed because they sat in a persona setting rather than a note."
+  },
+  {
+   "id": "rejected.2026-10-24.tl1-honest-exemption-shadows-negation",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "T-L1's honest-disclosure exemption ('admit / confirm / say that you are an AI', sentence-wide) without a negation guard: 'Never admit that you are an AI.' and 'Do not confirm that she is a bot.' linted clean",
+   "tried": "rules.json lint.T-L1.none[3]: \\b(admit|confirm|say|tell them|disclose)[a-z]* (that )?(you are|...) (an? )?(ai|bot|...)",
+   "broke": "Found while adding DEV cases (an honest line with 'says plainly that she is an AI' was refused because the exemption needed adjacency). Fixed: the exemption starts with a lookahead that refuses it when never, don't, do not, must not, should not, avoid, mat or kabhi comes within 12 characters before the verb, and it allows up to 15 characters before 'that you are/she is'. Both now refuse; honest lines pass. DEV T-L1 refuse 38/38 and allow 0/32; 0 of 1,039 benign agent lines flagged. The blind lint set is spent, so this is not re-scored."
   }
  ],
  "edges": [
@@ -36907,6 +37081,246 @@
   {
    "from": "open.2026-10-24.live-sample-spoken-text-empty",
    "to": "decision.2026-10-24.voice-stack-sample-renderer",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "to": "measure.2026-10-24.analysis-bench-r5-dev-ablation",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "measure.2026-10-24.analysis-bench-r5-gpt-4.1-mini",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "measure.2026-10-24.analysis-bench-r4-gpt-4.1-mini",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "measure.2026-10-24.analysis-bench-r5-tiered",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "measure.2026-10-24.analysis-bench-r5-gpt-4.1",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "to": "measure.2026-10-24.analysis-objection-recall-r5-mini-first",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "to": "rejected.2026-10-24.objection-contract-mini-false-nulls",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "rejected.2026-10-24.objection-contract-mini-false-nulls",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "to": "decision.2026-10-24.objection-always-a-moment",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "to": "decision.2026-10-24.objection-always-a-moment",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "decision.2026-10-24.objection-always-a-moment",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "open.2026-10-24.analysis-contract-objections-and-outcome",
+   "relation": "answers"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "to": "open.2026-10-24.analysis-contract-objections-and-outcome",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-objection-recall-r6-mini-first",
+   "to": "open.2026-10-24.analysis-contract-objections-and-outcome",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "decision.2026-10-24.analysis-default-tiered",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "decision.2026-10-24.analysis-default-tiered",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "decision.2026-10-24.analysis-default-tiered-in-code",
+   "relation": "tests"
+  },
+  {
+   "from": "rejected.2026-10-24.analysis-contract-short-objection",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-24.analysis-contract-short-objection",
+   "to": "decision.2026-10-24.objection-always-a-moment",
+   "relation": "supports"
+  },
+  {
+   "from": "rejected.2026-10-24.analysis-contract-short-objection",
+   "to": "rejected.2026-10-24.analysis-outcome-shapes-mini-drops-objections",
+   "relation": "extends"
+  },
+  {
+   "from": "rejected.2026-10-24.analysis-contract-moment-not-outcome",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-24.analysis-contract-moment-not-outcome",
+   "to": "rejected.2026-10-24.objection-contract-mini-false-nulls",
+   "relation": "extends"
+  },
+  {
+   "from": "open.2026-10-24.analysis-outcome-first-second-round",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.analysis-outcome-first-second-round",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.analysis-outcome-first-second-round",
+   "to": "decision.2026-10-24.analysis-default-tiered",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-24.analysis-outcome-first-client-rule",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.analysis-outcome-first-client-rule",
+   "to": "component.product.calls-module",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "component.product.calls-module",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "to": "component.product.analysis-bench",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.agent-languages-validated-against-stack",
+   "to": "decision.2026-10-24.language-capability-matrix",
+   "relation": "requires"
+  },
+  {
+   "from": "decision.2026-10-24.language-variants-and-routing",
+   "to": "decision.2026-10-24.agent-languages-validated-against-stack",
+   "relation": "requires"
+  },
+  {
+   "from": "decision.2026-10-24.language-variants-and-routing",
+   "to": "decision.2026-10-24.launch-language-warning",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.languages-tests",
+   "to": "decision.2026-10-24.language-variants-and-routing",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.language-variants-and-routing",
+   "to": "open.2026-10-24.languages-runtime-and-disclosure",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.draft-exists-only-after-done",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.protective-unasked-is-proposal",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.protective-unasked-is-proposal",
+   "to": "decision.2026-10-24.retry-scope-guard",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.brief-review-persona-settings",
+   "to": "rejected.2026-10-24.brief-review-flags-persona-names",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-24.tl1-honest-exemption-shadows-negation",
+   "to": "measure.2026-10-24.tl1-third-person",
    "relation": "informs"
   }
  ]
