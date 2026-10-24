@@ -37,6 +37,11 @@ export interface CallTicket {
     facts: Record<string, string>;       // per-contact fact values (Fact.perContact), already purpose-filtered
     memoryBrief: string;                 // <= 1200 bytes, compiled by the memory module; '' when none or not loaded
     memoryStatus: 'loaded' | 'none' | 'not_loaded_timeout' | 'disabled';
+    /** Per-row overrides from the person's list (intake rowOverrides), already applied to `agent`: agent.voice.voiceId and
+     *  agent.opening.usefulFirst. Present only when the row carried one. When `usefulFirst` is set, it supersedes the opening
+     *  shape compiled into brief.text: the runtime leads with it under the same rules (a shape, never recited; RD1 unchanged).
+     *  `refused` lists row values the agent's rules did not allow (not applied). The disclosure clause is never overridden. */
+    rowOverrides?: { applied: ('voice' | 'first_message')[]; voiceId?: string; usefulFirst?: string; refused?: { key: 'voice' | 'first_message'; why: string }[] };
   };
   consent: { basis: 'consent' | 'contract' | 'legitimate_use' | 'inbound'; recordId?: string };
   limits: { maxDurationS: number; maxCostInrMilli: number };   // the runtime ends the call when either is reached (A3 call.end_runaway)

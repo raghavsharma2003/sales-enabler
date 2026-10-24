@@ -43,7 +43,7 @@
     {
       "id": "open.2026-10-24.row-overrides-not-in-ticket",
       "type": "open-question",
-      "status": "open",
+      "status": "closed",
       "source": "verified",
       "date": "2026-10-24",
       "title": "Per-row voice and first_message are validated and stored, but no call uses them until campaigns calls rowOverrides in buildTicket and the runtime reads opening.usefulFirst from the ticket",
@@ -57,6 +57,16 @@
       "date": "2026-10-24",
       "title": "T-L7 (manipulation lint) passes 'the offer ends tonight so they must decide now or lose it forever'",
       "closes_when": "shared/safety rules refuse that sentence and its variants, with a test."
+    },
+    {
+      "id": "component.2026-10-24.row-overrides-in-ticket",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "campaigns buildTicket applies intake's rowOverrides: a row's voice (only if the agent's stack offers it) and first_message (as opening.usefulFirst, re-linted) reach the ticket; contact.rowOverrides names what was applied or refused; the disclosure clause is never changed",
+      "path": "product/server/modules/campaigns/worker.ts",
+      "details": "Sanctioned cross-module edit (integrator, 2026-10-24). Contract field CallTicket.contact.rowOverrides in shared/runtime-protocol.ts. Test campaigns.test.ts F3b: a valid row reaches the ticket (combinationId ends ~Sulafat); a row written straight to the table with a human-claim opening and another stack's voice is refused at dial. Not verified: the runtime leading with ticket usefulFirst (voice module)."
     }
   ],
   "edges": [
@@ -84,6 +94,16 @@
       "from": "component.2026-10-24.intake-xlsx-import",
       "to": "open.2026-10-24.row-overrides-not-in-ticket",
       "relation": "leaves-open"
+    },
+    {
+      "from": "component.2026-10-24.row-overrides-in-ticket",
+      "to": "open.2026-10-24.row-overrides-not-in-ticket",
+      "relation": "resolves"
+    },
+    {
+      "from": "component.2026-10-24.row-overrides-in-ticket",
+      "to": "decision.2026-10-24.row-overrides-inside-agent-rules",
+      "relation": "implements"
     }
   ],
   "events": [
@@ -91,6 +111,11 @@
       "date": "2026-10-24",
       "event": "intake-brief-9-import",
       "details": "Must-be brief 9 built: .xlsx import (server-side, formulas never evaluated, 20 MB), per-row voice and first_message inside the agent's rules (rowOverrides; disclosure untouched), source.map samples, web import screen with the agent's column contract. Verified: tsc clean (server, web); intake 19/19, intake-xlsx 8/8, product+review suite green; browser flows 57 pass, 2 skipped (no devsim); screenshots contacts-import-excel-d/m. Not verified: ticket honouring (campaigns, voice), zip bombs."
+    },
+    {
+      "date": "2026-10-24",
+      "event": "row-overrides-in-ticket",
+      "details": "buildTicket calls rowOverrides; CallTicket.contact.rowOverrides added to the runtime contract for voice to build against. campaigns 57/57 incl. F3b."
     }
   ]
 }

@@ -18,6 +18,8 @@ import type { Series } from './telephony.ts';
 import { DISPATCH_STALE_MS, MEMORY_BRIEF_TIMEOUT_MS } from './defaults.ts';
 import { routeAttempt } from './languages.ts';
 import { LIVE_ATTEMPT, runGate, type AttemptRow, type GatePass, type GateVerdict, type PredialFn } from './gate.ts';
+// Sanctioned cross-module import (integrator, 2026-10-24): intake's pure rule for a row's voice and first_message.
+import { OVERRIDE_KEYS, rowOverrides } from '../intake/overrides.ts';   // the pure rule only (no import cycle through intake/index)
 
 export interface WorkerDeps {
   pool: pg.Pool;
@@ -202,7 +204,10 @@ export async function freshAttributes(d: WorkerDeps, contactId: string, keys: st
 }
 
 export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, conversationId: string): Promise<CallTicket> {
-  const agent = v.version.config.agent!;
+  // A row's voice and first_message (intake), applied only inside the agent's rules; the disclosure clause is never touched.
+  const row = v.contact ? await freshAttributes(d, v.contact.id, [...OVERRIDE_KEYS]) : {};
+  const ro = rowOverrides(v.version.config.agent!, row);
+  const agent = ro.agent;
   const stack = resolveStack(agent.voice);   // G10 already refused a voice setting that names no stack
   const mem = await memoryBrief(d, a.workspace_id, v.contact?.id ?? null, v.version.agent_id, agent.memory?.read !== false);
   const stored = { ...(v.contact?.custom ?? {}), ...(v.contact ? await freshAttributes(d, v.contact.id, (agent.facts ?? []).filter(f => f.perContact).map(f => f.key)) : {}) };
@@ -216,6 +221,12 @@ export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, con
       timezone: v.contact?.timezone ?? 'Asia/Kolkata',
       facts: ticketFacts(agent.facts ?? [], v.category, a.facts ?? {}, stored),
       ...mem,
+      ...(ro.applied.length || ro.refused.length ? { rowOverrides: {
+        applied: ro.applied,
+        ...(ro.applied.includes('voice') ? { voiceId: agent.voice.voiceId } : {}),
+        ...(ro.applied.includes('first_message') ? { usefulFirst: agent.opening.usefulFirst } : {}),
+        ...(ro.refused.length ? { refused: ro.refused } : {}),
+      } } : {}),
     },
     consent: v.consent,
     limits: { maxDurationS: v.maxDurationS, maxCostInrMilli: v.reservedInrMilli },
