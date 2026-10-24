@@ -63,9 +63,12 @@ test('the contract is written as shapes; the model may name CONV_* codes only an
   const p = analysisPrompt({ question: 'What did the person decide?', values: ['agreed', 'wrong_person'] });
   assert.match(p, /^TASK: /);
   assert.match(p, /- commitment: PERSON agrees to do something/);
-  assert.match(p, /null when the PERSON never took a stance: they could not follow the language, hung up before the question, or spoke of distress/);
+  assert.match(p, /- is not the person called \(relative, colleague, wrong number\) -> wrong-person VALUE; never null/);
+  assert.match(p, /- complains AND asks for a human, person or manager -> needs-human VALUE; never null/);
+  assert.match(p, /- asks never to be called again -> refusing VALUE; never the call-later VALUE/);
+  assert.match(p, /- null: no shape above; or cannot follow the language; or hangs up before the question; or distress/);
+  assert.doesNotMatch(p, /decided only when the PERSON takes a stance/, 'the stance sentence is gone (rejected.2026-10-23.analysis-stance-rule-mini-false-nulls)');
   assert.doesNotMatch(p, /null only when no PERSON line bears/, 'the rejected rule is gone (rejected.2026-10-23.analysis-outcome-null-only-rule)');
-  assert.match(p, /"not the right person"/);
   assert.match(p, /"confidence":number/);
   assert.ok(MODEL_CODES.length > 0 && MODEL_CODES.every(c => c.startsWith('CONV_')));
   assert.doesNotMatch(p, /END_HANDED_OFF|END_OPTED_OUT|END_CRISIS/, 'engine codes are never offered to the model');

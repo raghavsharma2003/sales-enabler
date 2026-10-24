@@ -43,8 +43,14 @@ export function analysisPrompt(o: { question: string | null; values: string[]; i
     ...(o.question ? [
       `OUTCOME: question "${o.question}"; VALUE one of ${JSON.stringify(o.values)}`,
       '- decided by the PERSON\'s words; quote the PERSON line that decides it',
-      '- decided only when the PERSON takes a stance on the question: agreeing, refusing, asking to stop calls, asking for a human about it, "not the right person", "call later". Each decides it when a VALUE fits',
-      '- null when the PERSON never took a stance: they could not follow the language, hung up before the question, or spoke of distress or crisis (distress is not a request for a human)',
+      'OUTCOME shapes: PERSON line -> the VALUE that names it (when one does):',
+      '- agrees -> agreeing VALUE',
+      '- refuses, not interested -> refusing VALUE',
+      '- is not the person called (relative, colleague, wrong number) -> wrong-person VALUE; never null',
+      '- complains AND asks for a human, person or manager -> needs-human VALUE; never null',
+      '- asks never to be called again -> refusing VALUE; never the call-later VALUE (an opt-out is not a callback)',
+      '- asks to be called at another time -> call-later VALUE',
+      '- null: no shape above; or cannot follow the language; or hangs up before the question; or distress, crisis (distress is not asking for a human)',
       '- confidence: 0..1, how clearly that line decides it',
     ] : ['OUTCOME: always null.']),
     ...(o.instructions ? [`OUTCOME, client rule: ${o.instructions}`] : []),
@@ -325,8 +331,11 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   let tier: AnalysisRecord['tier'] = null;
   // Never escalate a call whose reason the engine already decided (crisis, opt-out, early hang-up, hand-off, ...): there the
   // right answer is usually "no outcome", and a second model only finds one (rejected.2026-10-23.tiered-escalate-on-no-outcome).
+  // Nor a call whose first pass names a reason on which code discards the outcome anyway (NO_DECISION, e.g. a language
+  // mismatch): a second model's outcome there is thrown away (rejected.2026-10-23.tiered-escalates-no-decision-model-codes).
   const engineDecided = !REFINABLE.has(cv.reason_code ?? 'CONV_INCOMPLETE');
-  if (setting.mode === 'tiered' && setting.escalateModel && !engineDecided) {
+  const firstNoDecision = !('error' in passes[0]) && passes[0].modelCode !== null && NO_DECISION.has(passes[0].modelCode);
+  if (setting.mode === 'tiered' && setting.escalateModel && !engineDecided && !firstNoDecision) {
     const first = passes[0];
     const why = 'error' in first ? 'the first pass failed'
       : cv.def_id && callerSpoke && !first.outcomeGuess ? 'no outcome'
@@ -336,7 +345,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     tier = { escalated: Boolean(why), why, firstModel: passes[0].model ?? null, secondModel: passes[1]?.model ?? null,
       secondFailed: passes[1] ? 'error' in passes[1] : false };
   } else if (setting.mode === 'tiered' && setting.escalateModel) {
-    tier = { escalated: false, why: 'the engine decided this call\'s reason; it is never escalated', firstModel: passes[0].model ?? null, secondModel: null, secondFailed: false };
+    tier = { escalated: false, why: engineDecided ? 'the engine decided this call\'s reason; it is never escalated' : 'the first pass found a reason on which no outcome is recorded; it is never escalated', firstModel: passes[0].model ?? null, secondModel: null, secondFailed: false };
   }
   // The pass that counts: the escalated one when it succeeded, else the first.
   const done = [...passes].reverse().find((x): x is Ok => !('error' in x));

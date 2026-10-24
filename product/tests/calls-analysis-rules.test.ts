@@ -99,6 +99,11 @@ test('tiered never escalates a call whose reason the engine decided; it still es
     assert.deepEqual(seen, ['gpt-4.1-mini'], `${c.reason}: one pass only`);
     assert.equal(c.analysis.tier?.escalated, false, JSON.stringify(c.analysis));
   }
+  const lang: string[] = [];
+  setFakeLlm(guesser(null, 'CONV_LANGUAGE_MISMATCH', '', lang));
+  const l = await analysed(w, ['Enakku Hindi theriyadhu, Tamil-la pesunga please.']);
+  assert.deepEqual(lang, ['gpt-4.1-mini'], 'the first pass names a no-decision reason: a second outcome would be discarded, so no second pass');
+  assert.match(l.analysis.tier.why, /no outcome is recorded/);
   const seen: string[] = [];
   setFakeLlm(guesser(null, null, '', seen));
   await analysed(w, ['Main abhi soch raha hoon, dekhte hain.']);
