@@ -163,7 +163,7 @@ test('browser flows against the real server (web/e2e/run.sh)', { skip: pre.statu
   // A test run leaves the tree as it found it: no tracked file (a screenshot, a fixture) is written by the flows.
   const tree = () => { const g = (a: string[]) => spawnSync('git', a, { cwd: web, encoding: 'utf8' }).stdout ?? ''; return g(['status', '--porcelain', '--', '.']) + g(['diff', '--', '.']); };
   const before = tree();
-  const r = spawnSync('sh', [web + 'e2e/run.sh'], { encoding: 'utf8', timeout: 480_000, env: { ...process.env, NODE_TEST_CONTEXT: undefined } });   // 50+ flows incl. the axe audit (~3-5 min); a nested node --test must not think it is a child of this run
+  const r = spawnSync('sh', [web + 'e2e/run.sh'], { encoding: 'utf8', timeout: 900_000, env: { ...process.env, NODE_TEST_CONTEXT: undefined } });   // 86 flows incl. the axe audit (~8 min alone on 2026-10-24, more beside other files); a nested node --test must not think it is a child of this run
   assert.equal(r.status, 0, (r.stdout + r.stderr).slice(-3000));
   assert.match(r.stdout, /# fail 0/);
   assert.equal(tree(), before, 'the browser flows changed a tracked file under product/web; write artefacts to E2E_DIAG_DIR, or to web/shots only with E2E_RESHOOT=1');

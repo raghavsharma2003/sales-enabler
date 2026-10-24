@@ -19,13 +19,14 @@ const Outcomes = lazy(() => import('./outcomes.tsx'));
 const Webhooks = lazy(() => import('./webhooks.tsx'));
 const Notifications = lazy(() => import('./notifications.tsx'));
 const Knowledge = lazy(() => import('./company-data.tsx'));
+const Channels = lazy(() => import('./channels.tsx'));
 import { RevealSheet } from '../reveal.tsx';
 import { activitySentence, foldRepeats, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, Member } from '../types.ts';
 
-const TABS = ['team', 'keys', 'brand', 'knowledge', 'outcomes', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'webhooks', 'notifications', 'activity'] as const;
+const TABS = ['team', 'keys', 'brand', 'knowledge', 'outcomes', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'channels', 'webhooks', 'notifications', 'activity'] as const;
 type Tab = (typeof TABS)[number];
-const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Company information', outcomes: 'Outcomes and checks', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', webhooks: 'Webhooks', notifications: 'Notifications', activity: 'Activity' };
+const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Company information', outcomes: 'Outcomes and checks', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', channels: 'Channels', webhooks: 'Webhooks', notifications: 'Notifications', activity: 'Activity' };
 
 export default function Settings({ tab }: { tab?: string }) {
   const go = useNav();
@@ -36,7 +37,7 @@ export default function Settings({ tab }: { tab?: string }) {
       <Tabs label="Settings sections" value={t} onChange={v => go('/settings/' + v)} items={TABS.map(id => ({ id, label: LABEL[id] }))} />
       <Suspense fallback={<Skeleton rows={5} />}>
       {t === 'team' && <Team />}{t === 'keys' && <Keys />}{t === 'brand' && <Brand />}{t === 'knowledge' && <Knowledge />}{t === 'outcomes' && <Outcomes />}{t === 'billing' && <Billing />}
-      {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'security' && <Security />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'webhooks' && <Webhooks />}{t === 'notifications' && <Notifications />}{t === 'activity' && <Activity />}
+      {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'security' && <Security />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'channels' && <Channels />}{t === 'webhooks' && <Webhooks />}{t === 'notifications' && <Notifications />}{t === 'activity' && <Activity />}
       </Suspense>
     </div>
   );

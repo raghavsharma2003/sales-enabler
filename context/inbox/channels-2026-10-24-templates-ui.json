@@ -1,0 +1,30 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.wa-settings-channels",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Settings > Channels is the template manager and the WhatsApp readiness rail: the number (connected from the WhatsApp Cloud API integration; the verify token is shown once), what still waits before WhatsApp can send with how long (Meta's webhook handshake, each template in review, overdue past 24 h, rules whose template is not approved, sending not switched on), the templates (draft with each value's source and Meta's sample, submit, check reviews), and follow-ups after calls. channel.readiness is the read behind the rail, for the campaign launch card too",
+   "rationale": "Builder brief step 3 (approval status with timers on the readiness rail). The UI keys value sources with '__' for '.' so the UI contract does not read them as tool names. The dev server uses an in-process fake Graph API whose review approves a template on the next status check (DEV ONLY), so the page works without a Meta account.",
+   "reverse_if": "The campaign launch card shows template readiness itself (then the rail here is a summary), or buyers need the templates beside the agent rather than in Settings."
+  },
+  {
+   "id": "measure.2026-10-24.e2e-flows-duration",
+   "type": "measurement",
+   "status": "confirmed",
+   "source": "channels builder",
+   "date": "2026-10-24",
+   "title": "The browser flows (web/e2e/run.sh, 86 flows) took 471 s alone on the coding sandbox, over the 480 s cap tests/web.test.ts had when run beside other test files (the wrapper failed with every flow green). The cap is now 900 s",
+   "method": "PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers sh product/web/e2e/run.sh on a fresh Postgres 16; '# duration_ms 471125'; n=1 run; the Channels flow itself 10.7 s",
+   "n": 1
+  }
+ ],
+ "edges": [
+  { "from": "decision.2026-10-24.wa-settings-channels", "to": "decision.2026-10-24.wa-followthrough-rules", "relation": "extends" }
+ ],
+ "events": [
+  { "date": "2026-10-24", "event": "channels step 3: template manager", "details": "Settings > Channels at 1440 and 390, axe clean, no sideways scroll; browser flow: connect the number (approved, token once), draft, submit (approved), review approved by the fake Meta, follow-up rule on (card states the daily cap)." }
+ ]
+}

@@ -66,6 +66,7 @@ export type ToolName =
   | "channel.list"
   | "channel.opt_out"
   | "channel.pause"
+  | "channel.readiness"
   | "channel.resume"
   | "consent.record"
   | "contact.channels"
@@ -756,6 +757,8 @@ export interface ToolInput {
   "channel.pause": {
     connectionId: string;
   };
+  /** What stands between WhatsApp and sending: the number's webhook handshake, templates waiting for Meta's review (with how long), rules whose template is not approved, and whether sending is switched on (read) */
+  "channel.readiness": Record<string, never>;
   /** Resume a paused WhatsApp number so follow-ups and replies go out again (external, waits for approval) */
   "channel.resume": {
     connectionId: string;
@@ -2257,6 +2260,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "channel.list": { risk: "read", needsApproval: false },
   "channel.opt_out": { risk: "draft", needsApproval: false },
   "channel.pause": { risk: "draft", needsApproval: false },
+  "channel.readiness": { risk: "read", needsApproval: false },
   "channel.resume": { risk: "external", needsApproval: true },
   "consent.record": { risk: "policy", needsApproval: true },
   "contact.channels": { risk: "read", needsApproval: false },

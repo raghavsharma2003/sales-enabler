@@ -13,6 +13,8 @@ export const TOOLS = {
   settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'apikey.rotate', 'secret.reveal', 'brand.get', 'brand.update', 'knowledge.list', 'knowledge.ingest', 'knowledge.ingest_site', 'knowledge.fact.list', 'knowledge.fact.decide', 'offering.import', 'offering.list',
     'invoice.get', 'wallet.topup', 'safety.cases', 'policy.window.set', 'memory.policy.get', 'memory.policy.set', 'dpdp.request.execute', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise',
     'integration.list', 'integration.kinds', 'activity.list', 'outcome.list', 'outcome.define', 'judge.edit', 'judge.calibrate', 'analysis.settings.get'],
+  channels: ['channel.list', 'channel.readiness', 'channel.connect', 'channel.pause', 'channel.resume', 'integration.list', 'agent.list', 'campaign.list',
+    'message_template.list', 'message_template.draft', 'message_template.submit', 'message_template.sync', 'followthrough.rule.list', 'followthrough.rule.set', 'followthrough.rule.disable'],
   security: ['member.list', 'secret.reveal', 'sso.config.get', 'sso.secret.stage', 'sso.config.set', 'sso.test', 'sso.required.set', 'scim.token.list', 'scim.token.create', 'scim.token.rotate', 'scim.token.revoke',
     'audit.export', 'audit.export.list', 'audit.export.verify'],
 } as const;

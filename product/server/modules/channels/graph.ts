@@ -55,6 +55,8 @@ export interface FakeTemplate { id: string; wabaId: string; name: string; langua
 export class FakeGraph implements GraphClient {
   requests: GraphRequest[] = [];
   templates: FakeTemplate[] = [];
+  /** When set, a pending template is decided this way the next time anyone asks for its status (the dev server). */
+  constructor(private o: { autoDecide?: 'APPROVED' | 'REJECTED' } = {}) {}
   private queue: ({ kind: 'refuse'; code: number; message: string; http?: number } | { kind: 'timeout' })[] = [];
   private n = 0;
 
@@ -102,6 +104,7 @@ export class FakeGraph implements GraphClient {
         return { status: 200, json: { id: t.id, status: t.status, category: t.category } };
       }
       const name = r.query?.name;
+      if (this.o.autoDecide) for (const t of this.templates) if (t.wabaId === wabaId && t.status === 'PENDING' && (!name || t.name === name)) t.status = this.o.autoDecide;
       return { status: 200, json: { data: this.templates.filter(t => t.wabaId === wabaId && (!name || t.name === name))
         .map(t => ({ id: t.id, name: t.name, language: t.language, category: t.category, status: t.status, rejected_reason: t.reason ?? 'NONE' })) } };
     }

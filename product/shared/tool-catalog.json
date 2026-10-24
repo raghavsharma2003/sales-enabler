@@ -2694,6 +2694,25 @@
    }
   },
   {
+   "name": "channel.readiness",
+   "risk": "read",
+   "summary": "What stands between WhatsApp and sending: the number's webhook handshake, templates waiting for Meta's review (with how long), rules whose template is not approved, and whether sending is switched on",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
    "name": "channel.resume",
    "risk": "external",
    "summary": "Resume a paused WhatsApp number so follow-ups and replies go out again",

@@ -5,6 +5,7 @@
 //   VP_SECRET_KEY=$(openssl rand -hex 32) VP_RUNTIME_SECRET=... node --import tsx product/web/dev/serve.ts
 import { setFakeLlm, type LlmReply, type LlmRequest } from '../../server/llm.ts';
 import { sampleAnalysis } from './sample-analysis.ts';   // throws at load with NODE_ENV=production, before anything below runs
+import { FakeGraph, setGraph } from '../../server/modules/channels/graph.ts';
 
 if (process.env.NODE_ENV === 'production') throw new Error('web/dev/serve.ts is the development server and never runs with NODE_ENV=production');
 
@@ -84,6 +85,9 @@ if (process.env.VP_DEVSIM_URL) {
   }
   setRuntime(new DevRuntime());
 }
+// DEV ONLY: WhatsApp talks to an in-process fake Graph API (messages get ids, Meta's review approves a template the next
+// time Vyakti asks), so Settings > Channels and the inbox work without a Meta account. Nothing is ever sent to Meta.
+setGraph(new FakeGraph({ autoDecide: 'APPROVED' }));
 import('../../server/main.ts');
 
 // DEV ONLY: a tiny control port so an e2e flow can set what the fake voice runtime reports about stacks (POST a JSON health body, or null).

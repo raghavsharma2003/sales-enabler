@@ -1921,6 +1921,82 @@ async function runtimeReport(conv, events) {
   const r = await fetch(BASE + '/hooks/runtime', { method: 'POST', headers: { 'content-type': 'application/json', 'x-vp-signature': `t=${t},v1=${sig}` }, body });
   assert.ok(r.ok, 'runtime hook ' + r.status);
 }
+// ---- Channels: WhatsApp beside calls (Settings > Channels). The dev server talks to a fake Graph API: nothing reaches Meta.
+test('Channels: connect a WhatsApp number, draft a template, submit it (approved), Meta approves it on "Check reviews", and a follow-up rule is turned on', async () => {
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  // The credentials go through the integrations vault, as the Integrations form does (made by tools here: that form has its own flow).
+  const stash = (await tool('integration.stage_secrets', { kind: 'whatsapp_cloud', secrets: { access_token: 'EAAG-e2e-not-a-token', app_secret: 'e2e-app-secret' } })).result;
+  const prop = await tool('integration.connect', { kind: 'whatsapp_cloud', name: 'Clinic WhatsApp', stashId: stash.stashId, config: { phone_number_id: 'PN-E2E-1', waba_id: 'WABA-E2E-1', display_number: '+91 90000 00010' } });
+  const ok = await (await ctx.request.post(`${BASE}/v1/actions/${prop.actionId}/decide`, { data: { approve: true } })).json();
+  assert.equal(ok.status, 'confirmed', 'integration connected');
+
+  await page.goto(`${BASE}/settings/channels`);
+  await page.getByRole('heading', { name: 'WhatsApp numbers' }).waitFor();
+  await page.getByText('No WhatsApp number connected').first().waitFor();
+  await page.getByRole('button', { name: 'Connect the number in Clinic WhatsApp' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await page.getByRole('heading', { name: "Finish in Meta's app dashboard" }).waitFor({ timeout: 8000 });
+  const token = (await page.locator('.secret').nth(1).innerText()).trim();
+  assert.ok(token.length >= 20, 'the verify token is shown once');
+  const executed = (await actions('executed')).find(a => a.tool === 'channel.connect');
+  assert.ok(!JSON.stringify(executed?.result ?? {}).includes(token), 'the stored approval never keeps the verify token');
+  await page.getByRole('button', { name: 'I have set it' }).click();
+  const conns = (await tool('channel.list')).result.connections;
+  assert.equal(conns.length, 1);
+  await page.getByText('Waiting for Meta to confirm the webhook').waitFor();
+
+  // A template, drafted from the form: the value's source and Meta's sample.
+  await page.getByRole('button', { name: 'New template' }).click();
+  await sheet().getByLabel('Name').fill('visit_reminder');
+  await sheet().getByLabel('Message').fill('Hi {{1}}, this is a reminder of your visit at Arogya Dental tomorrow. Reply here if you need to change it.');
+  await sheet().getByLabel('Sample for Meta').fill('Asha');
+  await sheet().getByRole('button', { name: 'Save draft' }).click();
+  const row = page.locator('tr', { hasText: 'visit_reminder' });
+  await row.getByText('Draft').waitFor();
+  await row.getByRole('button', { name: 'Submit for review' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  await hold(sheet().locator('.hold'));
+  await row.getByText('In review with Meta').waitFor({ timeout: 8000 });
+  await page.locator('.card', { hasText: 'Before WhatsApp can send' }).getByText('Template "visit_reminder": in review with Meta').waitFor();
+  const t = (await tool('message_template.list')).result.templates.find(x => x.name === 'visit_reminder');
+  assert.equal(t.status, 'submitted');
+  assert.deepEqual(t.variables.map(v => v.source), ['contact.first_name']);
+
+  fs.mkdirSync(shotDir, { recursive: true });
+  const [phoneCtx, phone] = await phonePage();
+  try {
+    for (const [tag, p] of [['d', page], ['m', phone]]) {
+      await p.goto(`${BASE}/settings/channels`);
+      await p.getByRole('heading', { name: 'Message templates' }).waitFor();
+      await p.screenshot({ path: path.join(shotDir, `settings-channels-review-${tag}.png`), fullPage: true });
+      assert.deepEqual((await axe(p)).filter(v => v.impact === 'serious' || v.impact === 'critical'), [], `axe on Settings > Channels at ${tag === 'd' ? 1440 : 390}`);
+      const wide = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert.ok(wide <= 1, `Settings > Channels is ${wide}px wider than the screen at ${tag === 'd' ? 1440 : 390}`);
+    }
+  } finally { await phoneCtx.close(); }
+
+  // Meta's decision (the fake approves on the next status check), then a follow-up rule on it.
+  await page.getByRole('button', { name: 'Check reviews' }).click();
+  await page.locator('tr', { hasText: 'visit_reminder' }).getByText('Approved').waitFor({ timeout: 8000 });
+  await page.getByRole('button', { name: 'New follow-up' }).click();
+  await sheet().getByLabel('Name').fill('After a booking');
+  await sheet().getByLabel('Outcome value').fill('booked');
+  await sheet().getByRole('button', { name: 'Turn it on' }).click();
+  const card = page.getByRole('dialog', { name: 'Approve to continue' });
+  await card.waitFor();
+  assert.match(await card.innerText(), /at most 200 a day, up to ₹23\.00 a day/, 'the card states the most it can spend a day');
+  await hold(card.locator('.hold'));
+  const result = page.getByRole('dialog', { name: 'Result' });
+  await result.getByText('Done. Confirmed by the server, not assumed.').waitFor({ timeout: 8000 });
+  await result.getByRole('button', { name: 'Close' }).last().click();
+  await page.getByRole('dialog').waitFor({ state: 'detached' });
+  await page.locator('.card', { hasText: 'Follow-ups after calls' }).getByText('After a booking').waitFor({ timeout: 8000 });
+  const rules = (await tool('followthrough.rule.list')).result.rules;
+  assert.deepEqual(rules.map(r => [r.name, r.trigger, r.value, r.enabled]), [['After a booking', 'outcome', 'booked', true]]);
+  await page.screenshot({ path: path.join(shotDir, 'settings-channels-d.png'), fullPage: true });
+});
+
 test('Hand-offs: a callback due when the caller asked and a crisis alert on every page within 5 s; taking it makes it yours', async () => {
   const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
   const contact = (await pool.query("INSERT INTO contact (workspace_id, e164, name) VALUES ($1,'+919812300077','Meena Iyer') RETURNING id", [ws])).rows[0].id;

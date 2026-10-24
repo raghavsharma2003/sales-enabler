@@ -130,6 +130,38 @@ export function registerFollowThroughTools(r: Registry): void {
     },
   }));
 
+  r.register(tool(obj({}), {
+    name: 'channel.readiness', risk: 'read',
+    summary: "What stands between WhatsApp and sending: the number's webhook handshake, templates waiting for Meta's review (with how long), rules whose template is not approved, and whether sending is switched on",
+    run: async ctx => {
+      const items: { kind: string; ok: boolean; title: string; detail: string; since: Date | null; waitingS: number | null; overdue: boolean; fix: string | null }[] = [];
+      const conns = await many<{ id: string; name: string; status: string; webhook_verified_at: Date | null; created_at: Date; agent_id: string | null }>(ctx.q,
+        "SELECT id, name, status, webhook_verified_at, created_at, agent_id FROM channel_connection WHERE workspace_id = $1 AND status <> 'disconnected' ORDER BY created_at", [ctx.workspaceId]);
+      const secs = (d: Date) => Math.max(0, Math.round((Date.now() - d.getTime()) / 1000));
+      if (!conns.length) items.push({ kind: 'number', ok: false, title: 'No WhatsApp number connected', detail: 'Add the WhatsApp Cloud API credentials in Integrations, then connect the number here.', since: null, waitingS: null, overdue: false, fix: '/settings/integrations' });
+      for (const c of conns) {
+        items.push({ kind: 'webhook', ok: !!c.webhook_verified_at, title: `"${c.name}": webhook`, since: c.webhook_verified_at ?? c.created_at,
+          detail: c.webhook_verified_at ? 'Meta confirmed the webhook address and verify token.' : 'Waiting for Meta to call the webhook address with the verify token (set it in the Meta app dashboard).',
+          waitingS: c.webhook_verified_at ? null : secs(c.created_at), overdue: false, fix: null });
+        if (c.status === 'paused') items.push({ kind: 'paused', ok: false, title: `"${c.name}" is paused`, detail: 'Nothing is sent from it until it is resumed.', since: null, waitingS: null, overdue: false, fix: null });
+      }
+      const tpls = await many<TemplateRow>(ctx.q, "SELECT * FROM channel_template WHERE workspace_id = $1 AND status IN ('submitted','rejected','paused') ORDER BY submitted_at", [ctx.workspaceId]);
+      for (const t of tpls) {
+        const waited = t.status === 'submitted' && t.submitted_at ? secs(t.submitted_at) : null;
+        items.push({ kind: 'template', ok: false, title: `Template "${t.name}": ${t.status === 'submitted' ? 'in review with Meta' : t.status}`, since: t.submitted_at,
+          detail: t.status === 'submitted' ? 'Meta usually decides within 24 hours. It can be sent once approved.' : t.status === 'rejected' ? `Meta rejected it${t.reject_reason ? ' (' + t.reject_reason.replace(/_/g, ' ').toLowerCase() + ')' : ''}. Edit it and submit again.` : 'Meta paused it after people reported or blocked it; it cannot be sent until Meta lifts the pause.',
+          waitingS: waited, overdue: waited != null && waited > 24 * 3600, fix: null });
+      }
+      const rules = await many<{ name: string; status: string }>(ctx.q, `SELECT f.name, t.status FROM channel_followthrough f JOIN channel_template t ON t.id = f.template_id
+        WHERE f.workspace_id = $1 AND f.enabled AND t.status <> 'approved'`, [ctx.workspaceId]);
+      for (const x of rules) items.push({ kind: 'rule', ok: false, title: `Follow-up "${x.name}" is waiting`, detail: `Its template is ${x.status}; it sends nothing until the template is approved.`, since: null, waitingS: null, overdue: false, fix: null });
+      const live = process.env.VP_WHATSAPP_LIVE === '1';
+      items.push({ kind: 'sending', ok: live, title: live ? 'Sending to WhatsApp is on' : 'Sending to WhatsApp is not switched on', since: null, waitingS: null, overdue: false, fix: null,
+        detail: live ? 'Messages that pass every check are sent to Meta.' : 'This deployment does not send to Meta yet. Messages that pass every check are stored as not sent, with this reason.' });
+      return { ready: items.every(i => i.ok), items };
+    },
+  }));
+
   // ---- follow-through rules ----
   const ruleInput = obj({ id: opt(uuid()), name: str({ min: 2, max: 80 }), templateId: uuid(), trigger: str({ oneOf: TRIGGERS }), value: opt(str({ min: 1, max: 80 })),
     agentId: opt(uuid()), campaignId: opt(uuid()), purpose: opt(str({ min: 2, max: 80 })), dailyLimit: opt(num({ int: true, min: 1, max: 100_000 })) });
