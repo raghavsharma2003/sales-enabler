@@ -241,6 +241,17 @@ unless a person already spoke beyond hello. A carrier hang-up before the call jo
 (`transports.hangup_reason`). The control plane gives `switched_off` the ladder class `switched_off` and
 `invalid_number` the class `invalid` (no automatic retry).
 
+## In-call tools
+
+A published agent version carries each granted HTTP tool's spec (`shared/contracts/http-tool.ts`). The LAST block
+lists them with their arguments; she asks for one with `<tool:NAME {"arg": value}>`. The runtime checks the arguments
+against the spec (`vpvoice/tools.py`), says the holding line if her reply said nothing, and asks the control plane to
+run it (`POST /hooks/runtime/tools`, signed). The control plane runs the spec from the call's own published version
+with the integration's secret (the runtime never sees one), a public address checked after DNS, no redirects, the
+spec's timeout (at most 2.5 s) and at most 12 runs a call, and returns only the listed fields. The answer goes back to
+her as data; its values join the door's facts, so a figure she says must come from it (and a value with digits waits
+for identity). On a failure she says the graceful line in the call's language and does not guess.
+
 ## Keypad (DTMF)
 
 Keys the caller presses arrive as the carrier stream's `dtmf` events (Plivo, Exotel) or `{"t": "dtmf", "digit": "1"}`

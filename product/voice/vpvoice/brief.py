@@ -22,7 +22,7 @@ LAST = """Before you write each reply:
 
 END = re.compile(r'<\s*/?\s*end[_ ]?call\s*/?\s*>|\[\s*end[_ ]?call\s*\]', re.I)
 GOAL = re.compile(r'<\s*goal\s*:\s*([A-Za-z0-9_.-]{1,64})(?:\s*=\s*([^<>]{0,120}))?\s*>', re.I)
-TOOL = re.compile(r'<\s*tool\s*:\s*([A-Za-z0-9_.-]{1,64})\s*>', re.I)
+TOOL = re.compile(r'<\s*tool\s*:\s*([A-Za-z0-9_.-]{1,64})\s*(\{[^<>]{0,400}\})?\s*>', re.I)     # <tool:NAME {"arg": 1}> (tools.py)
 HANDOFF = re.compile(r'<\s*hand_?off\s*(?::\s*([A-Za-z_]{1,40}))?\s*>', re.I)
 DTMF = re.compile(r'<\s*dtmf\s*:?\s*([0-9*#]{1,4})\s*>', re.I)      # keys for an automated menu ("press 1"), at most 4
 # An automated menu the caller side is playing (an IVR she reached): then the LAST block tells her how to press a key
@@ -78,7 +78,8 @@ def markers(text):
     t = text or ''
     h = HANDOFF.search(t)
     return {'end': bool(END.search(t)), 'goals': [(m.group(1), (m.group(2) or '').strip()) for m in GOAL.finditer(t)],
-            'tools': [m.group(1) for m in TOOL.finditer(t)], 'handoff': (h.group(1) or 'out_of_scope') if h else None,
+            'tools': [m.group(1) for m in TOOL.finditer(t)], 'tool_calls': [(m.group(1), m.group(2) or '') for m in TOOL.finditer(t)],
+            'handoff': (h.group(1) or 'out_of_scope') if h else None,
             'dtmf': ''.join(m.group(1) for m in DTMF.finditer(t))[:4]}
 
 
@@ -205,8 +206,11 @@ def marker_rules(agent):
     lines = ['Markers (written, never spoken): end your goodbye reply with <end_call>.']
     goals = [g['id'] for g in agent.get('goals') or [] if g.get('id')]
     if goals: lines.append('When a goal is settled, add <goal:ID> at the end of that reply (IDs: ' + ', '.join(goals) + ').')
-    tools = [t['name'] for t in agent.get('tools') or [] if t.get('name') not in ('end_call', 'transfer')]
+    from .tools import rules_line, specs
+    http = specs(agent)
+    tools = [t['name'] for t in agent.get('tools') or [] if t.get('name') not in ('end_call', 'transfer') and t.get('name') not in http]
     if tools: lines.append('To use a tool you were given, add <tool:NAME> (' + ', '.join(tools) + '); it runs after the call turn.')
+    if http: lines.append(rules_line(agent))
     when = (agent.get('handOff') or {}).get('when') or []
     if when: lines.append('If the conversation needs a human (' + ', '.join(when) + '), add <handoff:REASON>.')
     return ' '.join(lines)

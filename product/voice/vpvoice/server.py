@@ -90,6 +90,8 @@ class Runtime:
         else:
             from .cascade import CascadeSession
             s = CascadeSession(rec.t, rec.comp, rec.sink, line, clock=self.clock, env=self.env, watchdog_s=self.watchdog_s, transport=kind)
+        from .tools import ControlPlaneRunner, specs
+        if specs(rec.t['agent']) and self.control: s.run_tool = ControlPlaneRunner(self.http, self.control, self.secret)   # in-call HTTP tools
         if kind == 'sip':
             s.telephony = (rec.t['transport']['trunk'].lower(), rec.t['direction'])
             s.transfer = lambda k, v, rec=rec: self.transfer(rec, k, v)

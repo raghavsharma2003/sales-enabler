@@ -513,6 +513,12 @@ class CascadeSession(Session):
         if not self.ended:
             asyncio.ensure_future(self.component_failed(ComponentError('ears', self.c.ears_id, str(e)[:200])))
 
+    async def follow_up(self):
+        """Her answer from a tool's data, unless the caller has started a new turn meanwhile."""
+        if self.ended or self.pending is not None or self.vad.speaking or (self.active is not None and not self.active.committed): return
+        self.rid += 1; self.active = Reply(self, self.rid, None, released=True)
+        asyncio.ensure_future(self._after(self.active))
+
     async def keypad(self, text, sensitive):
         """A keypad entry is a caller turn: [keypad: 1] for a short choice; more keys (a PIN or OTP, maybe) reach no one:
         she says the stop-digits line and the turn says only how many keys were pressed."""

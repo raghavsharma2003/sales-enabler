@@ -4,6 +4,7 @@ import type { Module } from '../../app.ts';
 import { sweep } from './analysis.ts';
 import { runNightlyInsights } from './insights.ts';
 import { hookRoute } from './ingest.ts';
+import { toolHookRoute } from './toolhook.ts';
 import { registerTools } from './tools.ts';
 import { registerOutcomeImport } from './outcome-import.ts';
 import { registerHandOffTools } from './handoffs.ts';
@@ -14,6 +15,7 @@ export const module: Module = {
   register: r => { registerTools(r); registerOutcomeImport(r); registerHandOffTools(r); },
   routes(router, deps) {
     router.add('POST', '/hooks/runtime', hookRoute(deps), { rawBody: true, limit: 5_000_000 });   // call.ended carries the transcript
+    router.add('POST', '/hooks/runtime/tools', toolHookRoute(deps), { rawBody: true, limit: 20_000 });   // an in-call HTTP tool run
   },
   // The in-process queue analyses each call as it ends; the sweep picks up any lost to a restart, and retries opt-outs.
   jobs: deps => [

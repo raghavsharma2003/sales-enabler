@@ -46,6 +46,7 @@ class Session:
         # the call if the member drops; listeners hear, are never heard, never recorded
         self.taken_over = None; self.member = None; self.member_task = None; self.listeners = set(); self.live_closers = []
         self.send_dtmf = None; self.keys = ''; self.keys_timer = None          # DTMF: keys out (server), keys in (on_dtmf)
+        self.run_tool = None; self.tool_runs = 0                               # in-call HTTP tools: the runner (server)
 
     # ---------------------------------------------------------------- manifest
     def manifest(self):
@@ -252,11 +253,42 @@ class Session:
         if marks.get('handoff') and self.handoff_allowed(marks['handoff']) and not self.conv.state['crisis']:
             await self.hand_off(marks['handoff']); return
         if marks.get('dtmf'): await self.press(marks['dtmf'])
+        if marks.get('tool_calls') and await self.use_tools(marks['tool_calls'], said=marks.get('said', True)): return
         if self.conv.wants_end(marks):
             await self.finish('agent_ended', cancellable=True); return
         max_turns = (self.t['agent'].get('limits') or {}).get('maxTurns')
         if max_turns and self.conv.agent_turns >= max_turns and not self.conv.state['crisis']:
             await self.speak_canned(self.fixed('limit')); await self.finish('agent_ended')
+
+    # ---------------------------------------------------------------- in-call HTTP tools (tools.py)
+    async def use_tools(self, calls, said=True):
+        """Run the HTTP tools her reply asked for, then let her answer from the result. True when a tool ran."""
+        from . import tools as T
+        sp = T.specs(self.t['agent']); ran = False
+        for name, raw in [c for c in calls if c[0] in sp][:T.MAX_PER_REPLY]:
+            if self.ended or self.taken_over: return ran
+            try: args = T.validate_args(sp[name], T.parse_args(raw))
+            except T.ToolArgError as e:
+                self.sink.emit('tool', name=name, args={}, status='failed'); self.conv.add_tool_result(name, {'ok': False, 'reason': str(e)})
+                continue
+            self.tool_runs += 1
+            if self.tool_runs > T.MAX_PER_CALL or self.run_tool is None:
+                res = {'ok': False, 'reason': 'tools are not available on this call' if self.run_tool is None else 'too many tool runs on this call'}
+            else:
+                self.sink.emit('tool', name=name, args=T.redacted_args(args), status='requested')
+                job = asyncio.ensure_future(self.run_tool(self.id, name, args))
+                if not said: await self.speak_canned(self.fixed('tool_hold'))      # she said nothing herself: a holding line
+                try: res = await asyncio.wait_for(job, T.TIMEOUT_S + 1)
+                except Exception as e: res = {'ok': False, 'reason': 'the tool could not be run'}; log.warning('tool %s: %r', name, e)
+            self.sink.emit('tool', name=name, args=T.redacted_args(args), status='done' if res.get('ok') else 'failed')
+            self.conv.add_tool_result(name, res); ran = True
+            if not res.get('ok'):
+                await self.speak_canned(self.fixed('tool_failed')); return ran
+        if ran and not self.ended: await self.follow_up()
+        return ran
+
+    async def follow_up(self):
+        """Her next reply, unprompted by the caller (she answers from a tool's data)."""
 
     # ---------------------------------------------------------------- DTMF
     DTMF_GAP_S = 1.5            # keys pressed this close together are one entry; '#' ends one at once
@@ -371,7 +403,11 @@ class SimSession(Session):
 
     async def start(self):
         await super().start()
-        return await self._reply()
+        out = await self._reply()
+        return out + self.outbox
+
+    async def follow_up(self):
+        self.outbox.extend(await self._reply())
 
     async def _reply(self, gate=None):
         while True:
@@ -409,7 +445,8 @@ class SimSession(Session):
         if self.ended:
             if gate is not None: gate.cancel()
             return list(self.outbox)
-        return list(self.outbox) + await self._reply(gate)
+        pre = list(self.outbox); first = await self._reply(gate)
+        return pre + first + self.outbox[len(pre):]           # then what she said after it (a tool's holding line, its answer)
 
     async def hang_up(self):
         await self.end('caller_hung_up')

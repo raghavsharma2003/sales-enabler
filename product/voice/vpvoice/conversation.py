@@ -2,7 +2,7 @@
 # the reply door on every sentence before it is spoken, caller signals on every caller turn, and the events that
 # record it. Sessions (session.py for sim, cascade.py / s2s.py for audio) drive it and own timing and audio.
 import asyncio, contextlib, logging, re
-from . import brief, judge, judge_event, names, rules, safety, ticket as tk
+from . import brief, judge, judge_event, names, rules, safety, ticket as tk, tools as tools_mod
 from .safety import DoorContext
 
 log = logging.getLogger('vp.voice.conversation')
@@ -65,6 +65,7 @@ class Conversation:
         self.keep_sounds = keep_sounds; self.brain_provider = brain_provider; self.brain_id = brain_id
         self.history = [{'role': 'user', 'content': KICKOFF.get(ticket.get('direction'), KICKOFF['outbound'])}]
         self.transcript = []; self.agent_turns = 0; self.disclosure_tries = 0
+        self.tool_facts = []          # door facts from in-call tool answers (add_tool_result)
         self.gender = (self.agent.get('persona') or {}).get('gender', 'female')
         b = self.agent.get('brand') or {}
         self.own_names = [(self.agent.get('persona') or {}).get('name', ''), b.get('spokenName', ''), b.get('name', ''),
@@ -103,12 +104,17 @@ class Conversation:
         if correction: msgs.append({'role': 'system', 'content': correction})
         return msgs
 
+    def add_tool_result(self, name, res):
+        """An in-call tool's answer (tools.py): to the brain as data in the history, and its values to the door's facts."""
+        self.history.append({'role': 'user', 'content': tools_mod.result_note(name, res)})
+        if res.get('ok'): self.tool_facts += tools_mod.result_facts(name, res)
+
     def door_ctx(self, first_sentence):
         a = self.agent
         return DoorContext(category=a.get('category', 'service'), sector_packs=a.get('sectorPacks') or ['base'],
                            brand={'name': (a.get('brand') or {}).get('spokenName') or (a.get('brand') or {}).get('name', ''),
                                   'verifiedDomains': (a.get('brand') or {}).get('verifiedDomains') or []},
-                           facts=a.get('facts') or [], never_say=a.get('neverSay') or [], disclosed=self.state['disclosed'],
+                           facts=(a.get('facts') or []) + self.tool_facts, never_say=a.get('neverSay') or [], disclosed=self.state['disclosed'],
                            identity_verified=self.state['identity_verified'], recording_refused=self.state['recording_refused'],
                            crisis=self.state['crisis'], turn_index=self.agent_turns,
                            disclosure_clause=(a.get('opening') or {}).get('disclosureClause', ''), asked_ai=self.state['asked_ai'],
@@ -437,7 +443,8 @@ class Conversation:
         self.state['asked_ai'] = False
         if self.whisper_used: self.whisper = None; self.whisper_used = False     # one reply wrote with it: spent
         self.agent_turns += 1
-        marks = draft.marks() if not interrupted else {'end': False, 'goals': [], 'tools': [], 'handoff': None, 'dtmf': ''}
+        marks = draft.marks() if not interrupted else {'end': False, 'goals': [], 'tools': [], 'tool_calls': [], 'handoff': None, 'dtmf': ''}
+        marks['said'] = bool((text or '').strip())
         goal_ids = {g.get('id') for g in self.agent.get('goals') or []}
         moved = False
         for gid, note in marks['goals']:
@@ -445,7 +452,7 @@ class Conversation:
                 self.state['goals_done'][gid] = note; moved = True
                 self.sink.emit('moment', kind='commitment', atMs=e_ms, note=f'goal {gid}' + (f': {note}' if note else ''))
         self.state['turns_since_goal'] = 0 if moved else self.state['turns_since_goal'] + 1
-        grants = {t.get('name') for t in self.agent.get('tools') or []}
+        grants = {t.get('name') for t in self.agent.get('tools') or []} - set(tools_mod.specs(self.agent))   # HTTP tools: session.use_tools
         for name in marks['tools']:
             if name in grants and name not in ('end_call', 'transfer'):
                 self.sink.emit('tool', name=name, args={'turn': self.agent_turns}, status='requested')
