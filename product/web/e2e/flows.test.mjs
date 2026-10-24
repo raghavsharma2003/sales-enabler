@@ -1249,7 +1249,13 @@ test('Keyboard only: create an agent from a template, start a test call, import 
 test('Voice samples: a stack with a sample plays it with one labelled control and says what she says; others say none is recorded', async () => {
   const dir = path.join(process.cwd(), 'product/web/dist/samples'), manifest = path.join(dir, 'manifest.json');
   const shipped = fs.readFileSync(manifest, 'utf8');
-  assert.deepEqual(JSON.parse(shipped), {}, 'the product ships an empty manifest');
+  // The shipped manifest holds only real renders from the lab VM (research/2026-10-24/samples): every entry names a file
+  // that is in the build, a short duration and the line she says.
+  for (const [sid, e] of Object.entries(JSON.parse(shipped))) {
+    assert.ok(e.file && fs.existsSync(path.join(dir, e.file)), `${sid}: ${e.file} is in the build`);
+    assert.ok(e.durationS > 0 && e.durationS <= 12, `${sid}: ${e.durationS} s`);
+    assert.ok(typeof e.text === 'string' && e.text.length > 0, `${sid}: the line she says`);
+  }
   const id = await riyaId();
   const stackId = (await pool.query("SELECT draft->'voice'->>'stackId' AS s FROM agent WHERE id = $1", [id])).rows[0].s || 'v2-flashlite';
   // A fixture in the untracked build folder: 2 s of a quiet tone, and its manifest entry.
