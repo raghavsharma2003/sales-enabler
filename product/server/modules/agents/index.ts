@@ -17,6 +17,7 @@ import { BriefBudgetError, BriefLintError, compile, compileReport } from './comp
 import { draftHash, validateConfig, versionHashOf } from './config.ts';
 import { DraftError, draftFromDescription } from './draft.ts';
 import { shapeLint } from './lint.ts';
+import { guardDraft } from './guard.ts';
 import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
 import { LIBRARY, libraryCaller, toSimCaller, type CallerShape, type LibraryCaller } from './library.ts';
@@ -29,7 +30,9 @@ async function loadAgent(ctx: ToolCtx, agentId: string, lock = false): Promise<A
   return a;
 }
 
-async function saveDraft(ctx: ToolCtx, agentId: string, draft: AgentConfig) {
+/** Every draft write goes through here, so a hard safety finding is never saved (guard.ts). prev is the draft before. */
+async function saveDraft(ctx: ToolCtx, agentId: string, draft: AgentConfig, prev: AgentConfig | null) {
+  guardDraft(prev, draft);
   await ctx.q.query('UPDATE agent SET draft = $3, job = $4, updated_at = now() WHERE id = $1 AND workspace_id = $2', [agentId, ctx.workspaceId, JSON.stringify(draft), draft.job]);
 }
 
@@ -340,9 +343,10 @@ export function registerAgentTools(r: Registry): void {
         try { const d = await draftFromDescription(i.description!); draft = d.config; usage = d.usage; from = 'description'; }
         catch (e) { if (e instanceof DraftError) throw new ValidationError(e.path ?? 'description', e.message); throw e; }
       }
+      guardDraft(null, draft);                       // before the row exists: a refused draft leaves nothing behind
       const row = await one<{ id: string }>(ctx.q, "INSERT INTO agent (workspace_id, name, job, status, draft) VALUES ($1,$2,$3,'draft','{}') RETURNING id", [ctx.workspaceId, i.name, draft.job]);
       draft.agentId = row!.id;
-      await saveDraft(ctx, row!.id, draft);
+      await saveDraft(ctx, row!.id, draft, null);
       return { agentId: row!.id, status: 'draft', from, draftHash: draftHash(draft), draft, ...preview(draft), stackChosen: !!stackOf(draft.voice), usage };
     },
   }));
@@ -377,7 +381,7 @@ export function registerAgentTools(r: Registry): void {
       const patched = applyPatch(a.draft, i.patch);
       let next: AgentConfig;
       try { next = validateConfig(patched); } catch (e) { throw e instanceof ValidationError ? withKnownFields(e, patched) : e; }
-      await saveDraft(ctx, a.id, next);
+      await saveDraft(ctx, a.id, next, a.draft);
       return { agentId: a.id, draftHash: draftHash(next), changes: diff(comparable(a.draft), comparable(next)), ...preview(next) };
     },
   }));
@@ -408,7 +412,7 @@ export function registerAgentTools(r: Registry): void {
       const keepVoice = !changed || speaker(a.draft.voice) === speaker(nextVoice);
       const next: AgentConfig = { ...a.draft, voice: keepVoice ? { ...a.draft.voice, ...nextVoice, ...(nextVoice.components ? {} : { components: undefined }) } : nextVoice };
       if (!next.voice.components) delete next.voice.components;
-      await saveDraft(ctx, a.id, next);
+      await saveDraft(ctx, a.id, next, a.draft);
       return { agentId: a.id, stack: stackCard(s), voiceCleared: !keepVoice && !!a.draft.voice.voiceId, draftHash: draftHash(next), ...preview(next) };
     },
   }));
@@ -419,7 +423,7 @@ export function registerAgentTools(r: Registry): void {
       const a = await loadAgent(ctx, i.agentId, true);
       if (!stackOf(a.draft.voice)) throw new ValidationError('agentId', 'choose a voice stack first (stack.set)');
       const next: AgentConfig = { ...a.draft, voice: { ...a.draft.voice, voiceId: i.voiceId, ...(i.speed !== undefined ? { speed: i.speed } : {}) } };
-      await saveDraft(ctx, a.id, next);
+      await saveDraft(ctx, a.id, next, a.draft);
       return { agentId: a.id, voice: next.voice, draftHash: draftHash(next) };
     },
   }));
@@ -443,7 +447,7 @@ export function registerAgentTools(r: Registry): void {
       const tools = a.draft.tools.filter(t => t.name !== grant.name);
       if (!i.remove) tools.push(grant);
       const next = validateConfig({ ...a.draft, tools });
-      await saveDraft(ctx, a.id, next);
+      await saveDraft(ctx, a.id, next, a.draft);
       return { agentId: a.id, tools: next.tools, draftHash: draftHash(next) };
     },
   }));

@@ -5,6 +5,7 @@ import { CALL_CATEGORIES, JOBS, LANGUAGES, SECTOR_PACKS, type AgentConfig } from
 import { ValidationError } from '../../../shared/validate.ts';
 import { complete, type ChatMessage } from '../../llm.ts';
 import { validateConfig } from './config.ts';
+import { guardDraft } from './guard.ts';
 import { DEFAULT_STACK_ID } from '../../../shared/stacks.ts';
 
 const SYSTEM = `You draft the configuration of a phone agent for an Indian business from the owner's plain words.
@@ -48,7 +49,15 @@ export async function draftFromDescription(description: string): Promise<{ confi
   for (let attempt = 0; ; attempt++) {
     const r = await complete({ purpose: 'compile', json: true, maxTokens: 2500, temperature: 0.2, messages });
     usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
-    try { return { config: parseDraft(r.text), usage }; } catch (e) {
+    try {
+      const config = parseDraft(r.text);
+      // The repair turn is a write path too: a hard safety finding goes back once, then refuses (guard.ts).
+      try { guardDraft(null, config); } catch (g) {
+        if (g instanceof ValidationError) throw new DraftError(`the drafted agent was refused (${g.message})`, g.path, g.message);
+        throw g;
+      }
+      return { config, usage };
+    } catch (e) {
       if (!(e instanceof DraftError) || attempt >= 1) throw e;
       messages.push({ role: 'assistant', content: r.text }, { role: 'user', content: `That draft was refused: ${e.detail}. Return the whole corrected JSON object.` });
     }

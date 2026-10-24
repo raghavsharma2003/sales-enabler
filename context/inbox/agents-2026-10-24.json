@@ -1,0 +1,47 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.hard-guard-on-draft-writes",
+      "type": "decision",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Every draft write (agent.create, brief.edit, the drafting repair turn, stack/voice/tool writes) refuses a hard safety finding and saves nothing; softer lint still saves with its warning",
+      "rationale": "Operator bench round 3 saw brief.edit save a 'say she is a human' line and report it done (rejected.2026-10-23.brief-edit-saves-lint-refused-draft). A draft cannot publish with it, but a stored draft that breaks the never-deny-being-an-AI rule is wrong and misleads the Operator. Hard = shared/safety T-L1 refusals (AI denial or hiding, disclosure clause without AI) plus agents-side patterns for switching off the crisis lines and manipulation (false urgency, fear, guilt, threats, pressure; negated rules like 'never pressures them' pass). The refusal names the rule in plain English, the field, and the fix. Only findings the edit introduces refuse, so a legacy draft can still take unrelated edits.",
+      "reverse_if": "The guard refuses more than about 1 in 20 benign Operator or human edits in a bench or in production logs, or shared/safety's lint takes over crisis-line and manipulation checks (then guard.ts delegates to it).",
+      "path": "product/server/modules/agents/guard.ts"
+    },
+    {
+      "id": "measure.2026-10-24.hard-guard-tests",
+      "type": "measurement",
+      "status": "measured",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Hard guard: 7/7 tests pass; with the guard disabled the 4 behavioural tests fail (bench case, disclosure/crisis/manipulation/neverSay, create+repair, legacy draft); full suite 482/485 with 0 failures on a fresh DB",
+      "n": 7,
+      "method": "node:test tests/agents-guard.test.ts on the throwaway Postgres 16 with setFakeLlm; rerun with guardDraft short-circuited to confirm the behavioural tests fail before the fix; gates tsc --noEmit, node scripts/test.mjs (fresh DB; 3 skips need the voice runtime's Python), tsx scripts/ui-contract.ts --strict (174/174)",
+      "path": "product/tests/agents-guard.test.ts"
+    },
+    {
+      "id": "open.2026-10-24.crisis-manipulation-lint-in-safety",
+      "type": "open-question",
+      "status": "open",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "Should shared/safety's config lint own the crisis-line and manipulation checks that agents/guard.ts applies today?",
+      "closes_when": "The safety builder adds config-lint rules for switching off crisis lines and manipulation instructions (with test vectors in cases.json, TS and Python), and guard.ts delegates to them with its tests still green."
+    }
+  ],
+  "edges": [
+    { "from": "decision.2026-10-24.hard-guard-on-draft-writes", "to": "rejected.2026-10-23.brief-edit-saves-lint-refused-draft", "relation": "derived-from" },
+    { "from": "measure.2026-10-24.hard-guard-tests", "to": "decision.2026-10-24.hard-guard-on-draft-writes", "relation": "tests" },
+    { "from": "decision.2026-10-24.hard-guard-on-draft-writes", "to": "open.2026-10-24.crisis-manipulation-lint-in-safety", "relation": "leaves-open" }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "agents-hard-guard",
+      "details": "Agents: brief.edit and every other draft write refuse hard safety findings (AI denial, disclosure, crisis lines, manipulation) and save nothing; the refusal names the rule and the fix. Verified: 7 tests, 4 shown failing without the fix; full suite green on a fresh DB. Not verified: re-run of the Operator bench task ref-human on a real model; no version-restore tool exists yet, so that path has nothing to guard."
+    }
+  ]
+}
