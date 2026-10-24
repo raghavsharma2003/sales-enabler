@@ -45,7 +45,7 @@ KNOWN = {
     'redact_kind': {'kind', 'context', 'minDigits', 'maxDigits', 'about'},
     'masks': {'otp', 'card', 'cvv', 'upi_pin', 'aadhaar'},
     'lint': {'T-L1', 'T-L2', 'T-L3', 'T-L4'},
-    'T-L1': {'about', 'any', 'none', 'never_say_hides_ai', 'disclosure_clause_requires'},
+    'T-L1': {'about', 'any', 'none', 'noneClause', 'never_say_hides_ai', 'disclosure_clause_requires'},
     'T-L2': {'about', 'categories', 'dropPurposes'},
     'T-L3': {'about', 'allowedPurposes', 'offerLanguage'},
     'T-L4': {'about', 'shorteners'},

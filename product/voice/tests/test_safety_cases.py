@@ -3,7 +3,7 @@
 # replace and rule may be a list; callerSignals {signals, partial?}: listed signals equal, unlisted false unless
 # partial; redact {output}; lintAgentConfig {findings}: the multiset of {rule, effect} matches exactly. Skipped while
 # the file is absent.
-import collections, json, os, unittest
+import collections, copy, json, os, unittest
 from vpvoice import rules, safety
 
 CASES = os.path.join(os.path.dirname(__file__), '..', '..', 'shared', 'safety', 'cases.json')
@@ -96,3 +96,20 @@ class RedactKeepsLayout(unittest.TestCase):
         self.assertEqual(len(masked.split('\n')), 4)
         self.assertNotRegex(masked, '482913|4111')
         self.assertTrue(masked.startswith('name\tnote\nAsha\t'))
+
+
+class LintAiHonesty(unittest.TestCase):
+    """T-L1 on the DEV set shared with the TS door (product/tests/safety-lint-ai.test.ts): benches round 4 saved a note
+    telling her to say she is human in the third person. Each line is linted as a persona note."""
+    def lint_note(self, text):
+        d = json.load(open(os.path.join(os.path.dirname(CASES), 'cases.json')))
+        cfg = copy.deepcopy(d['defaults']['config'])
+        cfg['persona'] = {**(cfg.get('persona') or {}), 'notes': [text]}
+        return [f for f in rules.lint_agent_config(cfg) if f['rule'] == 'T-L1' and f['path'].startswith('persona')]
+
+    def test_dev_set(self):
+        d = json.load(open(os.path.join(os.path.dirname(CASES), 'sets', 'dev-lint-ai.json'), encoding='utf-8'))
+        for s in d['probe'] + [x['text'] for x in d['refuse']]:
+            self.assertTrue(self.lint_note(s), s)
+        for x in d['allow']:
+            self.assertEqual(self.lint_note(x['text']), [], x['text'])

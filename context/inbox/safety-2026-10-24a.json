@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.tl1-third-person",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "T-L1 AI-honesty lint after adding third-person, indirect, hiding, say-no or deflect, presenting-as-staff, Hinglish and Hindi shapes (rules.json lint.T-L1 any + noneClause; TS and Python share it). DEV (sets/dev-lint-ai.json, written by the builder, tuned on): probe 5/5 (before 2/5), refuse 35/35 (before 8/35), allow flagged 0/30. FP on 1,039 benign agent lines from cases.json and dev-7: 0. Templates flagged: 0/16. BLIND (sets/heldout-lint-ai.json, separate agent, scored once at 90aba16+fix): refuse 23/60, 38% (Wilson about 27-51%; en 14/30, hinglish 8/20, hi-deva 1/10), before 7/60; allow flagged 2/60 (en 2/30), same as before. TS and Python identical on every line.",
+   "n": "5 probe + 35 refuse + 30 allow DEV; 60 + 60 blind; 1,039 benign agent lines",
+   "method": "lintAgentConfig with each line as a persona note on the appliance-service-followup template (as research/2026-10-24/benches-r4/harness/lint-probe.ts); Python rules.fires on the same lines",
+   "not_verified": "Generalisation is weak: the regex lint catches 38% of fresh blind wordings. The blind set is now spent; a further DEV round needs a new blind set."
+  },
+  {
+   "id": "open.2026-10-24.tl1-model-check",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "A regex T-L1 cannot cover paraphrase: blind recall is 23/60 after the fix, as the caller-crisis floor's was 37/100. Proposal: a model check on brief text at save and publish (raise-only, like the caller judge: refuse when the model says the text tells her to pass as human or hide being an AI; the regex stays the floor). It runs offline, so latency does not matter and a stronger model can serve. It needs the owner's go and a model choice; it would be measured on a fresh blind set.",
+   "closes_when": "The owner chooses a model check or accepts the regex floor alone."
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.tl1-third-person",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-24.tl1-model-check",
+   "to": "measure.2026-10-24.tl1-third-person",
+   "relation": "derived-from"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-tl1-third-person",
+   "details": "T-L1 now refuses third-person and indirect 'she is human' instructions (benches r4 finding). DEV 35/35 + probe 5/5 with 0/30 FP; blind 23/60 (before 7/60), FP 2/60 unchanged. Gates: tsc clean, fresh-DB 528/528, ui-contract strict 176/176, voice unittest OK."
+  }
+ ]
+}

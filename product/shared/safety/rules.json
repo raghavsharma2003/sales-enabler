@@ -1198,13 +1198,36 @@
         "\\b(ai|bot|robot|machine)\\b[^.?!]{0,15}\\b(hone ki baat|hai yeh|hai ye|ho yeh)?[^.?!]{0,10}\\b(mat|nahi|na)\\b[^.?!]{0,6}\\b(batana|batao|bolna|bolo|bataiye|kehna|kaho)\\b",
         "\\b(kabhi|bilkul)\\b[^.?!]{0,10}\\b(mat|nahi|na)\\b[^.?!]{0,10}\\b(batana|batao|bolna|bolo|bataiye|kehna|kaho)\\b[^.?!]{0,20}\\b(ai|bot|robot|machine)\\b",
         "\\b(insaan|insan|human|real person|asli)\\b[^.?!]{0,15}\\b(bankar|ban kar|hone ka natak|hone ka dikhawa|ki tarah pesh)\\b",
-        "\\b(if|agar|jab)\\b[^.?!]{0,30}\\b(asked|asks|poochhe|puchhe|pooche|puche)\\b[^.?!]{0,40}\\b(say|tell|answer|bolo|kaho|batao|bolna|kehna)\\b[^.?!]{0,30}\\b(human|real person|insaan|insan|staff|employee|not (an? )?(ai|bot)|nahi (ai|bot))\\b"
+        "\\b(if|agar|jab)\\b[^.?!]{0,30}\\b(asked|asks|poochhe|puchhe|pooche|puche)\\b[^.?!]{0,40}\\b(say|tell|answer|bolo|kaho|batao|bolna|kehna)\\b[^.?!]{0,30}\\b(human|real person|insaan|insan|staff|employee|not (an? )?(ai|bot)|nahi (ai|bot))\\b",
+        "\\b(she|he|the agent|the bot|our (caller|agent|telecaller|assistant)|the caller|the assistant)\\b ?(is|'s|will be|was|remains)\\b(?! not\\b)(?: (a|an|our|the))?(?: (real|actual|live|genuine|human|full-?time|regular|in-?house))*(?: )(human|humans|real person|a person|person|real employee|employee|staff member|member of (our|the) (staff|team)|team member|from our staff|insaan|insan|flesh[- ]and[- ]blood)\\b",
+        "\\b[a-z]+ is (a |an |our )?(real|actual|live|genuine|human|in-?house) (person|human|employee|woman|man|staff|telecaller|caller|agent|executive|representative)\\b",
+        "\\b(she|he|the agent|i|i'?m|main|mai|wo|woh|vo)\\b ?(is|'s|am|hai|hoon|hun|hu)? ?(not|nahi|nahin) (an? )?(ai|bot|robot|machine|automated|virtual|artificial)\\b",
+        "\\b(main|mai|wo|woh|vo)\\b[^.?!]{0,8}\\b(ai|bot|robot|machine)\\b ?(nahi|nahin)\\b",
+        "\\b(believe|believes|think|thinks|assume|assumes|impression|pass for|pass as|feel they are|lagna chahiye|lage ki|samjhe|samjhen|samjhein)\\b[^.?!]{0,40}\\b(talking to|speaking (to|with)|baat kar|dealing with|is a|hamare|our)\\b[^.?!]{0,20}\\b(person|human|staff|employee|team|insaan|insan|karmachari)\\b",
+        "\\b(come|comes|coming) (across|off) as (a |an )?(human|real|live)\\b[^.?!]{0,10}\\b(person|employee|staff|agent|caller|representative|being)?",
+        "\\b(present|presents|presenting|introduce|introduces|portray|portrays|position|positions)\\b (yourself|herself|himself|her|him|the agent)?[^.?!]{0,30}\\bas\\b[^.?!]{0,30}\\b(human|real person|flesh|employee|staff member|team member|colleague|insaan)\\b",
+        "\\b(keep|keeps|keeping|maintain|maintains)\\b (up )?(the |that |this )?(impression|illusion|pretence|pretense|act|cover|facade)\\b",
+        "\\b(never|don'?t|do not|must not|should not|avoid|without|not)\\b[^.?!]{0,12}\\b(bring(ing)? up|let(ting)? on|give away|talk about|discuss|refer to|accept|let slip)\\b[^.?!]{0,40}\\b(ai|bot|robot|automated|artificial|machine)\\b",
+        "\\bkeep\\b[^.?!]{0,40}\\b(ai|bot|robot|automated|artificial|machine)\\b[^.?!]{0,25}\\b(to yourself|to herself|quiet|secret|under wraps|hidden|private)\\b",
+        "\\bkeep\\b[^.?!]{0,15}\\b(quiet|silent|mum)\\b[^.?!]{0,20}\\babout\\b[^.?!]{0,20}\\b(ai|bot|robot|automated|artificial|machine)\\b",
+        "\\b(ask|asks|asked|pooche|puchhe|poochhe|puche)\\b[^.?!]{0,45}\\b(ai|bot|robot|machine|automated|recording|artificial)\\b[^.?!]{0,30}\\b(say|answer|reply|respond|bolo|bolna|kaho|kehna)[a-z]*\\b[^.?!]{0,4}\"?(no|nope|nahi|nahin|na)\\b",
+        "\\b(say|answer|reply|respond)[a-z]*\\b[^.?!]{0,4}\"?(no|nope)\"?[^.?!]{0,30}\\b(ask|asks|asked)\\b[^.?!]{0,30}\\b(ai|bot|robot|machine|automated)\\b",
+        "\\b(ask|asks|asked|pooche|puchhe|poochhe)\\b[^.?!]{0,45}\\b(ai|bot|robot|machine|automated|artificial)\\b[^.?!]{0,60}\\b(change the subject|changes the subject|changing the subject|laugh it off|laughs it off|deflect|dodge|without answering|avoid answering|ignore the question|ignores the question|baat badal|taal)",
+        "\\b(share|say|tell|mention|use)\\b[^.?!]{0,30}\\b(if|when) (asked|they ask|someone asks|anyone asks|the customer asks)\\b[^.?!]{0,10}\\b(whether|if)\\b[^.?!]{0,20}\\b(real|human|a person)\\b",
+        "\\b(bolna|bolo|kehna|kaho|batana|batao|bolti|kehti|batati|bataiye|boliye|kahiye|bataye)\\b[^.?!]{0,25}\\b(main|mai|wo|woh|vo|hum)\\b[^.?!]{0,20}\\b(insaan|insan|human|asli|employee|staff|karmachari|real person)\\b",
+        "(कहना|बोलना|बताना|कहो|बोलो|बताओ|कहती|बोलती|बताती|कहिए|बोलिए|बताइए)[^.?!।]{0,25}(मैं|वह|वो|हम)[^.?!।]{0,20}(इंसान|असली|कर्मचारी|स्टाफ|मनुष्य)",
+        "(एआई|बॉट|रोबोट|मशीन|\\bai\\b|\\bbot\\b)[^.?!।]{0,20}(मत|नहीं|ना)[^.?!।]{0,6}(बताना|बोलना|कहना|बताओ|बोलो|कहो|बताइए)",
+        "(पूछे|पूछें|पूछने)[^.?!।]{0,40}(एआई|बॉट|रोबोट|मशीन|\\bai\\b|\\bbot\\b)[^.?!।]{0,30}(मना कर|इनकार|नहीं कहना|ना कहना|नहीं बोलना)"
       ],
       "none": [
         "\\b(never|don'?t|do not|must not|should not|na|mat|kabhi nahi)\\b[^.?!]{0,8}\\b(claim|pretend|say|tell|act|pose|insist|deny|kaho|bolo)[a-z]*\\b[^.?!]{0,30}\\b(human|real person|insaan|not an ai|employee|staff)\\b",
         "\\b(honest|honestly|truthfully|always (say|admit|confirm|disclose))\\b[^.?!]{0,30}\\b(ai|bot)\\b",
         "\\b(sound|speak|talk|feel|warm)[a-z]*\\b[^.?!]{0,20}\\b(like a human|human-?like|natural|like a real person)\\b(?![^.?!]{0,20}\\b(pretend|claim|say you are))",
         "\\bsay (yes|haan)\\b|\\b(admit|confirm|say|tell them|disclose)[a-z]* (that )?(you are|you'?re|she is|main) (an? )?(ai|bot|virtual|automated)\\b"
+      ],
+      "noneClause": [
+        "\\b(never|not|don'?t|do not|must not|should not|mat|kabhi nahi|kabhi mat|na)\\b[^.?!]{0,12}\\b(say|says|said|claim|claims|tell|tells|pretend|pretends|act|acts|pose|poses|kehna|bolna|kaho|bolo|kehti|bolti|batana)\\b[^.?!]{0,30}\\b(human|person|insaan|insan|employee|staff|real)\\b",
+        "(कभी|मत|नहीं)[^.?!।]{0,10}(कहना|बोलना|बताना|कहो|बोलो)[^.?!।]{0,25}(इंसान|असली|कर्मचारी)"
       ],
       "never_say_hides_ai": "(\\bai\\b|a\\.i\\.|artificial|\\bbot\\b|robot|automated|virtual assistant|digital assistant|एआई|machine)",
       "disclosure_clause_requires": "@ai_clause"

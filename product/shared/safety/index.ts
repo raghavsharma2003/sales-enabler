@@ -53,7 +53,7 @@ interface Rules {
   caller: CallerRule[];
   redact: { words_to_digits: Record<string, string>; context_window_chars: number; kinds: RedactKind[] };
   lint: {
-    'T-L1': { any: string[]; none: string[]; never_say_hides_ai: string; disclosure_clause_requires: string };
+    'T-L1': { any: string[]; none: string[]; noneClause?: string[]; never_say_hides_ai: string; disclosure_clause_requires: string };
     'T-L2': { categories: CallCategory[]; dropPurposes: Fact['purpose'][] };
     'T-L3': { allowedPurposes: Record<CallCategory, Fact['purpose'][]>; offerLanguage: string };
     'T-L4': { shorteners: string[] };
