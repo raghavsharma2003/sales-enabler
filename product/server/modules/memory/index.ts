@@ -15,6 +15,7 @@ import { compileBrief, type BriefFact, type BriefLead } from './brief.ts';
 import { forgetContactMemory } from './forget.ts';
 import { contactMinorStatus } from './minor.ts';
 import { purgeTranscripts } from './transcript-purge.ts';
+import { retentionStatus, sweepMemory } from './retention.ts';
 import { dayTime } from '../campaigns/retry.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
 
@@ -258,7 +259,11 @@ const policyInput = obj({ enabled: opt(bool()), undoMinutes: opt(num({ int: true
 export const module: Module = {
   name: 'memory',
   // Retention and erasure reach the words of a call (transcript-purge.ts); a run cut short is finished by the next.
-  jobs: deps => [{ name: 'memory.transcript_purge', everyMs: 10 * 60_000, run: async () => { await purgeTranscripts(deps.pool); } }],
+  jobs: deps => [
+    { name: 'memory.transcript_purge', everyMs: 10 * 60_000, run: async () => { await purgeTranscripts(deps.pool); } },
+    // Expired and unreviewed facts, and old extraction receipts, deleted for good each night (retention.ts).
+    { name: 'memory.retention', dailyAtIst: '03:10', run: async () => { await sweepMemory(deps.pool); } },
+  ],
   register(r: Registry) {
     r.register(tool(obj({ conversationId: uuid() }), {
       name: 'memory.extract', risk: 'draft', summary: 'remember what the caller said that matters for the next call (gated; never from test calls)',
@@ -336,8 +341,8 @@ export const module: Module = {
     }));
 
     r.register(tool(obj({}), {
-      name: 'memory.policy.get', risk: 'read', summary: "the workspace's memory switch, undo window and allowed sensitive categories",
-      run: async ctx => ({ ...(await policy(ctx.q, ctx.workspaceId)), refusedCategories: REFUSED }),
+      name: 'memory.policy.get', risk: 'read', summary: "the workspace's memory switch, undo window, allowed sensitive categories, and how long facts are kept",
+      run: async ctx => ({ ...(await policy(ctx.q, ctx.workspaceId)), refusedCategories: REFUSED, retention: await retentionStatus(ctx.q, ctx.workspaceId) }),
     }));
 
     r.register(tool(policyInput, {
@@ -364,4 +369,5 @@ export { compileBrief, BriefTooLarge } from './brief.ts';
 export { gate, detectRefused } from './gates.ts';
 export { forgetContactMemory } from './forget.ts';
 export { minorStatus } from './minor.ts';
+export { sweepMemory, retentionStatus, UNREVIEWED_DAYS } from './retention.ts';
 export { purgeTranscripts, redactAnalysis, redactErasedOutcomes, transcriptRemovedWhy } from './transcript-purge.ts';

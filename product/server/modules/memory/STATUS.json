@@ -11,12 +11,13 @@
   "memory.policy.set"
  ],
  "tests": {
-  "passed": 27,
-  "total": 27,
+  "passed": 33,
+  "total": 33,
   "files": {
    "memory.test.ts": 17,
    "memory-retention.test.ts": 4,
-   "calls-outcome-import.test.ts": 6
+   "calls-outcome-import.test.ts": 6,
+   "memory-sweep.test.ts": 6
   }
  },
  "works": [
@@ -35,15 +36,14 @@
   "children's-data gate (minor.ts): reads attribute rows and contact.custom; intake's canonical keys (date_of_birth, birth_year, age_group, age, is_minor) first; birth_year read as the younger possible age, age_group minor if it says under/below or any bound < 18, unclear if it has no number, then intake's canonicalAgeKey for any other key, so one list decides ('Customer DOB' counts, 'Vehicle Age' does not); under 18 or any unreadable value blocks extraction (skip minor / age_unclear, model never called) and the brief (status minor / age_unclear)",
   "memory.transcript_purge job (transcript-purge.ts): at transcripts_days, and on erasure (erase_me, or a contact erased in place), it redacts caller text in turn, transcript, analysis, call_moment, outcome evidence, hand_off brief and call_insight quotes, keeps metrics, and records when and why; call.get shows transcriptRemoved and the call page shows it",
   "erasure.pending: recording deletes the runtime has not confirmed (tries, last error), and erased people's calls still holding audio or words",
-  "erasure also redacts an erased person's verified outcomes (reference and amount) and their pending outcome-import preview rows (redactErasedOutcomes, run by memory.transcript_purge)"
+  "erasure also redacts an erased person's verified outcomes (reference and amount) and their pending outcome-import preview rows (redactErasedOutcomes, run by memory.transcript_purge)",
+  "memory.retention nightly job (retention.ts): expired facts, review-tier proposals unreviewed for 14 days and extraction receipts past the transcripts window are deleted for good, with no resurrection; one counts-only audit row per workspace; memory.policy.get.retention {rules, dueNow, lastSweep}"
  ],
  "untested": [
   "real LLM extraction quality",
   "refused-category detector precision/recall on real Hinglish/Devanagari speech",
   "brief prefetch latency at dial time",
   "erase_me reach beyond memory_fact (recordings, transcripts, attributes, CRM belong to other modules)",
-  "retention sweeps (expired facts are excluded from the brief but not yet deleted by a job)",
-  "14-day expiry of unreviewed proposed facts",
   "an age header neither intake's list nor canonicalAgeKey recognises reads as no age data, and memory proceeds",
   "transcript purge at large scale (200 calls per 10-minute run); follow_up payloads and safety/opt-out details are not redacted, by choice"
  ],

@@ -4510,7 +4510,7 @@
   {
    "name": "memory.policy.get",
    "risk": "read",
-   "summary": "the workspace's memory switch, undo window and allowed sensitive categories",
+   "summary": "the workspace's memory switch, undo window, allowed sensitive categories, and how long facts are kept",
    "needsApproval": false,
    "roles": [
     "owner",

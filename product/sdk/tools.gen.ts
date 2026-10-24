@@ -1004,7 +1004,7 @@ export interface ToolInput {
   "memory.extract": {
     conversationId: string;
   };
-  /** the workspace's memory switch, undo window and allowed sensitive categories (read) */
+  /** the workspace's memory switch, undo window, allowed sensitive categories, and how long facts are kept (read) */
   "memory.policy.get": Record<string, never>;
   /** turn memory on or off, set the undo window, or allow a sensitive category under a named basis (policy, waits for approval) */
   "memory.policy.set": {

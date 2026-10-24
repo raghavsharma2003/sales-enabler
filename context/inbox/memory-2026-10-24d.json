@@ -1,0 +1,45 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.memory-retention-sweep",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Memory keeps a person's words only as long as it says it does. The nightly job memory.retention (03:10 IST, memory/retention.ts) deletes for good:\n- facts past expires_at (call_to_call 30 days, durable 365 days from when said);\n- review-tier proposals nobody approved within 14 days;\n- memory_extraction receipts older than the workspace's transcripts window.\nAn older value superseded by a deleted fact stays superseded, so nothing resurfaces. Each workspace gets one audit row per run (actor memory.retention, action memory.retention_sweep) that carries counts only {expired, unreviewed, extractions}, and none when nothing went. memory.policy.get returns retention {rules, dueNow, lastSweep}.",
+   "rationale": "Expired facts were only left out of the brief, and unreviewed proposals lived for ever, so the caller's exact quotes outlived the retention VP states (DPDP storage limitation). Approved by the integrator on 2026-10-24.",
+   "reverse_if": "Counsel or a sector pack requires keeping memory past these periods (e.g. a records rule), in which case retention moves per class into the workspace retention policy. Or the review queue shows people need longer than 14 days to review, in which case lengthen the window and keep deletion.",
+   "path": "product/server/modules/memory/retention.ts"
+  },
+  {
+   "id": "measure.2026-10-24.memory-sweep-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/memory-sweep.test.ts 6/6:\n(1) An expired call_to_call fact is deleted. The durable older value it superseded survives in the table but never returns to the brief. An in-date fact stays.\n(2) A proposal 15 days old is dropped; one 13 days old stays, and so does an approved fact.\n(3) An extraction receipt 31 days old is deleted under a 30-day transcripts window; one 29 days old stays.\n(4) The audit row is exactly {expired:1, unreviewed:1, extractions:0} with actor memory.retention and none of the deleted words. A second, empty run writes no row, and verifyAudit stays intact.\n(5) memory.policy.get shows the rules (30/365/14/45 days), dueNow {1,1} before and {0,0} after, and lastSweep with the counts.\n(6) A sweep scoped to one workspace leaves another workspace's due fact; an unscoped run reaches it.",
+   "n": 6,
+   "method": "node:test on throwaway Postgres 16 (NODE_ENV=test); fixtures in SQL with backdated said_at, created_at and expires_at",
+   "path": "product/tests/memory-sweep.test.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.memory-sweep-tests",
+   "to": "decision.2026-10-24.memory-retention-sweep",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.memory-retention-sweep",
+   "to": "decision.2026-10-21.memory-forget-deletes-no-resurrection",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "memory-retention-sweep",
+   "details": "memory.retention nightly job: expired facts, 14-day unreviewed proposals and old extraction receipts are deleted for good; audit rows carry counts only; memory.policy.get shows rules, due counts and the last sweep. Verified: tests/memory-sweep.test.ts 6/6 plus the gates. Not verified: volume (one DELETE per workspace per class, no batching), and the settings screen showing the retention figures (a tool output only so far)."
+  }
+ ]
+}
