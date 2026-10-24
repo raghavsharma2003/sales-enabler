@@ -1,6 +1,6 @@
 # Direction — read this first
 
-_Last rewritten 2026-10-23. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
+_Last rewritten 2026-10-24. Rewrite it, don't append, whenever the phase, a directive or the next step changes (`context/PROTOCOL.md`)._
 
 ## What we are building
 
@@ -192,58 +192,87 @@ The tiers proposed on 2026-10-19 assumed gpt-oss plus a stock Azure voice. Round
 
 ## Now: proving quality on real models (since 2026-10-23)
 
-The owner restored the usage limit and asked for full autonomy (`directive.2026-10-23.full-autonomy`). The scope is in
-`decision.2026-10-23.autonomy-scope`: spend and legal exposure still wait for the owner. Since 2026-10-22, these are done:
-- the Operator offers at most 40 tools per call and gives the model compact results;
-- learning proposes from monitor issues;
-- cross-call insight (quote-verified) and the Insights page;
-- contact compliance actions, the integrations form, and undo.
+The owner restored the usage limit and asked for full autonomy twice (`directive.2026-10-23.full-autonomy`, again on
+2026-10-23 after a limit). The scope is in `decision.2026-10-23.autonomy-scope`:
+- **In:** builders, benches and evals on existing keys within caps, and private staging on the India VM.
+- **Still waits for the owner:** new paid resources, a Plivo recharge, calls to real people, a public deploy, secret
+  rotation, a customer price, and the trial credit amount.
 
-Done since: the browser test call, the guided start, the Vyakti sweep, the Operator and analysis benches, the private
-India staging, the opening fixes (verified on staging), the opt-out judge, and walkthrough fixes S1-S7 except S3/S6.
+Every measured decision is re-taken by benches on the real Azure and Vertex models, one run at a time, at most
+1 request/s. Vertex runs only from the VM.
 
-Now running:
-- **voice:** a wrong-name guard for the opening, then reply-gap reduction to under 1.5 s p50 (stage breakdown first),
-  then barge-in speed.
-- **web:** the call page's latency strip, transcript and recording sync, and inline safety marks.
-- **campaigns:** money (staff credit, trial credit default 0, Vyakti copy, wallet-aware blockers), then the Plivo KYC
-  adapter, then the A2P checklist, BYO refusal for India and number-series rules in the dial gate.
-- **learning:** the harness2 loop end to end on the dev server (analysis, proposal, experiment, adopt or roll back).
-- **calls:** judge-event opt-out fields; the outcome rule rewrite on DEV; call.search outcome enum and count.
-- **safety:** the CSV upload newline bug; RD1 double disclosure; the judge non-blocking with a soft check-in behind config.
-- **operator:** page context reaches the model; exclusive arguments in the schema; refusals that name the fix.
-- **main loop:** reviews, gates, context; real-model runs through its own VM subagents (keys live only in this session).
-  Vertex from the VM only, at most 1 request/s.
+### Measured on 2026-10-24 (real models; n, method and tree are in each node)
+- **Openings, staging e9fdde3** (`measure.2026-10-24.staging-openings-e9fdde3`):
+  - exactly one AI disclosure 6/6;
+  - the right name 6/6;
+  - guidance read aloud 0/6.
+- **Reply gap is the main voice gap.** Staging p50 with the flags off:
+  - v2-flashlite 2.30 s;
+  - v2-mai 2.05 s;
+  - v2-54mini 2.13 s, with the flags on.
 
-### Measured on 2026-10-23 (real models, India VM staging)
-- **Product reply gap, median:** v2-flashlite 2.5 s (n=21), v2-mai 2.2 s (24), v2-54mini 3.0 s (23); v2-38flash failed
-  on Vertex. Stack cards show these. Latency is the main voice gap.
-- **Openings after the fix (f2b27d4, 6 calls):** guidance read aloud 0/6 (was 17/18); AI disclosure in turn one 6/6; blank
-  name 0/6; rejected event batches 0. New: double disclosure 3/6 (`rejected.2026-10-23.rd1-first-sentence-window-double-disclosure`)
-  and one wrong name ("Akshara" for Asha), both routed.
-- **Operator, round 2 (48 tasks):** gpt-4.1-mini 26/48, gpt-4.1 28/48 (no measurable difference, p=0.73); schema
-  rejections 42 -> 0. Worst failures: CSV uploads import 0 rows; call.search takes any text as an outcome; the page never
-  reaches the model.
-- **Analysis, round 2 (TEST, 42 calls):** gpt-4.1-mini outcome 38/42, gpt-4.1 36/42, tiered 34/42; quotes 100% grounded.
-  Default is gpt-4.1-mini single, tiered off (`decision.2026-10-23.analysis-default-mini-single`).
-- **Crisis judge, BLIND 7 (100 crisis / 100 look-alike benign):** floor alone 37/100. Floor or judge: Flash-Lite 99/100,
-  FP 10/100, p95 1.1 s; gpt-4.1-mini 87/100, FP 23/100. The judge moves to Flash-Lite, non-blocking, still shadow
-  (`decision.2026-10-23.judge-flashlite-nonblocking`); raise mode with a soft check-in is an owner call
-  (`open.2026-10-23.judge-raise-soft-checkin`).
+  Speculation and prewarm help only unpaced brains (`decision.2026-10-24.latency-flags-provider-aware`). The ears' first
+  partial lags 858 ms median (`measure.2026-10-24.staging-partial-lag`), so barge-in stays 700 ms until it comes from
+  audio onset (`decision.2026-10-24.barge-long-ms-stays-700`).
+- **Operator, op5** (48 tasks, two runs each on 08b5916):
+  - gpt-4.1-mini 41 and 41;
+  - gpt-4.1 32 and 33.
+
+  gpt-4.1's drop came from a conduct line (`measure.2026-10-24.operator-ablation-conduct-line`), fixed in 6fd8da5. The
+  default is re-chosen by `decision.2026-10-24.operator-default-symmetric-rule` on op6.
+- **Analysis, r6** (TEST, 42 calls):
+  - mini single on the r5-outcome-first contract 42/42 on both passes;
+  - tiered 42/42;
+  - objections 52/52.
+
+  The default stays tiered (`decision.2026-10-24.analysis-default-tiered`) until a second round matches.
+- **Crisis judge, BLIND 8** (Flash-Lite at the pre-registered 0.9):
+  - floor or judge recall 75/100 with FP 9/100;
+  - judge alone 73/100 with FP 0/100.
+
+  BLIND 9 (PREREG-9: prompt candidates, chosen on DEV) is running.
+- **Product quality gates:**
+  - axe WCAG 2.1 AA, 0 violations on 24 screens (`decision.2026-10-24.web-a11y-gate`);
+  - fresh-DB suite 586/586 at 3515b53;
+  - CI green.
+- **Shipped today:**
+  - signed recordings and audio erasure;
+  - version restore;
+  - multilingual agents (a per-part capability matrix);
+  - real voice samples on 6 of 7 stack cards;
+  - the brief review (a model check after the regex door);
+  - the hard guard on every draft write;
+  - learning's issue-to-adoption loop.
+
+### Running now (builders are separate sessions on this branch; only the main loop holds keys)
+| Lane | Doing |
+|---|---|
+| voice | provider-aware flags, audio-onset barge-in, brand-name guard, Live spokenText fix, AAC/MP3 sample renditions |
+| calls | ship r5-outcome-first as the mini-single contract, with the client rule moved with OUTCOME; then round 7 (integrator) |
+| web | buyer walkthrough round 3 (D2C COD/NDR, university admissions) |
+| enterprise | SSO, SCIM-lite, audit export |
+| safety | crisis and manipulation lint moved into shared/safety; disclosure, crisis and opt-out lexicons for 7 more languages (not native-reviewed) |
+| agents | stated language lists re-checked against vendor docs; no-cache and Range for samples |
+| memory | transcript and analysis-text retention and erasure |
+| learning | the 20-run pool check, then evidence shapes on the outcome-first contract |
+| main loop | op6 plus the brief-review blind (Azure); BLIND 9 (VM); then the Flash-Lite brief-review blind; staging re-measure after voice lands |
+| campaigns | blocked on the owner's "go" |
 
 ## Open threads with the owner
 
 | Thread | Status |
 |---|---|
-| Vertex | **Resolved 2026-10-22.** vp-voice was reinstated, and no carbonsettle project was made. The new key (id ending 4589e6) was pasted in chat with the owner's OK (`risk.2026-10-22.vertex-key-in-chat`); offer a rotation once the lab is stable. |
-| Credential hygiene | Rotate the pasted secrets: the Plivo token, the free Gemini keys (now unused, since Gemini is Vertex only) and the mailbox passwords (`risk.2026-10-20.secrets-pasted`). Not confirmed done. |
-| Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
-| Round-2 human ratings | **Ready now.** The lab's round-2 stacks run on Vertex from India (`open.2026-10-20.round2-human-ratings`). |
-| Safety second layer | Waiting on the owner (`decision.2026-10-21.safety-second-layer-proposal`). Blind set 6 (n=330, scored once after the review fixes, `measure.2026-10-21.safety-door-blind-set6`):<br>• benign false positives 0/170;<br>• harmful caught 106/160;<br>• indirect crisis talk 4/30 (Tamil-English 0/7, Bengali-English 0/7);<br>• paraphrased AI denials 14/25.<br>Recommendation: start with a raise-only caller-crisis judge. It runs in parallel with the brain, adds no playback delay, and can only add the crisis line. The agent-side judge comes after it.<br>**Built (2026-10-21):** contract plus TS judge (df4436c), voice runtime half (776b195), and an eval harness (`product/scripts/judge-eval.mjs`). The default is shadow mode, raise-only by construction (`decision.2026-10-21.judge-raise-only-contract`). Post-call shadow hits never count as safety events (`decision.2026-10-21.judge-shadow-never-a-safety-event`).<br>**Owner decisions:**<br>• go to run judge-eval on the lab VM (2-3 models, real prices);<br>• production 'raise', once eval numbers exist.<br>Note: with VP_LLM_DEFAULT_* keys set, shadow mode calls the judge on every caller turn, and pays for it, from the first deploy.<br>Not measured: any real model's recall or false-positive rate. |
-| Trial credit | The amount a new workspace starts with. The blueprint recommends ₹500. The mechanism is being built with the amount in config, default 0, because price is deferred (`open.2026-10-22.trial-credit-amount`). |
-| DND lookup | Contract an NCPR lookup, or rely on carrier scrubbing. Until then every number reads 'DND not checked' and promotional calls stay blocked (`open.2026-10-22.dnd-provider`). |
+| Judge raise mode | Shadow today. Raise mode with a soft check-in (she pauses and asks how they are) is the owner's call (`open.2026-10-23.judge-raise-soft-checkin`). BLIND 9 will report against the bar of floor-or-judge recall ≥90/100 at benign FP ≤2/100. |
+| Campaigns "go" | The campaigns builder waits on the owner typing "go" for the Plivo KYC adapter and the dial path. |
+| Trial credit | The amount a new workspace starts with. The blueprint recommends ₹500. It is in config, default 0, because price is deferred (`open.2026-10-22.trial-credit-amount`). |
+| Price and billing documents | Price is deferred. Tax invoice, GSTIN and receipts wait on it (`open.2026-10-24.enterprise-billing-documents`). What test spend draws on is open too (`open.2026-10-24.test-spend-vs-empty-wallet`). |
+| DND lookup | Contract an NCPR lookup, or rely on carrier scrubbing. Until then every number reads "DND not checked" and promotional calls stay blocked (`open.2026-10-22.dnd-provider`). |
+| Round-2 human ratings | Ready. The lab's round-2 stacks run on Vertex from India (`open.2026-10-20.round2-human-ratings`). Stack cards now carry real samples. |
+| Language review | The new lexicons and disclosure lines for kn, te, ml, mr, gu, pa and or need a native speaker before production. |
+| Sarvam sample | A Sarvam key exists but is unused, because Sarvam may train on call data. Using it for one sample is the owner's call (`open.2026-10-24.sarvam-india-sample`). |
 | First deploy | Needs the owner's go (it costs money) and real keys: LLM, TTS/STT for the chosen stacks, telephony (Plivo trial line), VP_SECRET_KEY. |
-| Teardown account hygiene | Rotate the pasted vendor passwords and keys. Delete the draft objects Instinct left in the vendor accounts (side-effects ledger in Drive `00-FINAL-REPORT.md`). Instinct's Drive captures hold the owner's phone (Exotel 11, 12) and a +1 number (Retell 08); the local copies are gitignored (`risk.2026-10-21.wt-synthesis-capture-hygiene`). |
+| Plivo trial | ₹764 credit expires 2026-11-16, with an ₹80 monthly usage cap. Recharge is the owner's decision. |
+| Credential hygiene | Rotate the pasted secrets: the Plivo token, the free Gemini keys, the Vertex key pasted in chat, and the mailbox and vendor passwords (`risk.2026-10-20.secrets-pasted`, `risk.2026-10-22.vertex-key-in-chat`). Delete Instinct's draft objects in vendor accounts (`risk.2026-10-21.wt-synthesis-capture-hygiene`). Not confirmed done. |
 
 ## Where things live
 

@@ -1,0 +1,70 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.judge-prereg9-dev-pooled",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 830,
+   "title": "PREREG-9 DEV, crisis judge, Gemini 3.5 Flash-Lite on Vertex, 1,500 ms. Pooled dev-7 + dev-lookalike-9 (175 crisis, 240 benign) per prompt, judge alone. Prompt A (judge.json): 165/175 recall at 0.3-0.8 with FP 9/240 (8/240 at 0.75-0.8); at 0.5 165/175, FP 9/240 (3.8%); at 0.9 133/175, FP 0/240. Prompt B (risk 0-100): 167/175 (95.4%), FP 5/240 (2.1%) at 0.3-0.4; at 0.5 162/175, FP 3/240. Every pair admissible (FP <= 10%). Rule 9 chose B at 0.4: the highest recall; tied at 0.30/0.35/0.40, broken by the higher t. Unavailable A 5/415, B 3/415 (all timeouts); p95 1,132-1,319 ms. INR 28.5-29.3 per 1k turns (A), 32.9-33.2 (B). Floor in-sample: 0/240 FP.",
+   "method": "research/2026-10-24/judge-prereg9/PREREG.md, applied by research/2026-10-24/judge-blind9/ops/prereg_apply9.py (exact fractions; output dev/prereg_apply9.out; choice written to judge-prereg9/CHOICE.md at 2026-10-24T04:42:07Z, before any BLIND 9 request). Four runs of node product/scripts/judge-eval.mjs --task crisis (--source dev-7 | --set sets/dev-lookalike-9.json) [--prompt-file prompts/caller_crisis.risk100.txt] --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5, on vl-vm-cin from /tmp/je9. That is a VM-only copy of staging redeployed to origin head 680c5e6 (contains 2bd4daf); all seven PREREG-9 sha256 hashes were checked. Wilson 95%. 2026-10-24 04:25-04:40 UTC. INR 25.69.",
+   "path": "research/2026-10-24/judge-blind9/README.md"
+  },
+  {
+   "id": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 200,
+   "title": "Crisis judge on BLIND 9 (unread), scored once at the PREREG-9 pair, prompt B (risk 0-100) at threshold 0.4, Gemini 3.5 Flash-Lite on Vertex, 1,500 ms. Floor alone: recall 27/100 (19.3-36.4), FP 6/100 (2.8-12.5). Judge alone: recall 97/100 (91.5-99.0), FP 2/100 (0.6-7.0). Floor or judge: recall 97/100 (91.5-99.0), FP 8/100 (4.1-15.0). Unavailable 0/200; p50 988 / p95 1,258 ms (max 1,468); INR 33.61 per 1,000 turns. The owner's raise-with-check-in bar (floor or judge recall >= 90/100 AND FP <= 2/100) is NOT met: recall passes; FP is 8/100, of which 6 are the floor's own on other lines. Weak spots: recall bn-en, ta-en and te-en each 17/18; FP te-en 3/17 (floor 2, judge 1) and bn-en 2/17. Information-only sweep, not used to choose: judge FP 1/100 at 0.5-0.75 (recall 97), 0/100 at >= 0.8 (recall 96 at 0.8); floor-or-judge FP never below the floor's 6/100.",
+   "method": "research/2026-10-24/judge-prereg9/CHOICE.md (B at 0.4, written 04:42:07Z, sha256_16 ff71c057c793c325, before the run). Run once: node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-9.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 9 --max-requests 210, on vl-vm-cin. Tree /tmp/je9t = /tmp/je9 at 680c5e6 with judge.json caller_crisis.threshold 0.4 and system_prompt = prompts/caller_crisis.risk100.txt trimmed (sha256_16 ed63058d5526890a, the same as the DEV --prompt-file runs); every other field was checked identical. 100 crisis + 100 benign look-alike caller lines with the writer's language tags; the lines were not read and results.json was not downloaded. Wilson 95%. 2026-10-24 04:43-04:47 UTC. INR 6.72.",
+   "path": "research/2026-10-24/judge-blind9/README.md",
+   "not_verified": "The Python runtime door (vpvoice/judge.py) was not exercised; the TS door ran through judge-eval. The opt-out label under prompt B was not measured (PREREG-9 is crisis-only; heldout-optout.json was not scored). One run per set; language slices have 4-18 lines."
+  },
+  {
+   "id": "rejected.2026-10-24.floor-dev-lookalike-tuning-for-combined-fp",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Floor exemptions tuned on the DEV look-alike set as the route to a floor-or-judge benign FP of at most 2/100: on blind look-alikes the floor still flags 6/100",
+   "tried": "2bd4daf: clause-scoped crisis-floor exemptions tuned on sets/dev-lookalike-9.json. The Tamil laughter word, someone else's past suicide, a third person or film character jumping, and a Bengali spelling variant took DEV look-alike FP from 3/150 to 0/150, with recall kept.",
+   "broke": "BLIND 9 (100 unread look-alikes, separate writer): floor alone FP 6/100 (2.8-12.5), in te-en 2/17 and bn-en, gu-en, hinglish and mr-en 1 each. The judge added 2 false alarms on other lines, so floor or judge was 8/100 against the owner's 2/100 bar, while the judge alone was 2/100. The system is raise-only, so no judge threshold or prompt can take the combined FP below the floor's. DEV look-alikes were easier for the floor (0/150) than blind ones; tuning on them did not carry. A next step must be measured on a fresh blind set: floor FP down to about 0-2/100 on look-alikes, or a floor-only crisis on a look-alike also taking the gentle check-in path (an owner/product question)."
+  },
+  {
+   "id": "open.2026-10-24.judge-prompt-b-optout-unmeasured",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "PREREG-9 chose prompt B (risk 0-100) at 0.4 for the crisis label, so B's text is to become judge.json system_prompt. judge.json is one call with two labels, and the opt-out label under B has not been measured. B's opt-out rule text is word-for-word A's (checked by diff); only the crisis scoring rule and the reply format change. A's opt-out on optout-dev at 0.6: judge 144/150, FP 14/110.",
+   "closes_when": "A DEV opt-out run of B on the VM (judge-eval --task opt_out --source optout-dev --prompt-file prompts/caller_crisis.risk100.txt, about INR 9) shows opt-out recall and FP no worse than A's 144/150 and 14/110 at 0.6. Or the opt-out label moves to its own prompt."
+  }
+ ],
+ "edges": [
+  {"from": "measure.2026-10-24.judge-prereg9-dev-pooled", "to": "decision.2026-10-24.prereg9", "relation": "tests"},
+  {"from": "measure.2026-10-24.judge-prereg9-dev-pooled", "to": "open.2026-10-23.judge-checkin-dev-tuning", "relation": "informs"},
+  {"from": "measure.2026-10-24.judge-prereg9-dev-pooled", "to": "measure.2026-10-24.floor-dev-lookalikes", "relation": "extends"},
+  {"from": "measure.2026-10-24.judge-prereg9-dev-pooled", "to": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090", "relation": "extends"},
+  {"from": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "to": "measure.2026-10-24.judge-prereg9-dev-pooled", "relation": "informed-by"},
+  {"from": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "to": "decision.2026-10-24.prereg9", "relation": "tests"},
+  {"from": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "to": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090", "relation": "extends"},
+  {"from": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "to": "rejected.2026-10-24.prereg-lowest-threshold-fp5-quantised", "relation": "supports"},
+  {"from": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "to": "open.2026-10-23.judge-raise-soft-checkin", "relation": "informs"},
+  {"from": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "to": "component.2026-10-21.safety-module", "relation": "tests"},
+  {"from": "rejected.2026-10-24.floor-dev-lookalike-tuning-for-combined-fp", "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040", "relation": "informed-by"},
+  {"from": "rejected.2026-10-24.floor-dev-lookalike-tuning-for-combined-fp", "to": "measure.2026-10-24.floor-dev-lookalikes", "relation": "challenges"},
+  {"from": "rejected.2026-10-24.floor-dev-lookalike-tuning-for-combined-fp", "to": "open.2026-10-23.judge-raise-soft-checkin", "relation": "informs"},
+  {"from": "open.2026-10-24.judge-prompt-b-optout-unmeasured", "to": "decision.2026-10-24.prereg9", "relation": "extends"},
+  {"from": "open.2026-10-24.judge-prompt-b-optout-unmeasured", "to": "measure.2026-10-24.judge-prereg9-dev-pooled", "relation": "informed-by"}
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "judge-prereg9-dev-blind9",
+   "details": "VM-ops worker. Staging redeployed 69597eb -> 680c5e6 (1 migration, 0804; smoke OK; lab untouched). PREREG-9 DEV for A and B, pooled (830 requests); the rule chose B at 0.4, written to CHOICE.md at 04:42:07Z. BLIND 9 scored once: floor or judge recall 97/100, FP 8/100 (floor 6/100 of it); judge alone 97/100 and 2/100; 0/200 timeouts; p95 1,258 ms. The owner bar (>= 90 recall, <= 2 FP) is not met, on FP. Opt-out not in PREREG-9, so not scored. Spend INR 32.41 metered. 5 Run Command records kept (pruned by start time); /tmp/je9* removed."
+  }
+ ]
+}
