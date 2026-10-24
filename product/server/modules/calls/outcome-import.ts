@@ -183,7 +183,7 @@ export function registerOutcomeImport(r: Registry): void {
       const imp = await loadImport(ctx, i.importId).catch(() => null);
       if (!imp) return 'Record verified outcomes from an uploaded file that is no longer available';
       const c = imp.counts;
-      return `Record ${c.matched} verified outcomes from ${imp.file_name} (${c.unmatched + c.ambiguous + c.invalid} rows not written; the AI's reading disagrees on ${c.disagreements})`;
+      return `Record ${c.matched} verified ${c.matched === 1 ? 'outcome' : 'outcomes'} from ${imp.file_name} (${c.unmatched + c.ambiguous + c.invalid} rows not written; the AI's reading disagrees on ${c.disagreements})`;
     },
     // Bound to the match itself: a new call or an erasure since the preview changes the hash and voids the approval.
     version: async (ctx, i) => {
