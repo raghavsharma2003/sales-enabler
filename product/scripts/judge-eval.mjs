@@ -193,7 +193,7 @@ const perTask = Object.fromEntries(tasks.map(t => { const rs = results.filter(r 
   return [t, { n: { positive: rs.filter(r => r.truth).length, negative: rs.filter(r => !r.truth).length }, overall: slice(rs), by_source: groupBy(rs, 'source'), by_lang: groupBy(rs, 'lang') }]; }));
 // Threshold sweep from the recorded confidences (no extra model calls): what each threshold would have given on these
 // lines. Choose on DEV only; a blind set is scored once at the threshold in judge.json.
-const SWEEP = [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9];
+const SWEEP = [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95];
 const saysAt = (r, t) => r.confidence !== null && r.confidence >= t && (r.task === 'opt_out' ? r.optOut === true : r.kind !== null && r.kind !== 'none');
 const sweep = rs => SWEEP.map(t => {
   const pos = rs.filter(r => r.truth), neg = rs.filter(r => !r.truth);

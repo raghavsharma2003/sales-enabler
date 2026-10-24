@@ -704,6 +704,10 @@
       ],
       "none": [
         "\\b(hasi|hansi|hass|has has|laugh|laughing|garmi|thand|bhookh|bhook|traffic|kaam se|kaam ne)\\b[^.?!]{0,15}\\b(mar|die|dying|killing)"
+      ],
+      "noneClause": [
+        "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(bondhu|friend|dost|bhai|didi|dada|cousin|neighbour|neighbor|padosi|uncle|aunty|chacha|mama|mami|husband|wife|beta|beti|son|daughter|uska|uski|unka|unki|his|her|their)\\b[^.?!]{0,25}\\b(suicide|khudkushi|aatmahatya|atmahatya)\\b[^.?!]{0,20}\\b(korechilo|korechhilo|korechhe|kiya tha|ki thi|kar li thi|kar liya tha|kar li|kar liya|committed|did|kelli|keli|kela hota|chesukunnadu|chesukundi|chesukunnaru|karyu hatu|kari hati|kari lidhi|panninaan|pannikittaan|pannikitta)\\b",
+        "^(?!.*\\b(main bhi|mai bhi|me too|i also|i too|ami o|amio|naanum|nanum|mi pan|mihi|nenu kuda|nenu kooda|hu pan|hun pan|mujhe bhi|mera bhi)\\b).*\\b(hero|heroine|villain|character|film|movie|serial|picture|story|news|khabar|ek aadmi|ek ladka|ek ladki|woh aadmi|wo aadmi)\\b[^.?!]{0,30}\\b(kood|kud|jump)[a-z]* ?(jata|jaata|jati|jaati|gaya|gayi|liya|li|diya|di|karta|karti|kiya)\\b"
       ]
     },
     {
@@ -770,7 +774,7 @@
         "\\bkavalapada maatanga\\b|\\bvazhkai venam\\b|\\bezhundhirikk?a?ve koodadhu|\\bkaanama (poidalam|poganum|poiduven)\\b|\\b(irundhu|irundha) enna payan\\b"
       ],
       "none": [
-        "\\b(veyil|veyila|pasi|pasila|sirippu|siripp|traffic|velai|vela|work|bore|kaththu|azhudhu)\\b[^.?!]{0,20}\\b(saaga|saagaren|saaga poren|sethuruven)\\b",
+        "\\b(veyil|veyila|pasi|pasila|sirippu|siripp|sirichu|sirichi|traffic|velai|vela|work|bore|kaththu|azhudhu)\\b[^.?!]{0,20}\\b(saaga|saagaren|saaga poren|sethuruven)\\b",
         "\\b(saaga|saagaren)\\b[^.?!]{0,20}\\b(veyil|degree|pasi|lunch|traffic|sirippu)\\b"
       ]
     },
@@ -787,7 +791,7 @@
         "\\bdori\\b[^.?!]{0,20}\\b(ready|rekhechi|jhulbo)\\b",
         "\\bjibon\\b[^.?!]{0,10}\\b(bohon korte parchi na|r parchi na|niye thakte parchi na)\\b",
         "\\bami chole gele\\b",
-        "\\b(morte|more jete) (chai|ichhe)\\b",
+        "\\b(morte|marte|more jete|mare jete) (chai|chaai|ichhe|icche)\\b(?! ?na\\b)",
         "\\batmohotya\\b",
         "\\bar thakbo na\\b|\\bami nei hole\\b|\\b(morey|more|mara) (jai|gele)\\b|\\bbojha hoye gechi\\b|\\bbojha\\b",
         "\\batmohott?a\\b|\\b(haariye|hariye) jete chai\\b",

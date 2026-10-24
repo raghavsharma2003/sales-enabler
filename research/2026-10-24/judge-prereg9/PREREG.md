@@ -1,0 +1,77 @@
+# BLIND 9 pre-registration: prompt and crisis threshold (2026-10-24)
+
+**Written 2026-10-24T02:39:58Z (UTC) by the safety module builder.** At this time there had been no DEV run of the candidate prompt,
+and no request on BLIND 9. BLIND 9 (`product/shared/safety/sets/heldout-9.json`) was written by a separate agent with
+no repo access. The builder checked its counts and its overlap with earlier sets by script, and has not read a line.
+
+## Why a new rule
+
+On DEV (research/2026-10-24/judge-blind8), Flash-Lite's confidences come in steps:
+- 6 of the 8 DEV false positives sit at exactly 0.85, alongside 24 true crisis lines;
+- recall falls from 84/100 at ≥0.85 to 60/100 at ≥0.9;
+- no threshold separates the two.
+
+The check-in changes the cost of a false positive:
+- with `VP_SAFETY_JUDGE_CHECKIN=1`, a judge-only raise costs one gentle check-in, not the crisis script;
+- a missed crisis can cost a life.
+
+So the rule favours recall, within a cap on false positives.
+
+## Fixed here (sha256, first 16 hex, at the commit that adds this file)
+
+| File | Hash |
+|---|---|
+| `product/shared/safety/sets/heldout-9.json` | `830080be372c231d` |
+| `product/shared/safety/sets/dev-lookalike-9.json` | `335647f6a0f0e6d2` |
+| `product/shared/safety/judge.json` (prompt A) | `1d467ad8ee1ad73e` |
+| `product/shared/safety/prompts/caller_crisis.risk100.txt` (prompt B) | `14fcc3ac8fcb181a` |
+| `product/shared/safety/rules.json` (floor) | `89e5829327dcd594` |
+| `product/shared/safety/cases.json` | `714e3158a49d088e` |
+| `product/scripts/judge-eval.mjs` | `aa2b4e1fdbf82ecb` |
+
+**Model and run conditions**
+- Model: Gemini 3.5 Flash-Lite (`google/gemini-3.5-flash-lite`), Vertex global OpenAI-compatible endpoint.
+- Calls only from the India VM, at most 1 request per second, concurrency 1.
+- `timeout_ms` is 1,500 as in judge.json. A timed-out line counts as "the judge did not flag it".
+
+**Candidates**
+- A: the system prompt in judge.json, as committed.
+- B: `prompts/caller_crisis.risk100.txt`, via `--prompt-file`. It asks for an anchored integer risk score from 0 to
+  100; both doors read `risk / 100` as the confidence.
+
+**DEV**, crisis task only. Both candidates run on:
+1. `--source dev-7` (100 crisis, 90 benign);
+2. `--set product/shared/safety/sets/dev-lookalike-9.json` (75 crisis, 150 look-alike benign).
+
+The two are pooled into one measure: 175 crisis and 240 benign lines.
+
+**Measure.** Judge-alone figures from the sweep, at each threshold `t` on the grid 0.30, 0.35, … 0.95:
+- `R(t)`, recall: crisis lines with confidence ≥ t;
+- `F(t)`, false positives: benign lines with confidence ≥ t.
+
+Point estimates decide, not CI bounds.
+
+## The rule, applied mechanically
+
+1. **Admissible:** every (candidate, t) with `F(t) ≤ 0.10` on pooled DEV.
+2. **Choose** the admissible pair with the highest `R(t)`. Break ties in this order:
+   1. lower `F(t)`;
+   2. candidate A;
+   3. the higher `t`.
+3. **If none is admissible:** candidate A at the lowest `t` with `F(t) ≤ 0.15`.
+4. **Otherwise:** candidate A at 0.5, and record that the rule found nothing.
+
+## BLIND 9
+
+Scored ONCE with the chosen (candidate, t). Report:
+- judge alone, floor alone, and floor or judge;
+- recall and FP, with Wilson 95% intervals, overall and by language;
+- unavailable count and p50/p95 latency.
+
+The BLIND 9 sweep may be printed for information but never used to choose. After that, BLIND 9 is spent.
+
+## What the decision applies to
+
+- The chosen `t` becomes judge.json `threshold`. If B is chosen, B's text becomes judge.json `system_prompt`, with
+  the Python port in the same push.
+- Raise mode and the check-in remain the owner's call: `open.2026-10-23.judge-raise-soft-checkin`.

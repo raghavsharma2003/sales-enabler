@@ -113,3 +113,15 @@ class LintAiHonesty(unittest.TestCase):
             self.assertTrue(self.lint_note(s), s)
         for x in d['allow']:
             self.assertEqual(self.lint_note(x['text']), [], x['text'])
+
+
+class DevLookalikes(unittest.TestCase):
+    """Parity with tests/safety.test.ts: the floor on the DEV look-alike set."""
+    def test_floor(self):
+        d = json.load(open(os.path.join(os.path.dirname(CASES), 'sets', 'dev-lookalike-9.json'), encoding='utf-8'))
+        self.assertEqual([x['text'] for x in d['caller_benign'] if rules.caller_signals(x['text'])['crisis']], [])
+        self.assertGreaterEqual(sum(rules.caller_signals(x['text'])['crisis'] for x in d['caller_crisis']), 30)
+        for t in ('amar bondhu suicide korechilo ami o korbo', 'hero bridge se kood jata hai main bhi kood jaunga', 'ami o ekhon marte chai'):
+            self.assertTrue(rules.caller_signals(t)['crisis'], t)
+        for t in ('garme marte chai na baba', 'sirichu sirichu saagaren'):
+            self.assertFalse(rules.caller_signals(t)['crisis'], t)

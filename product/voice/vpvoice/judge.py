@@ -57,11 +57,21 @@ def config(env=None):
     P = PURPOSE.upper()
     get = lambda k: env.get(f'VP_LLM_{P}_{k}') or env.get(f'VP_LLM_DEFAULT_{k}')
     return {'url': get('URL'), 'key': get('KEY'), 'model': get('MODEL'), 'header': get('KEY_HEADER') or 'authorization',
-            'usd_in': get('USD_IN_1M'), 'usd_out': get('USD_OUT_1M')}
+            'usd_in': get('USD_IN_1M'), 'usd_out': get('USD_OUT_1M'), 'auth': (get('AUTH') or '').strip().lower()}
+
+
+def vertex_token(env=None):
+    """VP_LLM_SAFETY_JUDGE_AUTH=vertex: the judge mints its own bearer token from VERTEX_SA_FILE, as the brain and voice do
+    (providers/google.py VertexToken, refreshed 5 minutes before expiry; India-only region gate included). A static key
+    lasts about an hour (rejected.2026-10-24.runtime-judge-static-vertex-token). None when there is no usable route."""
+    if config(env)['auth'] != 'vertex': return None
+    from .providers.google import GoogleRoute
+    return GoogleRoute(os.environ if env is None else env).vertex
 
 
 def configured(env=None):
     c = config(env)
+    if c['auth'] == 'vertex': return bool(c['url'] and c['model'] and vertex_token(env) is not None)
     return bool(c['url'] and c['key'] and c['model'])
 
 
@@ -89,6 +99,8 @@ def parse_verdict(raw):
     except (ValueError, TypeError): return None
     if not isinstance(o, dict): return None
     c, conf, kind = o.get('crisis'), o.get('confidence'), o.get('kind')
+    r = o.get('risk')       # optional 0-100 score (finer than the model's stepped confidences): it stands for confidence
+    if conf is None and isinstance(r, int) and not isinstance(r, bool) and 0 <= r <= 100: conf = r / 100
     if not isinstance(c, bool) or isinstance(conf, bool) or not isinstance(conf, (int, float)) or conf != conf or conf in (float('inf'), float('-inf')): return None
     if conf < 0 or conf > 1 or kind not in ('direct', 'indirect', 'none'): return None
     if (kind == 'none') == c: return None                       # crisis and kind must agree
@@ -107,12 +119,13 @@ def messages(text, prev=''):
 
 def http_complete(http, env=None):
     """An OpenAI-compatible chat completion, the same request server/llm.ts complete() sends (json mode)."""
-    c = config(env)
+    c = config(env); token = vertex_token(env)
 
     async def complete(msgs):
         body = {'model': c['model'], 'messages': msgs, 'max_completion_tokens': SPEC['max_tokens'], 'temperature': SPEC['temperature'],
                 'response_format': {'type': 'json_object'}}
-        hdr = {'content-type': 'application/json', c['header']: ('Bearer ' + c['key']) if c['header'] == 'authorization' else c['key']}
+        if token is not None: hdr = {'content-type': 'application/json', 'authorization': 'Bearer ' + await token.get(http)}
+        else: hdr = {'content-type': 'application/json', c['header']: ('Bearer ' + c['key']) if c['header'] == 'authorization' else c['key']}
         async with http.post(c['url'], json=body, headers=hdr) as r:
             if r.status != 200: raise RuntimeError(f'judge model answered {r.status}')
             j = await r.json()

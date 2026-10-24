@@ -186,3 +186,10 @@ test('judge: the prompt names both labels and the opt-out exclusions as shapes',
   assert.match(CRISIS_JUDGE.system_prompt, /opt_out/);
   assert.match(CRISIS_JUDGE.system_prompt, /call me later|another number/);
 });
+
+test('judge: an optional 0-100 risk score stands for confidence (the candidate prompt asks for it)', () => {
+  assert.deepEqual(parseVerdict('{"crisis":true,"risk":72,"kind":"indirect"}'), { crisis: true, confidence: 0.72, kind: 'indirect' });
+  assert.equal(parseVerdict('{"crisis":true,"risk":172,"kind":"indirect"}'), null);
+  assert.equal(parseVerdict('{"crisis":true,"risk":7.5,"kind":"indirect"}'), null);
+  assert.deepEqual(parseVerdict('{"crisis":true,"confidence":0.8,"risk":10,"kind":"direct"}'), { crisis: true, confidence: 0.8, kind: 'direct' }, 'confidence wins when both');
+});

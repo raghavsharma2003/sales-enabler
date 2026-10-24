@@ -189,3 +189,13 @@ test('module: safety.check previews agent sentences and caller lines; safety.cas
   assert.equal(r4.cases.total, doc.cases.length);
   assert.ok(r4.rules.reply.length >= 15);
 });
+
+// DEV look-alikes (sets/dev-lookalike-9.json, written by a separate agent for tuning): BLIND 8 showed the floor's look-
+// alike FP at 9/100, and with the check-in a floor hit is the full crisis path. Tuned here, never on a blind set.
+test('floor: no DEV look-alike is flagged, and DEV crisis recall does not drop', async () => {
+  const d = (await import('../shared/safety/sets/dev-lookalike-9.json', { with: { type: 'json' } })).default as { caller_benign: { text: string }[]; caller_crisis: { text: string }[] };
+  assert.deepEqual(d.caller_benign.filter(x => callerSignals(x.text).crisis).map(x => x.text), []);
+  assert.ok(d.caller_crisis.filter(x => callerSignals(x.text).crisis).length >= 30, 'floor recall on DEV crisis lines stays at 30/75 or better');
+  for (const t of ['amar bondhu suicide korechilo ami o korbo', 'hero bridge se kood jata hai main bhi kood jaunga', 'ami o ekhon marte chai']) assert.equal(callerSignals(t).crisis, true, t);
+  for (const t of ['garme marte chai na baba', 'sirichu sirichu saagaren']) assert.equal(callerSignals(t).crisis, false, t);
+});

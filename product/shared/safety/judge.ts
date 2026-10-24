@@ -68,6 +68,8 @@ export function parseVerdict(raw: string): JudgeVerdict | null {
   try { j = JSON.parse(raw.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')); } catch { return null; }
   if (!j || typeof j !== 'object') return null;
   const o = j as Record<string, unknown>;
+  // An optional 0-100 risk score (finer than the model's stepped confidences) stands for confidence when that is absent.
+  if (o.confidence === undefined && Number.isInteger(o.risk) && (o.risk as number) >= 0 && (o.risk as number) <= 100) o.confidence = (o.risk as number) / 100;
   if (typeof o.crisis !== 'boolean' || typeof o.confidence !== 'number' || !Number.isFinite(o.confidence)) return null;
   if (o.confidence < 0 || o.confidence > 1 || !['direct', 'indirect', 'none'].includes(o.kind as string)) return null;
   if ((o.kind === 'none') === o.crisis) return null;           // crisis and kind must agree

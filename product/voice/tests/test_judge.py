@@ -516,3 +516,71 @@ class CheckIn(unittest.TestCase):
         for x in c['shapes'] + c['answer_shapes']:
             self.assertNotRegex(x, r'["“”]', x)
             self.assertNotRegex(x, r'[ऀ-ॿ]|\b(aap|kaise|kaisa|theek|haan)\b', 'no Hinglish she could parrot: ' + x)
+
+
+class VertexAuth(unittest.TestCase):
+    """rejected.2026-10-24.runtime-judge-static-vertex-token: a static Vertex token dies after about an hour. With
+    VP_LLM_SAFETY_JUDGE_AUTH=vertex the judge mints and refreshes its own token from VERTEX_SA_FILE (VertexToken)."""
+    def setUp(self):
+        import tempfile
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from vpvoice.providers import google
+        google._VERTEX.clear()
+        pem = rsa.generate_private_key(public_exponent=65537, key_size=2048).private_bytes(
+            serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()).decode()
+        sa = {'type': 'service_account', 'project_id': 'vp-test', 'private_key_id': 'k1', 'private_key': pem,
+              'client_email': 'judge@vp-test.example.test', 'token_uri': 'https://oauth.example.test/token'}
+        self.dir = tempfile.TemporaryDirectory(); self.sa = os.path.join(self.dir.name, 'sa.json')
+        with open(self.sa, 'w') as f: json.dump(sa, f)
+        self.env = {'VP_LLM_SAFETY_JUDGE_URL': 'https://judge.example.test/v1/chat/completions', 'VP_LLM_SAFETY_JUDGE_MODEL': 'google/flash-lite-fake',
+                    'VP_LLM_SAFETY_JUDGE_AUTH': 'vertex', 'VERTEX_SA_FILE': self.sa, 'VP_REGION': 'centralindia', 'VP_SAFETY_JUDGE_MODE': 'shadow'}
+
+    def tearDown(self):
+        from vpvoice.providers import google
+        google._VERTEX.clear(); self.dir.cleanup()
+
+    def http(self):
+        test = self
+        class Resp:
+            def __init__(self, status, body): self.status = status; self.body = body
+            async def json(self): return self.body
+            async def __aenter__(self): return self
+            async def __aexit__(self, *a): return False
+        class Http:
+            mints = 0; auth = []
+            def post(self, url, json=None, data=None, headers=None):
+                if url == 'https://oauth.example.test/token':
+                    test.assertEqual(data['grant_type'], 'urn:ietf:params:oauth:grant-type:jwt-bearer')
+                    Http.mints += 1
+                    return Resp(200, {'access_token': f'ya29.fake-{Http.mints}', 'expires_in': 3600})
+                Http.auth.append(headers['authorization'])
+                return Resp(200, {'choices': [{'message': {'content': verdict(False, 0.1, 'none')}}], 'usage': {'prompt_tokens': 400, 'completion_tokens': 20}})
+        return Http()
+
+    def test_configured_without_a_static_key(self):
+        self.assertTrue(judge.configured(self.env))
+        self.assertFalse(judge.configured({**self.env, 'VP_REGION': 'eastus'}), 'Vertex only from India: no route, no judge')
+        self.assertFalse(judge.configured({k: v for k, v in self.env.items() if k != 'VERTEX_SA_FILE'}))
+
+    def test_the_token_is_minted_cached_and_refreshed_on_expiry(self):
+        http = self.http(); complete = judge.http_complete(http, self.env)
+        async def go():
+            for _ in range(2): await judge.judge_caller_crisis(INDIRECT, complete, env=self.env)
+            judge.vertex_token(self.env).exp = 0.0          # the token has expired (fake clock)
+            await judge.judge_caller_crisis(INDIRECT, complete, env=self.env)
+        asyncio.run(go())
+        self.assertEqual(http.mints, 2, 'minted once, cached, minted again after expiry')
+        self.assertEqual(http.auth, ['Bearer ya29.fake-1', 'Bearer ya29.fake-1', 'Bearer ya29.fake-2'])
+
+    def test_a_static_key_still_works_as_before(self):
+        env = {k: v for k, v in self.env.items() if k != 'VP_LLM_SAFETY_JUDGE_AUTH'}
+        self.assertFalse(judge.configured(env)); self.assertTrue(judge.configured({**env, 'VP_LLM_SAFETY_JUDGE_KEY': 'k'}))
+
+
+class RiskScore(unittest.TestCase):
+    def test_parity_with_the_ts_door(self):
+        self.assertEqual(judge.parse_verdict('{"crisis":true,"risk":72,"kind":"indirect"}'), {'crisis': True, 'confidence': 0.72, 'kind': 'indirect'})
+        self.assertIsNone(judge.parse_verdict('{"crisis":true,"risk":172,"kind":"indirect"}'))
+        self.assertIsNone(judge.parse_verdict('{"crisis":true,"risk":7.5,"kind":"indirect"}'))
+        self.assertEqual(judge.parse_verdict('{"crisis":true,"confidence":0.8,"risk":10,"kind":"direct"}')['confidence'], 0.8)

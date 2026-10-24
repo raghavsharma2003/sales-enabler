@@ -1,0 +1,59 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.judge-vertex-self-minted-token",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Voice runtime judge: VP_LLM_SAFETY_JUDGE_AUTH=vertex mints and refreshes its own bearer token from VERTEX_SA_FILE through providers/google.py GoogleRoute and VertexToken (the brain and voice code; refreshed 5 minutes before expiry; India-only region gate). No static key is needed. A static key still works as before. The TS judge (post-call analysis, practice runs) still takes a static key only.",
+   "rationale": "rejected.2026-10-24.runtime-judge-static-vertex-token: a static Vertex token dies after about an hour.",
+   "reverse_if": "The judge moves off Vertex."
+  },
+  {
+   "id": "measure.2026-10-24.floor-dev-lookalikes",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Crisis floor on the new DEV look-alike set (sets/dev-lookalike-9.json: 150 look-alike benign, 75 crisis; written by a separate agent for tuning). Before: FP 3/150 (ta-en laughter 'sirichu ... saagaren', bn-en a friend's past suicide, hinglish a film hero jumping), recall 30/75. After three exemptions and a Bengali spelling variant: FP 0/150, recall 30/75 (kept). dev-7: FP 0/90, recall 100/100 (in-sample). Both doors agree.",
+   "n": "150 benign and 75 crisis DEV lines; dev-7 190",
+   "method": "rules.caller_signals (Python) and callerSignals (TS) on every line; tests in both doors",
+   "not_verified": "The DEV set shows a 2% floor FP against BLIND 8's 9/100. Its writer's look-alikes are easier for the floor than BLIND 8's were, so the cut on blind look-alikes is unknown until BLIND 9 is scored. Floor recall on DEV crisis lines is only 30/75: recall must come from the judge."
+  },
+  {
+   "id": "decision.2026-10-24.prereg9",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Pre-registered rule for BLIND 9 (research/2026-10-24/judge-prereg9/PREREG.md, written 02:39:58Z before any candidate DEV run). Candidates: A, the judge.json prompt; B, prompts/caller_crisis.risk100.txt (an anchored 0-100 risk score; both doors read risk/100). Pooled DEV (dev-7 + dev-lookalike-9). Admissible: judge-alone FP ≤ 10%. Choose the highest recall; ties go to lower FP, then A, then the higher threshold. BLIND 9 is scored once by the integrator.",
+   "rationale": "Flash-Lite's confidences step at 0.85: 6/8 DEV FPs and 24 true crisis lines sit there, so no threshold separates them. With the check-in a judge-only false positive costs a gentle check-in, so the rule favours recall within an FP cap.",
+   "reverse_if": "The owner keeps the check-in off; then a stricter FP cap applies."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.judge-vertex-self-minted-token",
+   "to": "rejected.2026-10-24.runtime-judge-static-vertex-token",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.floor-dev-lookalikes",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.prereg9",
+   "to": "open.2026-10-23.judge-checkin-dev-tuning",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-judge-vertex-prereg9-floor",
+   "details": "Runtime judge mints its own Vertex token; risk 0-100 parse in both doors plus a candidate prompt; PREREG-9 written; BLIND 9 (unread) and DEV look-alikes written by separate agents; floor DEV look-alike FP 3/150 to 0/150 with recall kept. Gates: tsc clean, fresh-DB 566/566, ui-contract strict 178/178, voice unittest OK."
+  }
+ ]
+}

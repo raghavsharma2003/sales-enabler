@@ -53,6 +53,11 @@
               "none"
             ]
           },
+          "risk": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
           "opt_out": {
             "type": "boolean"
           },
@@ -64,7 +69,8 @@
         },
         "optional": [
           "opt_out",
-          "opt_out_confidence"
+          "opt_out_confidence",
+          "risk"
         ]
       },
       "raise_when": "crisis: mode == 'raise' AND crisis == true AND confidence >= threshold AND kind != 'none'. opt_out: mode == 'raise' AND opt_out == true AND opt_out_confidence >= opt_out_threshold AND the call is not in crisis. opt_out and opt_out_confidence are optional: a reply without them can never raise an opt-out, and a malformed pair is ignored (the crisis label still counts).",

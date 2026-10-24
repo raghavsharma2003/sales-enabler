@@ -386,6 +386,7 @@ body names another call, 404 for an unknown call, 409 if the call is not joined,
 | `VP_RECORDINGS_DIR` | Where two-channel WAV recordings are written (`recordingUri` = `file://…`); unset = none |
 | `VP_VAD`, `VP_VAD_MODEL` | `energy` forces the energy VAD; path to `silero_vad.onnx` |
 | `VP_LLM_SAFETY_JUDGE_URL`, `_KEY`, `_MODEL`, `_KEY_HEADER` (falls back to `VP_LLM_DEFAULT_*`) | The crisis judge's OpenAI-compatible model, as `server/llm.ts`; unset = no judge |
+| `VP_LLM_SAFETY_JUDGE_AUTH=vertex` | The judge mints and refreshes its own Vertex token from `VERTEX_SA_FILE` (as the brain and voice do; India region only); no static key needed |
 | `VP_LLM_SAFETY_JUDGE_USD_IN_1M`, `_USD_OUT_1M` | Judge prices for the cost meter; unset = tokens metered with `detail.priced = false` |
 | `VP_SAFETY_JUDGE_MODE` | `off`, `shadow` (default), `raise` (owner's go only) |
 | `VP_SAFETY_JUDGE` | Path to `judge.json` (default: next to the package, else `product/shared/safety/judge.json`) |
