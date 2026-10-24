@@ -191,6 +191,8 @@ export type ToolName =
   | "simcaller.list"
   | "simcaller.save"
   | "source.commit"
+  | "source.crm.budget"
+  | "source.crm.budget.set"
   | "source.crm.lists"
   | "source.crm.pull"
   | "source.crm.sources"
@@ -1467,7 +1469,16 @@ export interface ToolInput {
     consentPurpose?: string;
     audienceName?: string;
   };
-  /** The contact lists (HubSpot) or views (Zoho CRM) a connected CRM offers for import (read) */
+  /** How many Salesforce API calls Vyakti may use a day for a connected org, how many it used in the last 24 hours, and the org's own usage as Salesforce last reported it (read) */
+  "source.crm.budget": {
+    integrationId: string;
+  };
+  /** Set how many Salesforce API calls Vyakti may use a day for a connected org (10 to 100,000); it still never takes the org past 90% of its own limit (draft) */
+  "source.crm.budget.set": {
+    integrationId: string;
+    dailyCalls: number;
+  };
+  /** The contact lists (HubSpot), views (Zoho CRM) or Contact and Lead list views (Salesforce) a connected CRM offers for import (read) */
   "source.crm.lists": {
     integrationId: string;
   };
@@ -1480,7 +1491,7 @@ export interface ToolInput {
   };
   /** Lists imported from a CRM, with their sync timer, when they last synced and why a sync failed (read) */
   "source.crm.sources": {
-    kind?: "hubspot" | "zoho_crm";
+    kind?: "hubspot" | "zoho_crm" | "salesforce";
   };
   /** Replace a webhook source's signing secret; the old one keeps working for 24 hours so the sender can switch (policy, waits for approval) */
   "source.hook_secret.rotate": {
@@ -2050,6 +2061,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "simcaller.list": { risk: "read", needsApproval: false },
   "simcaller.save": { risk: "draft", needsApproval: false },
   "source.commit": { risk: "draft", needsApproval: false },
+  "source.crm.budget": { risk: "read", needsApproval: false },
+  "source.crm.budget.set": { risk: "draft", needsApproval: false },
   "source.crm.lists": { risk: "read", needsApproval: false },
   "source.crm.pull": { risk: "draft", needsApproval: false },
   "source.crm.sources": { risk: "read", needsApproval: false },

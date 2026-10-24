@@ -57,7 +57,7 @@ export interface ImportColumn { header: string; sample: string[]; field: string;
 export interface ImportRowVerdict { row: number; phone: string | null; verdict: 'ok' | 'duplicate' | 'skipped' | 'suppressed' | 'review'; reason?: string; name?: string }
 export interface ImportFact { key: string; label: string; status: 'matched' | 'name' | 'missing'; column?: string; suggestions: string[] }
 export interface ImportPreview {
-  uploadId: string; columns: ImportColumn[]; rows: ImportRowVerdict[]; counts: { in: number; callable: number; duplicate: number; skipped: number }; questions: { text: string }[];
+  uploadId: string; columns: ImportColumn[]; rows: ImportRowVerdict[]; counts: { in: number; callable: number; toSave: number; optedOut: number; duplicate: number; skipped: number }; questions: { text: string }[];
   agentFacts?: { agent: string; facts: ImportFact[] };                       // what the chosen agent says from each person's record
   converted?: { sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number };   // an Excel file read on the server
 }

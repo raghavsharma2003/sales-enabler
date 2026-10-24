@@ -7307,9 +7307,65 @@
    }
   },
   {
+   "name": "source.crm.budget",
+   "risk": "read",
+   "summary": "How many Salesforce API calls Vyakti may use a day for a connected org, how many it used in the last 24 hours, and the org's own usage as Salesforce last reported it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "integrationId"
+    ]
+   }
+  },
+  {
+   "name": "source.crm.budget.set",
+   "risk": "draft",
+   "summary": "Set how many Salesforce API calls Vyakti may use a day for a connected org (10 to 100,000); it still never takes the org past 90% of its own limit",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "dailyCalls": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 100000
+     }
+    },
+    "required": [
+     "integrationId",
+     "dailyCalls"
+    ]
+   }
+  },
+  {
    "name": "source.crm.lists",
    "risk": "read",
-   "summary": "The contact lists (HubSpot) or views (Zoho CRM) a connected CRM offers for import",
+   "summary": "The contact lists (HubSpot), views (Zoho CRM) or Contact and Lead list views (Salesforce) a connected CRM offers for import",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -7360,7 +7416,7 @@
       "items": {
        "type": "string",
        "pattern": "^[A-Za-z0-9_]{1,80}$",
-       "description": "a CRM field's API name, e.g. hs_whatsapp_consent or Call_Consent"
+       "description": "a CRM field's API name, e.g. hs_whatsapp_consent, Call_Consent or Call_Consent__c"
       },
       "maxItems": 30
      },
@@ -7396,7 +7452,8 @@
       "type": "string",
       "enum": [
        "hubspot",
-       "zoho_crm"
+       "zoho_crm",
+       "salesforce"
       ]
      }
     },

@@ -258,7 +258,7 @@ test('refusals in plain words: bad credentials, a non-CRM integration, another w
   assert.equal(r.status, 'not_executed');
   assert.match((r as any).reason, /refused the stored credentials; reconnect/);
   const slack = await w.connect('slack', 'Team chat', { webhook_url: 'https://hooks.slack.com/services/T0SYNTH/B0SYNTH/x' });
-  assert.match((await w.call('source.crm.lists', { integrationId: slack }) as any).reason, /imports contacts from HubSpot and Zoho CRM/);
+  assert.match((await w.call('source.crm.lists', { integrationId: slack }) as any).reason, /imports contacts from HubSpot, Zoho CRM and Salesforce/);
   const good = await w.connect('hubspot', 'HubSpot (synthetic)', { access_token: HS_TOKEN });
   const theirs = await other.call('source.crm.pull', { integrationId: good, listId: '101' });
   assert.equal(theirs.status, 'not_executed');

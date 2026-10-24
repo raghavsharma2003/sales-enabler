@@ -118,10 +118,14 @@ const REJECT_TEXT: Record<string, string> = {
 export function parseCsvSample(text: string, col: number): string[] {
   return text.split(/\r?\n/).slice(1, 4).map(l => (l.split(',')[col] ?? '').trim());
 }
-// ---- contacts from a CRM (HubSpot lists, Zoho CRM views), read only ----
-export type CrmKind = 'hubspot' | 'zoho_crm';
+// ---- contacts from a CRM (HubSpot lists, Zoho CRM views, Salesforce list views), read only ----
+export type CrmKind = 'hubspot' | 'zoho_crm' | 'salesforce';
 export interface CrmSource { id: string; name: string; kind: CrmKind; listName: string; integrationId: string; everyHours: number | null; lastSyncedAt: string | null; lastSyncError: string | null; imported: boolean }
-export interface CrmPull { uploadId: string; sourceId: string; records: number; toImport: number; unchangedSkipped: number; numberChanged: number; truncated: boolean }
+/** apiCalls (Salesforce): the calls this pull made, and the org's budget and usage. unreadable: fields the CRM user may not read. */
+export interface CrmApiCalls { calls: number; budget: number; usedLast24h: number; orgUsed: number | null; orgLimit: number | null }
+export interface CrmPull { uploadId: string; sourceId: string; records: number; toImport: number; unchangedSkipped: number; numberChanged: number; truncated: boolean; unreadable?: string[]; apiCalls?: CrmApiCalls | null }
+export interface CrmBudget { integrationId: string; dailyCalls: number; usedLast24h: number; orgUsed: number | null; orgLimit: number | null; orgReservePercent: number }
+export const crmBudget = (integrationId: string) => run<CrmBudget>('source.crm.budget', { integrationId });
 export async function crmConnections(kind: CrmKind): Promise<{ id: string; name: string }[]> {
   return arr<any>((await run<{ integrations: unknown[] }>('integration.list', {})).integrations).filter(i => i.kind === kind && i.status === 'connected').map(i => ({ id: i.id, name: i.name }));
 }
@@ -166,7 +170,10 @@ export async function importMap(uploadId: string, text: string, overrides?: Reco
   });
   const cols = arr<any>(r.columns).map(c => ({ header: c.header, sample: Array.isArray(c.samples) ? c.samples : parseCsvSample(text, c.column), field: c.field === 'attribute' ? `attribute:${c.key}` : c.field, key: c.key, confidence: c.confidence, why: c.why }));
   const rej = Object.values<number>(r.phones?.rejected ?? {}).reduce((a, b) => a + b, 0);
-  return { uploadId, columns: cols, rows, counts: { in: r.rowsTotal, callable: r.phones?.ok ?? 0, duplicate: r.phones?.duplicatesInFile ?? 0, skipped: rej }, questions: arr<any>(r.questions).map(q => ({ text: typeof q === 'string' ? q : q.text ?? JSON.stringify(q) })),
+  // Valid numbers that will not be called: opted out in this file, already suppressed, or erased for good. Opted-out people
+  // are still saved (with their opt-out); erased ones are not.
+  const valid = r.phones?.ok ?? 0, nc = { optedOut: 0, suppressed: 0, tombstoned: 0, ...(r.notCallable ?? {}) };
+  return { uploadId, columns: cols, rows, counts: { in: r.rowsTotal, callable: Math.max(0, valid - nc.optedOut - nc.suppressed - nc.tombstoned), toSave: Math.max(0, valid - nc.tombstoned), optedOut: nc.optedOut + nc.suppressed, duplicate: r.phones?.duplicatesInFile ?? 0, skipped: rej }, questions: arr<any>(r.questions).map(q => ({ text: typeof q === 'string' ? q : q.text ?? JSON.stringify(q) })),
     ...(r.agentFacts ? { agentFacts: { agent: r.agentFacts.agent, facts: arr<any>(r.agentFacts.facts).map(f => ({ key: f.key, label: f.label, status: f.status, column: f.column, suggestions: arr<string>(f.suggestions) })) } } : {}),
     ...(r.converted?.from === 'xlsx' ? { converted: { sheet: r.converted.sheet, rows: r.converted.rows, formulaCells: r.converted.formulaCells, formulaWithoutValue: r.converted.formulaWithoutValue } } : {}) };
 }

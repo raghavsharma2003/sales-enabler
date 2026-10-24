@@ -80,6 +80,14 @@
       "risk": "draft"
     },
     {
+      "id": "source.crm.budget",
+      "risk": "read"
+    },
+    {
+      "id": "source.crm.budget.set",
+      "risk": "draft"
+    },
+    {
       "id": "source.crm.lists",
       "risk": "read"
     },
@@ -127,16 +135,18 @@
     "product/db/migrations/0104_intake_suppression_evidence.sql",
     "product/db/migrations/0105_intake_consent_effective.sql",
     "product/db/migrations/0106_intake_xlsx.sql",
-    "product/db/migrations/0107_intake_crm.sql"
+    "product/db/migrations/0107_intake_crm.sql",
+    "product/db/migrations/0108_intake_crm_budget.sql"
   ],
   "tests": {
-    "passed": 33,
-    "total": 33,
+    "passed": 39,
+    "total": 39,
     "files": [
       "product/tests/intake.test.ts (19)",
       "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)",
       "product/tests/intake-xlsx.test.ts (8)",
-      "product/tests/intake-crm.test.ts (5)"
+      "product/tests/intake-crm.test.ts (5)",
+      "product/tests/intake-salesforce.test.ts (6)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
   },
@@ -166,7 +176,8 @@
     "Web import screen: Excel/CSV/TSV up to 20 MB, \"Which agent will call them?\", the fact-contract card with one-tap \"Use <column>\", per-person voice and opening as column choices. Browser flow and screenshots contacts-import-excel-d/m.",
     "campaigns buildTicket applies rowOverrides (sanctioned edit); CallTicket.contact.rowOverrides says what was applied or refused (campaigns.test.ts F3b)",
     "CRM contact import, read only: HubSpot lists (lists/search, memberships/join-order, contacts/batch/read at 100) and Zoho CRM views (token refresh, settings/custom_views, Contacts by cvid with page_token). A pull is an upload on a crm source, mapped by source.map (agent contract included) and saved by source.commit; source.sync re-imports with the last mapping; idempotent on the CRM id (intake_crm_record keeps a hash of the number): unchanged records skipped, a changed number flagged and left out. Consent and DND only from CRM fields that say so; otherwise unknown. Docs used: research/2026-10-24/crm-import/README.md.",
-    "Web: Contacts > Import > From HubSpot / From Zoho CRM (lazy chunk import-crm, 2.4 KB gzip): pick a list or view, the same column matching and verdicts as a file (shared import-review.tsx), save, then a timer (off, 1, 6, 24 h) and Sync now; a failed sync shows in plain words; an empty state links to Settings > Integrations. Browser flow against a local fake CRM; screenshots contacts-import-hubspot*, contacts-import-crm-empty at 1440 and 390; axe screens added."
+    "Web: Contacts > Import > From HubSpot / From Zoho CRM (lazy chunk import-crm, 2.4 KB gzip): pick a list or view, the same column matching and verdicts as a file (shared import-review.tsx), save, then a timer (off, 1, 6, 24 h) and Sync now; a failed sync shows in plain words; an empty state links to Settings > Integrations. Browser flow against a local fake CRM; screenshots contacts-import-hubspot*, contacts-import-crm-empty at 1440 and 390; axe screens added.",
+    "Salesforce contact import, read only: Contact and Lead list views (listviews, list view describe for the view's own SOQL, object describe for field-level security, COUNT() then query with nextRecordsUrl). Per-org API budget (1,000 calls per rolling 24 h unless set with source.crm.budget.set; never past 90% of the org's limit per Sforce-Limit-Info): a pull counts first, re-checks before every page and stops with nothing imported; the calls used are on the receipt (converted.apiCalls). Fields the user may not read get no column and are named (converted.unreadable). DoNotCall is an opt-out. CRM reads run in prepare, outside the transaction. Web: From Salesforce tab and API budget card; the preview counts valid numbers that will not be called. Tests intake-salesforce 6/6; e2e flow and axe; screenshots contacts-import-salesforce at 1440 and 390."
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -182,7 +193,8 @@
     ".xlsx with zip64, encrypted workbooks, or the first sheet being a chart sheet",
     "The runtime leading with ticket.contact.rowOverrides.usefulFirst (voice module)",
     "Real HubSpot or Zoho accounts (fakes only, shaped from the docs; two shapes were inferred where the official page did not show them: HubSpot lists/search response, Zoho v8 custom_views)",
-    "Zoho datacenters other than the fake; HubSpot lists over 100 (paging of lists/search)"
+    "Zoho datacenters other than the fake; HubSpot lists over 100 (paging of lists/search)",
+    "A real Salesforce org (fakes only). The shapes are from search-quoted official text and the jsforce source; developer.salesforce.com refuses automated access (open.2026-10-24.salesforce-shapes-secondary)."
   ],
   "needs_from_others": [
     {
@@ -228,7 +240,8 @@
     {
       "from": "workspace",
       "what": "INTEGRATION_KINDS: set usedBy for hubspot and zoho_crm to 'Imports contacts' (the label now reads 'Stored, not used yet')."
-    }
+    },
+    "workspace: salesforce usedBy 'Imports contacts' in integrations.ts and SET_UP link /contacts/import?from=salesforce (requested 2026-10-24)"
   ],
   "jobs": [
     "intake.retention (daily 03:10 IST)",

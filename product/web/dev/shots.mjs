@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { mkdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { EMI_ROWS, xlsxFile } from './xlsx-sample.mjs';
-import { HS_TOKEN, startFakeCrm } from './fake-crm.mjs';
+import { HS_TOKEN, SF, startFakeCrm } from './fake-crm.mjs';
 const require = createRequire('/opt/node-tools/node_modules/');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:8788';
@@ -41,6 +41,10 @@ const screens = (id) => [
       await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); await p.getByRole('button', { name: /^Save \d+ contacts$/ }).click();
     }
     await card.waitFor({ timeout: 15000 }); await card.scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
+  // Salesforce: a list view pulled, with Email hidden by field-level security (named, not emptied) and the API budget card.
+  ['contacts-import-salesforce', '/contacts/import?from=salesforce', { before: async (p) => { await connectSalesforce(p); }, after: async (p) => {
+    await p.getByLabel('Salesforce list view').selectOption({ label: 'Contacts: Key accounts' }); await p.getByRole('button', { name: 'Check this list view' }).click();
+    await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); await p.getByText(/^Read \d+ contacts? from Salesforce/).scrollIntoViewIfNeeded(); await p.waitForTimeout(300); } }],
   ['contact', `/contacts/${id.contact}`], ['contact-suppressed', `/contacts/${id.suppressed}`], ['contacts-export', '/contacts', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.waitForTimeout(500); } }], ['audiences', '/audiences'],
   ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-draft', `/campaigns/${id.camp}`], ['campaign-draft2', `/campaigns/${id.camp2}`], ['campaign-cap', `/campaigns/${id.camp2}`, { after: async (p) => { await p.getByRole('button', { name: /^(Set|Change) spend cap$/ }).click(); await p.waitForTimeout(900); } }],
   ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.optout}`], ['insights', '/insights'], ['numbers', '/numbers'],
@@ -83,6 +87,12 @@ const fakeCrm = await startFakeCrm(Number(new URL(process.env.VP_CRM_FAKE_URL ??
 async function connectHubspot(p) {
   const has = (await toolDo(p, 'integration.list')).integrations.some(i => i.kind === 'hubspot' && i.status === 'connected');
   if (!has) { const { stashId } = await toolDo(p, 'integration.stage_secrets', { kind: 'hubspot', secrets: { access_token: HS_TOKEN } }); await toolDo(p, 'integration.connect', { kind: 'hubspot', name: 'HubSpot (synthetic)', stashId }); }
+  await p.reload({ waitUntil: 'networkidle' });
+}
+async function connectSalesforce(p) {
+  if (fakeCrm) fakeCrm.state.sfHidden = new Set(['Email']);
+  const has = (await toolDo(p, 'integration.list')).integrations.some(i => i.kind === 'salesforce' && i.status === 'connected');
+  if (!has) { const { stashId } = await toolDo(p, 'integration.stage_secrets', { kind: 'salesforce', secrets: SF }); await toolDo(p, 'integration.connect', { kind: 'salesforce', name: 'Salesforce (synthetic)', stashId }); }
   await p.reload({ waitUntil: 'networkidle' });
 }
 async function configureSso(p) {

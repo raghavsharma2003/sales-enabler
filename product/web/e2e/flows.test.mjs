@@ -9,7 +9,7 @@ import { createHmac } from 'node:crypto';
 import pg from 'pg';
 import { audit, axe } from './a11y.mjs';
 import { EMI_ROWS, xlsxFile } from '../dev/xlsx-sample.mjs';
-import { HS_TOKEN, startFakeCrm } from '../dev/fake-crm.mjs';
+import { HS_TOKEN, SF, startFakeCrm } from '../dev/fake-crm.mjs';
 
 let pw = null;
 for (const base of [import.meta.url, 'file:///opt/node-tools/node_modules/']) { try { pw = createRequire(base)('playwright'); break; } catch { /* next */ } }
@@ -783,6 +783,40 @@ test('Import from HubSpot: pick a list, check it like a file, save, set a timer;
     await page.getByRole('tab', { name: 'From Zoho CRM' }).click();
     await page.getByText('Zoho CRM is not connected').waitFor();
     assert.deepEqual(crm.writes(), [], 'read only: no write call reached the CRM');
+  } finally { crm.server.close(); }
+});
+
+test("Import from Salesforce: a list view checked like a file; a field the user may not read is named, not emptied; Salesforce's do-not-call is an opt-out; the API budget is shown and can be changed; read only", { skip: process.env.VP_CRM_FAKE_URL ? false : 'no fake CRM port (run through e2e/run.sh)' }, async () => {
+  const crm = await startFakeCrm(Number(new URL(process.env.VP_CRM_FAKE_URL).port));
+  try {
+    crm.state.sfHidden = new Set(['Email']);                      // field-level security hides Email from the integration user
+    const st = (await tool('integration.stage_secrets', { kind: 'salesforce', secrets: SF })).result;
+    const p = await tool('integration.connect', { kind: 'salesforce', name: 'Salesforce (synthetic)', stashId: st.stashId });
+    const ok = await (await ctx.request.post(`${BASE}/v1/actions/${p.actionId}/decide`, { data: { approve: true } })).json();
+    assert.equal(ok.status, 'confirmed', JSON.stringify(ok));
+    await page.goto(`${BASE}/contacts/import?from=salesforce`);
+    await page.getByLabel('Salesforce list view').selectOption({ label: 'Contacts: Key accounts' });
+    await page.getByRole('button', { name: 'Check this list view' }).click();
+    await page.getByText('3. What will happen to each row').waitFor({ timeout: 15000 });
+    const hint = page.getByText('Read 3 contacts from Salesforce.', { exact: false });
+    await hint.waitFor();
+    const said = await hint.innerText();
+    assert.match(said, /Salesforce does not let the connected user read Email; that field is left out, not treated as empty\./);
+    assert.match(said, /This used \d+ API calls \(\d+ of 1,000 in the last 24 hours\)\./, 'the API calls the pull used are shown');
+    assert.equal(await page.getByLabel('Do not call', { exact: true }).inputValue(), 'opt_out', "Salesforce's DoNotCall is matched as an opt-out");
+    await page.getByLabel('Audience name').fill('Salesforce key accounts (synthetic)');
+    await page.getByRole('button', { name: /^Save \d contacts?$/ }).click();
+    await page.locator('.card', { hasText: 'Lists kept in step with Salesforce' }).waitFor({ timeout: 15000 });
+    const supp = await pool.query("SELECT 1 FROM suppression s JOIN contact c ON c.id = s.contact_id WHERE c.e164 = '+919000050702' AND s.reason = 'opt_out'");
+    assert.equal(supp.rowCount, 1, 'the contact Salesforce marks Do Not Call is suppressed');
+    // The budget: shown with what was used, and changed through the real tool.
+    const budget = page.locator('.card', { hasText: 'Salesforce API budget' });
+    assert.match(await budget.innerText(), /used in the last 24 hours\. Salesforce last reported the org at [\d,]+ of 15,000; Vyakti stops at 90%\./);
+    await budget.getByLabel('Calls Vyakti may use a day').selectOption('5000');
+    await page.getByText('Budget changed.').waitFor();
+    const integrationId = (await tool('integration.list')).result.integrations.find(i => i.kind === 'salesforce').id;
+    assert.equal((await tool('source.crm.budget', { integrationId })).result.dailyCalls, 5000);
+    assert.deepEqual(crm.writes(), [], 'read only: no write call reached Salesforce');
   } finally { crm.server.close(); }
 });
 

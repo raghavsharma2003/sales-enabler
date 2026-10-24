@@ -111,7 +111,7 @@ Vikram Rao,9000000015,Telugu,Patna,03/02/2027,A-10238
 
 // The CRM import is its own chunk: only people who import from a CRM download it.
 const CrmImport = lazy(() => import('./import-crm.tsx'));
-const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }] as const;
+const SOURCES = [{ id: 'file', label: 'From a file' }, { id: 'hubspot', label: 'From HubSpot' }, { id: 'zoho_crm', label: 'From Zoho CRM' }, { id: 'salesforce', label: 'From Salesforce' }] as const;
 type ImportFrom = (typeof SOURCES)[number]['id'];
 
 function Import() {

@@ -1,7 +1,7 @@
 # CRM contact import: the API pages used (read 2026-10-24)
 
-What intake's HubSpot and Zoho CRM importers (`product/server/modules/intake/crm.ts`) call, and the shapes the test fakes
-(`product/tests/intake-crm.test.ts`) imitate. Read-only: no endpoint here writes to the CRM. No real API call was made and
+What intake's HubSpot, Zoho CRM and Salesforce importers (`product/server/modules/intake/crm.ts`) call, and the shapes the
+test fakes (`product/tests/intake-crm.test.ts`, `product/tests/intake-salesforce.test.ts`) imitate. Read-only: no endpoint here writes to the CRM. No real API call was made and
 no key was used; every test talks to a local fake server.
 
 ## HubSpot (CRM v3; private-app or OAuth token, `Authorization: Bearer <token>`)
@@ -28,9 +28,45 @@ Gaps in the pages:
 - A 204 for an empty view is not on the records page. The importer treats 204 or an empty `data` as no records.
 - The official v8 custom-views page was not found. The fake follows the v2 shape.
 
+## Salesforce (REST API v62.0; `Authorization: Bearer <access_token>`)
+
+Sources, read 2026-10-24.
+- The official pages on developer.salesforce.com refuse automated access: they return 403 to both WebFetch and curl.
+  The API reference PDF on resources.docs.salesforce.com did not verify over TLS through the session proxy. TLS
+  verification was not turned off.
+- The shapes below therefore come from two places. The official page text was quoted in search results. The source of
+  jsforce 3.6.3 (npm), a widely used client, was downloaded and read, not run. Treat them as **secondary**.
+- No real Salesforce org was called.
+
+| Call | Source | Used for |
+|---|---|---|
+| `POST {login or My Domain}/services/oauth2/token`, form body `grant_type=refresh_token&refresh_token&client_id&client_secret` | jsforce `oauth2.js` (`refreshToken`, `_postParams` posts form-encoded to `${loginUrl}/services/oauth2/token`) | An access token and `instance_url`. The default login host is `https://login.salesforce.com`. The importer refuses any host that is not https on `salesforce.com` / `force.com` before sending credentials. |
+| `GET /services/data/vXX.X/sobjects/{Contact,Lead}/listviews` | jsforce `sobject.js` `listviews()`; official page "List Views" (search result) | The views a member can pick. Response `{ listviews: [{ id, label, developerName, soqlCompatible, url }], done, nextRecordsUrl, size }`. Views with `soqlCompatible: false` (Recently Viewed) are not offered. |
+| `GET .../sobjects/{obj}/listviews/{id}/describe` | jsforce `ListView.describe()`; official "List View Describe" ("the ID, the columns, and the SOQL query", v32.0+). `DescribeSoqlListView` documents `query`, `whereCondition`, `scope`, `sobjectType`, `orderBy`. | The view's SOQL (`query`). The importer keeps its `FROM … WHERE … ORDER BY` tail and replaces the column list with its own. |
+| `GET .../sobjects/{obj}/describe` | jsforce `describe()` | The fields this user may read (see the field-level security gap below). |
+| `GET .../query?q=SOQL`, then `GET {nextRecordsUrl}` while `done` is false | jsforce `query.js` (`nextRecordsUrl` locator) | Records. `SELECT COUNT() …` gives `totalSize` first, so the budget is checked before any page is read. |
+| `Sforce-Limit-Info: api-usage=used/limit` on every REST answer except `/` | Official "Limit Info Header" (search result: "The first number is the number of API calls used, and the second number is the API limit for the organization"); jsforce `connection.js` parses `/api-usage=(\d+)\/(\d+)/` | The org's own usage. The importer stops at 90% of the limit. |
+
+Gaps:
+- **Field-level security.** No source confirms that `describe` omits fields the running user cannot read. Third-party
+  reports agree that SOQL naming such a field fails with `INVALID_FIELD` "No such column". The importer handles both:
+  - a field missing from describe is unreadable;
+  - an `INVALID_FIELD` on a selected field drops that field once and names it.
+
+  Neither case is ever imported as an empty value.
+- **`REQUEST_LIMIT_EXCEEDED`.** That this is the daily-cap error (403) is from general knowledge and third-party pages,
+  not an official page read here. It is handled as a budget stop, not as bad credentials.
+- **Whether failed requests and the token exchange count toward the daily limit.** Not confirmed. The importer counts
+  every REST attempt, retries included. It does not count the token exchange.
+- **Page size.** Salesforce may return fewer than 2,000 records a page. The importer re-estimates the calls it needs
+  after every page.
+- **`DoNotCall`.** That it is a standard boolean on Contact and Lead is from general knowledge, not a page read here.
+  A view on an org without it simply has no "Do not call" column.
+
 ## What the importer does not take
 
-- **Consent and DND.** Neither CRM has a standard field for consent to phone calls. HubSpot's `hs_legal_basis` is about data processing, and Zoho's `Email_Opt_Out` is about email, so neither is taken as call consent or opt-out.
-  - A workspace that keeps consent or do-not-call in its own CRM field adds that field to the pull and maps it in `source.map`, as with a file.
+- **Consent and DND.** No CRM here has a standard field for consent to phone calls. HubSpot's `hs_legal_basis` is about data processing, and Zoho's `Email_Opt_Out` is about email, so neither is taken as call consent or opt-out.
+  - Salesforce's standard `DoNotCall` is the one do-not-call field a CRM keeps for phone calls. It is read by default and matched as an opt-out (a suppression, never cleared). The registry's DND status (NCPR) is still never taken from a CRM.
+  - A workspace that keeps consent or do-not-call in its own CRM field adds that field to the pull and maps it in `source.map`, as with a file. A Salesforce custom field's `__c` is dropped from the column heading, so `Call_Consent__c` reads like "Call consent".
   - Otherwise, consent and DND stay unknown.
 - **Writing back.** Nothing is written to the CRM.

@@ -66,9 +66,12 @@ async function getSource(q: Queryable, ws: string, id: string): Promise<SourceRo
 /** What a conversion found: an Excel file read on the server, or a list pulled from a CRM. baseOverrides are mappings the
  *  conversion knows for certain (a CRM id column is never a phone), applied under any the member gives. */
 export type Converted = ({ from: 'xlsx'; sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number; errorCells: number }
-  | { from: 'hubspot' | 'zoho_crm'; integrationId: string; listId: string; listName: string; records: number; unchangedSkipped: number; numberChanged: string[]; truncated: boolean })
+  | { from: 'hubspot' | 'zoho_crm' | 'salesforce'; integrationId: string; listId: string; listName: string; records: number; unchangedSkipped: number; numberChanged: string[]; truncated: boolean;
+      /** CRM fields the connected user may not read (left out, not empty). */ unreadable?: string[];
+      /** Salesforce: the API calls this pull made against the org's budget (shown on the receipt). */
+      apiCalls?: { calls: number; budget: number; usedLast24h: number; orgUsed: number | null; orgLimit: number | null } })
   & { fileBytes: number; fileSha256: string; baseOverrides?: Record<string, Partial<ColumnMap>> };
-const CRM_FROM = new Set(['hubspot', 'zoho_crm']);
+const CRM_FROM = new Set(['hubspot', 'zoho_crm', 'salesforce']);
 
 export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean;
   converted?: Converted }) {
@@ -231,6 +234,17 @@ export function registerSourceTools(reg: Registry): void {
         if (seen.has(p.e164)) dup++; else { seen.set(p.e164, r.row); ok++; }
         return p.e164;
       });
+      // Whole file: which valid numbers will not be callable after the save (each counted once, in this order): opted out in
+      // this file, already suppressed in the workspace, or erased for good (a tombstone blocks re-creation).
+      const all = [...seen.keys()], optedOut = new Set(rows.flatMap((r, k) => r.optOut && e164s[k] ? [e164s[k]!] : []));
+      const allSalt = await workspaceSalt(ctx.q, ctx.workspaceId);
+      const allHash = new Map(all.map(e => [hashWith(allSalt, e), e]));
+      const suppressedAll = new Set((await many<{ e164: string }>(ctx.q, `SELECT c.e164 FROM contact c JOIN suppression s ON s.workspace_id = c.workspace_id AND s.scope = 'workspace'
+        AND (s.contact_id = c.id OR s.e164 = c.e164) WHERE c.workspace_id = $1 AND c.e164 = ANY($2::text[])
+        UNION SELECT e164 FROM suppression WHERE workspace_id = $1 AND scope = 'workspace' AND e164 = ANY($2::text[])`, [ctx.workspaceId, all])).map(r => r.e164));
+      const tombAll = new Set((await many<{ e164_hash: string }>(ctx.q, 'SELECT e164_hash FROM tombstone WHERE workspace_id = $1 AND e164_hash = ANY($2::text[])', [ctx.workspaceId, [...allHash.keys()]])).map(r => allHash.get(r.e164_hash)!));
+      const notCallable = { optedOut: 0, suppressed: 0, tombstoned: 0 };
+      for (const e of all) { if (tombAll.has(e)) notCallable.tombstoned++; else if (optedOut.has(e)) notCallable.optedOut++; else if (suppressedAll.has(e)) notCallable.suppressed++; }
       // Preview rows: look up existing, suppressed and tombstoned state for just these numbers.
       const n = i.previewRows ?? 20;
       const head = rows.slice(0, n);
@@ -278,7 +292,7 @@ export function registerSourceTools(reg: Registry): void {
         // A few values per column for the mapping screen (an Excel file has no text in the browser). Viewers get none.
         columns: t.mapping.columns.map(c => ctx.actor.role === 'viewer' || c.field === 'ignore' ? c : { ...c, samples: t.rows.slice(t.mapping.hasHeader ? 1 : 0)
           .map(r => (r[c.column] ?? '').trim()).filter(Boolean).slice(0, 3).map(v => v.slice(0, 40)) }), ignoredByDesign: t.mapping.columns.filter(c => c.why === 'pii_by_design').map(c => c.header),
-        rowsTotal: rows.length, phones: { ok, duplicatesInFile: dup, rejected: reasons },
+        rowsTotal: rows.length, phones: { ok, duplicatesInFile: dup, rejected: reasons }, notCallable,
         preview, questions: questions.slice(0, agentFacts ? 4 : 3),
       };
     },

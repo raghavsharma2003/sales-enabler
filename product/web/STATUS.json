@@ -117,6 +117,8 @@
   "secret.reveal",
   "simcaller.list",
   "source.commit",
+  "source.crm.budget",
+  "source.crm.budget.set",
   "source.crm.lists",
   "source.crm.pull",
   "source.crm.sources",

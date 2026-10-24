@@ -36,7 +36,7 @@ export function ImportReview({ pv, setPv, srcText, agentId, onSaved, saveSub }: 
     const r = await act<{ receiptId: string; counts: Record<string, number> }>('source.commit', { uploadId: pv.uploadId, overrides: overridesFrom(pv.columns), consentPurpose: purpose || undefined, audienceName: aud }, { describe: 'List imported.' });
     if (r.ok) onSaved(r.result);
   };
-  const reasonOff = missingPhone ? 'Match one column to the phone number.' : pv.counts.callable === 0 ? 'No row can be called yet.' : !aud.trim() ? 'Name the audience.' : '';
+  const reasonOff = missingPhone ? 'Match one column to the phone number.' : pv.counts.toSave === 0 ? 'No row can be saved yet.' : !aud.trim() ? 'Name the audience.' : '';
   const vcols: Col<ImportPreview['rows'][number]>[] = [
     { key: 'n', label: 'Row', num: true, render: r => r.row },
     { key: 'v', label: 'Verdict', primary: true, render: r => <Chip tone={r.verdict === 'ok' ? 'leaf' : r.verdict === 'review' ? 'marigold' : r.verdict === 'duplicate' ? 'peacock' : 'brick'}>{({ ok: 'Ready', duplicate: 'Duplicate', skipped: 'Skipped', suppressed: 'Suppressed', review: 'Needs a look' })[r.verdict]}</Chip> },
@@ -56,7 +56,7 @@ export function ImportReview({ pv, setPv, srcText, agentId, onSaved, saveSub }: 
         {pv.agentFacts && <AgentFactsCard facts={pv.agentFacts} headers={pv.columns.map(c => c.header)} busy={busy} onUse={useColumn} />}
         <Card><CardHead title="3. What will happen to each row" />
           <div className="receipt" role="status">
-            <div><b className="tnum serif">{count(pv.counts.in)}</b><span>rows in</span></div><div><b className="tnum serif">{count(pv.counts.callable)}</b><span>callable numbers</span></div>
+            <div><b className="tnum serif">{count(pv.counts.in)}</b><span>rows in</span></div><div><b className="tnum serif">{count(pv.counts.callable)}</b><span>callable numbers{pv.counts.optedOut ? ` (${count(pv.counts.optedOut)} opted out, saved but never called)` : ''}</span></div>
             <div><b className="tnum serif">{count(pv.counts.duplicate)}</b><span>duplicates</span></div><div><b className="tnum serif">{count(pv.counts.skipped)}</b><span>skipped</span></div>
           </div>
           {pv.questions.map((q, i) => <div className="qcard" key={i}><p><strong>{q.text}</strong></p></div>)}
@@ -70,7 +70,7 @@ export function ImportReview({ pv, setPv, srcText, agentId, onSaved, saveSub }: 
         <Card><CardHead title="4. Save" sub={saveSub ?? "Saves contacts and an audience. It does not call anyone."} />
           <div className="formgrid"><SelectField label="Record that these people agreed to be called for" value={purpose} onChange={e => setPurpose(e.target.value)} hint="Only choose one if it is true. It is written on every contact and decides which calls are allowed. Leave it if unsure."><option value="">Do not record any consent</option><option value="service">Service calls (about their own account)</option><option value="transactional">Transactional calls (orders, appointments)</option><option value="promotional">Promotional calls</option></SelectField>
             <TextField label="Audience name" value={aud} onChange={e => setAud(e.target.value)} /></div>
-          <div style={{ marginTop: 16 }}>{reasonOff ? <Btn disabled fix={null} reason={reasonOff}>Save contacts</Btn> : <Btn kind="primary" onClick={commit}>Save {count(pv.counts.callable)} contacts</Btn>}</div></Card>
+          <div style={{ marginTop: 16 }}>{reasonOff ? <Btn disabled fix={null} reason={reasonOff}>Save contacts</Btn> : <Btn kind="primary" onClick={commit}>Save {count(pv.counts.toSave)} contacts</Btn>}</div></Card>
     </>
   );
 }
