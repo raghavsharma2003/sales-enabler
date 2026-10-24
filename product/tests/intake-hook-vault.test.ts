@@ -115,5 +115,5 @@ test('rotation: an approval, the new secret shown once, the old one kept for the
   assert.equal(await post(id, first), 401, 'after the window the old secret is refused');
   assert.equal(await post(id, second), 200);
   const file = await owner.tool('source.upload', { kind: 'csv', name: 'a file' });
-  assert.match((await owner.run('source.hook_secret.rotate', { sourceId: file.result.sourceId })).reason, /takes files/);
+  assert.match((await owner.run('source.hook_secret.rotate', { sourceId: file.result.sourceId })).reason, /has no webhook/);
 });

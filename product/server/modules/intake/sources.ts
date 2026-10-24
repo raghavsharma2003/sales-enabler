@@ -306,7 +306,7 @@ export function registerSourceTools(reg: Registry): void {
     run: async (ctx, i) => {
       const src = await one<SourceRow>(ctx.q, 'SELECT * FROM intake_source WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [i.sourceId, ctx.workspaceId]);
       if (!src) throw new Error('no such source in this workspace');
-      if (!src.hook_secret_ciphertext) throw new Error('this source takes files, not webhook events; it has no signing secret');
+      if (!src.hook_secret_ciphertext) throw new Error('this source has no webhook, so it has no signing secret (files and CRM pulls are not signed webhooks)');
       const secret = randomBytes(32).toString('base64url');
       const r = await one<{ prev_until: Date }>(ctx.q, `UPDATE intake_source SET hook_secret_prev_ciphertext = hook_secret_ciphertext, hook_secret_ciphertext = $3,
           hook_secret_prev_until = now() + ($4 || ' milliseconds')::interval, hook_secret_rotated_at = now() WHERE id = $1 AND workspace_id = $2 RETURNING hook_secret_prev_until AS prev_until`,
