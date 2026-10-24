@@ -1,0 +1,31 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.test-call-outcome-shown-not-counted",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A browser test call gets an outcome read and shown, never counted (integrator, for directive.2026-10-24.calling-first-build-all; staging showed test calls analysed with no outcome because the question came only from a campaign). With no campaign, analysis asks the outcome question of the newest campaign that runs this agent, else the workspace's only outcome definition, else one built from the agent's own required goals (values goal_reached, callback, not_interested, needs_human). The outcome stays in the call's analysis (outcomeGuess, testOutcomeFrom {from, name}); no outcome row is written, so outcomes, search, funnels, insights, learning rewards, experiments, billing figures and the escalation count never see it. The call page shows it with 'Test call: not counted', her quote and the question it was read against.",
+   "rationale": "The owner's testing is all test calls; they must see whether she got the outcome on each.",
+   "reverse_if": "The owner wants test-call outcomes aggregated (then a separate test-only view, never the live metrics), or the agent-goal question reads outcomes unlike the campaign's definition would.",
+   "evidence": [
+    "product/tests/calls-test-outcome.test.ts (synthetic, fake model): the goal question when nothing is defined; the workspace's only definition; the newest campaign on the agent wins; 0 outcome rows, absent from call search and the escalation count, outcomeGuess on call.get"
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.test-call-outcome-shown-not-counted",
+   "to": "decision.2026-10-24.call-page-turn-timeline",
+   "relation": "informed-by"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "test-call-outcome",
+   "details": "Built and tested; full suite on a fresh DB 874/874."
+  }
+ ]
+}

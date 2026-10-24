@@ -90,7 +90,7 @@ export interface CallDoc {
   safety: { seq: number; rule: string; action: string; detail: string }[];
   judgeMarks: { seq: number; label: string; outcome: 'raised' | 'shadow' | 'unavailable'; text: string }[]; tools: { seq: number; name: string; status: string }[]; handOffs: { destination: string; status: string }[];
   outcomes: { value: string; grade: string; source: string }[]; costTotal: number; costLines: { component: string; provider: string; inr_milli: number; unit: string; quantity: number }[]; settlement: string | null;
-  analysis: { status: string; summary?: string; reason?: string; fields: { key: string; value: string; quote: string }[]; fieldsDropped: number } | null; totalMs: number;
+  analysis: { status: string; summary?: string; reason?: string; testOutcome: { value: string; quote: string; question: string | null } | null; fields: { key: string; value: string; quote: string }[]; fieldsDropped: number } | null; totalMs: number;
 }
 export interface CallExplain { headline: string; because: { point: string; evidence: Record<string, unknown> }[]; outcome: { value: string; grade: string; note: string | null } | null; notes: string[] }
 

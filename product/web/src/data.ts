@@ -257,6 +257,8 @@ export async function callGet(id: string): Promise<CallDoc> {
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), judgeMarks: arr<any>(c.judgeMarks).map(j => ({ seq: j.seq, label: j.label, outcome: j.outcome, text: String(j.text) })), tools: arr(c.tools), handOffs: arr(c.handOffs),
     outcomes: arr(c.outcomes), costTotal: c.cost?.totalInrMilli ?? 0, costLines: arr(c.cost?.lines), settlement: c.cost?.settlement?.action ?? (typeof c.cost?.settlement === 'string' ? c.cost.settlement : null),
     analysis: a ? { status: a.status, summary: a.summary, reason: a.reason,
+      // A test call's outcome is read and shown, never recorded (calls/analysis.ts testOutcomeQuestion).
+      testOutcome: c.test && a.outcomeGuess?.value ? { value: String(a.outcomeGuess.value), quote: String(a.outcomeGuess.quote ?? ''), question: a.testOutcomeFrom?.name ?? null } : null,
       fields: a.fields && typeof a.fields === 'object' ? Object.entries(a.fields as Record<string, { value: string | number; quote: string; type?: string }>).map(([key, f]) => ({ key, value: f.type === 'enum' || f.type === 'sentiment' ? String(f.value).replace(/_/g, ' ').replace(/^./, x => x.toUpperCase()) : String(f.value), quote: String(f.quote) })) : [],
       fieldsDropped: Array.isArray(a.fieldsDropped) ? a.fieldsDropped.length : 0 } : null, totalMs };
 }

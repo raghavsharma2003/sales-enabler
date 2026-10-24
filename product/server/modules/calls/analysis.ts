@@ -209,7 +209,33 @@ export async function analysesSettled(): Promise<void> {
 }
 
 interface ConvRow { id: string; channel: string; transcript: Line[]; reason_code: string | null; end_reason: string | null; duration_s: number | null;
-  contact_id: string | null; def_id: string | null; def_name: string | null; def_question: string | null; allowed_values: string[] | null; def_fields: FieldDef[] | null }
+  contact_id: string | null; def_id: string | null; def_name: string | null; def_question: string | null; allowed_values: string[] | null; def_fields: FieldDef[] | null;
+  agent_version_id: string | null }
+
+/** Values for a test call's outcome when nothing better is defined: read from the agent's own goals. */
+export const PURPOSE_VALUES = ['goal_reached', 'callback', 'not_interested', 'needs_human'];
+
+/** The outcome question for a test call with no campaign (the owner tests mostly on these): the outcome definition of the
+ *  newest campaign that runs this agent, else the workspace's only definition, else a question from the agent's own
+ *  goals. The outcome it reads is shown on the call page as a test call's and is never recorded as an outcome row, so no
+ *  metric, insight, reward or experiment ever counts it. */
+export async function testOutcomeQuestion(q: Queryable, ws: string, versionId: string | null):
+  Promise<{ from: 'campaign' | 'workspace' | 'agent'; id: string | null; name: string; question: string; values: string[]; fields: FieldDef[] } | null> {
+  type D = { id: string; name: string; question: string; allowed_values: string[]; fields: FieldDef[] | null };
+  const byCampaign = versionId ? await one<D>(q, `SELECT d.id, d.name, d.question, d.allowed_values, d.fields FROM campaign c
+      JOIN agent_version cv ON cv.id = c.agent_version_id JOIN outcome_definition d ON d.id = c.outcome_definition_id AND d.workspace_id = c.workspace_id
+      WHERE c.workspace_id = $1 AND cv.agent_id = (SELECT agent_id FROM agent_version WHERE id = $2) ORDER BY c.updated_at DESC, c.id LIMIT 1`, [ws, versionId]) : null;
+  if (byCampaign) return { from: 'campaign', id: byCampaign.id, name: byCampaign.name, question: byCampaign.question, values: byCampaign.allowed_values, fields: byCampaign.fields ?? [] };
+  const defs = await many<D>(q, 'SELECT id, name, question, allowed_values, fields FROM outcome_definition WHERE workspace_id = $1 LIMIT 2', [ws]);
+  if (defs.length === 1) return { from: 'workspace', id: defs[0].id, name: defs[0].name, question: defs[0].question, values: defs[0].allowed_values, fields: defs[0].fields ?? [] };
+  const v = versionId ? await one<{ config: { agent?: { goals?: { description?: string; required?: boolean }[]; jobDescription?: string; job?: string } } }>(q,
+    'SELECT config FROM agent_version WHERE id = $1', [versionId]) : null;
+  const a = v?.config?.agent;
+  const goals = (a?.goals ?? []).filter(g => g.required !== false).map(g => g.description).filter((d): d is string => !!d?.trim());
+  const what = goals.length ? goals.join('; ') : a?.jobDescription?.trim() || (a?.job ? a.job.replace(/_/g, ' ') : null);
+  if (!what) return null;
+  return { from: 'agent', id: null, name: 'Goal of the call', question: `Did the call reach its goal (${what.slice(0, 300)})? goal_reached if the person agreed to it.`, values: PURPOSE_VALUES, fields: [] };
+}
 
 export interface AnalysisRecord {
   status: 'done' | 'failed' | 'not_configured' | 'skipped';
@@ -233,6 +259,8 @@ export interface AnalysisRecord {
   // One model only: why tiered would have read this call again (the same predicate, at the setting's threshold), or null.
   // Absent on tiered calls. analysis.settings.get counts these per workspace.
   wouldEscalate?: string | null;
+  // A test call with no campaign: which outcome question was put to the model. Its outcome is shown, never recorded.
+  testOutcomeFrom?: { from: 'campaign' | 'workspace' | 'agent'; name: string } | null;
   judgeVersionId?: string | null;
   // Read by learning: any reply-door intervention on the call, and the judge's guess with its calibration status.
   safety_violation?: boolean;
@@ -270,7 +298,7 @@ export async function refreshOutcome(q: Queryable, workspaceId: string, conversa
 
 export async function analyse(pool: pg.Pool, workspaceId: string, conversationId: string, registry?: Registry): Promise<AnalysisRecord> {
   const cv = await one<ConvRow>(pool,
-    `SELECT cv.id, cv.channel, cv.transcript, cv.reason_code, cv.end_reason, cv.duration_s, cv.contact_id,
+    `SELECT cv.id, cv.channel, cv.transcript, cv.reason_code, cv.end_reason, cv.duration_s, cv.contact_id, cv.agent_version_id,
             d.id AS def_id, d.name AS def_name, d.question AS def_question, d.allowed_values, d.fields AS def_fields
      FROM conversation cv
      LEFT JOIN attempt a ON a.id = cv.attempt_id AND a.workspace_id = cv.workspace_id
@@ -280,6 +308,9 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   if (!cv) throw new Error('no such conversation');
   const lines = cv.transcript ?? [];
   const isTest = cv.channel === 'test';
+  const testQ = isTest && !cv.def_id ? await testOutcomeQuestion(pool, workspaceId, cv.agent_version_id) : null;
+  if (testQ) Object.assign(cv, { def_id: testQ.id, def_name: testQ.name, def_question: testQ.question, allowed_values: testQ.values, def_fields: testQ.fields });
+  const asked = Boolean(cv.def_question);   // an outcome question was put to the model (a campaign's, or a test call's)
 
   // The crisis judge reads what the caller said, whatever the analysis model does (it has its own purpose and keys).
   const crisis = lines.some(l => l.speaker === 'caller') ? await crisisPass(lines, judgeOpts) : null;
@@ -341,8 +372,8 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     `SELECT id, model, config FROM judge_version WHERE workspace_id = $1 AND outcome_definition_id = $2 ORDER BY number DESC LIMIT 1`, [workspaceId, cv.def_id]) : null;
 
   const setting = await analysisSetting(pool, workspaceId);
-  const defFields = cv.def_id && Array.isArray(cv.def_fields) ? cv.def_fields : [];
-  const system = analysisPrompt({ question: cv.def_id ? cv.def_question : null, values: cv.allowed_values ?? [], instructions: judge?.config?.instructions, fields: defFields });
+  const defFields = asked && Array.isArray(cv.def_fields) ? cv.def_fields : [];
+  const system = analysisPrompt({ question: asked ? cv.def_question : null, values: cv.allowed_values ?? [], instructions: judge?.config?.instructions, fields: defFields });
   const user = lines.map(l => `${l.speaker === 'agent' ? 'AGENT' : 'PERSON'}: ${l.text}`).join('\n');
   const callerSpoke = lines.some(l => l.speaker === 'caller');
 
@@ -409,7 +440,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
   const first = passes[0];
   const why = engineDecided || firstNoDecision ? null
     : 'error' in first ? 'the first pass failed'
-    : cv.def_id && callerSpoke && !first.outcomeGuess ? 'no outcome'
+    : asked && callerSpoke && !first.outcomeGuess ? 'no outcome'
     : first.outcomeConfidence !== null && first.outcomeConfidence < setting.threshold ? 'low confidence'
     : null;
   const tiered = setting.mode === 'tiered' && Boolean(setting.escalateModel);
@@ -453,6 +484,7 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
     quotesProposed: proposed, quotesDropped: dropped, reasonCode, modelReasonCode: modelCode, outcomeGuess,
     ...(defFields.length ? { fields: fields.values, fieldsProposed: fields.proposed, fieldsDropped: fields.dropped } : {}),
     judgeVersionId: judge?.id ?? null, model: reply.model, forgetRequested, outcomeUnclear, outcomeConfidence, tier, ...(wouldEscalate !== undefined ? { wouldEscalate } : {}),
+    ...(testQ ? { testOutcomeFrom: { from: testQ.from, name: testQ.name } } : {}),
     judge: outcomeGuess ? { judgeVersionId: judge?.id ?? null, value: outcomeGuess.value, quote: outcomeGuess.quote,
       calibration: judge ? (await one<{ status: string }>(pool, 'SELECT status FROM calibration WHERE judge_version_id = $1 ORDER BY created_at DESC LIMIT 1', [judge.id]))?.status ?? 'uncalibrated' : 'uncalibrated' } : null,
   };

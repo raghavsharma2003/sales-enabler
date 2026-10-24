@@ -112,7 +112,11 @@ function Body({ c }: { c: CallDoc }) {
           <Card><CardHead title="What happened" />
             <p style={{ marginBottom: 8 }}>{c.reason?.label ?? (c.status === 'live' ? 'The call is still live.' : 'No reason has been recorded.')}</p>
             {c.reason && <p className="small muted">{c.reason.code === 'END_OPTED_OUT' ? 'Nothing to do. Vyakti will not call this number again.' : /^none\b/i.test(c.reason.action) ? `Nothing to do.${c.reason.action.replace(/^none;?\s*/i, '') ? ' ' + c.reason.action.replace(/^none;?\s*/i, '').replace(/^./, x => x.toUpperCase()).replace(/\.?$/, '.') : ''}` : `What you can do: ${c.reason.action.replace(/\.$/, '')}.`}</p>}
-            <div style={{ margin: '10px 0' }}>{outcomeChip(best?.value ?? c.outcome, best?.grade ?? null)}</div>
+            {c.test && c.analysis?.testOutcome
+              ? <div style={{ margin: '10px 0' }} data-testid="test-outcome">{outcomeChip(c.analysis.testOutcome.value, 'ai_guess')} <Chip title="Test calls never count towards outcomes, insights, learning or billing figures">Test call: not counted</Chip>
+                  {c.analysis.testOutcome.quote && <p className="small" lang="hi">“{c.analysis.testOutcome.quote}”</p>}
+                  {c.analysis.testOutcome.question && <p className="small muted">Read against: {c.analysis.testOutcome.question}.</p>}</div>
+              : <div style={{ margin: '10px 0' }}>{outcomeChip(best?.value ?? c.outcome, best?.grade ?? null)}</div>}
             {c.verified && <p className="small" data-testid="verified-outcome"><strong>Verified: {prettyCode(c.verified.value)}</strong>, from {c.verified.from}{c.verified.aiRead && <> · AI read: {prettyCode(c.verified.aiRead)}</>}{c.verified.disagree && <> <Chip tone="marigold" title="The system of record and the AI's reading of the call disagree. Disagreements are counted on each import.">Disagrees with the AI read</Chip></>}</p>}
             {best?.grade === 'ai_guess' && <p className="small muted">An AI guess is not verified by your system or a person.</p>}
             {c.analysis && c.analysis.status !== 'done' && <p className="small muted">{c.analysis.status === 'not_configured' ? 'The written summary and outcome guess are off, because no analysis model is set up on this server.' : c.analysis.status === 'failed' ? 'The written summary could not be made this time. The words, timing and cost here are not affected.' : 'This call was not analysed.'}</p>}
