@@ -41,6 +41,10 @@ class Scoring(unittest.TestCase):
         b = tb.score({'kind': 'barge', 'id': 'x', 'start': 100.0, 'clip': self.C, 'line': Line([[99.0, 100.25, 1], [101.0, 104.0, 1]], [100.25]),
                       'burst': None})
         self.assertEqual((b['barge_ms'], b['resumed_over'], b['missed']), (250, True, True))
+        # a new reply after she stopped (another rid) is not a resume: that is a false stop
+        f = tb.score({'kind': 'backchannel', 'id': 'x', 'start': 100.0, 'clip': self.C, 'line': Line([[99.0, 100.3, 1], [101.5, 103.0, 2]], [100.3]),
+                      'burst': (b'', 'haan ji')})
+        self.assertEqual((f['paused'], f['false_barge'], f['resume_gap_ms']), (True, True, None))
 
     def test_labels_and_stats(self):
         self.assertEqual(tb.pauses(self.C), [(2.0, 3.0), (5.0, 6.0)])

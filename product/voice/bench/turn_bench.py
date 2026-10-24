@@ -232,13 +232,15 @@ def score(r):
         lat = (fl[0] - onset) if fl else None
         # she must stay stopped while they talk: audio of hers starting after she yielded and before they finish is a
         # resume over a real interruption (BARGE_AUDIO), which counts as missed
-        over = bool(fl) and any(fl[0] < a < st + c['speech'][-1][1] for a, b, _ in line.segs if b > a)
+        opening = line.segs[0][2] if line.segs else None
+        over = bool(fl) and any(fl[0] < a < st + c['speech'][-1][1] for a, b, rid in line.segs if b > a and rid == opening)
         return {'kind': 'barge', 'id': r['id'], 'missed': lat is None or lat > 1.5 or over, 'resumed_over': over,
                 'barge_ms': None if lat is None else round(lat * 1000)}
     fl = [f for f in line.flushes if st <= f <= st + 2.5]
     what = 'noise' if r['burst'][1] == '' else {'haan': 'haan', 'haan ji': 'nod500', 'achha haan ji': 'nod700'}[r['burst'][1]]
     # a pause she resumes from is not a stop: false_barge = she yielded and never carried on with her opening
-    back = [a for a, b, _ in line.segs if fl and a > fl[0] and b > a]
+    opening = line.segs[0][2] if line.segs else None          # her opening's reply id: a new reply after a stop is not a resume
+    back = [a for a, b, rid in line.segs if fl and a > fl[0] and b > a and rid == opening]
     return {'kind': 'backchannel', 'id': r['id'], 'what': what, 'paused': bool(fl), 'false_barge': bool(fl) and not back,
             'resume_gap_ms': round((back[0] - fl[0]) * 1000) if fl and back else None}
 
