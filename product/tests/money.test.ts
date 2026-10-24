@@ -159,6 +159,7 @@ test('release returns the hold; nothing is spent', { skip }, async () => {
 
 test('daily caps reset at IST midnight, monthly at the IST month boundary, total never', { skip }, async () => {
   const { ws } = await workspace(10_000_000);
+  await pool.query('DELETE FROM budget WHERE workspace_id = $1', [ws]);   // this test sets its own caps (no defaults)
   const mk = (period: string, start: string) => one<{ id: string }>(pool,
     "INSERT INTO budget (workspace_id, scope_type, period, cap_inr_milli, spent_inr_milli, period_start) VALUES ($1,'workspace',$2,100000,100000,$3) RETURNING id", [ws, period, start]);
   const daily = (await mk('daily', '2026-10-31'))!.id, monthly = (await mk('monthly', '2026-10-01'))!.id, total = (await mk('total', '2026-10-01'))!.id;
@@ -270,6 +271,7 @@ test('wallet.credit: VP success only, with a reason, audited', { skip }, async (
 
 test('cap.raise is A2 and version-bound; cap.lower runs at once and only lowers', { skip }, async () => {
   const { ws, owner } = await workspace(0);
+  await pool.query('DELETE FROM budget WHERE workspace_id = $1', [ws]);   // this test sets its own caps (no defaults)
   const me = { workspaceId: ws, actor: ownerActor(owner) };
   const low = await reg.execute(pool, 'cap.lower', { scope: 'workspace', period: 'daily', capInrMilli: 500_000 }, me);
   assert.equal(low.status === 'confirmed' && low.mode, 'A1');
@@ -350,6 +352,7 @@ test('reconciliation: matching charges pass; drift opens one issue per attempt',
 
 test('tenancy: another workspace cannot read or change these rows', { skip }, async () => {
   const a = await workspace(1_000_000), b = await workspace(0);
+  await pool.query('DELETE FROM budget WHERE workspace_id = ANY($1)', [[a.ws, b.ws]]);   // this test sets its own caps (no defaults)
   const { campaignId } = await attempt(a.ws, 'A only');
   await pool.query("INSERT INTO cost_line (workspace_id, component, quantity, unit, inr_milli) VALUES ($1,'voice',1,'call',777)", [a.ws]);
   await pool.query("INSERT INTO budget (workspace_id, scope_type, period, cap_inr_milli) VALUES ($1,'workspace','daily',5000)", [a.ws]);

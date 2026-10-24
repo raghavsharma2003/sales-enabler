@@ -1,0 +1,636 @@
+<!DOCTYPE html><html lang="en"> <head><script>window.__CF_COUNTRY="US";window.__CF_REGION=""</script><script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("plivo-theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = stored === "dark" || stored === "light" ? stored : (prefersDark ? "dark" : "light");
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          else document.documentElement.classList.remove("dark");
+        } catch (e) {}
+      })();
+    </script><script>
+      (function () {
+        var root = document.documentElement;
+        function apply(code) {
+          if (code === "IN") root.setAttribute("data-market", "in");
+          else root.removeAttribute("data-market");
+        }
+        var country = "";
+        try {
+          var q = (new URLSearchParams(location.search).get("geo") || "").toUpperCase();
+          if (q === "IN" || q === "US") country = q;
+        } catch (e) {}
+        if (!country && window.__CF_COUNTRY && window.__CF_COUNTRY !== "XX") country = window.__CF_COUNTRY;
+        if (!country) {
+          try { country = sessionStorage.getItem("plivo_geo_country") || ""; } catch (e) {}
+        }
+        apply(country);
+        // Without the worker (local dev, plain static hosting) the country only
+        // arrives once useGeoCountry's IP lookup fills sessionStorage.
+        if (!country) {
+          var tries = 0;
+          var poll = setInterval(function () {
+            var cached = "";
+            try { cached = sessionStorage.getItem("plivo_geo_country") || ""; } catch (e) {}
+            if (cached) { apply(cached); clearInterval(poll); }
+            else if (++tries > 20) clearInterval(poll);
+          }, 250);
+        }
+      })();
+    </script><!-- Global Metadata --><meta charset="utf-8"><!-- Preconnect to Google Fonts --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><!-- Load Google Fonts --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Sora:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"><meta name="robots" content="index, follow"><meta name="keywords" content="AI Agents, Voice AI, Conversational AI, Customer Engagement, SMS API, Voice API, WhatsApp Business, Chat Automation, Customer Support AI, No-code AI, Plivo"><meta name="author" content="Plivo"><meta name="creator" content="Plivo"><meta name="publisher" content="Plivo Inc."><!-- Theme Script - must use the same storage key as <ThemeToggle /> (plivo-theme) --><script>
+  (function () {
+    try {
+      var stored = localStorage.getItem("plivo-theme");
+      var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var theme = stored === "dark" || stored === "light" ? stored : (prefersDark ? "dark" : "light");
+      if (theme === "dark") document.documentElement.classList.add("dark");
+      else document.documentElement.classList.remove("dark");
+    } catch (e) {}
+  })();
+</script><!-- Favicon --><link rel="icon" type="image/svg+xml" sizes="any" href="/favicon/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png"><link rel="apple-touch-icon" sizes="256x256" href="/favicon/apple-touch-icon.png"><link rel="sitemap" href="/sitemap.xml"><link rel="alternate" type="application/rss+xml" title="AI Agents to Automate Your Customer Engagement" href="https://www.plivo.com/rss.xml"><meta name="generator" content="Astro v5.18.1"><!-- Canonical URL --><link rel="canonical" href="https://www.plivo.com/phone-numbers/pricing/in/"><!-- Primary Meta Tags --><title>India Phone Number Pricing | Plivo</title><meta name="title" content="India Phone Number Pricing | Plivo"><meta name="description" content="Get long code, toll-free, and short code India phone numbers, with volume discounts available for committed spend."><!-- Open Graph / Facebook --><meta property="og:type" content="website"><meta property="og:url" content="https://www.plivo.com/phone-numbers/pricing/in/"><meta property="og:site_name" content="Plivo"><meta property="og:title" content="India Phone Number Pricing | Plivo"><meta property="og:description" content="Get long code, toll-free, and short code India phone numbers, with volume discounts available for committed spend."><meta property="og:image" content="https://www.plivo.com/og-image-ai-agents.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Plivo - Build human-like AI Agents"><!-- Twitter --><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@plivo"><meta name="twitter:creator" content="@plivo"><meta property="twitter:url" content="https://www.plivo.com/phone-numbers/pricing/in/"><meta property="twitter:title" content="India Phone Number Pricing | Plivo"><meta property="twitter:description" content="Get long code, toll-free, and short code India phone numbers, with volume discounts available for committed spend."><meta property="twitter:image" content="https://www.plivo.com/og-image-ai-agents.jpg"><!-- Structured data. Skipped on noIndex pages so previews and ad landing
+     variants do not advertise themselves to crawlers. --><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.plivo.com/#organization","name":"Plivo","legalName":"Plivo Inc.","url":"https://www.plivo.com/","logo":{"@type":"ImageObject","url":"https://www.plivo.com/images/brand/plivo-logo-primary.svg","width":6300,"height":3500},"image":"https://www.plivo.com/og-image-ai-agents.jpg","description":"Cloud communications platform for voice, SMS, WhatsApp, and AI voice and chat agents. Messaging coverage in 226 countries and voice coverage in 190+ countries, with a 99.99% platform uptime SLA.","foundingDate":"2011","address":{"@type":"PostalAddress","streetAddress":"201 Mission Street, Suite 230","addressLocality":"San Francisco","addressRegion":"CA","postalCode":"94105","addressCountry":"US"},"contactPoint":[{"@type":"ContactPoint","contactType":"sales","url":"https://www.plivo.com/contact/sales/","availableLanguage":"English"},{"@type":"ContactPoint","contactType":"technical support","email":"support@plivo.com","url":"https://support.plivo.com/","availableLanguage":"English"}],"sameAs":["https://www.linkedin.com/company/plivo-inc","https://x.com/plivo","https://github.com/plivo","https://www.youtube.com/@plivo","https://www.facebook.com/Plivo/"]},{"@type":"WebSite","@id":"https://www.plivo.com/#website","url":"https://www.plivo.com/","name":"Plivo","description":"Cloud communications platform for voice, SMS, WhatsApp, and AI voice and chat agents. Messaging coverage in 226 countries and voice coverage in 190+ countries, with a 99.99% platform uptime SLA.","publisher":{"@id":"https://www.plivo.com/#organization"},"inLanguage":"en"}]}</script><script>!function(){var c=window.__CF_COUNTRY||"";if(!c){try{c=sessionStorage.getItem("plivo_geo_country")||""}catch(e){}}function load(){if(window.reb2b)return;window.reb2b={loaded:true};var s=document.createElement("script");s.async=true;s.src="https://b2bjsstore.s3.us-west-2.amazonaws.com/b/J0OV0VH1LX6Z/J0OV0VH1LX6Z.js.gz";document.getElementsByTagName("script")[0].parentNode.insertBefore(s,document.getElementsByTagName("script")[0])}if(c==="US"){load()}else if(!c){var n=0;var p=setInterval(function(){n++;try{c=sessionStorage.getItem("plivo_geo_country")||""}catch(e){}if(c==="US"){clearInterval(p);load()}else if(c||n>40){clearInterval(p)}},100)}}();</script><link rel="stylesheet" href="/_astro/retell-ai-alternative.Cjq0iZA9.css">
+<link rel="stylesheet" href="/_astro/retell-ai-alternative.Cp5yxdAu.css">
+<style>html[data-market=in] [data-geo=us],html:not([data-market=in]) [data-geo=in]{display:none!important}
+.dark-band{--color-background: hsl(var(--background));--color-foreground: hsl(var(--foreground));--color-surface: hsl(var(--surface));--color-surface-2: hsl(var(--surface-2));--color-card: hsl(var(--card));--color-card-foreground: hsl(var(--card-foreground));--color-popover: hsl(var(--popover));--color-popover-foreground: hsl(var(--popover-foreground));--color-secondary: hsl(var(--secondary));--color-secondary-foreground: hsl(var(--secondary-foreground));--color-muted: hsl(var(--muted));--color-muted-foreground: hsl(var(--muted-foreground));--color-border: hsl(var(--border));--color-border-strong: hsl(var(--border-strong));--color-input: hsl(var(--input));--color-code: hsl(var(--code));--color-code-foreground: hsl(var(--code-foreground))}
+</style></head> <body class="ip-cta-scope min-h-screen bg-background text-foreground antialiased transition-colors duration-200">  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MXJNN5" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:text-background focus:outline-none">
+Skip to main content
+</a> <div id="cursor-hud" class="cursor-hud" data-variant="agent" data-lock="0" data-lifetime="25" aria-hidden="true" data-astro-cid-beh3cnae> <!-- Trail marks. No `rounded-full` here, unlike the speech rings: these
+       are meant to be square, and the CSS below takes them all the way to a
+       hard corner. --> <span class="hud-trail" data-astro-cid-beh3cnae> <i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i> <i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i> </span> <!-- Corner brackets, same geometry as TechFrame's tf-corner (square caps,
+       1px stroke) but pulled well down from the frame version: 5px arms on a
+       22px box at 0.38 opacity. It should register at the edge of vision and
+       never compete with the pointer it surrounds. --> <svg class="hud-brackets" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true" data-astro-cid-beh3cnae> <path d="M 3 8 L 3 3 L 8 3" stroke="currentColor" stroke-width="1" stroke-linecap="square" opacity="0.38" data-astro-cid-beh3cnae></path> <path d="M 20 3 L 25 3 L 25 8" stroke="currentColor" stroke-width="1" stroke-linecap="square" opacity="0.38" data-astro-cid-beh3cnae></path> <path d="M 25 20 L 25 25 L 20 25" stroke="currentColor" stroke-width="1" stroke-linecap="square" opacity="0.38" data-astro-cid-beh3cnae></path> <path d="M 8 25 L 3 25 L 3 20" stroke="currentColor" stroke-width="1" stroke-linecap="square" opacity="0.38" data-astro-cid-beh3cnae></path> </svg> <!-- Speech rings. `rounded-full` is load-bearing: instrument-panel.css
+       forces 2px radius on every element in the page and only spares
+       elements carrying that class, so without it these render as squares. --> <span class="hud-rings" data-astro-cid-beh3cnae> <i class="rounded-full" data-astro-cid-beh3cnae></i> <i class="rounded-full" data-astro-cid-beh3cnae></i> </span> <span class="hud-label" data-astro-cid-beh3cnae> <span class="hud-coords" data-astro-cid-beh3cnae></span> <span class="hud-agent" data-astro-cid-beh3cnae> <span class="hud-meter" data-astro-cid-beh3cnae><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i><i data-astro-cid-beh3cnae></i></span> <span class="hud-state" data-astro-cid-beh3cnae></span> </span> </span> </div>  <script type="module" src="/_astro/CursorHud.astro_astro_type_script_index_0_lang.BjLH0QFn.js"></script> <style>astro-island,astro-slot,astro-static-slot{display:contents}</style><script>(()=>{var e=async t=>{await(await t())()};(self.Astro||(self.Astro={})).load=e;window.dispatchEvent(new Event("astro:load"));})();</script><script>(()=>{var A=Object.defineProperty;var g=(i,o,a)=>o in i?A(i,o,{enumerable:!0,configurable:!0,writable:!0,value:a}):i[o]=a;var d=(i,o,a)=>g(i,typeof o!="symbol"?o+"":o,a);{let i={0:t=>m(t),1:t=>a(t),2:t=>new RegExp(t),3:t=>new Date(t),4:t=>new Map(a(t)),5:t=>new Set(a(t)),6:t=>BigInt(t),7:t=>new URL(t),8:t=>new Uint8Array(t),9:t=>new Uint16Array(t),10:t=>new Uint32Array(t),11:t=>1/0*t},o=t=>{let[l,e]=t;return l in i?i[l](e):void 0},a=t=>t.map(o),m=t=>typeof t!="object"||t===null?t:Object.fromEntries(Object.entries(t).map(([l,e])=>[l,o(e)]));class y extends HTMLElement{constructor(){super(...arguments);d(this,"Component");d(this,"hydrator");d(this,"hydrate",async()=>{var b;if(!this.hydrator||!this.isConnected)return;let e=(b=this.parentElement)==null?void 0:b.closest("astro-island[ssr]");if(e){e.addEventListener("astro:hydrate",this.hydrate,{once:!0});return}let c=this.querySelectorAll("astro-slot"),n={},h=this.querySelectorAll("template[data-astro-template]");for(let r of h){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("data-astro-template")||"default"]=r.innerHTML,r.remove())}for(let r of c){let s=r.closest(this.tagName);s!=null&&s.isSameNode(this)&&(n[r.getAttribute("name")||"default"]=r.innerHTML)}let p;try{p=this.hasAttribute("props")?m(JSON.parse(this.getAttribute("props"))):{}}catch(r){let s=this.getAttribute("component-url")||"<unknown>",v=this.getAttribute("component-export");throw v&&(s+=` (export ${v})`),console.error(`[hydrate] Error parsing props for component ${s}`,this.getAttribute("props"),r),r}let u;await this.hydrator(this)(this.Component,p,n,{client:this.getAttribute("client")}),this.removeAttribute("ssr"),this.dispatchEvent(new CustomEvent("astro:hydrate"))});d(this,"unmount",()=>{this.isConnected||this.dispatchEvent(new CustomEvent("astro:unmount"))})}disconnectedCallback(){document.removeEventListener("astro:after-swap",this.unmount),document.addEventListener("astro:after-swap",this.unmount,{once:!0})}connectedCallback(){if(!this.hasAttribute("await-children")||document.readyState==="interactive"||document.readyState==="complete")this.childrenConnectedCallback();else{let e=()=>{document.removeEventListener("DOMContentLoaded",e),c.disconnect(),this.childrenConnectedCallback()},c=new MutationObserver(()=>{var n;((n=this.lastChild)==null?void 0:n.nodeType)===Node.COMMENT_NODE&&this.lastChild.nodeValue==="astro:end"&&(this.lastChild.remove(),e())});c.observe(this,{childList:!0}),document.addEventListener("DOMContentLoaded",e)}}async childrenConnectedCallback(){let e=this.getAttribute("before-hydration-url");e&&await import(e),this.start()}async start(){let e=JSON.parse(this.getAttribute("opts")),c=this.getAttribute("client");if(Astro[c]===void 0){window.addEventListener(`astro:${c}`,()=>this.start(),{once:!0});return}try{await Astro[c](async()=>{let n=this.getAttribute("renderer-url"),[h,{default:p}]=await Promise.all([import(this.getAttribute("component-url")),n?import(n):()=>()=>{}]),u=this.getAttribute("component-export")||"default";if(!u.includes("."))this.Component=h[u];else{this.Component=h;for(let f of u.split("."))this.Component=this.Component[f]}return this.hydrator=p,this.hydrate},e,this)}catch(n){console.error(`[astro-island] Error hydrating ${this.getAttribute("component-url")}`,n)}}attributeChangedCallback(){this.hydrate()}}d(y,"observedAttributes",["props"]),customElements.get("astro-island")||customElements.define("astro-island",y)}})();</script><astro-island uid="Z1ntj1n" prefix="r6" component-url="/_astro/navbar1.jogHNA3a.js" component-export="Navbar1" renderer-url="/_astro/client.Yi0K8k_T.js" props="{&quot;currentPage&quot;:[0,&quot;/phone-numbers/pricing/in/&quot;]}" ssr client="load" opts="{&quot;name&quot;:&quot;Navbar1&quot;,&quot;value&quot;:true}" await-children><link rel="preload" as="image" href="/images/plivo-logo.svg"/><link rel="preload" as="image" href="/images/plivo-logo-white.svg"/><style>
+        .nav-v4-shadow [class*="origin-top-center"] {
+          box-shadow:
+            0 12px 32px -8px hsl(220 40% 12% / 0.14),
+            0 24px 64px -16px hsl(220 40% 12% / 0.16) !important;
+        }
+        .dark .nav-v4-shadow [class*="origin-top-center"] {
+          box-shadow:
+            0 12px 32px -8px hsl(0 0% 0% / 0.5),
+            0 24px 64px -16px hsl(0 0% 0% / 0.55) !important;
+        }
+      </style><header class="fixed left-0 right-0 top-0 z-50 transition-all duration-200 bg-background"><div class="mx-auto max-w-7xl px-4"><nav aria-label="Main navigation" class="flex h-[60px] items-center justify-between"><a href="/" class="flex shrink-0 items-center" aria-label="Plivo home"><img src="/images/plivo-logo.svg" alt="Plivo" width="72" height="24" class="h-6 w-auto dark:hidden"/><img src="/images/plivo-logo-white.svg" alt="Plivo" width="72" height="24" class="hidden h-6 w-auto dark:block"/></a><nav aria-label="Primary" data-orientation="horizontal" dir="ltr" class="relative z-10 max-w-max flex-1 items-center justify-center nav-v4-shadow hidden lg:flex"><div style="position:relative"><ul data-orientation="horizontal" class="group flex flex-1 list-none items-center justify-center space-x-1 gap-[14px] font-mono-ui" dir="ltr"><li><a href="/ai-agents/" class="inline-flex items-baseline gap-1 transition-colors duration-[120ms] text-muted-foreground hover:text-foreground" data-radix-collection-item=""><span class="text-[13px]"><span data-geo="us">AI Agents</span><span data-geo="in">Voice AI Agents</span></span></a></li><li aria-hidden="true" class="select-none text-[13px] text-border">/</li><li class="relative"><button id="radix-_r6R_a_-trigger-radix-_r6R_aq_" data-state="closed" aria-expanded="false" aria-controls="radix-_r6R_a_-content-radix-_r6R_aq_" class="group inline-flex w-max items-center justify-center text-sm font-medium hover:text-foreground focus:text-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:bg-surface group h-auto rounded-none bg-transparent p-0 hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent transition-colors duration-[120ms] [&amp;&gt;svg]:hidden text-foreground" data-radix-collection-item=""><span class="inline-flex items-baseline gap-1"><span class="text-[13px]">Telephony</span></span> <svg class="relative top-px ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><circle cx="3" cy="8" r="1.4"></circle><circle cx="6.5" cy="11.5" r="1.4"></circle><circle cx="10" cy="15" r="1.4"></circle><circle cx="13.5" cy="11.5" r="1.4"></circle><circle cx="17" cy="8" r="1.4"></circle></svg></button></li><li aria-hidden="true" class="select-none text-[13px] text-border">/</li><li class="relative"><button id="radix-_r6R_a_-trigger-radix-_r6R_bq_" data-state="closed" aria-expanded="false" aria-controls="radix-_r6R_a_-content-radix-_r6R_bq_" class="group inline-flex w-max items-center justify-center text-sm font-medium focus:text-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:bg-surface group h-auto rounded-none bg-transparent p-0 hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent transition-colors duration-[120ms] [&amp;&gt;svg]:hidden text-muted-foreground hover:text-foreground" data-radix-collection-item=""><span class="inline-flex items-baseline gap-1"><span class="text-[13px]">Developers</span></span> <svg class="relative top-px ml-1 size-3 transition duration-300 group-data-[state=open]:rotate-180" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><circle cx="3" cy="8" r="1.4"></circle><circle cx="6.5" cy="11.5" r="1.4"></circle><circle cx="10" cy="15" r="1.4"></circle><circle cx="13.5" cy="11.5" r="1.4"></circle><circle cx="17" cy="8" r="1.4"></circle></svg></button></li><li aria-hidden="true" class="select-none text-[13px] text-border">/</li><li><a href="/pricing/" class="inline-flex items-baseline gap-1 transition-colors duration-[120ms] text-muted-foreground hover:text-foreground" data-radix-collection-item=""><span class="text-[13px]">Pricing</span></a></li></ul></div></nav><div class="flex items-center gap-2"><a href="https://cx.plivo.com/login" class="hidden items-center justify-center px-3.5 py-1.5 text-[13px] font-normal text-muted-foreground transition-all hover:text-foreground lg:inline-flex" target="_blank" rel="noopener noreferrer">Login</a><a href="/contact/sales/" class="hidden items-center justify-center rounded-md border border-border bg-background px-3.5 py-1.5 text-[13px] font-normal text-foreground transition-all hover:border-border-strong hover:bg-surface lg:inline-flex">Contact sales</a><div class="hidden lg:inline-flex"><button type="button" aria-label="Switch to dark theme" class="relative inline-flex shrink-0 items-center justify-center rounded-md border border-border bg-background text-foreground transition-colors hover:bg-surface hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring h-8 w-8"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun absolute h-4 w-4 transition-all duration-200 scale-100 rotate-0 opacity-100"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon absolute h-4 w-4 transition-all duration-200 scale-0 rotate-90 opacity-0"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></button></div><a href="https://cx.plivo.com/signup" class="hidden items-center rounded-md bg-foreground px-3.5 py-1.5 text-[13px] font-medium text-background transition-all cta-hover-gradient hover:text-white lg:inline-flex" target="_blank" rel="noopener noreferrer">Sign up for free</a><a href="https://cx.plivo.com/signup" class="inline-flex items-center rounded-md bg-foreground px-3 py-1.5 text-[12px] font-medium text-background transition-all cta-hover-gradient hover:text-white lg:hidden" target="_blank" rel="noopener noreferrer">Sign up for free</a><button class="relative flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-surface lg:hidden" aria-label="Open menu" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-_r6R_3e_" data-state="closed"><div class="flex flex-col items-center justify-center gap-[5px]"><span class="block h-[1.5px] w-5 rounded-full bg-foreground transition-all duration-300"></span><span class="block h-[1.5px] w-5 rounded-full bg-foreground transition-all duration-300"></span><span class="block h-[1.5px] w-5 rounded-full bg-foreground transition-all duration-300"></span></div></button></div></nav></div></header><!--astro:end--></astro-island> <main id="main-content" class="flex flex-col bg-background pt-[60px]">  <script>(()=>{var a=(s,i,o)=>{let r=async()=>{await(await s())()},t=typeof i.value=="object"?i.value:void 0,c={rootMargin:t==null?void 0:t.rootMargin},n=new IntersectionObserver(e=>{for(let l of e)if(l.isIntersecting){n.disconnect(),r();break}},c);for(let e of o.children)n.observe(e)};(self.Astro||(self.Astro={})).visible=a;window.dispatchEvent(new Event("astro:visible"));})();</script><astro-island uid="Z28FdRS" prefix="r4" component-url="/_astro/PhoneNumbersPricingPage.Bm-Jo0Of.js" component-export="default" renderer-url="/_astro/client.Yi0K8k_T.js" props="{&quot;initialCountry&quot;:[0,&quot;IN&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;PhoneNumbersPricingPage&quot;,&quot;value&quot;:true}" await-children><section class="bg-background pt-[56px] sm:pt-[64px] md:pt-[72px] pb-10"><div class="container mx-auto max-w-7xl px-4"><div class="text-center"><div class="flex items-center gap-3 font-mono-ui text-[11px] uppercase tracking-[0.12em] text-muted-foreground mb-8"><span class="flex items-center gap-2"><span class="tabular-nums text-foreground/70">~</span><span class="h-px w-6 bg-border"></span></span><span>phone numbers pricing</span><span class="flex-1 border-t border-dashed border-border"></span><span>local · mobile · toll-free</span></div><h1 class="font-sora text-[2rem] sm:text-[2.5rem] md:text-[3rem] font-normal leading-[1.1] tracking-[-0.02em] text-foreground mb-4">Phone Numbers Pricing</h1><p class="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">Competitive pay-as-you-go phone number pricing with add-on features included. Volume discounts on committed spends as you scale.</p></div></div></section><section class="bg-background pb-12 lg:pb-20"><div class="container mx-auto max-w-7xl px-4"><div class="lg:grid lg:grid-cols-[256px_1fr] lg:gap-8 lg:items-start"><div class="mb-8 lg:mb-0"><aside class="bg-background z-30"><div class="relative mb-6"><label class="block text-sm font-medium text-foreground/80 mb-2">Select Country</label><button class="w-full flex items-center gap-3 px-4 py-2.5 bg-background border border-border-strong rounded-lg hover:border-border-strong transition-colors"><span class="text-xl">🇮🇳</span><span class="text-sm font-medium text-foreground flex-1 text-left">India</span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down w-4 h-4 text-muted-foreground transition-transform"><path d="m6 9 6 6 6-6"></path></svg></button></div><nav class="hidden lg:block"><p class="text-sm font-medium text-foreground/80 mb-3">Jump to section</p><ul class="space-y-1"><li><button data-section-id="number-rental" class="w-full text-left px-3 py-2 text-sm transition-colors border-l-2 border-primary text-primary font-medium">Phone Number Rental</button></li><li><button data-section-id="requirements" class="w-full text-left px-3 py-2 text-sm transition-colors border-l-2 border-transparent text-muted-foreground hover:border-border-strong hover:text-foreground">Requirements</button></li><li><button data-section-id="calculator" class="w-full text-left px-3 py-2 text-sm transition-colors border-l-2 border-transparent text-muted-foreground hover:border-border-strong hover:text-foreground">Estimate</button></li></ul></nav></aside></div><div class="min-w-0"><div id="number-rental" class="bg-background rounded-xl border border-border p-6 mb-6"><div><h2 class="font-sans text-xl font-semibold text-foreground mb-2">Phone Number Rental</h2><div class="overflow-x-auto"><table class="w-full table-fixed"><thead><tr class="border-b border-border"><th class="py-3 pr-4 text-left text-sm font-semibold text-foreground w-[40%]">Route Type</th><th class="py-3 pr-4 text-left text-sm font-semibold text-foreground w-[30%]">Capability</th><th class="py-3 text-left text-sm font-semibold text-foreground w-[30%]">Price</th></tr></thead><tbody class="divide-y divide-border"><tr><td class="py-3 pr-4 text-sm text-foreground">Domestic Numbers</td><td class="py-3 text-sm text-muted-foreground"><div class="flex flex-wrap gap-1.5"><span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-foreground/80">Voice</span><span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-foreground/80">SIP Trunking</span></div></td><td class="py-3 pr-4 text-sm font-medium text-foreground">₹200.00/month</td></tr></tbody></table></div><p class="rounded-lg bg-surface px-4 py-3 text-xs text-muted-foreground mt-4"><a href="https://support.plivo.com/hc/en-us/articles/16859884362265" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">*Rate for Domestic Calling</a></p></div></div><div id="requirements" class="bg-background rounded-xl border border-border p-6 mb-6"><div><h2 class="font-sans text-xl font-semibold text-foreground mb-2">Requirements</h2><div class="overflow-x-auto"><table class="w-full table-fixed"><thead><tr class="border-b border-border"><th class="py-3 pr-4 text-left text-sm font-semibold text-foreground w-[35%]">Number Type</th><th class="py-3 text-left text-sm font-semibold text-foreground w-[65%]">Compliance Requirements</th></tr></thead><tbody class="divide-y divide-border"><tr><td class="py-3 pr-4 text-sm text-foreground">Domestic Numbers</td><td class="py-3 text-sm text-muted-foreground">Certificate of Incorporation, GST</td></tr></tbody></table></div><p class="mt-4 text-sm text-muted-foreground"><a href="https://www.plivo.com/docs/numbers/rent-india-numbers" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Visit here for compliance details.</a></p></div></div><div id="calculator" class="bg-background rounded-xl border border-border p-6 mb-6"><div><div class="mb-4"><h2 class="font-sans text-lg sm:text-xl font-semibold text-foreground">Phone number cost estimator</h2><p class="mt-1 text-xs sm:text-sm text-muted-foreground">Select the number types you need to see the estimated monthly rental.</p></div><div class="rounded-lg border border-border bg-surface p-4"><label class="mb-2 block text-xs font-medium text-foreground/80">Number types</label><div class="flex flex-wrap gap-1.5"><div class="flex cursor-pointer select-none items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm transition-colors border-border-strong bg-background text-foreground/80 hover:border-foreground/30"><div class="flex h-3.5 w-3.5 items-center justify-center rounded border transition-colors border-border-strong bg-background"></div><span class="font-medium">Local</span></div></div></div><p class="mt-3 rounded-lg border border-dashed border-border-strong bg-surface px-3.5 py-2.5 text-xs text-muted-foreground">Tick one or more number types above to see your estimated monthly cost.</p></div></div></div></div></div></section><!--astro:end--></astro-island> <astro-island uid="1aHk3e" prefix="r5" component-url="/_astro/PreFooterCTA.CUQ3Eqa9.js" component-export="default" renderer-url="/_astro/client.Yi0K8k_T.js" props="{&quot;title&quot;:[0,&quot;Get your first number in minutes.&quot;],&quot;subtitle&quot;:[0,&quot;Create your account and receive trial credits or get in touch with us.&quot;],&quot;primaryCtaLabel&quot;:[0,&quot;Get started now&quot;]}" ssr client="visible" opts="{&quot;name&quot;:&quot;PreFooterCTA&quot;,&quot;value&quot;:true}" await-children><section id="section-ship" class="dark dark-band relative w-full scroll-mt-20 bg-surface-2"><div class="container mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-24 md:py-28"><div class="flex items-center gap-3 font-mono-ui text-[11px] uppercase tracking-[0.12em] text-muted-foreground"><span class="flex items-center gap-2"><span class="tabular-nums text-foreground/70">07</span><span class="h-px w-6 bg-border"></span></span><span>ship it</span><span class="flex-1 border-t border-dashed border-border"></span><span>plivo cli · from your terminal</span></div><div class="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14"><div class="lg:col-span-6 lg:pt-2"><h2 class="font-sora text-[2rem] font-normal leading-[1.04] tracking-[-0.035em] text-foreground sm:text-[2.5rem] md:text-[3rem]">Get your first number in minutes.</h2><p class="mt-4 max-w-md text-[15px] leading-relaxed text-muted-foreground">Create your account and receive trial credits or get in touch with us.</p><div class="mt-7 flex flex-wrap items-center gap-3"><a href="https://cx.plivo.com/signup" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center rounded-md bg-foreground px-4 py-2.5 text-[13.5px] font-medium text-background transition-colors hover:bg-primary hover:text-white">Get started now<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right ml-1.5 h-4 w-4 transition-transform group-hover:translate-x-0.5"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a><a href="/contact/sales/" class="inline-flex items-center rounded-md border border-border bg-background px-4 py-2.5 text-[13.5px] font-medium text-foreground transition-colors hover:border-border-strong hover:bg-surface">Talk to sales</a></div><div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 font-mono-ui text-[11px] text-muted-foreground"><span>› no credit card</span><span>› free credits</span><span>› cancel anytime</span></div></div><div class="lg:col-span-6"><div class="overflow-hidden rounded-lg border border-border bg-surface shadow-[0_1px_0_rgba(0,0,0,0.02),0_30px_60px_-30px_rgba(0,0,0,0.25)]"><div class="flex items-center justify-between border-b border-border bg-background/40 px-4 py-2.5"><div class="flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-muted-foreground/25"></span><span class="h-2.5 w-2.5 rounded-full bg-muted-foreground/25"></span><span class="h-2.5 w-2.5 rounded-full bg-muted-foreground/25"></span></div><span class="font-mono-ui text-[11px] text-muted-foreground">~/plivo</span><span class="font-mono-ui tabular-nums text-[11px] text-muted-foreground">08:58:28</span></div><div class="bg-code px-5 py-6 font-mono-ui text-[13px] leading-[1.9] text-code-foreground"><div class="flex items-start gap-2 transition-opacity duration-200 opacity-100" aria-hidden="false"><span class="shrink-0 text-muted-foreground">$</span><span class="text-foreground">brew install plivo/tap/plivo<span class="ml-1 inline-block h-[1em] w-[7px] translate-y-[1px] animate-pulse bg-primary align-middle"></span></span></div><div class="flex items-start gap-2 transition-opacity duration-200 opacity-0" aria-hidden="true"><span class="shrink-0 text-muted-foreground">$</span><span class="text-foreground">plivo login</span></div><div class="flex items-start gap-2 transition-opacity duration-200 opacity-0" aria-hidden="true"><span class="shrink-0 text-muted-foreground">$</span><span class="text-foreground">plivo voice streams test --to ws://localhost:7860/ws</span></div><div class="flex items-start gap-2 transition-opacity duration-200 opacity-0" aria-hidden="true"><span class="shrink-0 text-muted-foreground">$</span><span class="text-foreground">plivo voice calls diagnose &lt;call_uuid&gt;</span></div></div><div class="flex items-center justify-between border-t border-border bg-background/40 px-4 py-2"><span class="font-mono-ui inline-flex items-center gap-1.5 text-[11px] text-muted-foreground"><span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span></span>plivo cli<!-- --> · <!-- -->4<!-- --> steps</span><a href="https://www.plivo.com/docs/cli/overview" class="font-mono-ui text-[11px] text-foreground/70 hover:text-foreground transition-colors">quickstart →</a></div></div></div></div></div></section><!--astro:end--></astro-island>  </main> <astro-island uid="Z1b1s2V" prefix="r7" component-url="/_astro/plivo-footer.BQDCyg3s.js" component-export="PlivoFooter" renderer-url="/_astro/client.Yi0K8k_T.js" props="{}" ssr client="visible" opts="{&quot;name&quot;:&quot;PlivoFooter&quot;,&quot;value&quot;:true}" await-children><link rel="preload" as="image" href="/images/plivo-logo.svg"/><link rel="preload" as="image" href="/images/plivo-logo-white.svg"/><footer class="dark dark-band border-t border-border bg-surface-2 text-foreground"><div class="container mx-auto max-w-7xl px-4 pb-8 pt-16"><div class="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-5"><div><h3 class="mb-4 font-mono-ui text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Platform</h3><ul class="space-y-3"><li><a href="/ai-agents/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">AI Agents</a></li><li><a href="/sip-trunking/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">SIP Trunking</a></li><li><a href="/audio-streaming/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Audio Streaming</a></li><li><a href="/phone-numbers/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Phone Numbers</a></li><li><a href="/pricing/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Pricing</a></li></ul></div><div><h3 class="mb-4 font-mono-ui text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Communications</h3><ul class="space-y-3"><li><a href="/voice/overview/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Voice</a></li><li><a href="/sms/overview/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">SMS</a></li><li><a href="/whatsapp/overview/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">WhatsApp</a></li><li><a href="/verify/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Verify</a></li></ul></div><div><h3 class="mb-4 font-mono-ui text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Developers</h3><ul class="space-y-3"><li><a href="https://www.plivo.com/docs/voice-agents/sip-trunking/overview" class="text-sm text-foreground/70 transition-colors hover:text-foreground" target="_blank" rel="noopener noreferrer">SIP Trunking guide</a></li><li><a href="https://www.plivo.com/docs/voice-agents/audio-streaming/overview" class="text-sm text-foreground/70 transition-colors hover:text-foreground" target="_blank" rel="noopener noreferrer">Audio Streaming quickstart</a></li><li><a href="https://www.plivo.com/docs/" class="text-sm text-foreground/70 transition-colors hover:text-foreground" target="_blank" rel="noopener noreferrer">Documentation</a></li></ul></div><div><h3 class="mb-4 font-mono-ui text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Resources</h3><ul class="space-y-3"><li><a href="/blog/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Blog</a></li><li><a href="https://status.plivo.com/" class="text-sm text-foreground/70 transition-colors hover:text-foreground" target="_blank" rel="noopener noreferrer">Platform status</a></li><li><a href="/livekit/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">LiveKit</a></li><li><a href="/pipecat/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Pipecat</a></li><li><a href="/security/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Compliance</a></li></ul></div><div><h3 class="mb-4 font-mono-ui text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Company</h3><ul class="space-y-3"><li><a href="/about/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">About</a></li><li><a href="/jobs/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Jobs</a></li><li><a href="/contact/sales/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Talk to sales</a></li><li><a href="https://support.plivo.com/" class="text-sm text-foreground/70 transition-colors hover:text-foreground" target="_blank" rel="noopener noreferrer">Get support</a></li><li><a href="/legal/tos/" class="text-sm text-foreground/70 transition-colors hover:text-foreground">Legal</a></li></ul></div></div><div class="relative mt-16 flex flex-col items-center gap-6 border-t border-border pt-8 md:flex-row md:justify-between"><a href="/" class="flex items-center" aria-label="Plivo home"><img src="/images/plivo-logo.svg" alt="Plivo" width="55" height="20" class="h-5 w-auto dark:hidden"/><img src="/images/plivo-logo-white.svg" alt="Plivo" width="55" height="20" class="hidden h-5 w-auto dark:block"/></a><p class="font-mono-ui text-xs text-muted-foreground md:absolute md:left-1/2 md:-translate-x-1/2">© <!-- -->2026<!-- --> Plivo Inc.</p><div class="flex items-center gap-4"><a href="https://www.youtube.com/@plivo" target="_blank" rel="noopener noreferrer" class="text-muted-foreground transition-colors hover:text-foreground" aria-label="YouTube"><svg class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path></svg></a><a href="https://x.com/plivo" target="_blank" rel="noopener noreferrer" class="text-muted-foreground transition-colors hover:text-foreground" aria-label="X"><svg class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a><a href="https://www.facebook.com/Plivo/" target="_blank" rel="noopener noreferrer" class="text-muted-foreground transition-colors hover:text-foreground" aria-label="Facebook"><svg class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"></path></svg></a><a href="https://www.linkedin.com/company/plivo-inc" target="_blank" rel="noopener noreferrer" class="text-muted-foreground transition-colors hover:text-foreground" aria-label="LinkedIn"><svg class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path></svg></a><a href="https://github.com/plivo" target="_blank" rel="noopener noreferrer" class="text-muted-foreground transition-colors hover:text-foreground" aria-label="GitHub"><svg class="h-5 w-5 fill-current" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path></svg></a></div></div></div></footer><!--astro:end--></astro-island> <!-- Geo-gated CTA rewriting for .astro components --> <script>
+    (function() {
+      var SUPPORTED = ["US","CA","BR","AR","GB","DE","FR","NL","BE","IE","ES","PT","IT","IL","AE","SA","QA","BH","IN","SG","MY","ID","VN","AU","NZ"];
+      var SIGNUP_URL = "https://cx.plivo.com/signup";
+      var TRIAL_URL = "/request-trial/";
+
+      function updateCTAs() {
+        var country = "";
+        try { country = sessionStorage.getItem("plivo_geo_country") || ""; } catch(e) {}
+        if (!country) return false;
+
+        var isSupported = SUPPORTED.indexOf(country.toUpperCase()) >= 0;
+        var links = document.querySelectorAll('[data-geo-cta="signup"]');
+        for (var i = 0; i < links.length; i++) {
+          var el = links[i];
+          if (isSupported) {
+            el.setAttribute("href", SIGNUP_URL);
+          } else {
+            el.setAttribute("href", TRIAL_URL);
+            el.removeAttribute("target");
+            el.removeAttribute("rel");
+          }
+        }
+        return true;
+      }
+
+      // Try immediately
+      if (!updateCTAs()) {
+        // Poll for geo data (up to 4 seconds)
+        var attempts = 0;
+        var poll = setInterval(function() {
+          attempts++;
+          if (updateCTAs() || attempts > 40) {
+            clearInterval(poll);
+          }
+        }, 100);
+      }
+
+      // Handle Astro page transitions
+      document.addEventListener("astro:after-swap", function() {
+        setTimeout(updateCTAs, 50);
+      });
+    })();
+    </script> <div id="plivo-cookie-consent-root" data-gtm-container-id="GTM-MXJNN5" data-gtm-allowed-hosts="[&#34;www.plivo.com&#34;]" data-hubspot-script-src="//js.hs-scripts.com/20451141.js" data-posthog-key="phc_5ISIYiMfoaGh9TVGt9ydU6g91tlKvvj1qrDIcC4vKGP" data-posthog-host="https://f.plivo.com" data-consent-version="2026-04-02" data-consent-countries="[&#34;AT&#34;,&#34;BE&#34;,&#34;BG&#34;,&#34;HR&#34;,&#34;CY&#34;,&#34;CZ&#34;,&#34;DK&#34;,&#34;EE&#34;,&#34;FI&#34;,&#34;FR&#34;,&#34;DE&#34;,&#34;GR&#34;,&#34;HU&#34;,&#34;IE&#34;,&#34;IT&#34;,&#34;LV&#34;,&#34;LT&#34;,&#34;LU&#34;,&#34;MT&#34;,&#34;NL&#34;,&#34;PL&#34;,&#34;PT&#34;,&#34;RO&#34;,&#34;SK&#34;,&#34;SI&#34;,&#34;ES&#34;,&#34;SE&#34;,&#34;NO&#34;,&#34;IS&#34;,&#34;LI&#34;,&#34;GB&#34;,&#34;CH&#34;,&#34;BR&#34;,&#34;ZA&#34;,&#34;TH&#34;,&#34;KR&#34;,&#34;JP&#34;,&#34;CA&#34;,&#34;AR&#34;,&#34;TR&#34;,&#34;KE&#34;,&#34;NG&#34;]" data-consent-regions="[&#34;CA&#34;,&#34;FL&#34;]"> <!-- Compact bottom-right cookie banner --> <div id="plivo-cookie-banner" hidden class="fixed bottom-4 right-4 z-[120] w-[340px] max-w-[calc(100vw-2rem)]" aria-live="polite"> <div class="rounded-xl border border-border bg-background p-4 shadow-lg"> <p class="text-[13px] leading-5 text-muted-foreground">
+We use cookies for analytics and marketing.
+<a href="/cookie-policy/" class="font-medium text-primary hover:underline">Learn more</a> </p> <div class="mt-3 flex items-center gap-2"> <button id="plivo-cookie-reject-all" type="button" class="flex-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface">
+Reject
+</button> <button id="plivo-cookie-open-preferences" type="button" class="flex-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface">
+Manage
+</button> <button id="plivo-cookie-accept-all" type="button" class="flex-1 rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background transition-colors hover:opacity-90">
+Accept
+</button> </div> </div> </div> <!-- Small cookie icon (shown after decision, only in consent-required countries) --> <button id="plivo-cookie-settings-button" type="button" hidden aria-label="Cookie settings" class="fixed bottom-4 right-4 z-[110] flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background shadow-md transition-colors hover:bg-surface"> <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <circle cx="8" cy="9" r="1.5" fill="currentColor" stroke="none"></circle> <circle cx="14" cy="7.5" r="1" fill="currentColor" stroke="none"></circle> <circle cx="16" cy="13" r="1.5" fill="currentColor" stroke="none"></circle> <circle cx="10" cy="15" r="1" fill="currentColor" stroke="none"></circle> </svg> </button> <div id="plivo-cookie-modal" hidden class="fixed inset-0 z-[130] flex items-center justify-center bg-black/40 px-4 py-8" role="dialog" aria-modal="true" aria-labelledby="plivo-cookie-modal-title"> <div class="w-full max-w-2xl rounded-2xl bg-background p-6 shadow-2xl sm:p-7"> <div class="flex items-start justify-between gap-4"> <div> <p id="plivo-cookie-modal-title" class="font-sora text-2xl font-medium text-foreground">
+Cookie preferences
+</p> <p class="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+Necessary storage is always on. Use the toggles below to allow or deny
+            optional analytics and marketing technologies.
+</p> </div> <button id="plivo-cookie-close-modal" type="button" class="rounded-full border border-border p-2 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground" aria-label="Close cookie preferences"> <svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden="true"> <path d="M3.333 3.333 12.667 12.667M12.667 3.333 3.333 12.667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> </svg> </button> </div> <div class="mt-6 space-y-4"> <div class="rounded-xl border border-border bg-surface p-4"> <div class="flex items-start justify-between gap-4"> <div> <p class="text-sm font-semibold text-foreground">Necessary</p> <p class="mt-1 text-sm leading-6 text-muted-foreground">
+Required for security, form handling, theme preference, and saving your consent choices.
+</p> </div> <span class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"> <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+Always on
+</span> </div> </div> <label class="flex items-start justify-between gap-4 rounded-xl border border-border p-4"> <div> <p class="text-sm font-semibold text-foreground">Analytics</p> <p class="mt-1 text-sm leading-6 text-muted-foreground">
+Helps us understand site usage and performance through analytics tags managed with Google Tag Manager.
+</p> </div> <input id="plivo-cookie-analytics" type="checkbox" class="mt-1 h-5 w-5 shrink-0 accent-primary"> </label> <label class="flex items-start justify-between gap-4 rounded-xl border border-border p-4"> <div> <p class="text-sm font-semibold text-foreground">Marketing</p> <p class="mt-1 text-sm leading-6 text-muted-foreground">
+Supports lead attribution and marketing follow-up with HubSpot tracking cookies.
+</p> </div> <input id="plivo-cookie-marketing" type="checkbox" class="mt-1 h-5 w-5 shrink-0 accent-primary"> </label> </div> <div class="mt-6 flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between"> <a href="/cookie-policy/" class="text-sm font-medium text-primary hover:underline">
+Learn more about our cookies
+</a> <div class="flex flex-col gap-2 sm:flex-row"> <button id="plivo-cookie-save-preferences" type="button" class="rounded-md border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-surface">
+Save preferences
+</button> <button id="plivo-cookie-modal-accept-all" type="button" class="rounded-md bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:opacity-90">
+Accept all
+</button> </div> </div> </div> </div> </div> <script>(function(){const consentVersion = "2026-04-02";
+
+  (function () {
+    var root = document.getElementById("plivo-cookie-consent-root");
+    if (!root) return;
+
+    var STORAGE_KEY = "plivo_cookie_preferences";
+    var LEGACY_KEY = "plivo_cookie_consent";
+    var banner = document.getElementById("plivo-cookie-banner");
+    var modal = document.getElementById("plivo-cookie-modal");
+    var settingsButton = document.getElementById("plivo-cookie-settings-button");
+    var analyticsInput = document.getElementById("plivo-cookie-analytics");
+    var marketingInput = document.getElementById("plivo-cookie-marketing");
+    var gtmContainerId = root.getAttribute("data-gtm-container-id") || "";
+    var allowedHosts = [];
+    var hubspotScriptSrc = root.getAttribute("data-hubspot-script-src") || "";
+    var posthogKey = root.getAttribute("data-posthog-key") || "";
+    var posthogHost = root.getAttribute("data-posthog-host") || "https://f.plivo.com";
+    var consentCountries = [];
+    var consentRegions = [];
+
+    try {
+      allowedHosts = JSON.parse(root.getAttribute("data-gtm-allowed-hosts") || "[]");
+    } catch (error) {
+      allowedHosts = [];
+    }
+
+    try {
+      consentCountries = JSON.parse(root.getAttribute("data-consent-countries") || "[]");
+    } catch (error) {
+      consentCountries = [];
+    }
+
+    try {
+      consentRegions = JSON.parse(root.getAttribute("data-consent-regions") || "[]");
+    } catch (error) {
+      consentRegions = [];
+    }
+
+    /** Check if the user's country/region requires cookie consent */
+    function isConsentRequired() {
+      var country = "";
+      try { country = sessionStorage.getItem("plivo_geo_country") || ""; } catch(e) {}
+      if (!country && window.__CF_COUNTRY) country = window.__CF_COUNTRY;
+      if (!country) return null; // unknown yet
+
+      country = country.toUpperCase();
+
+      // Country-level check (EU, UK, Brazil, etc.)
+      if (consentCountries.indexOf(country) >= 0) return true;
+
+      // US state-level check (California, Florida)
+      if (country === "US" && consentRegions.length > 0) {
+        var region = window.__CF_REGION || "";
+        if (region && consentRegions.indexOf(region.toUpperCase()) >= 0) return true;
+      }
+
+      return false;
+    }
+
+    function hostAllowed() {
+      if (!allowedHosts.length) return true;
+      return allowedHosts.indexOf(window.location.hostname) !== -1;
+    }
+
+    function getDefaultPreferences() {
+      return {
+        version: consentVersion,
+        necessary: true,
+        analytics: false,
+        marketing: false,
+        decidedAt: "",
+      };
+    }
+
+    function normalisePreferences(value) {
+      var defaults = getDefaultPreferences();
+      if (!value || typeof value !== "object") return defaults;
+      return {
+        version: value.version || consentVersion,
+        necessary: true,
+        analytics: Boolean(value.analytics),
+        marketing: Boolean(value.marketing),
+        decidedAt: value.decidedAt || "",
+      };
+    }
+
+    function readStoredPreferences() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return normalisePreferences(JSON.parse(raw));
+      } catch (error) {}
+
+      try {
+        var legacy = localStorage.getItem(LEGACY_KEY);
+        if (legacy === "accepted") {
+          return {
+            version: consentVersion,
+            necessary: true,
+            analytics: true,
+            marketing: true,
+            decidedAt: "",
+          };
+        }
+        if (legacy === "rejected") {
+          return {
+            version: consentVersion,
+            necessary: true,
+            analytics: false,
+            marketing: false,
+            decidedAt: "",
+          };
+        }
+      } catch (error) {}
+
+      return null;
+    }
+
+    function storePreferences(preferences) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+        localStorage.removeItem(LEGACY_KEY);
+      } catch (error) {}
+    }
+
+    function hasDecision(preferences) {
+      return Boolean(preferences && preferences.decidedAt);
+    }
+
+    function syncInputs(preferences) {
+      if (analyticsInput) analyticsInput.checked = Boolean(preferences.analytics);
+      if (marketingInput) marketingInput.checked = Boolean(preferences.marketing);
+    }
+
+    function openModal() {
+      syncInputs(currentPreferences || getDefaultPreferences());
+      if (modal) modal.hidden = false;
+      document.documentElement.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      if (modal) modal.hidden = true;
+      document.documentElement.style.overflow = "";
+    }
+
+    function showBanner() {
+      if (banner) banner.hidden = false;
+      if (settingsButton) settingsButton.hidden = true;
+    }
+
+    function hideBanner() {
+      if (banner) banner.hidden = true;
+      // Only show settings icon in consent-required countries
+      if (settingsButton) settingsButton.hidden = isConsentRequired() === false;
+    }
+
+    function clearCookie(name, options) {
+      var suffix = "; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax";
+      var cookie = name + "=;" + suffix;
+      document.cookie = cookie;
+
+      var hostname = window.location.hostname;
+      var parts = hostname.split(".");
+      if (parts.length > 1) {
+        var rootDomain = "." + parts.slice(-2).join(".");
+        document.cookie = name + "=;" + suffix + "; domain=" + rootDomain;
+        document.cookie = name + "=;" + suffix + "; domain=" + hostname;
+      }
+
+      if (options && options.secure) {
+        document.cookie = name + "=;" + suffix + "; Secure";
+      }
+    }
+
+    function clearCookiesByPrefix(prefixes) {
+      var cookies = document.cookie ? document.cookie.split(";") : [];
+      for (var i = 0; i < cookies.length; i++) {
+        var item = cookies[i].trim();
+        var separatorIndex = item.indexOf("=");
+        var name = separatorIndex >= 0 ? item.slice(0, separatorIndex) : item;
+        for (var j = 0; j < prefixes.length; j++) {
+          if (name === prefixes[j] || name.indexOf(prefixes[j]) === 0) {
+            clearCookie(name);
+            break;
+          }
+        }
+      }
+    }
+
+    function clearAnalyticsCookies() {
+      clearCookiesByPrefix(["_ga", "_gid", "_gat", "_gcl_", "ph_"]);
+      try {
+        var keys = Object.keys(localStorage);
+        for (var i = 0; i < keys.length; i++) {
+          if (keys[i].indexOf("ph_") === 0) {
+            localStorage.removeItem(keys[i]);
+          }
+        }
+      } catch (e) {}
+    }
+
+    function clearMarketingCookies() {
+      clearCookiesByPrefix([
+        "hubspotutk",
+        "__hssc",
+        "__hssrc",
+        "__hstc",
+        "messagesUtk",
+        "hs-messages-is-open",
+        "hs-messages-hide-welcome-message",
+      ]);
+    }
+
+    // ── Google Consent Mode v2 ──
+    function gtag() {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(arguments);
+    }
+
+    // Set consent defaults BEFORE GTM loads (denied by default for consent-required regions)
+    gtag("consent", "default", {
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
+      analytics_storage: "denied",
+      functionality_storage: "granted",
+      personalization_storage: "denied",
+      security_storage: "granted",
+      wait_for_update: 500,
+    });
+
+    function updateConsentMode(preferences) {
+      var analyticsState = preferences.analytics ? "granted" : "denied";
+      var marketingState = preferences.marketing ? "granted" : "denied";
+      gtag("consent", "update", {
+        ad_storage: marketingState,
+        ad_user_data: marketingState,
+        ad_personalization: marketingState,
+        analytics_storage: analyticsState,
+        personalization_storage: analyticsState,
+      });
+    }
+
+    function pushConsentEvent(preferences) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "plivo_cookie_preferences_updated",
+        plivo_cookie_analytics: preferences.analytics ? "granted" : "denied",
+        plivo_cookie_marketing: preferences.marketing ? "granted" : "denied",
+      });
+    }
+
+    function loadGtmIfAllowed(preferences) {
+      // Update consent mode regardless of whether GTM is loading for the first time
+      updateConsentMode(preferences);
+
+      if (!preferences.analytics) return;
+      if (!gtmContainerId || !hostAllowed()) return;
+      if (window.__plivoGtmLoaded || document.getElementById("plivo-gtm-script")) return;
+
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        "gtm.start": new Date().getTime(),
+        event: "gtm.js",
+      });
+      pushConsentEvent(preferences);
+
+      var script = document.createElement("script");
+      script.id = "plivo-gtm-script";
+      script.async = true;
+      script.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(gtmContainerId);
+      document.head.appendChild(script);
+      window.__plivoGtmLoaded = true;
+    }
+
+    function loadHubSpotIfAllowed(preferences) {
+      if (!preferences.marketing) return;
+      if (!hubspotScriptSrc || !hostAllowed()) return;
+      if (window.__plivoHubSpotLoaded || document.getElementById("hs-script-loader")) return;
+
+      var script = document.createElement("script");
+      script.id = "hs-script-loader";
+      script.async = true;
+      script.defer = true;
+      script.src = hubspotScriptSrc;
+      document.body.appendChild(script);
+      window.__plivoHubSpotLoaded = true;
+    }
+
+    function loadPostHogIfAllowed(preferences) {
+      if (!preferences.analytics) return;
+      if (!posthogKey || !hostAllowed()) return;
+      if (window.__plivoPostHogLoaded) return;
+
+      !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="Ii init Di qi Sr Bi Zi Pi capture calculateEventProperties Yi register register_once register_for_session unregister unregister_for_session Xi getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Ji identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wi Vi createPersonProfile setInternalOrTestUser Gi Fi Ki opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $i debug Tr Ui getPageViewId captureTraceFeedback captureTraceMetric Ri".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+
+      posthog.init(posthogKey, {
+        api_host: posthogHost,
+        ui_host: "https://us.posthog.com",
+        defaults: "2026-01-30",
+        person_profiles: "identified_only",
+      });
+
+      window.__plivoPostHogLoaded = true;
+    }
+
+    function applyPreferences(preferences, options) {
+      var nextPreferences = normalisePreferences(preferences);
+      var previousPreferences = currentPreferences;
+      var revokingAnalytics = Boolean(previousPreferences && previousPreferences.analytics && !nextPreferences.analytics);
+      var revokingMarketing = Boolean(previousPreferences && previousPreferences.marketing && !nextPreferences.marketing);
+
+      currentPreferences = nextPreferences;
+      syncInputs(nextPreferences);
+      storePreferences(nextPreferences);
+      hideBanner();
+      closeModal();
+
+      if (!nextPreferences.analytics) clearAnalyticsCookies();
+      if (!nextPreferences.marketing) clearMarketingCookies();
+
+      loadGtmIfAllowed(nextPreferences);
+      loadHubSpotIfAllowed(nextPreferences);
+      loadPostHogIfAllowed(nextPreferences);
+
+      if (revokingAnalytics && window.posthog && typeof window.posthog.opt_out_capturing === "function") {
+        window.posthog.opt_out_capturing();
+      }
+
+      if (options && options.forceReloadOnRevoke && (revokingAnalytics || revokingMarketing)) {
+        window.location.reload();
+        return;
+      }
+    }
+
+    function createPreferences(overrides) {
+      var defaults = getDefaultPreferences();
+      return {
+        version: consentVersion,
+        necessary: true,
+        analytics: Boolean(overrides.analytics),
+        marketing: Boolean(overrides.marketing),
+        decidedAt: new Date().toISOString(),
+      };
+    }
+
+    function saveFromInputs() {
+      applyPreferences(
+        createPreferences({
+          analytics: analyticsInput && analyticsInput.checked,
+          marketing: marketingInput && marketingInput.checked,
+        }),
+        { forceReloadOnRevoke: true },
+      );
+    }
+
+    var currentPreferences = readStoredPreferences();
+
+    if (currentPreferences && !hasDecision(currentPreferences)) {
+      currentPreferences.decidedAt = new Date().toISOString();
+      storePreferences(currentPreferences);
+    }
+
+    /** Auto-allow all cookies for countries that don't require consent */
+    function autoAllowAll() {
+      var allAllowed = createPreferences({ analytics: true, marketing: true });
+      currentPreferences = allAllowed;
+      storePreferences(allAllowed);
+      if (banner) banner.hidden = true;
+      if (settingsButton) settingsButton.hidden = true;
+      loadGtmIfAllowed(allAllowed);
+      loadHubSpotIfAllowed(allAllowed);
+      loadPostHogIfAllowed(allAllowed);
+    }
+
+    function initConsent() {
+      var required = isConsentRequired();
+
+      // Country not requiring consent → auto-allow, hide banner & settings icon.
+      // Never overwrite an explicit stored decision (e.g. an opt-out made via
+      // the cookie policy page): opt-out regimes require that choice to stick.
+      if (required === false && !hasDecision(currentPreferences)) {
+        autoAllowAll();
+        return;
+      }
+
+      // Consent required, country unknown (treated as required to be safe),
+      // or a stored decision exists and must be respected
+      if (currentPreferences) {
+        hideBanner();
+        syncInputs(currentPreferences);
+        if (!currentPreferences.analytics) clearAnalyticsCookies();
+        if (!currentPreferences.marketing) clearMarketingCookies();
+        loadGtmIfAllowed(currentPreferences);
+        loadHubSpotIfAllowed(currentPreferences);
+        loadPostHogIfAllowed(currentPreferences);
+      } else {
+        showBanner();
+        syncInputs(getDefaultPreferences());
+      }
+    }
+
+    // Try init immediately; if geo not ready yet, poll briefly then init
+    var geoReady = isConsentRequired();
+    if (geoReady !== null) {
+      initConsent();
+    } else {
+      // Geo data may not be in sessionStorage yet — poll up to 3s
+      var geoAttempts = 0;
+      var geoPoll = setInterval(function() {
+        geoAttempts++;
+        if (isConsentRequired() !== null || geoAttempts > 30) {
+          clearInterval(geoPoll);
+          initConsent();
+        }
+      }, 100);
+    }
+
+    var acceptAllButtons = [
+      document.getElementById("plivo-cookie-accept-all"),
+      document.getElementById("plivo-cookie-modal-accept-all"),
+    ];
+
+    for (var index = 0; index < acceptAllButtons.length; index++) {
+      var acceptButton = acceptAllButtons[index];
+      if (!acceptButton) continue;
+      acceptButton.addEventListener("click", function () {
+        applyPreferences(
+          createPreferences({ analytics: true, marketing: true }),
+          { forceReloadOnRevoke: false },
+        );
+      });
+    }
+
+    var rejectAllButton = document.getElementById("plivo-cookie-reject-all");
+    if (rejectAllButton) {
+      rejectAllButton.addEventListener("click", function () {
+        applyPreferences(
+          createPreferences({ analytics: false, marketing: false }),
+          { forceReloadOnRevoke: true },
+        );
+      });
+    }
+
+    var openPreferencesButton = document.getElementById("plivo-cookie-open-preferences");
+    if (openPreferencesButton) {
+      openPreferencesButton.addEventListener("click", openModal);
+    }
+
+    if (settingsButton) {
+      settingsButton.addEventListener("click", openModal);
+    }
+
+    var savePreferencesButton = document.getElementById("plivo-cookie-save-preferences");
+    if (savePreferencesButton) {
+      savePreferencesButton.addEventListener("click", saveFromInputs);
+    }
+
+    var closeModalButton = document.getElementById("plivo-cookie-close-modal");
+    if (closeModalButton) {
+      closeModalButton.addEventListener("click", closeModal);
+    }
+
+    if (modal) {
+      modal.addEventListener("click", function (event) {
+        if (event.target === modal) closeModal();
+      });
+    }
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && modal && !modal.hidden) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      if (!(target instanceof Element)) return;
+      var trigger = target.closest("[data-cookie-settings]");
+      if (!trigger) return;
+      event.preventDefault();
+      openModal();
+    });
+
+    window.PlivoCookieConsent = {
+      openPreferences: openModal,
+      getPreferences: function () {
+        return currentPreferences || getDefaultPreferences();
+      },
+    };
+  })();
+})();</script> </body></html>

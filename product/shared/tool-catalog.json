@@ -2033,7 +2033,8 @@
       "enum": [
        "total",
        "daily",
-       "monthly"
+       "monthly",
+       "burst"
       ]
      },
      "capInrMilli": {
@@ -2080,7 +2081,8 @@
       "enum": [
        "total",
        "daily",
-       "monthly"
+       "monthly",
+       "burst"
       ]
      },
      "capInrMilli": {

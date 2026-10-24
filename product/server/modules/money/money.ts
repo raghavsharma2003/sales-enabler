@@ -112,7 +112,20 @@ export function istDate(at: Date): string {
 
 // ------------------------------------------------------------------ wallet
 
-export interface CapView { id: string; scope: string; scopeId: string | null; period: string; periodStart: string; capInrMilli: number; spentInrMilli: number; heldInrMilli: number; usedShare: number; near: boolean; reached: boolean }
+export interface CapView { id: string; scope: string; scopeId: string | null; period: string; periodStart: string; capInrMilli: number; spentInrMilli: number; heldInrMilli: number; usedShare: number; near: boolean; reached: boolean;
+  label: string; text: string }
+
+const SCOPE_WORD: Record<string, string> = { workspace: 'Workspace', campaign: 'Campaign', api_key: 'API key' };
+/** One cap in plain words, for the Billing page and the assistant. */
+export function capWords(scope: string, period: string, cap: number, spent: number, held: number): { label: string; text: string } {
+  const who = SCOPE_WORD[scope] ?? scope, c = formatInr(cap);
+  if (period === 'burst') return { label: `${who} burst limit`,
+    text: `At most ${c} can be held at once for calls in progress (${formatInr(held)} now). New calls wait until running calls finish.` };
+  const when = period === 'daily' ? 'today' : period === 'monthly' ? 'this month' : 'in total';
+  const reset = period === 'daily' ? ' It resets at midnight India time.' : period === 'monthly' ? ' It resets on the 1st, India time.' : '';
+  return { label: `${who} ${period === 'total' ? 'total' : period} cap`,
+    text: `${formatInr(spent)} of ${c} spent ${when}${held ? `, ${formatInr(held)} held for calls in progress` : ''}. New calls stop at the cap; calls already running finish.${reset}` };
+}
 
 export async function caps(q: Queryable, ws: string): Promise<CapView[]> {
   const rows = await many<{ id: string; scope_type: string; scope_id: string | null; period: string; ps: string; cap: string; spent: string; held: string }>(q,
@@ -122,7 +135,7 @@ export async function caps(q: Queryable, ws: string): Promise<CapView[]> {
   return rows.map(r => {
     const cap = Number(r.cap), used = Number(r.spent) + Number(r.held), share = cap > 0 ? used / cap : 1;
     return { id: r.id, scope: r.scope_type, scopeId: r.scope_id, period: r.period, periodStart: r.ps, capInrMilli: cap, spentInrMilli: Number(r.spent),
-      heldInrMilli: Number(r.held), usedShare: share, near: share >= 0.8, reached: share >= 1 };
+      heldInrMilli: Number(r.held), usedShare: share, near: share >= 0.8, reached: share >= 1, ...capWords(r.scope_type, r.period, cap, Number(r.spent), Number(r.held)) };
   });
 }
 

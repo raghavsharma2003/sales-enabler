@@ -2,7 +2,7 @@
 // rent, KYC and bring-your-own lines. Tests use FakeTelephony; the real adapter is off unless VP_TELEPHONY_LIVE=1
 // and its credentials are set, so no test and no dev server can ever reach a paid carrier API.
 import { SetupError } from '../../setup-error.ts';
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { CallCategory, SectorPack } from '../../../shared/agent-config.ts';
 
 export const SERIES = ['ten_digit', '140', '1600', '1601', 'trial'] as const;
@@ -24,6 +24,51 @@ export function routeSeries(r: RouteInput): Route {
   if (r.workspaceSector && SECTORS_1601.includes(r.workspaceSector)) return { series: '1601', rule: 'L1 claim 10: utilities and logistics on 1601xx', alsoAllowed: also };
   return { series: 'ten_digit', rule: 'RS-07 declared 10-digit for everyone else', alsoAllowed: also };
 }
+
+// ---- what each series needs, said before any search (open.2026-10-24.numbers-kyc-before-search) ----
+// Every figure is copied from the carrier's public pages, saved under research/2026-10-24/numbers-kyc/ with URL and
+// fetch date (24 Oct 2026). What a page does not state reads "not published": nothing here is estimated.
+
+export interface SeriesGuide {
+  series: Series | 'mobile';
+  label: string;
+  who: string;                 // who may use it, in plain words
+  checklist: string[];         // what the business must provide or do, in order
+  typicalTime: string;         // as the carrier states it, or 'not published'
+  monthlyPrice: string;        // as the carrier states it, or 'not published'
+  monthlyRentInrMilli: number | null;
+  source: { carrier: string; urls: string[]; fetched: string };
+}
+
+const NOT_PUBLISHED = 'not published';
+const FETCHED = '2026-10-24';
+const PLIVO_KYC = 'https://www.plivo.com/docs/numbers/rent-india-numbers.md';
+const PLIVO_PRICES = 'https://www.plivo.com/virtual-phone-numbers/pricing/in/';
+
+export const SERIES_GUIDE: readonly SeriesGuide[] = [
+  { series: 'ten_digit', label: 'Landline (city) number, such as 080 or 022', who: 'Businesses outside banking, finance and insurance, for service and transaction calls',
+    checklist: ['One business document: GST certificate, Certificate of Incorporation, or Udyam registration (business PAN alone is not accepted)',
+      'Your first application signed by an authorised signatory and stamped with the company seal'],
+    typicalTime: 'About 5 minutes for the automated review', monthlyPrice: '₹200 a month', monthlyRentInrMilli: 200_000,
+    source: { carrier: 'Plivo', urls: [PLIVO_KYC, PLIVO_PRICES], fetched: FETCHED } },
+  { series: '1600', label: '1600-series number (banking, finance and insurance)', who: 'Banks, NBFCs, insurers, fund houses and other entities licensed by RBI, SEBI, IRDAI or PFRDA, for service and transaction calls',
+    checklist: ['Your regulator and licence number', 'Registration as a principal entity on the Tata DLT portal (and the calling partner as telemarketer, if different)',
+      'The carrier\'s BFSI customer application form and telemarketer declaration, signed and sealed',
+      'Voice header and voice template approval on the Tata DLT portal'],
+    typicalTime: 'About 7 to 14 business days', monthlyPrice: NOT_PUBLISHED, monthlyRentInrMilli: null,
+    source: { carrier: 'Plivo', urls: ['https://plivo.com/docs/voice/concepts/160-series-provisioning.md', PLIVO_KYC], fetched: FETCHED } },
+  { series: '140', label: '140-series number (sales and promotional calls)', who: 'Any business making promotional calls, only to people who gave digital consent',
+    checklist: ['Registration as principal entity and telemarketer on the Tata DLT portal', 'An active GST registration',
+      'The carrier\'s telemarketer declaration, signed and sealed', 'Voice header approval on the Tata DLT portal'],
+    typicalTime: 'About 5 to 10 business days', monthlyPrice: NOT_PUBLISHED, monthlyRentInrMilli: null,
+    source: { carrier: 'Plivo', urls: ['https://www.plivo.com/docs/voice/concepts/140-series-provisioning.md', PLIVO_KYC], fetched: FETCHED } },
+  { series: '1601', label: '1601-series number (utilities and logistics)', who: 'Utilities and logistics companies, for service calls',
+    checklist: [NOT_PUBLISHED], typicalTime: NOT_PUBLISHED, monthlyPrice: NOT_PUBLISHED, monthlyRentInrMilli: null,
+    source: { carrier: 'Plivo', urls: [PLIVO_KYC], fetched: FETCHED } },
+  { series: 'mobile', label: 'Mobile number', who: 'Not offered by our carrier for business calling',
+    checklist: [NOT_PUBLISHED], typicalTime: NOT_PUBLISHED, monthlyPrice: NOT_PUBLISHED, monthlyRentInrMilli: null,
+    source: { carrier: 'Plivo', urls: [PLIVO_KYC, PLIVO_PRICES], fetched: FETCHED } },
+];
 
 // ---- provider seam ----
 
@@ -76,13 +121,23 @@ export class FakeTelephony implements TelephonyProvider {
  *  live India account (KC5: rental in the tenant's name is still in the carrier quote round). */
 export class PlivoTelephony implements TelephonyProvider {
   readonly name = 'plivo';
-  private readonly id = process.env.PLIVO_AUTH_ID ?? '';
-  private readonly token = process.env.PLIVO_AUTH_TOKEN ?? '';
+  private readonly id: string;
+  private readonly token: string;
+  private readonly apiBase: string;
+  private readonly publicBase: string;
+  /** opts are for tests only: an apiBase on this machine (a fake Plivo) is the one way past the live switch. */
+  constructor(opts: { apiBase?: string; authId?: string; authToken?: string; publicBase?: string } = {}) {
+    this.id = opts.authId ?? process.env.PLIVO_AUTH_ID ?? '';
+    this.token = opts.authToken ?? process.env.PLIVO_AUTH_TOKEN ?? '';
+    this.apiBase = (opts.apiBase ?? 'https://api.plivo.com').replace(/\/+$/, '');
+    this.publicBase = (opts.publicBase ?? process.env.VP_PUBLIC_URL ?? '').trim().replace(/\/+$/, '');
+  }
   private enabled(what: string) {
+    if (isLoopback(this.apiBase) && this.id && this.token) return;          // a fake carrier on this machine: never a real call
     if (process.env.VP_TELEPHONY_LIVE !== '1' || !this.id || !this.token || process.env.NODE_ENV === 'test') throw new TelephonyDisabled(what);
   }
   private async call(method: 'GET' | 'POST', path: string, body?: unknown): Promise<any> {
-    const r = await fetch(`https://api.plivo.com/v1/Account/${encodeURIComponent(this.id)}${path}`, {
+    const r = await fetch(`${this.apiBase}/v1/Account/${encodeURIComponent(this.id)}${path}`, {
       method, signal: AbortSignal.timeout(10_000), body: body ? JSON.stringify(body) : undefined,
       headers: { 'content-type': 'application/json', authorization: 'Basic ' + Buffer.from(`${this.id}:${this.token}`).toString('base64') },
     });
@@ -102,7 +157,52 @@ export class PlivoTelephony implements TelephonyProvider {
   }
   async submitKyc(): Promise<{ ref: string }> { this.enabled('kyc'); throw new Error('plivo KYC submission is a document upload flow; not wired yet'); }
   async connectByo(): Promise<{ providerRef: string }> { this.enabled('byo'); throw new Error('plivo bring-your-own trunks are not wired yet'); }
-  async systemCall(): Promise<{ ref: string }> { this.enabled('system call'); throw new Error('plivo system announcements (Speak XML) are not wired yet'); }
+  /** Ring `to` and speak `lines` (no agent, no model), then hang up. Plivo fetches what to say from our answer URL, so the
+   *  lines wait here under a one-off token for 15 minutes; the hook (campaigns routes) answers with Speak XML. */
+  async systemCall(i: { to: string; from: string; lines: string[] }): Promise<{ ref: string }> {
+    this.enabled('system call');
+    if (!/^https:\/\//.test(this.publicBase) && !isLoopback(this.publicBase)) {
+      throw new TelephonyDisabled('system call: no public https address for the carrier to fetch the announcement from');
+    }
+    const token = queueAnnouncement(i.lines);
+    const digits = (n: string) => n.replace(/\D/g, '');
+    const j = await this.call('POST', '/Call/', {
+      from: digits(i.from), to: digits(i.to), answer_url: `${this.publicBase}${SPEAK_PATH}${token}`, answer_method: 'POST',
+      ring_timeout: 45, time_limit: 120,
+    });
+    const ref = String(j.request_uuid ?? j.api_id ?? '');
+    if (!ref) throw new Error('plivo accepted the call request without a reference');
+    return { ref };
+  }
+}
+
+// ---- system announcements: lines waiting for the carrier to fetch them ----
+
+export const SPEAK_PATH = '/hooks/telephony/plivo/speak/';
+const ANNOUNCE_TTL_MS = 15 * 60_000;
+const announcements = new Map<string, { lines: string[]; until: number }>();
+
+/** Hold the lines under a random token until the carrier asks for them (one process; a second replica would need a shared store). */
+export function queueAnnouncement(lines: string[], now = Date.now()): string {
+  for (const [k, v] of announcements) if (v.until < now) announcements.delete(k);
+  const token = randomBytes(24).toString('base64url');
+  announcements.set(token, { lines, until: now + ANNOUNCE_TTL_MS });
+  return token;
+}
+
+const xmlEscape = (s: string) => s.replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c]!);
+
+/** The Speak XML for a token, or null when it is unknown or expired. The lines are spoken in Indian English, then the call ends. */
+export function announcementXml(token: string, now = Date.now()): string | null {
+  const a = announcements.get(token);
+  if (!a || a.until < now) return null;
+  return '<?xml version="1.0" encoding="UTF-8"?><Response>'
+    + a.lines.map(l => `<Speak voice="WOMAN" language="en-IN">${xmlEscape(l)}</Speak><Wait length="1"/>`).join('')
+    + '<Hangup/></Response>';
+}
+
+function isLoopback(url: string): boolean {
+  try { const h = new URL(url).hostname; return h === '127.0.0.1' || h === 'localhost' || h === '[::1]'; } catch { return false; }
 }
 
 let current: TelephonyProvider | null = null;

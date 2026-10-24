@@ -48,12 +48,15 @@ test('no thrown error in the server names an environment variable, except a Setu
 test('number search with no carrier: plain words and code telephony_disabled, never the variable to set', { skip }, async () => {
   const ws = (await one<{ id: string }>(pool, "INSERT INTO workspace (name) VALUES ('no detail test') RETURNING id"))!.id;
   const owner = (await one<{ id: string }>(pool, "INSERT INTO member (workspace_id, email, role) VALUES ($1,$2,'owner') RETURNING id", [ws, `o${Math.random()}@example.test`]))!.id;
+  // The search still answers (what each series needs, its time and price come first); the carrier state says why
+  // there are no offers, in plain words with code telephony_disabled.
   const r = await registry.execute<any>(pool, 'number.search', {}, { workspaceId: ws, actor: { type: 'member', id: owner, role: 'owner' } });
-  assert.equal(r.status, 'not_executed', JSON.stringify(r));
-  if (r.status !== 'not_executed') return;
-  assert.equal(r.code, 'telephony_disabled');
-  assert.match(r.reason, /Phone lines are not switched on/);
-  assert.doesNotMatch(r.reason, /VP_|credentials|server/i);
+  assert.equal(r.status, 'confirmed', JSON.stringify(r));
+  if (r.status !== 'confirmed') return;
+  assert.deepEqual(r.result.offers, []);
+  assert.equal(r.result.telephony.code, 'telephony_disabled');
+  assert.match(r.result.telephony.message, /Phone lines are not switched on/);
+  assert.doesNotMatch(JSON.stringify(r.result), /VP_|credentials|server/i);
 });
 
 test('every tool, run by an owner with the server\'s setup missing: no refusal or result carries server detail', { skip, timeout: 120_000 }, async () => {

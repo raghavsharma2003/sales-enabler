@@ -20,7 +20,7 @@ const MAX_TOPUP = 1_000_000_000;          // ₹10 lakh per top-up
 const MAX_CAP = 100_000_000_000;          // ₹10 crore
 const date = () => str({ pattern: /^\d{4}-\d{2}-\d{2}$/, desc: 'IST date, YYYY-MM-DD' });
 const scopeV = str({ oneOf: ['workspace', 'campaign', 'api_key'] });
-const periodV = str({ oneOf: ['total', 'daily', 'monthly'] });
+const periodV = str({ oneOf: ['total', 'daily', 'monthly', 'burst'] });
 const capInput = obj({ scope: scopeV, scopeId: opt(uuid()), period: periodV, capInrMilli: num({ int: true, min: 0, max: MAX_CAP }) });
 type CapInput = ReturnType<typeof capInput>;
 const PLANS = ['base', 'plus', 'premium'] as const;
@@ -126,7 +126,7 @@ export function register(r: Registry): void {
 
   r.register(tool(capInput, {
     name: 'cap.raise', risk: 'spend', summary: 'raise (or set) a spend cap',
-    describe: i => `Raise the ${i.period} ${i.scope.replace('_', ' ')} cap to ${formatInr(i.capInrMilli)}`,
+    describe: i => i.period === 'burst' ? `Raise the ${i.scope.replace('_', ' ')} burst limit (money held at once) to ${formatInr(i.capInrMilli)}` : `Raise the ${i.period} ${i.scope.replace('_', ' ')} cap to ${formatInr(i.capInrMilli)}`,
     version: async (ctx, i) => (await findCap(ctx.q, ctx.workspaceId, i))?.cap ?? 'none',
     run: (ctx, i) => setCap(ctx, i, 'raise'),
   }));

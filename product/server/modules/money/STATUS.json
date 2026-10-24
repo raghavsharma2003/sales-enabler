@@ -43,7 +43,8 @@
     "trial credit: money_config.trial_credit_inr_milli (default 0) applied by a trigger on the wallet's first write, once per workspace and once per owner email hash (money_trial_grant, survives workspace deletion); ledgered as wallet_topup kind trial_credit, shown as 'Trial credit' in invoice.get moneyIn",
     "copy: user-facing text says Vyakti (estimate basis, price 'not set' text, statement note, tool summaries, cost-card labels via 0906)",
     "wallet blockers (blockers.ts) used by campaigns: launchBlockers adds wallet_short with one call's G9 hold; number.search returns walletBlocker for the cheapest offer's rent; number.rent refuses on an empty wallet naming the wallet and 'Add money'",
-    "R4: stack.list (agents) prices each part in ₹ a minute from money.parts, list price kept as priceBasis; a built stack's parts + extras equal money.estimate's all-in figure"
+    "R4: stack.list (agents) prices each part in ₹ a minute from money.parts, list price kept as priceBasis; a built stack's parts + extras equal money.estimate's all-in figure",
+    "bounded defaults: money_config.default_daily_cap_inr_milli (₹5,000) and default_burst_inr_milli (₹2,000) seeded as workspace caps at wallet creation and back-filled; a 'burst' cap bounds money held at once (spend stays 0); wallet.get caps carry label + text in plain words; cap.raise/lower accept period 'burst'"
   ],
   "untested": [
     "the minute profile (50% caller audio gated, 4 replies/min x 2000 in + 60 out tokens, 30 s of her speech at 15 chars/s) is an ASSUMPTION, not measured; estimates are only as good as it until the meter feeds per-stack averages",

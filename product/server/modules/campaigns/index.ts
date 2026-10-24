@@ -30,7 +30,7 @@ import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
 import { factColumns, missingFactsSentence } from '../agents/columns.ts';
 import { agentLanguages, languageName, routeContact, serves, toLanguage } from '../agents/languages.ts';
 import { languageOptions } from './languages.ts';
-import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
+import { announcementXml, routeSeries, SERIES, SERIES_GUIDE, SPEAK_PATH, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
 // ---- validators ----
@@ -522,11 +522,18 @@ export function registerCampaignTools(registry: Registry): void {
   reg(tool(obj({ series: opt(seriesV), region: opt(str({ max: 40 })), limit: opt(num({ int: true, min: 1, max: 20 })) }), {
     name: 'number.search', risk: 'read', summary: 'Search numbers to rent in a series',
     run: async (ctx, i) => {
-      const offers = await telephony().search({ series: i.series as Series | undefined, region: i.region, limit: i.limit ?? 5 });
+      // What each series needs, its usual time and its monthly price come first, even with no carrier switched on.
+      const guide = i.series ? SERIES_GUIDE.filter(g => g.series === i.series) : SERIES_GUIDE;
+      let offers;
+      try { offers = await telephony().search({ series: i.series as Series | undefined, region: i.region, limit: i.limit ?? 5 }); }
+      catch (e) {
+        if (!(e instanceof TelephonyDisabled)) throw e;
+        return { offers: [], guide, provider: telephony().name, telephony: { state: 'off', code: e.code, message: e.message }, walletBlocker: null };
+      }
       // Say up front when the wallet cannot pay the cheapest month's rent (walkthrough S6), not after the approval.
       const rents = offers.map(o => o.monthlyRentInrMilli).filter((m): m is number => m !== null);
       const walletBlocked = offers.length ? await walletBlocker(ctx.q, ctx.workspaceId, { purpose: 'number_rent', needInrMilli: rents.length ? Math.min(...rents) : null }) : null;
-      return { offers, provider: telephony().name, walletBlocker: walletBlocked };
+      return { offers, guide, provider: telephony().name, telephony: { state: 'on' }, walletBlocker: walletBlocked };
     },
   }));
 
@@ -776,6 +783,14 @@ export const module: Module = {
   register: registerCampaignTools,
   routes(router, deps) {
     router.add('POST', '/hooks/telephony/kyc', kycHook(deps), { rawBody: true, limit: 64_000 });
+    // The carrier fetches a system announcement (the "ring my phone" code) by its one-off token; unknown or expired: 404.
+    const speak = async (req: Req): Promise<Res> => {
+      const xml = announcementXml(req.params.token ?? '');
+      if (!xml) throw new HttpError(404, 'not_found', 'no such announcement');
+      return { raw: xml, headers: { 'content-type': 'application/xml; charset=utf-8' } };
+    };
+    router.add('POST', SPEAK_PATH + ':token', speak, { rawBody: true, limit: 16_000 });
+    router.add('GET', SPEAK_PATH + ':token', speak);
   },
   // The dial loop: claim + gate + dispatch. Jobs never overlap and hold a per-name advisory lock, so replicas are safe;
   // SKIP LOCKED makes even concurrent claimers safe.

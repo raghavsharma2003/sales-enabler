@@ -86,7 +86,7 @@ export interface CallDoc {
 }
 export interface CallExplain { headline: string; because: { point: string; evidence: Record<string, unknown> }[]; outcome: { value: string; grade: string; note: string | null } | null; notes: string[] }
 
-export interface Wallet { state: string; balanceMilli: number; heldMilli: number; availableMilli: number; runwayDays: number | null; caps: { scope: string; period: string; capInrMilli: number; spentInrMilli?: number }[]; warnings: string[]; priceNotSet: boolean; priceText: string }
+export interface Wallet { state: string; balanceMilli: number; heldMilli: number; availableMilli: number; runwayDays: number | null; caps: { scope: string; period: string; capInrMilli: number; spentInrMilli?: number; heldInrMilli?: number; label?: string; text?: string }[]; warnings: string[]; priceNotSet: boolean; priceText: string }
 export interface Member { id: string; name: string; email: string; role: string; status: string }
 export interface ApiKey { id: string; name: string; prefix: string; createdAt: string; lastUsed: string | null; revoked: boolean }
 export interface KnowledgeItem { id: string; title: string; status: string; passages: number; createdAt: string }

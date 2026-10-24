@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://www.plivo.com/virtual-phone-numbers/pricing/in/",
+    "file": "raw/www.plivo.com_virtual-phone-numbers_pricing_in_.html",
+    "fetched": "2026-10-24T05:28:59Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://www.plivo.com/docs/numbers/rent-india-numbers.md",
+    "file": "raw/www.plivo.com_docs_numbers_rent-india-numbers.md",
+    "fetched": "2026-10-24T05:28:59Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://www.plivo.com/docs/voice/concepts/140-series-provisioning.md",
+    "file": "raw/www.plivo.com_docs_voice_concepts_140-series-provisioning.md",
+    "fetched": "2026-10-24T05:28:59Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://plivo.com/docs/voice/concepts/160-series-provisioning.md",
+    "file": "raw/www.plivo.com_docs_voice_concepts_160-series-provisioning.md",
+    "fetched": "2026-10-24T05:28:59Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  },
+  {
+    "url": "https://plivo.com/docs/voice/concepts/india-calling.md",
+    "file": "raw/www.plivo.com_docs_voice_concepts_india-calling.md",
+    "fetched": "2026-10-24T05:28:59Z",
+    "how": "curl -sSL through the session proxy; saved byte for byte"
+  }
+]
