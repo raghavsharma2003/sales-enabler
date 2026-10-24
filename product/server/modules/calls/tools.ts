@@ -32,6 +32,11 @@ const reasonCode = str({ oneOf: REASON_CODES.map(r => r.code) });
 const AGENT_JOIN = `LEFT JOIN agent_version av ON av.id = cv.agent_version_id
   LEFT JOIN agent ag ON ag.id = av.agent_id AND ag.workspace_id = cv.workspace_id`;
 const AGENT_COLS = 'ag.id AS agent_id, ag.name AS agent_name, av.number AS agent_version_number';
+// Each call's reply gap for the log (must-be 13): the median and the slowest of her replies the voice runtime timed
+// (turn.latency.latencyMs), in the list's own query. No timed reply gives nulls, never 0.
+const REPLY_JOIN = `LEFT JOIN LATERAL (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY (t.latency->>'latencyMs')::numeric) AS reply_median_ms,
+    max((t.latency->>'latencyMs')::numeric)::int AS reply_slowest_ms, count(*)::int AS reply_timed
+  FROM turn t WHERE t.conversation_id = cv.id AND t.speaker = 'agent' AND jsonb_typeof(t.latency->'latencyMs') = 'number') rg ON true`;
 /** The call's agent as the call log shows it, or null for a call no published version made (a draft test call). */
 const agentOf = (x: Record<string, any>) => x.agent_id ? { id: x.agent_id as string, name: x.agent_name as string, version: Number(x.agent_version_number),
   label: `${x.agent_name}, version ${x.agent_version_number}` } : null;
@@ -265,9 +270,11 @@ export function registerTools(r: Registry): void {
       p.push(i.limit ?? 50);
       const rows = await many<Record<string, any>>(ctx.q,
         `SELECT cv.id, cv.channel, cv.direction, cv.inbound_note, cv.status, cv.started_at, cv.ended_at, cv.duration_s, cv.end_reason, cv.reason_code, cv.flagged, cv.flags,
-                cv.cost_inr_milli::int AS cost_inr_milli, cv.contact_id, cv.agent_version_id, a.campaign_id, ${AGENT_COLS}, ${BEST_OUTCOME} AS outcome, ${BEST_GRADE} AS grade
-         ${FROM} ${AGENT_JOIN} WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
-      return { total, calls: rows.map(({ agent_id, agent_name, agent_version_number, ...x }) => ({ ...x, agent: agentOf({ agent_id, agent_name, agent_version_number }),
+                cv.cost_inr_milli::int AS cost_inr_milli, cv.contact_id, cv.agent_version_id, a.campaign_id, ${AGENT_COLS}, ${BEST_OUTCOME} AS outcome, ${BEST_GRADE} AS grade,
+                rg.reply_median_ms, rg.reply_slowest_ms, rg.reply_timed
+         ${FROM} ${AGENT_JOIN} ${REPLY_JOIN} WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
+      return { total, calls: rows.map(({ agent_id, agent_name, agent_version_number, reply_median_ms, reply_slowest_ms, reply_timed, ...x }) => ({ ...x, agent: agentOf({ agent_id, agent_name, agent_version_number }),
+        reply: reply_timed ? { medianMs: Math.round(Number(reply_median_ms)), slowestMs: Number(reply_slowest_ms), timed: reply_timed } : null,
         reasonLabel: reasonFor(x.reason_code)?.label ?? null })), next: rows.length === (i.limit ?? 50) ? rows[rows.length - 1].started_at : null };
     },
   }));

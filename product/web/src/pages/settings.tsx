@@ -1,21 +1,23 @@
 // Settings: team, API keys, brand, knowledge, billing (real cost, price "not set"), compliance, privacy, operator, integrations, webhooks, activity.
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Lock } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
 import { useNav } from '../router.tsx';
-import { Async, Btn, Card, CardHead, Chip, Empty, Locked, Meter, NotMeasured, PageHead, SelectField, Sheet, Table, Tabs, TextArea, TextField, Toggle, type Col } from '../ui.tsx';
+import { Async, Skeleton, Btn, Card, CardHead, Chip, Empty, Locked, Meter, NotMeasured, PageHead, SelectField, Sheet, Table, Tabs, TextArea, TextField, Toggle, type Col } from '../ui.tsx';
 import { activityList, keyList, knowledgeList, memberList, walletGet } from '../data.ts';
 import { ago, count, date, inr, time } from '../format.ts';
 import { prettyId } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
 import { costPart } from '../labels.ts';
 import { Link } from '../router.tsx';
-import Integrations from './integrations.tsx';
-import Security from './security.tsx';
-import Outcomes from './outcomes.tsx';
-import Webhooks from './webhooks.tsx';
-import Notifications from './notifications.tsx';
+// The larger tabs load when opened, so the Settings chunk stays under the per-chunk cap (decision.2026-10-24.web-budget-per-chunk)
+// and Team, where most people land, does not wait for them.
+const Integrations = lazy(() => import('./integrations.tsx'));
+const Security = lazy(() => import('./security.tsx'));
+const Outcomes = lazy(() => import('./outcomes.tsx'));
+const Webhooks = lazy(() => import('./webhooks.tsx'));
+const Notifications = lazy(() => import('./notifications.tsx'));
 import { RevealSheet } from '../reveal.tsx';
 import { activitySentence, foldRepeats, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
@@ -31,8 +33,10 @@ export default function Settings({ tab }: { tab?: string }) {
     <div className="page">
       <PageHead title="Settings" sub="Who can do what, what it costs, and the rules every call follows." />
       <Tabs label="Settings sections" value={t} onChange={v => go('/settings/' + v)} items={TABS.map(id => ({ id, label: LABEL[id] }))} />
+      <Suspense fallback={<Skeleton rows={5} />}>
       {t === 'team' && <Team />}{t === 'keys' && <Keys />}{t === 'brand' && <Brand />}{t === 'knowledge' && <Knowledge />}{t === 'outcomes' && <Outcomes />}{t === 'billing' && <Billing />}
       {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'security' && <Security />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'webhooks' && <Webhooks />}{t === 'notifications' && <Notifications />}{t === 'activity' && <Activity />}
+      </Suspense>
     </div>
   );
 }

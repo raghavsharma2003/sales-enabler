@@ -1871,3 +1871,25 @@ test('Retry pattern: the form sends what it shows, campaign.get and the page agr
     }
   } finally { await phoneCtx.close(); }
 });
+// ---- Must-be audit gap 15: the call log names the agent version each call ran and its reply gap, as call.search sends them
+test('Call log: each call shows the agent and version it ran and its reply gap, as the server measured them; the call page names the agent', async () => {
+  const calls = (await tool('call.search', {})).result.calls;
+  const c = calls.find(x => x.agent?.label && x.reply);
+  assert.ok(c, 'the seeded calls ran a published version and the runtime timed her replies');
+  await page.goto(`${BASE}/calls`);
+  const row = page.locator('tr', { has: page.locator(`a[href="/calls/${c.id}"]`) });
+  await row.waitFor();
+  const agentCell = row.locator('td[data-label="Agent"]');
+  assert.equal((await agentCell.innerText()).trim(), `${c.agent.name} v${c.agent.version}`);
+  assert.equal(await agentCell.locator('span').first().getAttribute('title'), c.agent.label, 'the full name and version on hover');
+  const gap = row.locator('td[data-label="Reply gap"]');
+  const want = c.reply.medianMs < 10000 ? `${c.reply.medianMs.toLocaleString('en-IN')} ms` : `${(c.reply.medianMs / 1000).toFixed(1)} s`;
+  assert.equal((await gap.innerText()).trim(), want, 'the median of her timed replies');
+  assert.match(await gap.locator('span').first().getAttribute('title'), new RegExp(`Median of ${c.reply.timed} timed repl`));
+  for (const u of calls.filter(x => !x.reply).slice(0, 2)) {
+    const cell = (await page.locator('tr', { has: page.locator(`a[href="/calls/${u.id}"]`) }).locator('td[data-label="Reply gap"]').innerText()).trim();
+    assert.equal(cell, u.duration_s ? 'Not measured yet' : '—', 'no timed reply is never 0: unmeasured if they spoke, a dash if nobody did');
+  }
+  await page.goto(`${BASE}/calls/${c.id}`);
+  await page.locator('.kv').getByText(c.agent.label, { exact: true }).waitFor({ timeout: 10000 });
+});

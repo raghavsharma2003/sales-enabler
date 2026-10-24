@@ -208,7 +208,8 @@ async function contactNames(): Promise<Map<string, string>> {
 }
 export async function callSearch(o: { campaignId?: string; outcome?: string; includeTest?: boolean }): Promise<CallRow[]> {
   const [r, names] = await Promise.all([run<{ calls: any[] }>('call.search', { campaignId: o.campaignId, outcome: o.outcome, includeTest: o.includeTest, limit: 100 }), contactNames()]);
-  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? (c.direction === 'inbound' ? (c.inbound_note === 'erased' ? 'A caller who asked to be erased' : 'Unknown caller') : !c.contact_id && c.channel === 'test' ? 'Practice call in the browser' : 'Unknown person'), direction: c.direction === 'inbound' ? 'inbound' as const : 'outbound' as const, startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null }));
+  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? (c.direction === 'inbound' ? (c.inbound_note === 'erased' ? 'A caller who asked to be erased' : 'Unknown caller') : !c.contact_id && c.channel === 'test' ? 'Practice call in the browser' : 'Unknown person'), direction: c.direction === 'inbound' ? 'inbound' as const : 'outbound' as const, startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null,
+    agent: c.agent?.label ? { name: String(c.agent.name), version: Number(c.agent.version), label: c.agent.label } : null, reply: c.reply?.timed ? c.reply : null }));
 }
 export async function callGet(id: string): Promise<CallDoc> {
   const c = await run<any>('call.get', { conversationId: id });
@@ -221,7 +222,7 @@ export async function callGet(id: string): Promise<CallDoc> {
     // The server's fresh signed link when the recording may be played (call.get recording); else the stored address and why not.
     recordingUri: c.recording?.url ?? c.recordingUri, recordingWhy: c.recording?.why ?? null, transcriptWhy: c.transcriptRemoved ?? null,
     allowedBy: c.allowedBy ? { allowed: c.allowedBy.allowed ?? null, at: c.allowedBy.at ?? null, gateText: c.allowedBy.gateText ?? null, summary: String(c.allowedBy.summary ?? ''), checks: arr<any>(c.allowedBy.checks).map(k => ({ ok: !!k.ok, text: String(k.text) })), warnings: arr<string>(c.allowedBy.warnings) } : null,
-    verified: c.verified ?? null, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
+    agentLabel: c.agent?.label ?? null, verified: c.verified ?? null, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), judgeMarks: arr<any>(c.judgeMarks).map(j => ({ seq: j.seq, label: j.label, outcome: j.outcome, text: String(j.text) })), tools: arr(c.tools), handOffs: arr(c.handOffs),
     outcomes: arr(c.outcomes), costTotal: c.cost?.totalInrMilli ?? 0, costLines: arr(c.cost?.lines), settlement: c.cost?.settlement?.action ?? (typeof c.cost?.settlement === 'string' ? c.cost.settlement : null),
     analysis: a ? { status: a.status, summary: a.summary, reason: a.reason,

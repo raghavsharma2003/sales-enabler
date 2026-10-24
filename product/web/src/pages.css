@@ -169,3 +169,4 @@ a.btn.btn-primary { color: var(--on-terra); }
 .filepick { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border: 1px dashed var(--line-strong); border-radius: 10px; padding: 12px; }
 .filepick p { margin: 0; overflow-wrap: anywhere; }
 .approval-detail { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--ink-2); }
+.cell-sub { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--ink-2); margin-top: 2px; }

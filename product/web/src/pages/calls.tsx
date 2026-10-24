@@ -28,9 +28,13 @@ function List() {
   const campaignId = qs.get('campaign') ?? '';
   const q = useData(['calls', campaignId, view], () => callSearch({ campaignId: campaignId || undefined, includeTest: view === 'test' }));
   const cols: Col<CallRow>[] = [
-    { key: 'w', label: 'Who', primary: true, render: c => <>{c.contactName}{c.direction === 'inbound' && <> <Chip tone="peacock">Inbound</Chip></>}{c.channel === 'test' && <> <Chip>Test</Chip></>}</> }, { key: 'o', label: 'Outcome', render: c => outcomeChip(c.outcome, c.grade) },
+    { key: 'w', label: 'Who', primary: true, render: c => <>{c.contactName}{c.direction === 'inbound' && <> <Chip tone="peacock">Inbound</Chip></>}{c.channel === 'test' && <> <Chip>Test</Chip></>}<span className="cell-sub">{date(c.startedAt, true)}</span></> }, { key: 'o', label: 'Outcome', render: c => outcomeChip(c.outcome, c.grade) },
     { key: 'p', label: 'Campaign', render: c => campName(c.campaignId) ?? <span className="muted">{c.channel === 'test' ? 'Practice' : c.direction === 'inbound' ? 'Inbound line' : 'None'}</span> },
-    { key: 'r', label: 'Why it ended', render: c => c.reasonLabel ?? <NotMeasured /> }, { key: 't', label: 'When', render: c => date(c.startedAt, true) },
+    { key: 'r', label: 'Why it ended', render: c => c.reasonLabel ?? <NotMeasured /> }, 
+    { key: 'a', label: 'Agent', render: c => c.agent ? <span title={c.agent.label}>{c.agent.name} <span className="muted nowrap">v{c.agent.version}</span></span> : <span className="muted">{c.channel === 'test' ? 'Draft' : 'Not recorded'}</span> },
+    { key: 'g', label: 'Reply gap', num: true, render: c => c.reply
+      ? <span className="nowrap" title={`Median of ${c.reply.timed} timed ${c.reply.timed === 1 ? 'reply' : 'replies'}; the slowest took ${ms(c.reply.slowestMs)}`}>{ms(c.reply.medianMs)}</span>
+      : !c.durationS ? <span className="muted" title="Nobody spoke, so there was no reply to time">—</span> : <NotMeasured /> },
     { key: 'd', label: 'Length', num: true, render: c => dur(c.durationS) }, { key: 'c', label: 'Cost', num: true, render: c => c.costMilli == null ? <NotMeasured /> : inr(c.costMilli, { paise: true }) },
   ];
   return (
@@ -124,7 +128,7 @@ function Body({ c }: { c: CallDoc }) {
             {c.allowedBy.warnings.length > 0 && <p className="small muted">Noted at the time: {c.allowedBy.warnings.join(' ')}</p>}
             {c.allowedBy.at && <p className="small muted">Checked {date(c.allowedBy.at, true)}{c.allowedBy.gateText ? ` by ${c.allowedBy.gateText}` : ''}.</p>}</Card>}
           <Card><CardHead title="What ran and what it cost" />
-            <Kv rows={[['Voice stack', c.ran ? (ran.stack?.label || (ran.ready ? 'A stack that is no longer listed' : '…')) : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
+            <Kv rows={[['Agent', c.agentLabel ?? <span className="muted" key="a">{c.test ? 'A draft, not a published version' : 'Not recorded'}</span>], ['Voice stack', c.ran ? (ran.stack?.label || (ran.ready ? 'A stack that is no longer listed' : '…')) : <NotMeasured key="r" />], ['Total', <strong key="t" className="tnum">{inr(c.costTotal, { paise: true })}</strong>], ['Charged', c.costTotal > 0 ? 'Yes' : 'Not charged']]} />
             {c.costLines.length > 0 && <><hr className="rule" /><Kv rows={groupCost(c.costLines).map(l => [`${costPart(l.component, prettyCode)} · ${prettyCode(l.provider)}`, inr(l.inr_milli, { paise: true })] as [string, string])} /></>}</Card>
         </div>
       </div>
