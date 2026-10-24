@@ -4,7 +4,7 @@ import { normaliseIndianPhone } from '../../../shared/phone.ts';
 
 export type Field =
   | 'phone' | 'name' | 'first_name' | 'last_name' | 'language' | 'timezone'
-  | 'consent' | 'consent_at' | 'opt_out' | 'observed_at' | 'attribute' | 'ignore';
+  | 'consent' | 'consent_at' | 'opt_out' | 'observed_at' | 'voice' | 'first_message' | 'attribute' | 'ignore';
 
 export interface ColumnMap {
   column: number;            // 0-based index in the header row
@@ -33,6 +33,9 @@ const SYNONYMS: [Field, string[]][] = [
   ['consent', ['consent', 'opt in', 'optin', 'opted in', 'consented', 'permission', 'sahmati', 'सहमति', 'call consent', 'marketing consent']],
   ['phone', ['phone', 'phone no', 'phone number', 'mobile', 'mobile no', 'mobile number', 'mob', 'mob no', 'contact', 'contact no', 'contact number',
     'cell', 'cell no', 'whatsapp', 'whatsapp no', 'whatsapp number', 'number', 'msisdn', 'tel', 'telephone', 'फ़ोन', 'फोन', 'मोबाइल', 'मोबाइल नंबर', 'नंबर', 'संपर्क']],
+  // Per-row overrides (overrides.ts): checked against the agent's rules at import and again at dial time.
+  ['voice', ['voice', 'voice id', 'voice name', 'agent voice', 'awaaz', 'awaz', 'आवाज़', 'आवाज']],
+  ['first_message', ['first message', 'opening', 'opening line', 'opening message', 'first line', 'opener', 'open with', 'pehli line', 'pehla message']],
   ['first_name', ['first name', 'firstname', 'given name', 'fname']],
   ['last_name', ['last name', 'lastname', 'surname', 'family name', 'lname']],
   ['name', ['name', 'full name', 'customer name', 'customer', 'client name', 'lead name', 'contact name', 'naam', 'नाम', 'ग्राहक का नाम']],

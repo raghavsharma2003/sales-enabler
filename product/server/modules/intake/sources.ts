@@ -14,18 +14,22 @@ import { DEFAULT_MAX_AGE_S, type Authority } from './authority.ts';
 import { detectDelimiter, parseDelimited, type Delimiter } from './csv.ts';
 import { attrKey, inferMapping, normLanguage, normTimezone, parseDate, truthy, typedValue, type ColumnMap, type Mapping } from './mapping.ts';
 import { applyRows, hashWith, workspaceSalt, type InRow, type SourceRef } from './store.ts';
+import { checkFirstMessage, checkVoice } from './overrides.ts';
+import { looksLikeXlsx, readXlsx, rowsToCsv, XlsxError } from './xlsx.ts';
 // The agents module's pure fact-to-column matcher (walkthrough round 2, R3): the same rule the dial-time fill uses.
 import { factColumns, missingFactsSentence, type FactColumn } from '../agents/columns.ts';
 
 export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+const MAX_CONVERTED_BYTES = 120 * 1024 * 1024;   // an .xlsx of at most 20 MB, read into delimited text
+const MAX_B64_CHARS = Math.ceil(MAX_FILE_BYTES / 3) * 4;
 const MAX_PART_CHARS = 950_000;                 // inline text in a tool call, under the tool endpoint's 1 MB body limit
 const HOOK_SKEW_S = 300;
-const FILE_KINDS = ['csv', 'tsv', 'sheet'] as const;
+const FILE_KINDS = ['csv', 'tsv', 'xlsx', 'sheet'] as const;
 const HOOK_KINDS = ['api_push', 'crm', 'form', 'whatsapp'] as const;
 type SourceKind = (typeof FILE_KINDS)[number] | (typeof HOOK_KINDS)[number];
 
 // The person is the authority on what they typed into a form or an opt-in; files are uploads; pushes are declared.
-const KIND_AUTHORITY: Record<SourceKind, Authority> = { csv: 'upload', tsv: 'upload', sheet: 'upload', api_push: 'crm', crm: 'crm', form: 'person', whatsapp: 'person' };
+const KIND_AUTHORITY: Record<SourceKind, Authority> = { csv: 'upload', tsv: 'upload', xlsx: 'upload', sheet: 'upload', api_push: 'crm', crm: 'crm', form: 'person', whatsapp: 'person' };
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -53,16 +57,19 @@ async function getSource(q: Queryable, ws: string, id: string): Promise<SourceRo
 }
 
 /** Receive one part of a file. Parts arrive in order; re-sending the last part is a no-op. */
-export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean }) {
-  if (Buffer.byteLength(p.text) > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
+export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean;
+  converted?: { from: 'xlsx'; fileBytes: number; fileSha256: string; sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number; errorCells: number } }) {
+  if (Buffer.byteLength(p.text) > (p.converted ? MAX_CONVERTED_BYTES : MAX_FILE_BYTES)) throw new HttpError(413, 'too_large', p.converted ? 'this sheet holds more than VP reads in one file; split it' : 'files are limited to 20 MB');
+  if (p.converted && (p.uploadId || !p.final)) throw new HttpError(422, 'whole_file', 'send an Excel file in one request (final=true), not in parts');
   let up: { id: string; parts: number; bytes: number; last_part_sha: string | null; status: string; source_id: string | null } | null;
   if (!p.uploadId) {
-    const kind: SourceKind = /\.tsv$/i.test(p.filename ?? '') || detectDelimiter(p.text) === '\t' ? 'tsv' : 'csv';
+    const kind: SourceKind = p.converted ? 'xlsx' : /\.tsv$/i.test(p.filename ?? '') || detectDelimiter(p.text) === '\t' ? 'tsv' : 'csv';
     const src = p.sourceId ? await getSource(q, ws, p.sourceId) : (await createSource(q, ws, { kind, name: p.filename ?? 'upload' })).source;
     if (!(FILE_KINDS as readonly string[]).includes(src.kind)) throw new HttpError(409, 'wrong_source', 'that source takes webhook events, not files');
-    up = await one(q, `INSERT INTO intake_upload (workspace_id, source_id, filename, content, bytes, parts, last_part_sha)
-      VALUES ($1,$2,$3,$4,$5,1,$6) RETURNING id, parts, bytes, last_part_sha, status, source_id`,
-      [ws, src.id, p.filename ?? null, p.text, Buffer.byteLength(p.text), sha(p.text)]);
+    // bytes counts what was uploaded (the .xlsx itself when converted), which the 20 MB limit applies to.
+    up = await one(q, `INSERT INTO intake_upload (workspace_id, source_id, filename, content, bytes, parts, last_part_sha, converted)
+      VALUES ($1,$2,$3,$4,$5,1,$6,$7) RETURNING id, parts, bytes, last_part_sha, status, source_id`,
+      [ws, src.id, p.filename ?? null, p.text, p.converted?.fileBytes ?? Buffer.byteLength(p.text), sha(p.text), p.converted ? JSON.stringify(p.converted) : null]);
   } else {
     up = await one(q, 'SELECT id, parts, bytes, last_part_sha, status, source_id FROM intake_upload WHERE id = $1 AND workspace_id = $2 FOR UPDATE', [p.uploadId, ws]);
     if (!up) throw new HttpError(404, 'not_found', 'no such upload');
@@ -83,7 +90,8 @@ export async function receivePart(q: Queryable, ws: string, p: { uploadId?: stri
     const src = await getSource(q, ws, up!.source_id!);
     const r = await one<{ id: string }>(q, "INSERT INTO source_receipt (workspace_id, kind, filename, summary) VALUES ($1,$2,$3,$4) RETURNING id",
       [ws, src.kind, row!.filename, JSON.stringify({ state: 'received', sourceId: src.id })]);
-    await q.query("UPDATE intake_upload SET status = 'received', sha256 = $2, receipt_id = $3 WHERE id = $1", [up!.id, sha(row!.content), r!.id]);
+    const conv = await one<{ converted: { fileSha256?: string } | null }>(q, 'SELECT converted FROM intake_upload WHERE id = $1', [up!.id]);
+    await q.query("UPDATE intake_upload SET status = 'received', sha256 = $2, receipt_id = $3 WHERE id = $1", [up!.id, conv?.converted?.fileSha256 ?? sha(row!.content), r!.id]);
     up!.status = 'received';
   }
   return { uploadId: up!.id, sourceId: up!.source_id, parts: up!.parts, bytes: up!.bytes, status: up!.status };
@@ -91,7 +99,7 @@ export async function receivePart(q: Queryable, ws: string, p: { uploadId?: stri
 
 // ---- mapping and preview -------------------------------------------------------------------------
 
-const override = obj({ field: str({ oneOf: ['phone', 'name', 'first_name', 'last_name', 'language', 'timezone', 'consent', 'consent_at', 'opt_out', 'observed_at', 'attribute', 'ignore'] }),
+const override = obj({ field: str({ oneOf: ['phone', 'name', 'first_name', 'last_name', 'language', 'timezone', 'consent', 'consent_at', 'opt_out', 'observed_at', 'voice', 'first_message', 'attribute', 'ignore'] }),
   key: opt(str({ pattern: /^[\p{L}\p{M}\p{N}_]{1,60}$/u, desc: 'the attribute key to store: letters, digits or underscore in any script, 1-60 characters' })), type: opt(str({ oneOf: ['text', 'number', 'date', 'boolean'] })) });
 const overrides = opt(record(override, { maxKeys: 200 })) as Validator<Record<string, Partial<ColumnMap>> | undefined>;
 
@@ -103,10 +111,12 @@ function table(content: string, given?: Record<string, Partial<ColumnMap>>): Tab
   return { rows, delimiter, mapping: inferMapping(rows, given ?? {}) };
 }
 
-/** Turn one file row into the write path's shape, plus the cell-level notes the preview shows. */
-function toInRow(cells: string[], rowNo: number, m: Mapping, now: Date): { row: InRow; notes: string[] } {
+/** Turn one file row into the write path's shape, plus the cell-level notes the preview shows and the override cells the
+ *  agent's rules refused (counted on the receipt; the value is not stored). */
+function toInRow(cells: string[], rowNo: number, m: Mapping, now: Date): { row: InRow; notes: string[]; refused: { code: string; detail: string }[] } {
   const attrs: Record<string, unknown> = {};
   const notes: string[] = [];
+  const refused: { code: string; detail: string }[] = [];
   let phone = '', first = '', last = '';
   const consent: { granted?: boolean; at?: string } = {};
   let optOut = false, observedAt: Date | undefined;
@@ -124,29 +134,32 @@ function toInRow(cells: string[], rowNo: number, m: Mapping, now: Date): { row: 
       case 'consent_at': consent.at = parseDate(v) ?? undefined; break;
       case 'opt_out': optOut = truthy(v) === true || /^(dnd|dnc|do not call)$/i.test(v); break;
       case 'observed_at': { const d = parseDate(v); if (d) { const t = new Date(d); if (t.getTime() <= now.getTime()) observedAt = t; } break; }
+      case 'voice': { const r = checkVoice(v); if (r.ok) attrs.voice = r.value; else { refused.push({ code: 'voice_refused', detail: r.why }); notes.push(`voice: ${r.why}`); } break; }
+      case 'first_message': { const r = checkFirstMessage(v); if (r.ok) attrs.first_message = r.value; else { refused.push({ code: 'first_message_refused', detail: r.why }); notes.push(`first message: ${r.why}`); } break; }
       case 'attribute': attrs[c.key ?? attrKey(c.header)] = typedValue(v, c.type); break;
     }
   }
   if (!attrs.name && (first || last)) attrs.name = `${first} ${last}`.trim().slice(0, 200);
   if (first) attrs.first_name = first;
   if (last) attrs.last_name = last;
-  return { row: { row: rowNo, phone, attrs, optOut, observedAt, consent: consent.granted !== undefined ? [{ granted: consent.granted, at: consent.at }] : undefined }, notes };
+  return { row: { row: rowNo, phone, attrs, optOut, observedAt, consent: consent.granted !== undefined ? [{ granted: consent.granted, at: consent.at }] : undefined }, notes, refused };
 }
 
-function fileRows(t: Table, now: Date): { rows: InRow[]; notes: Map<number, string[]> } {
+function fileRows(t: Table, now: Date): { rows: InRow[]; notes: Map<number, string[]>; refused: { row: number; code: string; detail: string }[] } {
   const start = t.mapping.hasHeader ? 1 : 0;
-  const rows: InRow[] = [], notes = new Map<number, string[]>();
+  const rows: InRow[] = [], notes = new Map<number, string[]>(), refused: { row: number; code: string; detail: string }[] = [];
   for (let i = start; i < t.rows.length; i++) {
     const r = toInRow(t.rows[i], i + 1, t.mapping, now);
     rows.push(r.row);
     if (r.notes.length) notes.set(i + 1, r.notes);
+    for (const x of r.refused) refused.push({ row: i + 1, ...x });
   }
-  return { rows, notes };
+  return { rows, notes, refused };
 }
 
 async function loadUpload(q: Queryable, ws: string, id: string, lock = false) {
-  const u = await one<{ id: string; content: string; status: string; source_id: string; receipt_id: string | null; mapping: Mapping | null; sha256: string | null; filename: string | null }>(q,
-    `SELECT id, content, status, source_id, receipt_id, mapping, sha256, filename FROM intake_upload WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
+  const u = await one<{ id: string; content: string; status: string; source_id: string; receipt_id: string | null; mapping: Mapping | null; sha256: string | null; filename: string | null; converted: Record<string, unknown> | null }>(q,
+    `SELECT id, content, status, source_id, receipt_id, mapping, sha256, filename, converted FROM intake_upload WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
   if (!u) throw new Error('no such upload in this workspace');
   if (u.status === 'receiving') throw new Error('this upload is still receiving parts; send the last part with final=true');
   return u;
@@ -246,7 +259,7 @@ export function registerSourceTools(reg: Registry): void {
       await ctx.q.query('UPDATE intake_upload SET mapping = $2 WHERE id = $1', [u.id, JSON.stringify(t.mapping)]);
       return {
         ...(agentFacts ? { agentFacts } : {}),
-        uploadId: u.id, delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, hasHeader: t.mapping.hasHeader,
+        uploadId: u.id, delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, hasHeader: t.mapping.hasHeader, ...(u.converted ? { converted: u.converted } : {}),
         columns: t.mapping.columns, ignoredByDesign: t.mapping.columns.filter(c => c.why === 'pii_by_design').map(c => c.header),
         rowsTotal: rows.length, phones: { ok, duplicatesInFile: dup, rejected: reasons },
         preview, questions: questions.slice(0, agentFacts ? 4 : 3),
@@ -266,15 +279,19 @@ export function registerSourceTools(reg: Registry): void {
       if (!t.mapping.columns.some(c => c.field === 'phone')) throw new Error('no phone column found; map one with overrides');
       const src = await getSource(ctx.q, ctx.workspaceId, u.source_id);
       const started = Date.now();
-      const { rows } = fileRows(t, new Date());
+      const { rows, refused } = fileRows(t, new Date());
       let audienceId: string | undefined;
       if (i.audienceName) audienceId = (await one<{ id: string }>(ctx.q, "INSERT INTO audience (workspace_id, name, kind, definition, source_id) VALUES ($1,$2,'list',$3,$4) RETURNING id",
         [ctx.workspaceId, i.audienceName, JSON.stringify({ fromUpload: u.id }), u.receipt_id]))!.id;
       const res = await applyRows(ctx.q, ctx.workspaceId, rows, { source: sourceRef(src), receiptId: u.receipt_id, consentPurpose: i.consentPurpose, audienceId });
+      for (const r of refused) {
+        res.counts[r.code] = (res.counts[r.code] ?? 0) + 1;
+        if (res.issues.length < 1000) res.issues.push({ row: r.row, code: r.code as never, detail: r.detail });
+      }
       const ms = Date.now() - started;
       const rowsOk = res.counts.new + res.counts.updated + res.counts.unchanged;
       const summary = { state: 'committed', sourceId: src.id, uploadId: u.id, fileSha256: u.sha256, mappingSha256: createHash('sha256').update(canonicalJson(t.mapping)).digest('hex'),
-        delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, counts: res.counts, issues: res.issues, ms, audienceId: audienceId ?? null };
+        delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, ...(u.converted ? { converted: u.converted } : {}), counts: res.counts, issues: res.issues, ms, audienceId: audienceId ?? null };
       await ctx.q.query('UPDATE source_receipt SET rows_total = $2, rows_ok = $3, summary = $4 WHERE id = $1 AND workspace_id = $5',
         [u.receipt_id, rows.length, rowsOk, JSON.stringify(summary), ctx.workspaceId]);
       await ctx.q.query("UPDATE intake_upload SET status = 'committed', committed_at = now(), mapping = $2 WHERE id = $1", [u.id, JSON.stringify(t.mapping)]);
@@ -301,8 +318,25 @@ export function registerSourceTools(reg: Registry): void {
 
 // ---- raw routes: file parts and signed webhooks -------------------------------------------------
 
-const partBody = obj({ text: str({ max: MAX_FILE_BYTES }), filename: opt(str({ max: 200 })), sourceId: opt(uuid()), uploadId: opt(uuid()),
+const partBody = obj({ text: opt(str({ max: MAX_FILE_BYTES })), base64: opt(str({ max: MAX_B64_CHARS + 4 })), filename: opt(str({ max: 200 })), sourceId: opt(uuid()), uploadId: opt(uuid()),
   part: opt(num({ int: true, min: 1, max: 1000 })), final: opt(bool()) });
+
+const XLSX_TYPE = /spreadsheetml|application\/vnd\.ms-excel/i;
+
+/** An .xlsx file to the delimited text intake reads, or a plain refusal. Formulas are never evaluated (cached values only). */
+function convertXlsx(file: Buffer) {
+  if (file.length > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
+  if (file.length > 8 && file.readUInt32BE(0) === 0xd0cf11e0) throw new HttpError(422, 'old_excel', 'this is an old Excel file (.xls); save it as .xlsx or CSV and upload again');
+  try {
+    const x = readXlsx(file);
+    const text = rowsToCsv(x.rows);
+    return { text, converted: { from: 'xlsx' as const, fileBytes: file.length, fileSha256: createHash('sha256').update(file).digest('hex'), sheet: x.sheet,
+      rows: x.rows.length, formulaCells: x.formulaCells, formulaWithoutValue: x.formulaWithoutValue, errorCells: x.errorCells } };
+  } catch (e) {
+    if (e instanceof XlsxError) throw new HttpError(422, 'bad_file', e.message);
+    throw e;
+  }
+}
 
 const hookContact = obj({
   phone: str({ min: 1, max: 40 }),
@@ -332,29 +366,36 @@ const DRAFT_ROLES = ['owner', 'builder', 'operator'];
 export function registerSourceRoutes(router: Router, deps: Deps): void {
   // A whole file (up to 20 MB) or parts of one. JSON {text, filename?, sourceId?, uploadId?, part?, final?} (required over a
   // session cookie), or raw text/csv or text/tab-separated-values with the same fields in the query string (API keys).
+  // An Excel file (.xlsx) comes whole: raw bytes (API keys), or JSON {base64, filename} over a cookie.
   router.add('POST', '/v1/uploads/contacts', async (req: Req) => {
     const c = await deps.auth(req);
     if (!c.actor.role || !DRAFT_ROLES.includes(c.actor.role)) throw new HttpError(403, 'forbidden', `a ${c.actor.role ?? 'caller without a role'} cannot upload people`);
     if (!inScope(c.actor.scopes, 'source.upload')) throw new HttpError(403, 'forbidden', "this API key's scopes do not include source.upload");
     const qp = req.query;
     const raw = (req.body as Buffer | undefined) ?? Buffer.alloc(0);
-    let b: ReturnType<typeof partBody>;
+    let b: ReturnType<typeof partBody> & Partial<ReturnType<typeof convertXlsx>>;
     if (String(req.headers['content-type'] ?? '').includes('application/json')) {
       let j: unknown;
       try { j = JSON.parse(raw.toString('utf8')); } catch { throw new HttpError(400, 'bad_json', 'the request body is not valid JSON'); }
       b = partBody(j ?? {});
+    } else if (looksLikeXlsx(raw) || raw.subarray(0, 4).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0])) || XLSX_TYPE.test(String(req.headers['content-type'] ?? '')) || /\.xlsx?$/i.test(qp.get('filename') ?? '')) {
+      b = { ...partBody({ filename: qp.get('filename') ?? undefined, sourceId: qp.get('sourceId') ?? undefined }), ...convertXlsx(raw), final: true };
     } else {
+      if (raw.length > MAX_FILE_BYTES) throw new HttpError(413, 'too_large', 'files are limited to 20 MB');
       b = partBody({ text: raw.toString('utf8'), filename: qp.get('filename') ?? undefined, sourceId: qp.get('sourceId') ?? undefined, uploadId: qp.get('uploadId') ?? undefined,
         part: qp.get('part') ? Number(qp.get('part')) : undefined, final: qp.get('final') ? qp.get('final') === '1' || qp.get('final') === 'true' : undefined });
     }
+    if (b.base64) b = { ...b, ...convertXlsx(Buffer.from(b.base64, 'base64')), base64: undefined, final: true };
+    if (b.text === undefined) throw new HttpError(422, 'invalid', 'send the file as text, or an Excel file as base64');
+    const part = { ...b, text: b.text };
     const out = await tx(deps.pool, async q => {
-      const r = await receivePart(q, c.workspaceId, b);
+      const r = await receivePart(q, c.workspaceId, part);
       await appendAudit(q, { workspaceId: c.workspaceId, actorType: c.actor.type, actorId: c.actor.id, action: 'source.upload_part', objectType: 'intake_upload', objectId: r.uploadId,
-        payload: { part: r.parts, bytes: r.bytes, status: r.status } });
+        payload: { part: r.parts, bytes: r.bytes, status: r.status, ...(part.converted ? { from: 'xlsx', rows: part.converted.rows } : {}) } });
       return r;
     });
     return { status: out.status === 'received' ? 201 : 202, body: out };
-  }, { rawBody: true, limit: MAX_FILE_BYTES + 64 * 1024 });
+  }, { rawBody: true, limit: MAX_B64_CHARS + 64 * 1024 });
 
   router.add('POST', '/hooks/contacts/:sourceId', async (req: Req) => {
     if (!/^[0-9a-f-]{36}$/i.test(req.params.sourceId)) throw new HttpError(404, 'not_found', 'no such source');
