@@ -1,0 +1,60 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Verified outcomes need no developer: a business uploads a CSV or .xlsx export from its own system of record. outcome.import.preview (draft) matches each row to exactly one call: the same contact, by phone or the external_id attribute, with a non-test call that started within the window before the row's date (default 14 days, 1 to 90). It shows matched, unmatched, ambiguous and invalid rows, each with its reason, and writes nothing. outcome.import (policy; Owner or Compliance approves) records each match through recordVerified (calls/verified.ts, the same code as outcome.record_verified), keyed {source:'file', ref:'<import>:<row>'}. The rows then lose their phone, id, reference and amount. Ambiguous cases are never written: two calls in the window, two rows for one call, or a call that already holds a verified outcome. The approval is bound to a hash of the match, so a new call or an erasure since the preview voids it.",
+   "rationale": "Must-be audit (research/2026-10-24/must-be-audit/README.md): blueprint decision 7 says results are earned from systems of record, but outcome.record_verified had no caller, so every outcome was an AI guess or a manager's label. A file export is the system of record most enterprises can produce on day one.",
+   "reverse_if": "Measured imports show the 14-day window mis-attributes (for example, results that follow a call by more than 14 days, or several calls being normal): then match the last call before the date instead of refusing, and say so on the preview. Or a connector (CRM, payments) becomes the common path, and the file becomes the fallback.",
+   "path": "product/server/modules/calls/outcome-import.ts"
+  },
+  {
+   "id": "decision.2026-10-24.verified-beside-ai-read",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "call.get returns verified: {value, from, aiRead, disagree}. The call page shows 'Verified: Paid, from renewals-oct.csv row 41 · AI read: Promised', with a 'Disagrees with the AI read' chip when the two differ. Each import counts its disagreements (outcome.import.preview, the approval card, and outcome.import.list). Learning and calibration read verified first through one shared reading: conversation.outcome, which refreshOutcome sets best-grade-first (verified, then manager, then a trusted judge), and judge.calibrate's truth (verified, then manager). recordVerified calls refreshOutcome, so no learning file changes.",
+   "rationale": "A verified result must not be confused with the AI's reading, and a disagreement is the signal that calibrates the judge.",
+   "reverse_if": "Learning needs per-grade weighting rather than best-grade-wins (then expose the grade beside conversation.outcome, as GOAL_GRADE_SQL already does)."
+  },
+  {
+   "id": "measure.2026-10-24.outcome-import-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/calls-outcome-import.test.ts 6/6, on synthetic data:\n(1) Parsing: header synonyms, DD/MM/YYYY, a BOM, and a plain refusal listing the missing columns.\n(2) An 8-row file previews as matched 2, unmatched 2, ambiguous 1, invalid 3, disagreements 1, with 0 outcomes written. The 14-day window holds: a call 20 days back and a call after the date are unmatched, and a 30-day window reaches the 20-day call. A test call never counts. The approval card states the counts; approval writes 2. Verified outranks a manager's not_paid in conversation.outcome. call.get shows 'renewals-oct.csv row 2', AI read 'promised', disagree true. The committed rows hold no phone, id, reference or amount. A re-commit is refused, and a re-import is not matched again.\n(3) A new call after the preview voids the approval, and nothing is written.\n(4) Two rows for one call are both ambiguous. Workspace B's contact (same phone and external id) is never matched from A, B cannot record A's import, and B cannot use A's definition.\n(5) Erasure through dpdp.request.execute, then the purge: the person's verified outcome keeps its value and loses amount and reference; their pending preview rows lose phone, reference and amount; the other person's rows are untouched.\n(6) An .xlsx made in the test is read by intake's readXlsx, with an Excel date serial becoming 2026-10-20, and matches like a CSV; a non-Excel file is refused.",
+   "n": 6,
+   "method": "node:test on a throwaway Postgres 16 with all modules (buildApp(pool, modules)); A2 approvals through Registry.approve",
+   "path": "product/tests/calls-outcome-import.test.ts"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.outcome-import-tests",
+   "to": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.outcome-import-tests",
+   "to": "decision.2026-10-24.verified-beside-ai-read",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.verified-beside-ai-read",
+   "to": "decision.2026-10-24.verified-outcomes-from-a-file",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "verified-outcomes-from-a-file",
+   "details": "Built outcome.import.preview, outcome.import (policy) and outcome.import.list. CSV is taken now, and .xlsx through intake's new readXlsx. Rows match one call in a window; ambiguous rows are never written; the approval is bound to the match; call.get and the call page show Verified beside the AI read, and disagreements are counted; erasure redacts reference and amount. Verified: tests/calls-outcome-import.test.ts 6/6, plus the gates. Not verified: real customer exports (header variety and volumes beyond 5000 rows), and the web upload screen (the import runs through the Operator chat or the API; no page yet)."
+  }
+ ]
+}

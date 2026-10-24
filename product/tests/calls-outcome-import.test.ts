@@ -8,7 +8,8 @@ import { createPool, one } from '../server/db.ts';
 import { FakeRuntime, setRuntime } from '../server/runtime-client.ts';
 import type { Actor, Registry } from '../server/tools.ts';
 import { modules } from '../server/modules/index.ts';
-import { parseDay, parseOutcomeFile } from '../server/modules/calls/outcome-import.ts';
+import { parseDay, parseOutcomeFile, parseOutcomeXlsx } from '../server/modules/calls/outcome-import.ts';
+import { crc32, deflateRawSync } from 'node:zlib';
 import { purgeTranscripts } from '../server/modules/memory/index.ts';
 
 const skip = !process.env.DATABASE_URL ? 'DATABASE_URL not set' : false;
@@ -168,4 +169,54 @@ test("erasure: the person's verified rows lose reference and amount, and their p
   assert.match(JSON.stringify(rows.find((r: any) => r.contactId === q.id)), /TX-Q/);
   const r = await w.approve(await w.call('outcome.import', { importId: pending }));
   assert.equal(r.result.counts.written, 0, 'the erased person is unmatched now, and the other call already holds its verified outcome');
+});
+
+// A minimal .xlsx: inline strings, and date cells styled dd/mm/yyyy (Excel serials), first sheet only.
+function zip(files: { name: string; data: Buffer }[]): Buffer {
+  const parts: Buffer[] = [], central: Buffer[] = [];
+  let offset = 0;
+  for (const f of files) {
+    const name = Buffer.from(f.name), body = deflateRawSync(f.data), crc = crc32(f.data) >>> 0;
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0); local.writeUInt16LE(20, 4); local.writeUInt16LE(8, 8);
+    local.writeUInt32LE(crc, 14); local.writeUInt32LE(body.length, 18); local.writeUInt32LE(f.data.length, 22); local.writeUInt16LE(name.length, 26);
+    const cd = Buffer.alloc(46);
+    cd.writeUInt32LE(0x02014b50, 0); cd.writeUInt16LE(20, 4); cd.writeUInt16LE(20, 6); cd.writeUInt16LE(8, 10);
+    cd.writeUInt32LE(crc, 16); cd.writeUInt32LE(body.length, 20); cd.writeUInt32LE(f.data.length, 24); cd.writeUInt16LE(name.length, 28); cd.writeUInt32LE(offset, 42);
+    parts.push(local, name, body); central.push(cd, name);
+    offset += 30 + name.length + body.length;
+  }
+  const cdBuf = Buffer.concat(central), end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(files.length, 8); end.writeUInt16LE(files.length, 10); end.writeUInt32LE(cdBuf.length, 12); end.writeUInt32LE(offset, 16);
+  return Buffer.concat([...parts, cdBuf, end]);
+}
+function xlsx(rows: (string | { date: number })[][]): Buffer {
+  const X = (x: string) => Buffer.from('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + x);
+  const col = (i: number) => String.fromCharCode(65 + i);
+  const body = rows.map((r, ri) => `<row r="${ri + 1}">` + r.map((c, ci) => typeof c === 'string'
+    ? `<c r="${col(ci)}${ri + 1}" t="inlineStr"><is><t>${c}</t></is></c>` : `<c r="${col(ci)}${ri + 1}" s="1"><v>${c.date}</v></c>`).join('') + '</row>').join('');
+  return zip([
+    { name: '[Content_Types].xml', data: X('<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/></Types>') },
+    { name: '_rels/.rels', data: X('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="officeDocument" Target="xl/workbook.xml"/></Relationships>') },
+    { name: 'xl/workbook.xml', data: X('<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Results" sheetId="1" r:id="rId7"/></sheets></workbook>') },
+    { name: 'xl/_rels/workbook.xml.rels', data: X('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId7" Type="worksheet" Target="worksheets/sheet1.xml"/></Relationships>') },
+    { name: 'xl/styles.xml', data: X('<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd/mm/yyyy"/></numFmts><cellXfs count="2"><xf numFmtId="0"/><xf numFmtId="164"/></cellXfs></styleSheet>') },
+    { name: 'xl/worksheets/sheet1.xml', data: X(`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${body}</sheetData></worksheet>`) },
+  ]);
+}
+const serial = (iso: string) => (Date.parse(iso + 'T00:00:00Z') - Date.UTC(1899, 11, 30)) / 86_400_000;
+
+test('an Excel file is read by intake\'s reader: date cells become dates and the rows match like a CSV', { skip }, async () => {
+  const w = await workspace();
+  const p = await person(w.ws);
+  const conv = await callWith(w.ws, p.id, 2);
+  const book = xlsx([['Mobile', 'Result', 'Paid On'], [p.national, 'Paid', { date: serial('2026-10-20') }]]);
+  assert.deepEqual(parseOutcomeXlsx(book).map(r => [r.row, r.value, r.date]), [[2, 'paid', '2026-10-20']]);
+  const pv = await w.call('outcome.import.preview', { fileName: 'results.xlsx', xlsxBase64: book.toString('base64'), definitionId: w.def });
+  assert.equal(pv.status, 'confirmed', JSON.stringify(pv));
+  assert.equal(pv.result.rows[0].conversationId, conv);
+  const both = await w.call('outcome.import.preview', { fileName: 'x', csv: 'a', xlsxBase64: book.toString('base64'), definitionId: w.def });
+  assert.equal(both.status, 'not_executed');
+  const notExcel = await w.call('outcome.import.preview', { fileName: 'x.xlsx', xlsxBase64: Buffer.from('plain text, not a workbook').toString('base64'), definitionId: w.def });
+  assert.match(notExcel.reason, /not an Excel/);
 });

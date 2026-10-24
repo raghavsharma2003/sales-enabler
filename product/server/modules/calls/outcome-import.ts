@@ -1,5 +1,5 @@
 // Verified outcomes from a file, no developer needed (blueprint decision 7: results are earned from systems of record).
-// The business exports what happened from its own system (paid, renewed, booked) and uploads it:
+// The business exports what happened from its own system (paid, renewed, booked) and uploads it, as CSV or .xlsx:
 //   outcome.import.preview  (draft)   parse and match every row to exactly one call; nothing is written to outcomes
 //   outcome.import          (policy)  a person approves the preview; each matched row becomes a verified outcome
 //   outcome.import.list     (read)    past imports with their counts, including how often the AI's reading disagreed
@@ -13,6 +13,7 @@ import { tool, type Registry, type ToolCtx } from '../../tools.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { num, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { parseDelimited } from '../intake/csv.ts';
+import { readXlsx, XlsxError } from '../intake/xlsx.ts';
 import { recordVerified } from './verified.ts';
 
 const MAX_ROWS = 5000;
@@ -35,7 +36,17 @@ export interface RowResult { row: number; status: Status; reason: string | null;
 
 /** Parse the file: a header row, then one outcome per row. Throws, in plain words, when a needed column is missing. */
 export function parseOutcomeFile(text: string): ImportRow[] {
-  const table = parseDelimited(text.replace(/^﻿/, '')).filter(r => r.some(c => c.trim()));
+  return parseOutcomeTable(parseDelimited(text.replace(/^\uFEFF/, '')));
+}
+
+/** An .xlsx (first sheet), read by intake's reader; date cells arrive as ISO dates. */
+export function parseOutcomeXlsx(buf: Buffer): ImportRow[] {
+  try { return parseOutcomeTable(readXlsx(buf).rows); }
+  catch (e) { if (e instanceof XlsxError) throw new Error(e.message); throw e; }
+}
+
+export function parseOutcomeTable(rows: string[][]): ImportRow[] {
+  const table = rows.filter(r => r.some(c => String(c ?? '').trim()));
   if (table.length < 2) throw new Error('the file needs a header row and at least one row of outcomes');
   if (table.length - 1 > MAX_ROWS) throw new Error(`the file has ${table.length - 1} rows; import at most ${MAX_ROWS} at a time`);
   const head = table[0].map(norm);
@@ -132,7 +143,9 @@ const PEOPLE = ['owner', 'builder', 'operator', 'compliance'] as const;
 
 export function registerOutcomeImport(r: Registry): void {
   r.register(tool(obj({
-    fileName: str({ min: 1, max: 200 }), csv: str({ min: 1, max: 3_000_000, desc: 'the file text: a header row, then one outcome per row' }),
+    fileName: str({ min: 1, max: 200 }),
+    csv: opt(str({ min: 1, max: 3_000_000, desc: 'a CSV or TSV file as text: a header row, then one outcome per row' })),
+    xlsxBase64: opt(str({ min: 8, max: 4_000_000, desc: 'an Excel (.xlsx) file, base64; its first sheet is read' })),
     definitionId: opt(uuid()), campaignId: opt(uuid()),
     windowDays: opt(num({ int: true, min: 1, max: 90, desc: 'how many days before the row date a call may be (default 14)' })),
     idKey: opt(str({ min: 1, max: 60, pattern: /^[a-z0-9_]+$/, desc: "the contact attribute holding the external id (default external_id)" })),
@@ -150,7 +163,8 @@ export function registerOutcomeImport(r: Registry): void {
       if (!definitionId) throw new Error('say which outcome the file records: pass the campaign, or the outcome definition');
       const d = await one<{ allowed_values: string[]; name: string }>(ctx.q, 'SELECT allowed_values, name FROM outcome_definition WHERE id = $1 AND workspace_id = $2', [definitionId, ctx.workspaceId]);
       if (!d) throw new Error('no such outcome definition in this workspace');
-      const rows = parseOutcomeFile(i.csv);
+      if ((i.csv === undefined) === (i.xlsxBase64 === undefined)) throw new Error('send the file once: as csv text, or as an .xlsx in xlsxBase64');
+      const rows = i.csv !== undefined ? parseOutcomeFile(i.csv) : parseOutcomeXlsx(Buffer.from(i.xlsxBase64!, 'base64'));
       const opts: MatchOpts = { definitionId, allowed: d.allowed_values, windowDays: i.windowDays ?? 14, campaignId: i.campaignId ?? null, idKey: i.idKey ?? 'external_id' };
       const results = await matchRows(ctx.q, ctx.workspaceId, rows, opts);
       const c = counts(results);
