@@ -21,7 +21,7 @@ export const CARRIERS: readonly CarrierPath[] = [
   { id: 'plivo', label: 'Plivo India', wired: true, outboundInrPerMin: 0.38, pulseSec: 30,
     pulseSource: 'India voice pricing: "Domestic Calls ₹0.38/min ... Pulse is 30 seconds"; billing concepts: "In the India data region, Voice API and SIP Trunking calls are billed at a standard 30/30 (30-second pulse)"',
     urls: ['https://www.plivo.com/voice/pricing/in/', 'https://www.plivo.com/docs/faq/billing-and-invoices/billing-concepts.md'],
-    conflict: 'Our voice lab read a 60-second pulse on the Plivo console on 19 Oct 2026 (voicelab/server/phone.py); the first invoice settles which applies.' },
+    conflict: 'Our voice lab read a 60-second pulse on the Plivo console on 19 Oct 2026; the first invoice settles which applies.' },  // the lab read: voicelab phone.py
   { id: 'exotel', label: 'Exotel', wired: false, outboundInrPerMin: null, pulseSec: null,
     pulseSource: 'Developer FAQ: "Billed per second after a minimum billing duration (typically 1 second or per-pulse as per plan)"; no pulse figure stated',
     urls: ['https://developer.exotel.com/docs/faqs/pricing-plans.md', 'https://exotel.com/pricing/'] },
