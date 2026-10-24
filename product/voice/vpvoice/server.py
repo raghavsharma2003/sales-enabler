@@ -24,6 +24,8 @@ JOIN_TTL_S = 600
 def ws_base(url): return url.replace('https://', 'wss://', 1).replace('http://', 'ws://', 1)
 
 
+MAX_INBOUND_S = 3600                # the carrier stream's own timeout for an answered call (the ticket's limits end it sooner)
+
 class CallRecord:
     def __init__(self, ticket, body_hash, comp, sink, token, join):
         self.t = ticket; self.body_hash = body_hash; self.comp = comp; self.sink = sink; self.token = token; self.join = join
@@ -82,6 +84,7 @@ class Runtime:
     def new_session(self, rec, line=None, transport=None):
         from .session import SimSession
         kind = transport or rec.t['transport']['kind']
+        if kind == 'sip_inbound': kind = 'sip'                 # the same carrier stream, answered rather than dialled
         if kind == 'sim':
             s = SimSession(rec.t, rec.comp, rec.sink, clock=self.clock, env=self.env, watchdog_s=self.watchdog_s)
         elif rec.comp.kind == 's2s':
@@ -126,7 +129,7 @@ class Runtime:
             if prior.body_hash != bh: return self.err(409, 'conflict', 'a different ticket already holds this conversationId')
             return web.json_response({'conversationId': cid, 'status': 'accepted', 'join': prior.join}, status=202)
         tr = t['transport']
-        if tr['kind'] == 'sip' and tr['trunk'].lower() not in ('plivo', 'exotel'):
+        if tk.phone(t) and tr['trunk'].lower() not in ('plivo', 'exotel'):
             return self.err(422, 'unsupported_trunk', f"trunk {tr['trunk']!r} is not supported (plivo, exotel)")
         if tr['kind'] == 'sip' and t['direction'] == 'outbound' and tr['trunk'].lower() != 'plivo':
             return self.err(422, 'unsupported_trunk', 'outbound dialling is implemented for plivo only; exotel streams inbound')
@@ -156,7 +159,11 @@ class Runtime:
                     'hangupUrl': f'{self.public}/v1/media/sip/hangup/{cid}/{self.hook(cid, "hangup")}',
                     'machineUrl': f'{self.public}/v1/media/sip/machine/{cid}/{self.hook(cid, "machine")}'}
             if t['direction'] == 'inbound': join['streamUrl'] = stream
+            if tr['kind'] == 'sip_inbound':    # the carrier's leg is up: the relay connects it to this stream (never dialled)
+                join = {'kind': 'sip_inbound', 'trunk': tr['trunk'].lower(), 'expiresAtMs': exp, 'url': stream, 'token': token, 'streamUrl': stream,
+                        'hangupUrl': join['hangupUrl']}
         rec = CallRecord(t, bh, comp, sink, token, join)
+        if tr['kind'] == 'sip_inbound': rec.call_uuid = tr['carrierCallId']
         self.calls[cid] = rec
         if tr['kind'] == 'sip' and t['direction'] == 'outbound':
             from .transports import plivo_dial
@@ -406,6 +413,35 @@ class Runtime:
             await rec.session.end('caller_hung_up')
         return web.Response(text='ok')
 
+    def inbound_answer_url(self, trunk='plivo'):
+        """The answer URL to set on the carrier's application for the workspace numbers (signed path; one per trunk)."""
+        return f"{self.public}/v1/media/sip/inbound/{trunk}/{self.hook(trunk, 'inbound')}"
+
+    async def sip_inbound(self, req):
+        """Someone rang one of our numbers: the carrier's answer request (Plivo: From, To, CallUUID). Relay it to the
+        control plane (POST /hooks/telephony/inbound, signed with VP_TELEPHONY_WEBHOOK_SECRET), which looks the caller up,
+        holds money and starts the call here with a sip_inbound ticket; answer the carrier with that call's stream."""
+        trunk = req.match_info['trunk']
+        if not hmac.compare_digest(req.match_info['hook'], self.hook(trunk, 'inbound')): raise web.HTTPForbidden()
+        from .transports import answer_xml, unanswered_xml
+        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        secret = self.env.get('VP_TELEPHONY_WEBHOOK_SECRET', '')
+        body = json.dumps({'provider': trunk, 'callId': f.get('CallUUID') or '', 'to': f.get('To') or '', 'from': f.get('From') or ''}).encode()
+        if not self.control or len(secret) < 32 or not f.get('CallUUID') or not f.get('To'):
+            log.warning('inbound call not relayed: %s', 'telephony webhook not configured' if not self.control or len(secret) < 32 else 'no call id or number')
+            return web.Response(text=unanswered_xml(), content_type='application/xml')
+        try:
+            async with self.http.post(self.control + '/hooks/telephony/inbound', data=body, timeout=aiohttp.ClientTimeout(total=8),
+                                      headers={'content-type': 'application/json', signing.HEADER: signing.sign(secret, body)}) as r:
+                d = await r.json() if r.content_type == 'application/json' else {}
+        except Exception as e:
+            log.warning('inbound relay failed: %r', e); d = {}
+        stream = (d.get('stream') or {}).get('url') if d.get('accepted') else None
+        if not stream:
+            log.info('inbound call not answered: %s', d.get('code') or 'no answer from the control plane')
+            return web.Response(text=unanswered_xml(), content_type='application/xml')
+        return web.Response(text=answer_xml(stream, MAX_INBOUND_S), content_type='application/xml')
+
     async def sip_machine(self, req):
         """Plivo's machine-detection verdict. A machine ends the call as 'voicemail' unless a person already talked with
         her (a caller turn beyond the first hello)."""
@@ -435,7 +471,7 @@ class Runtime:
 
     async def transfer(self, rec, kind, value):
         """Bridge the caller to the workspace's own number (Plivo). False when the transport or target can't."""
-        if kind != 'phone' or not value or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
+        if kind != 'phone' or not value or not tk.phone(rec.t) or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
         from .transports import plivo_request
         rec.transfer_to = value
         try: rec.whisper = rec.session.whisper_line() if rec.session is not None else None
@@ -449,14 +485,14 @@ class Runtime:
 
     async def send_dtmf(self, rec, keys):
         """Press keys on the call (an automated menu she reached), through Plivo's send-digits API. False when it can't."""
-        if rec.t['transport'].get('kind') != 'sip' or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
+        if not tk.phone(rec.t) or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
         from .transports import plivo_request
         # Plivo Send DTMF: POST Call/{call_uuid}/DTMF/ with digits and leg (aleg, the party we dialled; docs 2026-10-24)
         st, _ = await plivo_request(self.http, self.env, 'POST', f'Call/{rec.call_uuid}/DTMF/', {'digits': keys, 'leg': 'aleg'})
         return 200 <= st < 300
 
     async def carrier_hangup(self, rec):
-        if rec.t['transport'].get('kind') != 'sip' or rec.t['transport']['trunk'].lower() != 'plivo': return
+        if not tk.phone(rec.t) or rec.t['transport']['trunk'].lower() != 'plivo': return
         from .transports import plivo_request
         try:
             if rec.call_uuid: await plivo_request(self.http, self.env, 'DELETE', f'Call/{rec.call_uuid}/')
@@ -466,7 +502,7 @@ class Runtime:
 
     async def sip_stream(self, req):
         rec = self.calls.get(req.match_info['id'])
-        if rec is None or rec.t['transport']['kind'] != 'sip' or not rec.take_token(req.query.get('token')): raise web.HTTPForbidden()
+        if rec is None or not tk.phone(rec.t) or not rec.take_token(req.query.get('token')): raise web.HTTPForbidden()
         from .transports import LINES
         ws = web.WebSocketResponse(max_msg_size=4 * 1024 * 1024, heartbeat=20); await ws.prepare(req)
         line = LINES[rec.t['transport']['trunk'].lower()](ws); s = None
@@ -515,6 +551,7 @@ class Runtime:
         a.router.add_post('/v1/media/sip/hangup/{id}/{hook}', self.sip_hangup)
         a.router.add_post('/v1/media/sip/transfer/{id}/{hook}', self.sip_transfer)
         a.router.add_post('/v1/media/sip/machine/{id}/{hook}', self.sip_machine)
+        a.router.add_post('/v1/media/sip/inbound/{trunk}/{hook}', self.sip_inbound)
         a.router.add_post('/v1/media/sip/whisper/{id}/{hook}', self.sip_whisper)
         a.router.add_get('/v1/media/sip/stream/{id}', self.sip_stream)
         a.on_startup.append(self._startup); a.on_shutdown.append(self._shutdown)

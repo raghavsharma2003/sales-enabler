@@ -252,6 +252,18 @@ spec's timeout (at most 2.5 s) and at most 12 runs a call, and returns only the 
 her as data; its values join the door's facts, so a figure she says must come from it (and a value with digits waits
 for identity). On a failure she says the graceful line in the call's language and does not guess.
 
+## Inbound calls
+
+Set the carrier application's answer URL for the workspace numbers to the runtime's signed inbound path
+(`Runtime.inbound_answer_url('plivo')`: `/v1/media/sip/inbound/plivo/<hook>`). When someone rings, the runtime relays
+`{provider, callId, to, from}` to the control plane's `POST /hooks/telephony/inbound` (signed with
+`VP_TELEPHONY_WEBHOOK_SECRET`). The control plane looks the caller up by E.164, holds money, and starts the call here
+with a `sip_inbound` ticket; the runtime answers the carrier with that call's `<Stream>`, and she opens with the inbound
+opening ("they phoned you"), disclosure included. Inbound calls never listen first. A known caller's facts and memory
+come on the ticket; an unknown caller has no name, so identity is never verified (RD11 holds account details); with
+`inbound.noMarketing` (an opted-out or erased caller) she helps and never sells, and the door holds her to service
+rules. A refusal (not our number, not answering, wallet low) is spoken in one line and hung up.
+
 ## Keypad (DTMF)
 
 Keys the caller presses arrive as the carrier stream's `dtmf` events (Plivo, Exotel) or `{"t": "dtmf", "digit": "1"}`

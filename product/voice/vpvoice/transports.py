@@ -168,6 +168,12 @@ def answer_xml(stream_url, max_s, content_type='audio/x-mulaw;rate=8000'):
             f'{escape(stream_url)}</Stream></Response>')
 
 
+def unanswered_xml(text="Sorry, we can't take your call right now. Please try again later."):
+    """What a caller hears when nobody can answer (the control plane refused: not our number, paused, wallet low...)."""
+    from xml.sax.saxutils import escape
+    return f'<?xml version="1.0" encoding="UTF-8"?><Response><Speak voice="WOMAN" language="en-IN">{escape(text)}</Speak><Hangup/></Response>'
+
+
 def transfer_xml(number, confirm_url=None):
     """Bridge the caller to number. confirm_url (the warm summary): Plivo fetches it when the colleague answers and plays
     what it returns (Speak only) to them before connecting the caller."""

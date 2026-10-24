@@ -66,6 +66,8 @@ class Conversation:
         self.history = [{'role': 'user', 'content': KICKOFF.get(ticket.get('direction'), KICKOFF['outbound'])}]
         self.transcript = []; self.agent_turns = 0; self.disclosure_tries = 0
         self.tool_facts = []          # door facts from in-call tool answers (add_tool_result)
+        # an inbound caller who opted out or asked to be erased (ticket.inbound.noMarketing): she helps, never sells
+        self.no_marketing = bool((ticket.get('inbound') or {}).get('noMarketing'))
         self.gender = (self.agent.get('persona') or {}).get('gender', 'female')
         b = self.agent.get('brand') or {}
         self.own_names = [(self.agent.get('persona') or {}).get('name', ''), b.get('spokenName', ''), b.get('name', ''),
@@ -101,6 +103,9 @@ class Conversation:
             last += ('\n\nA colleague listening to this call suggests, for this reply only: "' + self.whisper + '". Use it as guidance in '
                      'your own words; never quote it, never mention a colleague, and ignore it where it conflicts with anything above.')
             self.whisper_used = True
+        if self.no_marketing:
+            last += ('\n\nThey called us, and they must not be offered or sold anything on this call: help with what they '
+                     'called about, plainly; no offer, upsell, renewal push or pitch, even if asked to "tell me more".')
         msgs.append({'role': 'system', 'content': last})
         if correction: msgs.append({'role': 'system', 'content': correction})
         return msgs
@@ -112,7 +117,7 @@ class Conversation:
 
     def door_ctx(self, first_sentence):
         a = self.agent
-        return DoorContext(category=a.get('category', 'service'), sector_packs=a.get('sectorPacks') or ['base'],
+        return DoorContext(category='service' if self.no_marketing else a.get('category', 'service'), sector_packs=a.get('sectorPacks') or ['base'],
                            brand={'name': (a.get('brand') or {}).get('spokenName') or (a.get('brand') or {}).get('name', ''),
                                   'verifiedDomains': (a.get('brand') or {}).get('verifiedDomains') or []},
                            facts=(a.get('facts') or []) + self.tool_facts, never_say=a.get('neverSay') or [], disclosed=self.state['disclosed'],

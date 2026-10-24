@@ -4,7 +4,12 @@ import hashlib, re
 from . import stacks
 
 BRIEF_MAX_BYTES = 1200       # memory brief limit (agent-config.ts BRIEF_MAX_BYTES)
-TRANSPORTS = ('webrtc', 'sip', 'sim')
+TRANSPORTS = ('webrtc', 'sip', 'sim', 'sip_inbound')
+PHONE = ('sip', 'sip_inbound')             # a carrier's leg: dialled by us (sip) or answered (sip_inbound)
+
+
+def phone(t):
+    return ((t or {}).get('transport') or {}).get('kind') in PHONE
 MEMORY_STATUS = ('loaded', 'none', 'not_loaded_timeout', 'disabled')
 HEX64 = re.compile(r'^(sha256:)?[0-9a-f]{64}$')
 UUID = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', re.I)     # as shared/validate.ts uuid()
@@ -31,9 +36,13 @@ def validate(t):
     _need(t.get('direction') in ('outbound', 'inbound'), 'bad_ticket', 'direction must be outbound or inbound')
     _need(isinstance(t.get('test'), bool), 'bad_ticket', 'test must be a boolean')
     tr = t.get('transport') or {}
-    _need(tr.get('kind') in TRANSPORTS, 'bad_transport', 'transport.kind must be webrtc, sip or sim')
+    _need(tr.get('kind') in TRANSPORTS, 'bad_transport', 'transport.kind must be webrtc, sip, sip_inbound or sim')
     if tr['kind'] == 'sip':
         _need(all(isinstance(tr.get(k), str) and tr[k] for k in ('to', 'from', 'trunk')), 'bad_transport', 'sip needs to, from and trunk')
+    if tr['kind'] == 'sip_inbound':        # from may be '' (an erased caller's number is not passed on)
+        _need(all(isinstance(tr.get(k), str) and tr[k] for k in ('to', 'trunk', 'carrierCallId')) and isinstance(tr.get('from', ''), str),
+              'bad_transport', 'sip_inbound needs to, trunk and carrierCallId')
+        _need(t.get('direction') == 'inbound', 'bad_transport', 'sip_inbound is an inbound call')
     if tr['kind'] == 'webrtc':
         _need(isinstance(tr.get('offerUrl'), str), 'bad_transport', 'webrtc needs offerUrl')
 
