@@ -1,0 +1,58 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Disclosure lines for kn-IN, te-IN, ml-IN, mr-IN, gu-IN, pa-IN and or-IN in shared/safety/disclosure.json, each affirming through new per-script lexicon.ai_affirm entries (tested in both doors). Crisis terms (cs.crisis.indic_more: Kannada, Malayalam, Punjabi, Odia romanised and native; native-script Marathi, Telugu, Gujarati) and opt-out terms (cs.opt_out.indic_more: Punjabi, Odia; native-script Kannada, Telugu, Malayalam, Marathi, Gujarati) as terms, not lines. All marked 'not native-reviewed' (disclosure.json review map; rule about). A language with no line, such as as-IN, still falls back to Hinglish. version.language_variant still refuses an unreviewed language: shared/safety/disclosure.ts disclosureChecked() requires a line that is not in the review map ('A draft line is waiting for a native speaker to review it'). The voice runtime may say the draft line to a caller in that language instead of the Hinglish fallback.",
+   "rationale": "Safety half of open.2026-10-24.languages-runtime-and-disclosure: the runtime may speak these languages, so the disclosure must exist in them, and the floor must hear crisis and opt-out in them.",
+   "reverse_if": "A native speaker's review rejects a line or a term: replace it, do not delete the language."
+  },
+  {
+   "id": "open.2026-10-24.indic-native-review",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "OWNER ITEM: a native speaker must review the AI-disclosure line and the crisis and opt-out terms for each of Kannada, Telugu, Malayalam, Marathi, Gujarati, Punjabi and Odia (shared/safety/disclosure.json lines and review map; rules.json cs.crisis.indic_more and cs.opt_out.indic_more). They were written by the safety builder from general knowledge. Until then each stays marked 'not native-reviewed', and no measurement exists for these languages beyond the authored vectors.",
+   "closes_when": "Each language has a named native reviewer's sign-off (or corrections merged) and its review entry is removed from disclosure.json."
+  },
+  {
+   "id": "measure.2026-10-24.indic-lexicons-fp",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "After adding the seven-language disclosure lines and crisis and opt-out terms: every disclosure line in both doors passes ai_affirm and renders identically; 26 new authored callerSignals vectors pass in both doors (11 crisis, 9 opt-out, 6 look-alike or benign); existing vectors all pass (hi, en, Hinglish included); 0 of 674 benign caller vectors flagged; dev-lookalike-9 FP 0/150 and recall 30/75 (unchanged); dev-7 FP 0/90 and recall 100/100.",
+   "n": "26 new vectors; 674 benign caller vectors; 150 + 90 DEV look-alikes",
+   "method": "TS safety.test.ts and safety-disclosure.test.ts; Python test_safety_cases and test_disclosure; Python rules.caller_signals on the DEV sets",
+   "not_verified": "No native-speaker review, and no realistic eval set in these languages: the new terms are measured only on authored vectors. No blind set was touched."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "to": "open.2026-10-24.languages-runtime-and-disclosure",
+   "relation": "implements"
+  },
+  {
+   "from": "open.2026-10-24.indic-native-review",
+   "to": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-24.indic-lexicons-fp",
+   "to": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-indic-languages",
+   "details": "Seven more disclosure lines and crisis and opt-out lexicons, all 'not native-reviewed' (owner item open.2026-10-24.indic-native-review). PREREG-9 amendment 3. Language variants still need a reviewed line. Gates: tsc and web tsc clean, fresh-DB 589/589, ui-contract strict 179/179, voice unittest OK."
+  }
+ ]
+}

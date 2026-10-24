@@ -16,7 +16,7 @@ import { runtime, type RuntimeHealth } from '../../runtime-client.ts';
 import { BriefBudgetError, BriefLintError, compile, compileReport } from './compile.ts';
 import { agentConfigV, draftHash, validateConfig, versionHashOf } from './config.ts';
 import { DraftError, draftFromDescription } from './draft.ts';
-import { DISCLOSURE } from '../../../shared/safety/disclosure.ts';
+import { DISCLOSURE, disclosureChecked } from '../../../shared/safety/disclosure.ts';
 import { LANGUAGES, type Language } from '../../../shared/agent-config.ts';
 import { shapeLint } from './lint.ts';
 import { guardDraft } from './guard.ts';
@@ -748,8 +748,9 @@ export function registerAgentTools(r: Registry): void {
       if (agentLanguages(base.config.agent)[0] === language) throw new ValidationError('language', `version ${base.number} already speaks ${languageName(language)} first`);
       // Her spoken AI disclosure comes from shared/safety per language (disclosure.json); without a checked line she
       // cannot call people in that language, so the variant waits for the safety team to add one.
-      if (!DISCLOSURE.lines[language]) throw new ValidationError('language',
-        `Vyakti has no checked AI disclosure line in ${languageName(language)} yet, so a ${languageName(language)} version cannot call people. The safety team adds it to the shared disclosure file.`);
+      if (!disclosureChecked(language)) throw new ValidationError('language',
+        `Vyakti has no checked AI disclosure line in ${languageName(language)} yet, so a ${languageName(language)} version cannot call people. ` +
+        (DISCLOSURE.lines[language] ? 'A draft line is waiting for a native speaker to review it.' : 'The safety team adds it to the shared disclosure file.'));
       const cfg = variantConfig(base.config.agent, { ...i, language, components: i.components as StackComponents | undefined });
       guardDraft(null, cfg);
       const v = await createVersion(ctx, a.id, cfg, base.id, i.note ?? `${languageName(language)} version of version ${base.number}`, 'variant');

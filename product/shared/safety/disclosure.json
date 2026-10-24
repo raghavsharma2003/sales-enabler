@@ -7,31 +7,45 @@
     "en-IN": { "brand": "I'm {brand}'s AI assistant.", "nobrand": "I'm an AI assistant." },
     "hi-IN": { "brand": "मैं {brand} की AI असिस्टेंट हूँ।", "nobrand": "मैं एक AI असिस्टेंट हूँ।" },
     "ta-IN": { "brand": "நான் {brand} AI உதவியாளர்.", "nobrand": "நான் ஒரு AI உதவியாளர்." },
-    "bn-IN": { "brand": "আমি {brand}-এর AI সহকারী।", "nobrand": "আমি একজন AI সহকারী।" }
+    "bn-IN": { "brand": "আমি {brand}-এর AI সহকারী।", "nobrand": "আমি একজন AI সহকারী।" },
+    "kn-IN": { "brand": "ನಾನು {brand} ಅವರ AI ಸಹಾಯಕಿ.", "nobrand": "ನಾನು ಒಂದು AI ಸಹಾಯಕಿ." },
+    "te-IN": { "brand": "నేను {brand} AI అసిస్టెంట్ ని.", "nobrand": "నేను ఒక AI అసిస్టెంట్ ని." },
+    "ml-IN": { "brand": "ഞാൻ {brand}-ന്റെ AI അസിസ്റ്റന്റ് ആണ്.", "nobrand": "ഞാൻ ഒരു AI അസിസ്റ്റന്റ് ആണ്." },
+    "mr-IN": { "brand": "मी {brand} ची AI असिस्टंट आहे.", "nobrand": "मी एक AI असिस्टंट आहे." },
+    "gu-IN": { "brand": "હું {brand} ની AI આસિસ્ટન્ટ છું.", "nobrand": "હું એક AI આસિસ્ટન્ટ છું." },
+    "pa-IN": { "brand": "ਮੈਂ {brand} ਦੀ AI ਸਹਾਇਕ ਹਾਂ।", "nobrand": "ਮੈਂ ਇੱਕ AI ਸਹਾਇਕ ਹਾਂ।" },
+    "or-IN": { "brand": "ମୁଁ {brand} ର AI ସହାୟିକା।", "nobrand": "ମୁଁ ଜଣେ AI ସହାୟିକା।" }
   },
   "render_vectors": [
     { "brand": "Suraksha Health", "language": "hinglish", "line": "Main Suraksha Health ki AI assistant hoon." },
     { "brand": "Suraksha Health", "language": "en-IN", "line": "I'm Suraksha Health's AI assistant." },
     { "brand": "Suraksha Health", "language": "hi-IN", "line": "मैं Suraksha Health की AI असिस्टेंट हूँ।" },
     { "brand": "", "language": "hinglish", "line": "Main ek AI assistant hoon." },
-    { "brand": "Suraksha Health", "language": "mr-IN", "line": "Main Suraksha Health ki AI assistant hoon." },
-    { "brand": "Suraksha Health", "language": null, "line": "Main Suraksha Health ki AI assistant hoon." }
+    { "brand": "Suraksha Health", "language": "as-IN", "line": "Main Suraksha Health ki AI assistant hoon." },
+    { "brand": "Suraksha Health", "language": null, "line": "Main Suraksha Health ki AI assistant hoon." },
+    { "brand": "Suraksha Health", "language": "kn-IN", "line": "ನಾನು Suraksha Health ಅವರ AI ಸಹಾಯಕಿ." },
+    { "brand": "Suraksha Health", "language": "te-IN", "line": "నేను Suraksha Health AI అసిస్టెంట్ ని." },
+    { "brand": "Suraksha Health", "language": "ml-IN", "line": "ഞാൻ Suraksha Health-ന്റെ AI അസിസ്റ്റന്റ് ആണ്." },
+    { "brand": "Suraksha Health", "language": "mr-IN", "line": "मी Suraksha Health ची AI असिस्टंट आहे." },
+    { "brand": "Suraksha Health", "language": "gu-IN", "line": "હું Suraksha Health ની AI આસિસ્ટન્ટ છું." },
+    { "brand": "Suraksha Health", "language": "pa-IN", "line": "ਮੈਂ Suraksha Health ਦੀ AI ਸਹਾਇਕ ਹਾਂ।" },
+    { "brand": "Suraksha Health", "language": "or-IN", "line": "ମୁଁ Suraksha Health ର AI ସହାୟିକା।" }
   ],
   "affirm_vectors": [
     { "text": "नमस्ते, मैं रिया हूँ — सुरक्षा हेल्थ की AI असिस्टेंट।", "affirms": true, "note": "the staging opening (2026-10-23, research/2026-10-23/staging)" },
-    { "text": "नमस्ते, मैं रिया हूँ, सुरक्षा हेल्थ की एआई असिस्टेंट।", "affirms": true },
-    { "text": "मैं सुरक्षा हेल्थ की AI सहायक हूँ।", "affirms": true },
-    { "text": "Riya, Suraksha Health ki AI assistant bol rahi hoon.", "affirms": true },
-    { "text": "Namaste, main Riya, Suraksha Health ki AI assistant.", "affirms": true },
-    { "text": "I'm Suraksha Health's AI assistant.", "affirms": true },
-    { "text": "நான் ரியா, சுரக்ஷா ஹெல்த் AI உதவியாளர்.", "affirms": true },
-    { "text": "আমি রিয়া, সুরক্ষা হেলথের AI সহকারী।", "affirms": true },
+    { "text": "नमस्ते, मैं रिया हूँ, सुरक्षा हेल्थ की एआई असिस्टेंट।", "affirms": true},
+    { "text": "मैं सुरक्षा हेल्थ की AI सहायक हूँ।", "affirms": true},
+    { "text": "Riya, Suraksha Health ki AI assistant bol rahi hoon.", "affirms": true},
+    { "text": "Namaste, main Riya, Suraksha Health ki AI assistant.", "affirms": true},
+    { "text": "I'm Suraksha Health's AI assistant.", "affirms": true},
+    { "text": "நான் ரியா, சுரக்ஷா ஹெல்த் AI உதவியாளர்.", "affirms": true},
+    { "text": "আমি রিয়া, সুরক্ষা হেলথের AI সহকারী।", "affirms": true},
     { "text": "हमारा नया AI असिस्टेंट ऐप है।", "affirms": false, "note": "a mention, not a first-person disclosure" },
     { "text": "मैं आपको कंपनी की AI असिस्टेंट के बारे में बताती हूँ।", "affirms": false, "note": "about the assistant, not being it" },
-    { "text": "Main aapko company ki AI assistant ke baare mein batati hoon.", "affirms": false },
+    { "text": "Main aapko company ki AI assistant ke baare mein batati hoon.", "affirms": false},
     { "text": "मैं AI असिस्टेंट नहीं हूँ, इंसान हूँ।", "affirms": false, "note": "a denial" },
-    { "text": "Main AI assistant nahi hoon.", "affirms": false },
-    { "text": "Our new AI assistant app is live.", "affirms": false }
+    { "text": "Main AI assistant nahi hoon.", "affirms": false},
+    { "text": "Our new AI assistant app is live.", "affirms": false}
   ],
   "about_opening_vectors": "RD1 decides on the whole opening turn (rejected.2026-10-23.rd1-first-sentence-window-double-disclosure): the fixed line is prefixed only when no sentence of the opening, and not the opening joined (an ellipsis that ends a sentence read as a pause), affirms she is an AI. Both doors: TS disclosure.ts openingDiscloses, Python safety.opening_discloses.",
   "opening_vectors": [
@@ -47,5 +61,15 @@
     { "sentences": ["Namaste Asha ji.", "Main AI nahi hoon, main Riya hoon."], "discloses": false, "note": "a denial never counts" },
     { "sentences": ["Hello Asha ji!", "Main Saanjh Services ki AI assistant hoon, Riya."], "discloses": true, "note": "disclosure after a greeting" },
     { "sentences": ["Kya main Asha ji se baat kar rahi hoon?", "Main Riya, Saanjh Services ki AI assistant."], "discloses": true, "note": "disclosure after a question" }
-  ]
+  ],
+  "review": {
+    "kn-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+    "te-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+    "ml-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+    "mr-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+    "gu-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+    "pa-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)",
+    "or-IN": "not native-reviewed (owner item: open.2026-10-24.indic-native-review)"
+  },
+  "review_about": "Lines listed in review were written by the safety builder from general knowledge and are NOT checked by a native speaker; the runtime may use them (better than the Hinglish fallback for a caller in that language), but each must be read by a native speaker before production. Every line passes lexicon.ai_affirm (tested in both doors)."
 }

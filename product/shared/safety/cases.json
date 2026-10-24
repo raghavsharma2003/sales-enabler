@@ -71308,6 +71308,378 @@
    },
    "source": "authored-2026-10-24",
    "lang": "hi-deva"
+  },
+  {
+   "id": "cs.crisis.2973",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "sir nanage saayabeku anisuttide, yaarigu nan avashyakate illa",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "kn-en"
+  },
+  {
+   "id": "cs.crisis.2974",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "ನನಗೆ ಬದುಕಲು ಇಷ್ಟವಿಲ್ಲ, ಸಾಯಬೇಕು",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "kn"
+  },
+  {
+   "id": "cs.crisis.2975",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "enikku ini jeevikkan thalparyamilla, ellam mathiyayi",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "ml-en"
+  },
+  {
+   "id": "cs.crisis.2976",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "എനിക്ക് മരിക്കണം, ആരും എന്നെ മനസ്സിലാക്കുന്നില്ല",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "ml"
+  },
+  {
+   "id": "cs.crisis.2977",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "main hun marna chaunda haan, karza bahut ho gaya",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "pa-en"
+  },
+  {
+   "id": "cs.crisis.2978",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "ਮੈਂ ਮਰਨਾ ਚਾਹੁੰਦਾ ਹਾਂ",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "pa"
+  },
+  {
+   "id": "cs.crisis.2979",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "mu ebe maribaku chahunchi, kichhi bhala laguni",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "or-en"
+  },
+  {
+   "id": "cs.crisis.2980",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "ମୁଁ ମରିବାକୁ ଚାହୁଁଛି",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "or"
+  },
+  {
+   "id": "cs.crisis.2981",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "मला आता जगायचं नाही",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "mr"
+  },
+  {
+   "id": "cs.crisis.2982",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "నాకు బతకాలని లేదు",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "te"
+  },
+  {
+   "id": "cs.crisis.2983",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.crisis.indic_more",
+   "input": "મારે હવે જીવવું નથી",
+   "expect": {
+    "signals": {
+     "crisis": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "gu"
+  },
+  {
+   "id": "cs.optout.2984",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "sanu dobara phone na karo, mera number hatao",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "pa-en"
+  },
+  {
+   "id": "cs.optout.2985",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "ਮੈਨੂੰ ਫੋਨ ਨਾ ਕਰੋ",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "pa"
+  },
+  {
+   "id": "cs.optout.2986",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "dayakari mote phone karantu nahin",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "or-en"
+  },
+  {
+   "id": "cs.optout.2987",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "ମୋତେ ଫୋନ୍ କରନ୍ତୁ ନାହିଁ",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "or"
+  },
+  {
+   "id": "cs.optout.2988",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "ದಯವಿಟ್ಟು ಮತ್ತೆ ಕಾಲ್ ಮಾಡಬೇಡಿ",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "kn"
+  },
+  {
+   "id": "cs.optout.2989",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "దయచేసి నాకు కాల్ చేయకండి",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "te"
+  },
+  {
+   "id": "cs.optout.2990",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "ഇനി എന്നെ വിളിക്കരുത്",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "ml"
+  },
+  {
+   "id": "cs.optout.2991",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "मला पुन्हा फोन करू नका",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "mr"
+  },
+  {
+   "id": "cs.optout.2992",
+   "fn": "callerSignals",
+   "label": "harmful",
+   "rule": "cs.opt_out.indic_more",
+   "input": "મને ફરી ફોન ન કરશો",
+   "expect": {
+    "signals": {
+     "optOut": true
+    },
+    "partial": true
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "gu"
+  },
+  {
+   "id": "cs.benign.2993",
+   "fn": "callerSignals",
+   "label": "benign",
+   "rule": "none",
+   "input": "bisilu nalli saayabeku anisuttide, aamele maathaadi",
+   "expect": {
+    "signals": {}
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "kn-en"
+  },
+  {
+   "id": "cs.benign.2994",
+   "fn": "callerSignals",
+   "label": "benign",
+   "rule": "none",
+   "input": "chirichu chirichu marikkanam ennu thonni, aa cinema kandappo",
+   "expect": {
+    "signals": {}
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "ml-en"
+  },
+  {
+   "id": "cs.benign.2995",
+   "fn": "callerSignals",
+   "label": "benign",
+   "rule": "none",
+   "input": "baad vich phone karo, hun main kamm te haan",
+   "expect": {
+    "signals": {}
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "pa-en"
+  },
+  {
+   "id": "cs.benign.2996",
+   "fn": "callerSignals",
+   "label": "benign",
+   "rule": "none",
+   "input": "pare phone karantu, ebe meeting re achhi",
+   "expect": {
+    "signals": {}
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "or-en"
+  },
+  {
+   "id": "cs.benign.2997",
+   "fn": "callerSignals",
+   "label": "benign",
+   "rule": "none",
+   "input": "ਮੈਂ ਠੀਕ ਹਾਂ, ਪ੍ਰੀਮੀਅਮ ਦੀ ਤਾਰੀਖ ਦੱਸੋ",
+   "expect": {
+    "signals": {}
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "pa"
+  },
+  {
+   "id": "cs.benign.2998",
+   "fn": "callerSignals",
+   "label": "benign",
+   "rule": "none",
+   "input": "പ്രീമിയം എത്രയാണ്? ഞാൻ നാളെ അടയ്ക്കാം",
+   "expect": {
+    "signals": {}
+   },
+   "source": "authored-2026-10-24-indic",
+   "lang": "ml"
   }
  ]
 }

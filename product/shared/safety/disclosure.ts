@@ -4,8 +4,14 @@
 import data from './disclosure.json' with { type: 'json' };
 import { expandLexicon, normalise, replyDoor, type DoorContext } from './index.ts';
 
-interface Disclosure { fallback: string; lines: Record<string, { brand: string; nobrand: string }> }
+interface Disclosure { fallback: string; lines: Record<string, { brand: string; nobrand: string }>; review?: Record<string, string> }
 export const DISCLOSURE = data as unknown as Disclosure & { version: string };
+
+/** A line exists AND is not waiting for a native speaker's review (disclosure.json review; open.2026-10-24.indic-native-review).
+ *  Calling people in a language needs a checked line; an unreviewed draft is not one. */
+export function disclosureChecked(language: string): boolean {
+  return Boolean(DISCLOSURE.lines[language]) && !DISCLOSURE.review?.[language];
+}
 
 export function disclosureLine(brand = '', language?: string | null): string {
   const l = DISCLOSURE.lines[language ?? ''] ?? DISCLOSURE.lines[DISCLOSURE.fallback];

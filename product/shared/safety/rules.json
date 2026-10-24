@@ -49,7 +49,7 @@
     "human_noun": "(\\b(insaan|insan|human|manushya|real person|real human|asli insaan|zinda insaan|ladki|ladka|aadmi|aurat|person)\\b|इंसान|इन्सान|मनुष्य|असली इंसान|लडकी|लडका|आदमी|औरत)",
     "neg": "(\\b(nahi|nahin|nhi|nai|na|not|thodi|thode)\\b|नहीं|नही|थोडी)",
     "copula_first": "(\\b(hoon|hun|hu|hoo|am)\\b|हूं|हु|हूँ)",
-    "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)(?! ?(असिस्टेंट|सहायक|एजेंट|assistant|agent|sahayak)? ?(के बारे|के बार|ke baare\\b|ke bare\\b|about\\b))(?:(?!\\b(nahi|nahin|nhi|nai|na|not)\\b|नहीं|नही)[^.?!।]){0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)(?! ?(assistant|agent|sahayak)? ?(ke baare|ke bare)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))(?! ?(असिस्टेंट|सहायक|एजेंट)? ?(के बारे|के बार))|\\bjust an ai\\b|\\b(main|mai)\\b[^.?!।]{0,60}\\b(ki|ka|ke)\\s(ai|a\\.i\\.)\\s?(assistant|agent|sahayak|sahayika)\\b(?!\\s?(ke baare|ke bare|nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,60}(की|का|के)\\s(एआई|\\bai\\b)\\s?(असिस्टेंट|सहायक|सहायिका|एजेंट)(?!\\s?(के बारे|के बार|नहीं|नही))|\\b(i'?m|i am)\\b[^.?!]{0,40}'s (ai|virtual|digital) (assistant|agent)\\b|நான்[^.?!।]{0,60}(\\bai\\b|ஏஐ)\\s?(உதவியாளர்|அசிஸ்டன்ட்|அசிஸ்டென்ட்)|আমি[^.?!।]{0,60}(\\bai\\b|এআই)\\s?(সহকারী|অ্যাসিস্ট্যান্ট))",
+    "ai_affirm": "((\\b(ai|a\\.i\\.|artificial intelligence|virtual assistant|digital assistant|ai assistant|ai agent|automated assistant|bot)\\b|एआई)(?! ?(असिस्टेंट|सहायक|एजेंट|assistant|agent|sahayak)? ?(के बारे|के बार|ke baare\\b|ke bare\\b|about\\b))(?:(?!\\b(nahi|nahin|nhi|nai|na|not)\\b|नहीं|नही)[^.?!।]){0,30}(\\b(hoon|hun|hu|am)\\b|हूं|हु)|\\b(i'?m|i am) (an? )?(ai|virtual|digital|automated)\\b|\\b(main|mai)\\b[^.?!।]{0,25}\\b(ai|bot)\\b(?! ?(nahi|nahin|nhi|na|not)\\b)(?! ?(assistant|agent|sahayak)? ?(ke baare|ke bare)\\b)|मैं[^।?!.]{0,25}(एआई|\\bai\\b)(?! ?(नहीं|नही))(?! ?(असिस्टेंट|सहायक|एजेंट)? ?(के बारे|के बार))|\\bjust an ai\\b|\\b(main|mai)\\b[^.?!।]{0,60}\\b(ki|ka|ke)\\s(ai|a\\.i\\.)\\s?(assistant|agent|sahayak|sahayika)\\b(?!\\s?(ke baare|ke bare|nahi|nahin|nhi|na|not)\\b)|मैं[^।?!.]{0,60}(की|का|के)\\s(एआई|\\bai\\b)\\s?(असिस्टेंट|सहायक|सहायिका|एजेंट)(?!\\s?(के बारे|के बार|नहीं|नही))|\\b(i'?m|i am)\\b[^.?!]{0,40}'s (ai|virtual|digital) (assistant|agent)\\b|நான்[^.?!।]{0,60}(\\bai\\b|ஏஐ)\\s?(உதவியாளர்|அசிஸ்டன்ட்|அசிஸ்டென்ட்)|আমি[^.?!।]{0,60}(\\bai\\b|এআই)\\s?(সহকারী|অ্যাসিস্ট্যান্ট)|ನಾನು[^.?!।]{0,60}(\\bai\\b|ಎಐ)\\s?(ಸಹಾಯಕ|ಅಸಿಸ್ಟೆಂಟ್)|నేను[^.?!।]{0,60}(\\bai\\b|ఏఐ)\\s?(అసిస్టెంట్|సహాయక)|ഞാൻ[^.?!।]{0,60}(\\bai\\b|എഐ)\\s?(അസിസ്റ്റന്റ്|സഹായ)|मी[^.?!।]{0,60}(एआई|\\bai\\b)\\s?(असिस्टंट|असिस्टेंट|सहाय्यक|सहायक)|હું[^.?!।]{0,60}(\\bai\\b|એઆઈ)\\s?(આસિસ્ટન્ટ|સહાયક)|ਮੈਂ[^.?!।]{0,60}(\\bai\\b|ਏਆਈ)\\s?(ਸਹਾਇਕ|ਅਸਿਸਟੈਂਟ)|ମୁଁ[^.?!।]{0,60}(\\bai\\b|ଏଆଇ)\\s?(ସହାୟ|ଆସିଷ୍ଟାଣ୍ଟ))",
     "self_ref": "(\\b(main|mai|mein|me|i|i'?m|myself)\\b|मैं)",
     "neg_pred": "@neg(?! ?((ho|hoga|hogi|hai|hain|kar|karti|karte|chal|ki|ka|ke|issue|problem|related)\\b|होग|हो |है|कर|चल|की|का|के))",
     "money_talk": "(premium|emi|amount|payment|\\bpay\\b|fee|fees|price|bill|due|kimat|keemat|charge|refund|cashback|bonus|prize|reward|scholarship|stipend|grant|subsidy|compensation|incentive|commission|cover|sum assured|salary|income|return|profit|munafa|balance|loan|rent|kiraya|deposit|bhugtan|bakaya|kisht|installment|paise|paisa)"
@@ -851,6 +851,28 @@
       ]
     },
     {
+      "id": "cs.crisis.indic_more",
+      "signal": "crisis",
+      "about": "Crisis terms for Kannada, Malayalam, Punjabi and Odia (romanised and native script), plus native-script Marathi, Telugu and Gujarati. Terms, not lines. not native-reviewed (owner item: open.2026-10-24.indic-native-review).",
+      "any": [
+        "\\b(saayabeku|sayabeku|saayabekanisuttide|saaytini|saaytheeni|aatmahatye|atmahatye)\\b|\\bbadukoke (ishta illa|manassilla|aagalla)\\b|\\bjeevana (saaku|beda)\\b",
+        "(ಸಾಯಬೇಕು|ಸಾಯ್ತೀನಿ|ಆತ್ಮಹತ್ಯೆ|ಬದುಕಲು ಇಷ್ಟವಿಲ್ಲ|ಬದುಕೋಕೆ ಇಷ್ಟ ಇಲ್ಲ)",
+        "\\b(marikkanam|marikkanamennu|chaakanam|chaavanam|aathmahathya|athmahathya)\\b|\\bjeevikkan (thalparyamilla|vayya|thonnunnilla)\\b|\\bjeevikkanda\\b",
+        "(മരിക്കണം|ചാകണം|ആത്മഹത്യ|ജീവിക്കാൻ താൽപര്യമില്ല|ജീവിക്കാൻ വയ്യ)",
+        "\\b(marna|mar jana)\\b[^.?!]{0,10}\\b(chaunda|chaundi|chahunda|chahundi)\\b|\\bjeen (da|nu) (mann|man|dil) nahi\\b|\\bzindagi (mukauni|khatam karni)\\b",
+        "(ਮਰਨਾ ਚਾਹੁੰਦਾ|ਮਰਨਾ ਚਾਹੁੰਦੀ|ਖੁਦਕੁਸ਼ੀ|ਖ਼ੁਦਕੁਸ਼ੀ|ਜੀਣ ਦਾ ਮਨ ਨਹੀਂ)",
+        "\\b(maribaku chahunchi|maribi|atmahatya karibi|banchibaku ichha nahin|banchibaku ichha nahi)\\b",
+        "(ମରିବାକୁ ଚାହୁଁଛି|ଆତ୍ମହତ୍ୟା|ବଞ୍ଚିବାକୁ ଇଚ୍ଛା ନାହିଁ)",
+        "(मरायचं आहे|मरावंसं वाटतं|मरावेसे वाटते|आत्महत्या करणार|जगायचं नाही|जगायचे नाही)",
+        "(చనిపోవాలని|చచ్చిపోవాలని|ఆత్మహత్య|బతకాలని లేదు|బ్రతకాలని లేదు)",
+        "(મરી જવું છે|મરવું છે|આત્મહત્યા|જીવવું નથી)"
+      ],
+      "none": [
+        "\\b(chirich|chiri|veyil|vishann|hasivu|nagu|bisilu|hasi)[a-z]*\\b[^.?!]{0,20}\\b(chaakanam|saayabeku|marikkanam|saaytini)\\b",
+        "\\b(chaakanam|saayabeku|marikkanam|saaytini)\\b[^.?!]{0,20}\\b(chirich|chiri|veyil|vishann|hasivu|nagu|bisilu|hasi)[a-z]*\\b"
+      ]
+    },
+    {
       "id": "cs.asks_if_ai",
       "signal": "asksIfAi",
       "any": [
@@ -1052,6 +1074,25 @@
         "\\b(ar|aar) call (korben|korbe|koro) na\\b",
         "\\b(list|number)\\b[^.?!]{0,15}\\b(theke soriye|soriye din|bad diye din)\\b",
         "\\b(call|phone) (pannadheenga|pannadhinga|panna vendam)\\b"
+      ]
+    },
+    {
+      "id": "cs.opt_out.indic_more",
+      "signal": "optOut",
+      "about": "Opt-out terms for Punjabi and Odia (romanised and native script), plus native-script Kannada, Telugu, Malayalam, Marathi and Gujarati. Terms, not lines. not native-reviewed (owner item: open.2026-10-24.indic-native-review).",
+      "any": [
+        "\\b(phone|call)\\s+(na karo|na kareyo|na karna|naa karo)\\b|\\bmera number (hatao|kat do|block karo)\\b|\\bdobara phone na\\b",
+        "\\b(phone|call)\\s+(karantu nahin|karantu nahi|karibe nahin|karibe nahi|kariba nahin)\\b|\\bmo number (hatantu|kati diantu|block karantu)\\b",
+        "(ਫੋਨ ਨਾ ਕਰੋ|ਫ਼ੋਨ ਨਾ ਕਰੋ|ਕਾਲ ਨਾ ਕਰੋ|ਮੇਰਾ ਨੰਬਰ ਹਟਾਓ)",
+        "(ଫୋନ୍ କରନ୍ତୁ ନାହିଁ|କଲ୍ କରନ୍ତୁ ନାହିଁ|ମୋ ନମ୍ବର ହଟାନ୍ତୁ)",
+        "(ಕಾಲ್ ಮಾಡಬೇಡಿ|ಫೋನ್ ಮಾಡಬೇಡಿ|ನಂಬರ್ ತೆಗೆಯಿರಿ)",
+        "(కాల్ చేయకండి|ఫోన్ చేయకండి|నంబర్ తీసేయండి)",
+        "(വിളിക്കരുത്|ഇനി വിളിക്കണ്ട|നമ്പർ മാറ്റൂ)",
+        "(फोन करू नका|कॉल करू नका|नंबर काढून टाका)",
+        "(ફોન ન કરશો|કૉલ ન કરશો|કોલ ન કરશો|નંબર કાઢી નાખો)"
+      ],
+      "noneClause": [
+        "\\b(baad vich|baad mein|later|pare|pore|sanje|kal|kalke|evening)\\b"
       ]
     },
     {

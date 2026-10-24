@@ -102,3 +102,18 @@ Unchanged (canonical JSON sha256, first 16 hex):
 New file hashes:
 - `rules.json` `b60165821358c654`;
 - `cases.json` `cee3c0441af5f4dd`.
+
+## Amendment 3 (2026-10-24T05:07:27Z, after BLIND 9 scoring had started on the tree registered by Amendment 1)
+
+The BLIND 9 run uses the registered tree, so this does not change that measurement. The safety half of
+open.2026-10-24.languages-runtime-and-disclosure changes these files later:
+- `rules.json` `caller` gains `cs.crisis.indic_more` and `cs.opt_out.indic_more`, for Kannada, Malayalam,
+  Punjabi, Odia, and native-script Marathi, Telugu and Gujarati;
+- `lexicon.ai_affirm` gains seven scripts;
+- `cases.json` gains 26 `callerSignals` vectors.
+
+A floor score quoted for BLIND 9 belongs to the registered tree, not to this one.
+
+New file hashes:
+- `rules.json` `1f9dd6748b8991a0`;
+- `cases.json` `cd2a957d77cb24cf`.
