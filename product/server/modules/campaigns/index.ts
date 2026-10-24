@@ -23,6 +23,7 @@ import {
 import { loadDialPolicy, loadVersion, type CampaignPolicy, type CampaignRow } from './gate.ts';
 import { tick } from './worker.ts';
 import { callbackText, clampToWindow, describeRetry, nextByPattern, resolveRetry, retryInput, RETRYABLE } from './retry.ts';
+import { inboundHook, registerInboundTools } from './inbound.ts';
 import { categoryWord, lineNeeded, windowProblem, type Explained } from './explain.ts';
 import { verifyConfirm, verifyStart } from './verify.ts';
 // The one money import: the wallet blocker's words and the per-call hold, shared with the money module's wallet.check.
@@ -852,9 +853,10 @@ export function registerCampaignTools(registry: Registry): void {
 
 export const module: Module = {
   name: 'campaigns',
-  register: registerCampaignTools,
+  register: r => { registerCampaignTools(r); registerInboundTools(r); },
   routes(router, deps) {
     router.add('POST', '/hooks/telephony/kyc', kycHook(deps), { rawBody: true, limit: 64_000 });
+    router.add('POST', '/hooks/telephony/inbound', inboundHook(deps), { rawBody: true, limit: 16_000 });
     // The carrier fetches a system announcement (the "ring my phone" code) by its one-off token; unknown or expired: 404.
     const speak = async (req: Req): Promise<Res> => {
       const xml = announcementXml(req.params.token ?? '');

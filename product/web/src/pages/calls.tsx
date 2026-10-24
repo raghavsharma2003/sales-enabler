@@ -28,8 +28,8 @@ function List() {
   const campaignId = qs.get('campaign') ?? '';
   const q = useData(['calls', campaignId, view], () => callSearch({ campaignId: campaignId || undefined, includeTest: view === 'test' }));
   const cols: Col<CallRow>[] = [
-    { key: 'w', label: 'Who', primary: true, render: c => <>{c.contactName}{c.channel === 'test' && <> <Chip>Test</Chip></>}</> }, { key: 'o', label: 'Outcome', render: c => outcomeChip(c.outcome, c.grade) },
-    { key: 'p', label: 'Campaign', render: c => campName(c.campaignId) ?? <span className="muted">{c.channel === 'test' ? 'Practice' : 'None'}</span> },
+    { key: 'w', label: 'Who', primary: true, render: c => <>{c.contactName}{c.direction === 'inbound' && <> <Chip tone="peacock">Inbound</Chip></>}{c.channel === 'test' && <> <Chip>Test</Chip></>}</> }, { key: 'o', label: 'Outcome', render: c => outcomeChip(c.outcome, c.grade) },
+    { key: 'p', label: 'Campaign', render: c => campName(c.campaignId) ?? <span className="muted">{c.channel === 'test' ? 'Practice' : c.direction === 'inbound' ? 'Inbound line' : 'None'}</span> },
     { key: 'r', label: 'Why it ended', render: c => c.reasonLabel ?? <NotMeasured /> }, { key: 't', label: 'When', render: c => date(c.startedAt, true) },
     { key: 'd', label: 'Length', num: true, render: c => dur(c.durationS) }, { key: 'c', label: 'Cost', num: true, render: c => c.costMilli == null ? <NotMeasured /> : inr(c.costMilli, { paise: true }) },
   ];
@@ -78,7 +78,7 @@ function Body({ c }: { c: CallDoc }) {
   return (
     <>
       <PageHead crumb={<><Link to="/calls">Calls</Link><span aria-hidden>/</span><span>{c.contactName}</span></>} title={c.contactName} pill={c.test ? <span className="pill">Practice call</span> : undefined}
-        sub={<span className="tnum">{c.startedAt ? date(c.startedAt, true) : '—'} · {dur(c.durationS)} · {prettyCode(c.status)}{c.campaignId && <> · <CampaignName id={c.campaignId} /></>}</span>}
+        sub={<span className="tnum">{c.startedAt ? date(c.startedAt, true) : '—'} · {dur(c.durationS)} · {prettyCode(c.status)}{c.direction === 'inbound' && ' · Inbound'}{c.campaignId && <> · <CampaignName id={c.campaignId} /></>}</span>}
         actions={c.contactId ? <Link to={`/contacts/${c.contactId}`} className="btn" style={{ textDecoration: 'none' }}><span>Open the contact</span></Link> : undefined} />
       <div className="cols-main">
         <div className="stack">

@@ -264,7 +264,7 @@ export function registerTools(r: Registry): void {
       if (i.before) add('cv.started_at < ?::timestamptz', i.before);
       p.push(i.limit ?? 50);
       const rows = await many<Record<string, any>>(ctx.q,
-        `SELECT cv.id, cv.channel, cv.status, cv.started_at, cv.ended_at, cv.duration_s, cv.end_reason, cv.reason_code, cv.flagged, cv.flags,
+        `SELECT cv.id, cv.channel, cv.direction, cv.inbound_note, cv.status, cv.started_at, cv.ended_at, cv.duration_s, cv.end_reason, cv.reason_code, cv.flagged, cv.flags,
                 cv.cost_inr_milli::int AS cost_inr_milli, cv.contact_id, cv.agent_version_id, a.campaign_id, ${AGENT_COLS}, ${BEST_OUTCOME} AS outcome, ${BEST_GRADE} AS grade
          ${FROM} ${AGENT_JOIN} WHERE ${where.join(' AND ')} ORDER BY cv.started_at DESC LIMIT $${p.length}`, p);
       return { total, calls: rows.map(({ agent_id, agent_name, agent_version_number, ...x }) => ({ ...x, agent: agentOf({ agent_id, agent_name, agent_version_number }),

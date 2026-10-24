@@ -1546,3 +1546,25 @@ test('Hand-offs: a callback due when the caller asked and a crisis alert on ever
   await page.goto(`${BASE}/`);
   await page.getByRole('heading', { name: 'Hand-offs' }).waitFor();
 });
+
+// ---- Inbound (must-be brief 8): the Numbers page says which agent answers each number, as the server holds it
+test('Numbers: a number bound to a published agent says it answers calls with her; an unbound one says it does not', async () => {
+  const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+  const ver = (await pool.query(`SELECT v.id, a.name, v.number FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE a.workspace_id = $1 AND v.kind = 'published' ORDER BY v.created_at DESC LIMIT 1`, [ws])).rows[0];
+  assert.ok(ver, 'the seed has a published agent');
+  const mk = async e164 => (await pool.query("INSERT INTO phone_number (workspace_id, e164, carrier, status) VALUES ($1,$2,'fake','active') RETURNING id", [ws, e164])).rows[0].id;
+  const bound = await mk('+918000011122'), free = await mk('+918000011133');
+  const card = await tool('inbound.route.set', { numberId: bound, agentVersionId: ver.id });
+  assert.equal(card.status, 'needs_approval', JSON.stringify(card));
+  const done = await (await ctx.request.post(`${BASE}/v1/actions/${card.actionId}/decide`, { data: { approve: true } })).json();
+  assert.ok(JSON.stringify(done).includes('confirmed'), JSON.stringify(done));
+  await page.goto(`${BASE}/numbers`);
+  const line = page.locator('li', { hasText: '80000 11122' }).or(page.locator('li', { hasText: '8000011122' })).first();
+  await line.waitFor();
+  await line.getByText(`Answers calls with ${ver.name}, version ${ver.number}.`).waitFor();
+  const other = page.locator('li', { hasText: '80000 11133' }).or(page.locator('li', { hasText: '8000011133' })).first();
+  assert.ok(await other.getByText("Does not answer calls yet: callers hear the carrier's line.").isVisible());
+  fs.mkdirSync(shotDir, { recursive: true });
+  await line.screenshot({ path: path.join(shotDir, 'numbers-inbound.png') });
+  void free;
+});

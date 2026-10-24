@@ -3328,6 +3328,84 @@
    }
   },
   {
+   "name": "inbound.route.clear",
+   "risk": "policy",
+   "summary": "Stop answering calls to one of your numbers (callers hear the carrier's line)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "numberId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "numberId"
+    ]
+   }
+  },
+  {
+   "name": "inbound.route.list",
+   "risk": "read",
+   "summary": "Which agent answers calls to each of your numbers",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "inbound.route.set",
+   "risk": "policy",
+   "summary": "Answer calls to one of your numbers with a published agent version (or an inbound deployment that splits between versions)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "numberId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "agentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "deploymentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "numberId",
+     "agentVersionId"
+    ]
+   }
+  },
+  {
    "name": "insight.get",
    "risk": "read",
    "summary": "Themes across recent calls (objections, drop-offs, unanswered questions, what came before a reached goal), each with verbatim quotes",

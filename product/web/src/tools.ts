@@ -9,7 +9,7 @@ export const TOOLS = {
   campaigns: ['campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.funnel', 'campaign.launch', 'campaign.resume', 'campaign.stop', 'campaign.window.narrow', 'campaign.window.widen'],
   calls: ['call.search', 'call.get', 'call.explain'],
   insights: ['issue.list', 'monitor.list', 'monitor.create', 'proposal.list', 'proposal.probe', 'proposal.readiness', 'proposal.accept', 'learning.propose', 'experiment.list', 'experiment.start', 'lesson.list', 'script.pacing.restore'],
-  numbers: ['number.list', 'number.search', 'number.rent', 'member.phone.verify_start', 'member.phone.verify_confirm', 'test.ring_member_phone'],
+  numbers: ['number.list', 'number.search', 'number.rent', 'member.phone.verify_start', 'member.phone.verify_confirm', 'test.ring_member_phone', 'inbound.route.list', 'inbound.route.set', 'inbound.route.clear'],
   settings: ['member.list', 'member.invite', 'member.role.set', 'apikey.list', 'apikey.create', 'apikey.revoke', 'apikey.rotate', 'secret.reveal', 'brand.get', 'brand.update', 'knowledge.list', 'knowledge.ingest', 'knowledge.span.approve',
     'invoice.get', 'wallet.topup', 'safety.cases', 'policy.window.set', 'memory.policy.get', 'memory.policy.set', 'dpdp.request.execute', 'operator.settings.get', 'operator.brain.set', 'operator.autonomy.lower', 'operator.autonomy.raise',
     'integration.list', 'integration.kinds', 'activity.list', 'outcome.list', 'outcome.define', 'judge.edit', 'judge.calibrate', 'analysis.settings.get'],

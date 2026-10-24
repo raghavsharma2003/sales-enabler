@@ -252,13 +252,16 @@ async function endCall(c: pg.PoolClient, conv: Conv, e: Extract<RuntimeEvent, { 
   const connected = !NOT_CONNECTED.has(e.endReason as EndReason);
   const total = Number((await one<{ s: string }>(c, 'SELECT coalesce(sum(inr_milli), 0)::text AS s FROM cost_line WHERE conversation_id = $1 AND workspace_id = $2', [conv.id, ws]))!.s);
   let settlement: { action: 'settled' | 'released' | 'none'; reservationId?: string; inrMilli: number } = { action: 'none', inrMilli: total };
+  // Holds: an outbound call's by its attempt; an inbound call (no attempt) by its conversation. Workspace cap only for inbound.
+  const holds = conv.attempt_id
+    ? await many<{ id: string }>(c, `SELECT id FROM reservation WHERE workspace_id = $1 AND attempt_id = $2 AND status = 'held' ORDER BY created_at`, [ws, conv.attempt_id])
+    : await many<{ id: string }>(c, `SELECT id FROM reservation WHERE workspace_id = $1 AND conversation_id = $2 AND status = 'held' ORDER BY created_at`, [ws, conv.id]);
+  const spend = connected || total > 0;
+  for (const [i, h] of holds.entries()) {
+    if (i === 0 && spend) { await settle(c, h.id, total); settlement = { action: 'settled', reservationId: h.id, inrMilli: total }; }
+    else { await release(c, h.id); if (i === 0) settlement = { action: 'released', reservationId: h.id, inrMilli: 0 }; }
+  }
   if (conv.attempt_id) {
-    const holds = await many<{ id: string }>(c, `SELECT id FROM reservation WHERE workspace_id = $1 AND attempt_id = $2 AND status = 'held' ORDER BY created_at`, [ws, conv.attempt_id]);
-    const spend = connected || total > 0;
-    for (const [i, h] of holds.entries()) {
-      if (i === 0 && spend) { await settle(c, h.id, total); settlement = { action: 'settled', reservationId: h.id, inrMilli: total }; }
-      else { await release(c, h.id); if (i === 0) settlement = { action: 'released', reservationId: h.id, inrMilli: 0 }; }
-    }
     const status = e.endReason === 'no_answer' ? 'no_answer' : e.endReason === 'busy' ? 'busy' : e.endReason === 'failed' ? 'failed' : 'connected';
     await c.query('UPDATE attempt SET status = $3 WHERE id = $1 AND workspace_id = $2', [conv.attempt_id, ws, status]);
   }

@@ -20,6 +20,7 @@ export default function Numbers() {
   const [found, setFound] = useState<{ rows: Record<string, unknown>[] } | { error: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const agents = useData('agents', agentList);
+  const routes = useData('inbound-routes', hasTool('inbound.route.list') ? () => run<{ routes: InboundRoute[] }>('inbound.route.list', {}) : null);
   const published = (agents.data ?? []).filter(a => a.latestVersion);
   const [agent, setAgent] = useState('');
   const [mine, setMine] = useState(''); const [code, setCode] = useState('');
@@ -68,7 +69,8 @@ export default function Numbers() {
                 <p className="small muted">{n.displayName ? `${n.displayName} · ` : ''}series {n.series}{n.trial ? ' · trial line' : ''}{n.byo ? ' · your own' : ''}{n.carrier ? ` · ${n.carrier}` : ''}</p>
                 <div className="row">{kyc(n.kycStatus)}{n.a2pStatus ? <Chip tone={n.a2pStatus === 'declared' ? 'leaf' : 'marigold'}>{`A2P ${prettyCode(n.a2pStatus)}`}</Chip> : <NotMeasured>A2P not declared</NotMeasured>}</div>
                 {n.pauseCause && <p className="small hint-bad">Paused: {prettyCode(n.pauseCause)}</p>}
-                <p className="small muted">{n.campaigns.length ? `Used by ${n.campaigns.map(c => c.name).join(', ')}` : 'Not used by any campaign yet.'}</p></li>))}</ul>}</Async></Card>
+                <p className="small muted">{n.campaigns.length ? `Used by ${n.campaigns.map(c => c.name).join(', ')}` : 'Not used by any campaign yet.'}</p>
+                <InboundLine numberId={n.id} route={routes.data?.routes.find(r => r.numberId === n.id) ?? null} agents={published} onChange={routes.reload} /></li>))}</ul>}</Async></Card>
 
         <Card><CardHead title="Find a number to rent" sub="You see what is on offer before you ask for anything. Renting spends money, so it needs your approval." />
           <div className="formgrid"><SelectField label="Series" value={series} onChange={e => { setSeries(e.target.value); setFound(null); }}>{SERIES.map(([val, l]) => <option key={val} value={val}>{l}</option>)}</SelectField></div>
@@ -95,4 +97,22 @@ export default function Numbers() {
       </div>
     </div>
   );
+}
+
+interface InboundRoute { numberId: string; agentId: string | null; agentName: string | null; versionNumber: number | null; deploymentId: string | null }
+/** Which agent answers calls to this number (inbound.route.set, a policy change, so it asks for approval). */
+function InboundLine({ numberId, route, agents, onChange }: { numberId: string; route: InboundRoute | null; agents: { id: string; name: string }[]; onChange: () => void }) {
+  const { act } = useApp();
+  const [pick, setPick] = useState('');
+  return <div className="row" style={{ marginTop: 8, gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
+    <p className="small" style={{ margin: 0 }}>{route?.agentName ? <>Answers calls with <strong>{route.agentName}, version {route.versionNumber}</strong>{route.deploymentId ? ', split by its inbound deployment' : ''}.</> : 'Does not answer calls yet: callers hear the carrier\'s line.'}</p>
+    {agents.length > 0 && <SelectField label="Answer calls with" value={pick} onChange={e => setPick(e.target.value)}><option value="">Choose an agent</option>{agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>}
+    {pick && <Btn size="sm" onClick={async () => {
+      const versionId = (await agentGet(pick)).latestVersionId;
+      if (!versionId) return;
+      const r = await act('inbound.route.set', { numberId, agentVersionId: versionId }, { describe: 'Calls to this number are answered by that agent.' });
+      if (r.ok) { setPick(''); onChange(); }
+    }}>Ask to answer with her…</Btn>}
+    {route && <Btn size="sm" kind="danger" onClick={async () => { const r = await act('inbound.route.clear', { numberId }, { describe: 'This number no longer answers calls.' }); if (r.ok) onChange(); }}>Stop answering…</Btn>}
+  </div>;
 }

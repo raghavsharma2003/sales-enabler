@@ -22,7 +22,10 @@ export interface CallTicket {
   transport:
     | { kind: 'webrtc'; offerUrl: string }           // browser test call: the runtime hosts the media session
     | { kind: 'sip'; to: string; from: string; trunk: string }
-    | { kind: 'sim'; simCallerId: string };          // simulated caller, text or synthesised audio
+    | { kind: 'sim'; simCallerId: string }           // simulated caller, text or synthesised audio
+    // A call to one of the workspace's numbers (POST /hooks/telephony/inbound). The carrier's leg is already up: the runtime
+    // answers it on the stream it returns in join.url; it never dials. from: the caller ('' when they asked to be erased).
+    | { kind: 'sip_inbound'; from: string; to: string; carrierCallId: string; trunk: string };
   agent: AgentConfig;
   // The static brief, compiled ONCE by the control plane's compile() (inherited law: one compile() for every lane).
   // The runtime never re-words it; per turn it appends only its generic LAST block (position is mechanism).
@@ -44,6 +47,10 @@ export interface CallTicket {
     rowOverrides?: { applied: ('voice' | 'first_message')[]; voiceId?: string; usefulFirst?: string; refused?: { key: 'voice' | 'first_message'; why: string }[] };
   };
   consent: { basis: 'consent' | 'contract' | 'legitimate_use' | 'inbound'; recordId?: string };
+  /** Present on an inbound ticket only. who: what the control plane knows of the caller. noMarketing: never offer, upsell
+   *  or pitch on this call (the caller opted out or asked to be erased); she helps with what they called
+   *  about. Memory is never loaded when noMarketing is for an opt-out or erasure (contact.memoryStatus says so). */
+  inbound?: { who: 'known' | 'unknown_caller' | 'suppressed' | 'erased'; noMarketing: boolean; calledNumber: string };
   limits: { maxDurationS: number; maxCostInrMilli: number };   // the runtime ends the call when either is reached (A3 call.end_runaway)
   test: boolean;                         // test calls never count toward outcomes or learning
 }

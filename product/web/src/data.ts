@@ -197,7 +197,7 @@ async function contactNames(): Promise<Map<string, string>> {
 }
 export async function callSearch(o: { campaignId?: string; outcome?: string; includeTest?: boolean }): Promise<CallRow[]> {
   const [r, names] = await Promise.all([run<{ calls: any[] }>('call.search', { campaignId: o.campaignId, outcome: o.outcome, includeTest: o.includeTest, limit: 100 }), contactNames()]);
-  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? 'Unknown person', startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null }));
+  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? (c.direction === 'inbound' ? (c.inbound_note === 'erased' ? 'A caller who asked to be erased' : 'Unknown caller') : 'Unknown person'), direction: c.direction === 'inbound' ? 'inbound' as const : 'outbound' as const, startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null }));
 }
 export async function callGet(id: string): Promise<CallDoc> {
   const c = await run<any>('call.get', { conversationId: id });
@@ -206,7 +206,7 @@ export async function callGet(id: string): Promise<CallDoc> {
   if (!turns.length && Array.isArray(c.transcript)) turns = c.transcript.map((t: any, i: number) => ({ idx: i, who: t.speaker === 'agent' ? 'agent' : 'caller', text: t.text, startMs: t.startMs ?? null, endMs: null, latencyMs: null, interrupted: false }));
   const totalMs = Math.max(1000, (c.durationS ?? 0) * 1000, ...turns.map(t => t.endMs ?? t.startMs ?? 0));
   const a = c.analysis;
-  return { id: c.id, contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', campaignId: c.campaignId ?? null, test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
+  return { id: c.id, direction: c.direction === 'inbound' ? 'inbound' : 'outbound', contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', campaignId: c.campaignId ?? null, test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
     // The server's fresh signed link when the recording may be played (call.get recording); else the stored address and why not.
     recordingUri: c.recording?.url ?? c.recordingUri, recordingWhy: c.recording?.why ?? null, transcriptWhy: c.transcriptRemoved ?? null,
     allowedBy: c.allowedBy ? { allowed: c.allowedBy.allowed ?? null, at: c.allowedBy.at ?? null, summary: String(c.allowedBy.summary ?? ''), checks: arr<any>(c.allowedBy.checks).map(k => ({ ok: !!k.ok, text: String(k.text) })), warnings: arr<string>(c.allowedBy.warnings) } : null,

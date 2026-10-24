@@ -74,10 +74,10 @@ export interface CampaignDoc {
 export interface Estimate { people: number; attempts: number; connectedMinutes: number; perMinuteInrMilli: number | null; p10InrMilli: number; p90InrMilli: number; suggestedCapInrMilli: number | null; basis: string; gstIncluded: boolean }
 export interface FunnelStage { key: string; label: string; n: number | null; note?: string }
 
-export interface CallRow { id: string; contactName: string; startedAt: string; durationS: number | null; outcome: string | null; grade: string | null; reasonLabel: string | null; costMilli: number | null; flagged: boolean; channel: string; status: string; campaignId: string | null }
+export interface CallRow { id: string; contactName: string; direction: 'inbound' | 'outbound'; startedAt: string; durationS: number | null; outcome: string | null; grade: string | null; reasonLabel: string | null; costMilli: number | null; flagged: boolean; channel: string; status: string; campaignId: string | null }
 export interface CallTurn { idx: number; who: 'caller' | 'agent'; text: string; startMs: number | null; endMs: number | null; latencyMs: number | null; interrupted: boolean }
 export interface CallDoc {
-  id: string; contactId: string | null; contactName: string; campaignId: string | null; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
+  id: string; contactId: string | null; contactName: string; campaignId: string | null; direction: 'inbound' | 'outbound'; test: boolean; status: string; startedAt: string | null; durationS: number | null; endReason: string | null;
   reason: { code: string; label: string; action: string } | null; outcome: string | null; recordingUri: string | null; recordingWhy: string | null; transcriptWhy: string | null;
   allowedBy: { allowed: boolean | null; at: string | null; summary: string; checks: { ok: boolean; text: string }[]; warnings: string[] } | null;
   verified: { value: string; from: string; aiRead: string | null; disagree: boolean } | null; ran: string | null; ranParts: { ears?: string; brain?: string; voice?: string; s2s?: string } | null;

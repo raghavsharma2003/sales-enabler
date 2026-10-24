@@ -13,6 +13,7 @@ export interface ReserveInput {
   workspaceId: string;
   inrMilli: number;               // the most this action can cost (e.g. max call minutes x per-minute cost)
   attemptId?: string;
+  conversationId?: string;        // a call with no attempt (inbound): ingest settles the hold by its conversation
   campaignId?: string;
   apiKeyId?: string;
 }
@@ -54,8 +55,8 @@ export async function reserve(q: Queryable, r: ReserveInput): Promise<ReserveRes
     if (BigInt(c.spent) + BigInt(c.held) + BigInt(r.inrMilli) > BigInt(c.cap)) return { ok: false, cause: 'cap_reached', scope: c.scope_type };
   }
   const row = await one<{ id: string }>(q,
-    'INSERT INTO reservation (workspace_id, attempt_id, inr_milli, budget_ids) VALUES ($1,$2,$3,$4) RETURNING id',
-    [r.workspaceId, r.attemptId ?? null, r.inrMilli, caps.rows.map(c => c.id)]);
+    'INSERT INTO reservation (workspace_id, attempt_id, conversation_id, inr_milli, budget_ids) VALUES ($1,$2,$3,$4,$5) RETURNING id',
+    [r.workspaceId, r.attemptId ?? null, r.conversationId ?? null, r.inrMilli, caps.rows.map(c => c.id)]);
   return { ok: true, reservationId: row!.id };
 }
 

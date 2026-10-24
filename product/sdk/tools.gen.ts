@@ -83,6 +83,9 @@ export type ToolName =
   | "handoff.claim"
   | "handoff.list"
   | "handoff.resolve"
+  | "inbound.route.clear"
+  | "inbound.route.list"
+  | "inbound.route.set"
   | "insight.get"
   | "insight.refresh"
   | "integration.connect"
@@ -795,6 +798,18 @@ export interface ToolInput {
   "handoff.resolve": {
     handOffId: string;
     resolution: "reached" | "no_answer" | "not_needed";
+  };
+  /** Stop answering calls to one of your numbers (callers hear the carrier's line) (policy, waits for approval) */
+  "inbound.route.clear": {
+    numberId: string;
+  };
+  /** Which agent answers calls to each of your numbers (read) */
+  "inbound.route.list": Record<string, never>;
+  /** Answer calls to one of your numbers with a published agent version (or an inbound deployment that splits between versions) (policy, waits for approval) */
+  "inbound.route.set": {
+    numberId: string;
+    agentVersionId: string;
+    deploymentId?: string;
   };
   /** Themes across recent calls (objections, drop-offs, unanswered questions, what came before a reached goal), each with verbatim quotes (read) */
   "insight.get": {
@@ -1831,6 +1846,9 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "handoff.claim": { risk: "draft", needsApproval: false },
   "handoff.list": { risk: "read", needsApproval: false },
   "handoff.resolve": { risk: "draft", needsApproval: false },
+  "inbound.route.clear": { risk: "policy", needsApproval: true },
+  "inbound.route.list": { risk: "read", needsApproval: false },
+  "inbound.route.set": { risk: "policy", needsApproval: true },
   "insight.get": { risk: "read", needsApproval: false },
   "insight.refresh": { risk: "draft", needsApproval: false },
   "integration.connect": { risk: "policy", needsApproval: true },
