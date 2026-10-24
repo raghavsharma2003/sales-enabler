@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "brief-today-requester",
+      "details": "brief.today needsTap items carry requestedBy {type: member|assistant|api_key|system, name, memberId} from action.proposed_by (FRICTION R7, open.2026-10-24.approval-requester-in-brief); the web approval sheet opened from Today says 'You asked for this', '<name> asked', 'The assistant asked for <name>', 'API key \"<name>\" asked' or 'Vyakti asked'. tests/operator-brief.test.ts 2/2; fresh-DB full suite 505/509 (0 fail, 4 skipped); tsc and web tsc clean; ui-contract strict 175/175. Not verified in a browser."
+    }
+  ]
+}

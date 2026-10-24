@@ -21,12 +21,13 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 49,
-    "total": 49,
+    "passed": 51,
+    "total": 51,
     "files": [
       "tests/operator-bench-fixes.test.ts",
       "tests/operator-bench-r3.test.ts",
       "tests/operator-bench.test.ts",
+      "tests/operator-brief.test.ts",
       "tests/operator-results.test.ts",
       "tests/operator-toolset.test.ts",
       "tests/operator.test.ts"
@@ -58,7 +59,8 @@
     "The page note carries an agent's latest published version id, labelled ('use that as agentVersionId, never the agent id'), or says it has none yet",
     "A CSV/TSV attached in chat is staged as a real intake upload as the member (role-checked), and the model is told its uploadId for source.map/source.commit; uploadId fields are described as UUIDs, never file names",
     "A reply that claims a change with no successful write in the turn gets a plain correction notice at once and one repair turn (never looped)",
-    "Product default brain gpt-4.1 (decision.2026-10-24.operator-default-gpt41) when the deployment curates it; VP_OPERATOR_DEFAULT_BRAIN overrides; a workspace's own choice wins"
+    "Product default brain gpt-4.1 (decision.2026-10-24.operator-default-gpt41) when the deployment curates it; VP_OPERATOR_DEFAULT_BRAIN overrides; a workspace's own choice wins",
+    "brief.today: each waiting approval carries requestedBy (member, a member's assistant, an API key, or Vyakti) with a display name; the approval sheet opened from Today says who asked (FRICTION R7)"
   ],
   "untested": [
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",

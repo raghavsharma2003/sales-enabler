@@ -4,12 +4,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as api from './api.ts';
 import { ApiError, ToolMissing, ToolRefused, type Me, type Receipt } from './api.ts';
-import type { OperatorCard } from './types.ts';
-import { plainReason, toolAsk, toolDone } from './labels.ts';
+import type { OperatorCard, RequestedBy } from './types.ts';
+import { plainReason, requesterLine, toolAsk, toolDone } from './labels.ts';
 
 export interface ThreadMsg { id: string; role: 'user' | 'vp' | 'echo'; text: string; cards?: OperatorCard[]; streaming?: boolean; by?: string; step?: string; notice?: string }
 export interface Toast { id: number; kind: 'ok' | 'bad' | 'info'; text: string }
-export interface Pending { actionId: string; tool: string; summary: string; risk: string; expiresAt: string; by?: 'you'; resolve: (r: ActResult) => void; state: 'asking' | 'running' | 'done'; outcome?: Receipt | { declined: boolean }; error?: string }
+export interface Pending { actionId: string; tool: string; summary: string; risk: string; expiresAt: string; by?: 'you'; requester?: string; resolve: (r: ActResult) => void; state: 'asking' | 'running' | 'done'; outcome?: Receipt | { declined: boolean }; error?: string }
 export type ActResult<T = unknown> = { ok: true; result: T; receipt: Receipt<T> } | { ok: false; reason: string; declined?: boolean; unknown?: boolean };
 
 export interface AgentCtx { id: string; name: string; dirty: boolean; stackId: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string }; version: number; saved: boolean }
@@ -21,7 +21,7 @@ interface App {
   thread: ThreadMsg[]; setThread(f: (t: ThreadMsg[]) => ThreadMsg[]): void; echo(text: string, card?: OperatorCard): void;
   act<T = unknown>(tool: string, args?: unknown, o?: { quiet?: boolean; describe?: string }): Promise<ActResult<T>>;
   pending: Pending | null; decide(approve: boolean): Promise<void>; closePending(): void;
-  review(a: { actionId: string; tool: string; summary: string; risk: string; expiresAt: string | null }): void;
+  review(a: { actionId: string; tool: string; summary: string; risk: string; expiresAt: string | null; requestedBy?: RequestedBy }): void;
   view: 'page' | 'talk'; setView(v: 'page' | 'talk'): void;
   agentCtx: AgentCtx | null; setAgentCtx(a: AgentCtx | null): void;
   dockTab: 'talk' | 'test'; setDockTab(t: 'talk' | 'test'): void;
@@ -124,9 +124,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (p && p.state === 'asking') p.resolve({ ok: false, reason: 'not approved', declined: true });
   }, []);
 
-  const review = useCallback((a: { actionId: string; tool: string; summary: string; risk: string; expiresAt: string | null }) => {
-    setPending({ actionId: a.actionId, tool: a.tool, summary: a.summary, risk: a.risk, expiresAt: a.expiresAt ?? new Date(Date.now() + 86400000).toISOString(), state: 'asking', resolve: () => setBump(b => b + 1) });
-  }, []);
+  const review = useCallback((a: { actionId: string; tool: string; summary: string; risk: string; expiresAt: string | null; requestedBy?: RequestedBy }) => {
+    const mine = a.requestedBy?.type === 'member' && !!a.requestedBy.memberId && a.requestedBy.memberId === me?.member?.id;
+    setPending({ actionId: a.actionId, tool: a.tool, summary: a.summary, risk: a.risk, expiresAt: a.expiresAt ?? new Date(Date.now() + 86400000).toISOString(), state: 'asking',
+      ...(mine ? { by: 'you' as const } : a.requestedBy ? { requester: requesterLine(a.requestedBy, me?.member?.id) } : {}), resolve: () => setBump(b => b + 1) });
+  }, [me]);
   const signOut = useCallback(async () => { await api.logout().catch(() => {}); setMe(null); setThreadRaw([]); history.pushState(null, '', '/login'); dispatchEvent(new PopStateEvent('popstate')); }, []);
   const can = useCallback((roles: string[]) => !!me?.member && roles.includes(me.member.role), [me]);
   const say = useCallback((text: string) => { setView('talk'); setDockTab('talk'); setPendingSay(text); }, []);

@@ -8,7 +8,7 @@ export interface Metric { value: string; n?: number; asOf?: string; grade: Grade
 /** brief.today as the Operator module returns it (server/modules/operator/tools.ts). */
 export interface Brief {
   asOf: string; since: string;
-  needsTap: { n: number; items: { id: string; tool: string; summary: string | null; risk: string; created_at: string; expires_at: string | null }[] };
+  needsTap: { n: number; items: { id: string; tool: string; summary: string | null; risk: string; created_at: string; expires_at: string | null; requestedBy?: RequestedBy }[] };
   liveCampaigns: { n: number; items: { id: string; name: string; state: string; pause_cause: string | null; updated_at: string }[] };
   spendToday: { inrMilli: number; byComponent: Record<string, number>; timezone: string };
   wallet: { balanceInrMilli: number; state: string } | null;
@@ -97,3 +97,6 @@ export interface OperatorCard {
 }
 
 export interface NumberLine { id: string; e164: string; series: string; trial: boolean; status: string; kycStatus: string | null; a2pStatus: string | null; carrier: string | null; byo: boolean; displayName: string | null; pauseCause: string | null; campaigns: { id: string; name: string; state: string }[] }
+
+/** Who asked for an approval (brief.today). For 'assistant', name and memberId are the member it asked for. */
+export interface RequestedBy { type: 'member' | 'assistant' | 'api_key' | 'system'; name: string | null; memberId: string | null }

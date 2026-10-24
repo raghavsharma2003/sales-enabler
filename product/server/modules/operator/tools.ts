@@ -41,15 +41,36 @@ export function defaultBrain(): string | undefined {
 // Start of today in IST, the clock the client lives on.
 const IST_TODAY = "(date_trunc('day', now() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata')";
 
+type NeedRow = { id: string; tool: string; summary: string | null; risk: string; created_at: Date; expires_at: Date | null;
+  by_type: 'member' | 'assistant' | 'api_key' | 'system'; by_member_id: string | null; by_member_name: string | null; by_key_name: string | null };
+
+/** Who asked for an approval: a member, a member's assistant (on their behalf), an API key, or Vyakti itself. */
+export type RequestedBy = { type: 'member' | 'assistant' | 'api_key' | 'system'; name: string | null; memberId: string | null };
+function needItem(r: NeedRow) {
+  const { by_type, by_member_id, by_member_name, by_key_name, ...item } = r;
+  const requestedBy: RequestedBy = by_type === 'api_key' ? { type: 'api_key', name: by_key_name, memberId: null }
+    : by_type === 'system' ? { type: 'system', name: 'Vyakti', memberId: null }
+    : { type: by_type, name: by_member_name, memberId: by_member_id };   // for 'assistant', the member it asked for
+  return { ...item, requestedBy };
+}
+
 async function briefToday(ctx: ToolCtx, i: { since?: string }) {
   const ws = ctx.workspaceId;
   const since = i.since ? new Date(i.since) : new Date(Date.now() - 24 * 3600_000);
   if (Number.isNaN(since.getTime())) throw new Error('since is not a date');
   const asOf = new Date().toISOString();
   const [needs, needsN, campaigns, spend, wallet, issues, issueN, changed] = await Promise.all([
-    many(ctx.q, `SELECT id, tool, summary, risk_class AS risk, created_at, expires_at FROM action
-      WHERE workspace_id = $1 AND status = 'proposed' AND (expires_at IS NULL OR expires_at > now())
-      ORDER BY CASE risk_class WHEN 'spend' THEN 0 WHEN 'external' THEN 1 WHEN 'policy' THEN 2 WHEN 'destructive' THEN 3 ELSE 4 END, created_at
+    // Who asked (FRICTION R7): proposed_by is a member id, 'operator:<member id>' for that member's assistant,
+    // 'key:<api key id>', or a system worker's name.
+    many<NeedRow>(ctx.q, `SELECT a.id, a.tool, a.summary, a.risk_class AS risk, a.created_at, a.expires_at,
+        CASE WHEN a.proposed_by LIKE 'operator:%' THEN 'assistant' WHEN a.proposed_by LIKE 'key:%' THEN 'api_key'
+             WHEN m.id IS NOT NULL THEN 'member' ELSE 'system' END AS by_type,
+        m.id AS by_member_id, coalesce(nullif(m.name, ''), split_part(m.email, '@', 1)) AS by_member_name, k.name AS by_key_name
+      FROM action a
+      LEFT JOIN member m ON m.workspace_id = a.workspace_id AND (m.id::text = a.proposed_by OR 'operator:' || m.id::text = a.proposed_by)
+      LEFT JOIN api_key k ON k.workspace_id = a.workspace_id AND 'key:' || k.id::text = a.proposed_by
+      WHERE a.workspace_id = $1 AND a.status = 'proposed' AND (a.expires_at IS NULL OR a.expires_at > now())
+      ORDER BY CASE a.risk_class WHEN 'spend' THEN 0 WHEN 'external' THEN 1 WHEN 'policy' THEN 2 WHEN 'destructive' THEN 3 ELSE 4 END, a.created_at
       LIMIT 7`, [ws]),
     one<{ n: number }>(ctx.q, `SELECT count(*)::int AS n FROM action WHERE workspace_id = $1 AND status = 'proposed' AND (expires_at IS NULL OR expires_at > now())`, [ws]),
     many(ctx.q, `SELECT id, name, state, pause_cause, updated_at FROM campaign
@@ -68,7 +89,7 @@ async function briefToday(ctx: ToolCtx, i: { since?: string }) {
   return {
     asOf,
     since: since.toISOString(),
-    needsTap: { n: needsN?.n ?? 0, items: needs },
+    needsTap: { n: needsN?.n ?? 0, items: needs.map(needItem) },
     liveCampaigns: { n: campaigns.length, items: campaigns },
     spendToday: { inrMilli: Object.values(byComponent).reduce((a, b) => a + b, 0), byComponent, timezone: 'Asia/Kolkata' },
     wallet: wallet ? { balanceInrMilli: Number(wallet.balance), state: wallet.state } : null,

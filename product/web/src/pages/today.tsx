@@ -62,7 +62,7 @@ export default function Today() {
                               <div className="row"><Chip tone={a.risk === 'spend' || a.risk === 'external' ? 'terra' : 'marigold'}>{w.label}</Chip>{a.expires_at && <span className="small muted">expires {date(a.expires_at, true)}</span>}</div>
                               <p className="need-title">{a.summary ?? a.tool}</p>{n > 1 && <p className="small muted">Asked {n} times. Approving one does not approve the others.</p>}
                             </div>
-                            <Btn kind="primary" size="sm" onClick={() => review({ actionId: a.id, tool: a.tool, summary: a.summary ?? toolAsk(a.tool, 'Approve this change'), risk: a.risk, expiresAt: a.expires_at })}>Review</Btn>
+                            <Btn kind="primary" size="sm" onClick={() => review({ actionId: a.id, tool: a.tool, summary: a.summary ?? toolAsk(a.tool, 'Approve this change'), risk: a.risk, expiresAt: a.expires_at, requestedBy: a.requestedBy })}>Review</Btn>
                           </li>
                         );
                       })}

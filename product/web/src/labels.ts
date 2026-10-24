@@ -222,3 +222,11 @@ export function activitySentence(line: string, action: string, subject?: string 
   }
   return `${actor} ${PAST[action] ?? 'made a change'}${subject ? `: ${subject}` : ''}${/\(approved\)/.test(line) ? ', after approval' : ''}`;
 }
+
+/** "Who asked" on the approval sheet, from brief.today's requestedBy (FRICTION R7). */
+export function requesterLine(r: { type: 'member' | 'assistant' | 'api_key' | 'system'; name: string | null; memberId: string | null }, meId?: string): string {
+  if (r.type === 'assistant') return r.memberId && r.memberId === meId ? 'The assistant asked for you' : r.name ? `The assistant asked for ${r.name}` : 'The assistant asked';
+  if (r.type === 'api_key') return r.name ? `API key "${r.name}" asked` : 'An API key asked';
+  if (r.type === 'system') return 'Vyakti asked';
+  return r.memberId && r.memberId === meId ? 'You asked for this' : r.name ? `${r.name} asked` : 'A team member asked';
+}
