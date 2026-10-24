@@ -40,6 +40,7 @@ export interface AgentConfigDraft {
   limits: { maxDurationS: number; maxSilenceS: number; maxTurns: number };
   voice: { stackId: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string }; voiceId?: string; speed?: number };
   recording: { enabled: boolean; announce: boolean };
+  knowledge?: { offeringIds: string[]; purposes?: string[] };
 }
 export interface PracticeCaller { id: string; label: string; persona: string; trap: string; source: 'default' | 'workspace' }
 export interface SimResult { id: string; scenario: string; verdict: 'pass' | 'fail' | 'invalid' | 'inconclusive'; reason?: string; turns: { who: string; text: string }[]; checks: { label: string; ok: boolean; detail?: string }[]; endedBy?: string }
@@ -96,7 +97,7 @@ export interface CallExplain { headline: string; because: { point: string; evide
 export interface Wallet { state: string; balanceMilli: number; heldMilli: number; availableMilli: number; runwayDays: number | null; caps: { scope: string; period: string; capInrMilli: number; spentInrMilli?: number; heldInrMilli?: number; label?: string; text?: string }[]; testCalls: { conversationId: string; startedAt: string; durationS: number | null; costInrMilli: number; status: string }[]; warnings: string[]; priceNotSet: boolean; priceText: string }
 export interface Member { id: string; name: string; email: string; role: string; status: string }
 export interface ApiKey { id: string; name: string; prefix: string; createdAt: string; lastUsed: string | null; revoked: boolean }
-export interface KnowledgeItem { id: string; title: string; status: string; passages: number; createdAt: string }
+export interface KnowledgeItem { id: string; title: string; status: string; passages: number; createdAt: string; approved?: number; pending?: number }
 export interface ActivityRow { id: string; at: string; line: string; action: string; who: string; subject?: string | null; tool?: string | null }
 
 export interface OperatorCard {

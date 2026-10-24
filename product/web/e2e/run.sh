@@ -21,6 +21,8 @@ VP_ANALYSIS_MODELS=gpt-4.1-mini,gpt-4.1
 export VP_SECRET_KEY VP_RUNTIME_SECRET PORT DATABASE_URL VP_ANALYSIS_MODELS
 # The CRM import flow starts a fake HubSpot and Zoho CRM on this port (product/web/dev/fake-crm.mjs); the server reads it.
 VP_CRM_FAKE_URL="http://127.0.0.1:$((PORT + 3))"; export VP_CRM_FAKE_URL
+# The company-data flow serves a fixture website on 127.0.0.1; the server may read private addresses in this test run only.
+VP_FETCH_ALLOW_PRIVATE=1; export VP_FETCH_ALLOW_PRIVATE
 node product/web/build.mjs > /dev/null || exit 1
 # A server already answering on this port (a previous run still shutting down) would be tested instead of ours, against a database we just dropped.
 curl -sf "http://localhost:$PORT/v1/health" > /dev/null && { echo "port $PORT is already serving: a previous run is still shutting down; wait a few seconds and run again"; exit 1; }

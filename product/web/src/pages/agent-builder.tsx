@@ -1,20 +1,22 @@
 // The agent builder. Everything is edited in a local draft with an explicit "unsaved" marker and a Save button; no menu,
 // dropdown or card click ever writes to the server (state integrity, decision.2026-10-21.wt-synthesis-state-integrity).
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link2, Lock, Plus, Trash2 } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { agentGet, diffOps, memberList } from '../data.ts';
 import { Link, useLeaveGuard, useQuery } from '../router.tsx';
 import { lintWhere } from '../labels.ts';
-import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
+import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Skeleton, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
 import { StackPicker, BETA_REASON, type StackChange } from '../stack-picker.tsx';
 import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, PURPOSE_LABEL, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
 import { date } from '../format.ts';
 import { useVoiceStack } from '../use-voice-stack.tsx';
 import type { AgentConfigDraft, AgentDoc } from '../types.ts';
+// The Company information tab loads when opened, so the agent page's chunk stays within its budget.
+const AgentCompany = lazy(() => import('./agent-company.tsx'));
 
-type TabId = 'basics' | 'persona' | 'job' | 'rules' | 'tools' | 'voice' | 'versions';
-const TABS: { id: TabId; label: string }[] = [{ id: 'basics', label: 'Basics' }, { id: 'persona', label: 'Persona' }, { id: 'job', label: 'Job and facts' }, { id: 'rules', label: 'Objections, hand-off' }, { id: 'tools', label: 'Tools' }, { id: 'voice', label: 'Voice stack' }, { id: 'versions', label: 'Versions' }];
+type TabId = 'basics' | 'persona' | 'job' | 'company' | 'rules' | 'tools' | 'voice' | 'versions';
+const TABS: { id: TabId; label: string }[] = [{ id: 'basics', label: 'Basics' }, { id: 'persona', label: 'Persona' }, { id: 'job', label: 'Job and facts' }, { id: 'company', label: 'Company information' }, { id: 'rules', label: 'Objections, hand-off' }, { id: 'tools', label: 'Tools' }, { id: 'voice', label: 'Voice stack' }, { id: 'versions', label: 'Versions' }];
 
 export default function AgentBuilder({ id }: { id: string }) {
   const q = useData<AgentDoc>(['agent', id], () => agentGet(id));
@@ -64,6 +66,12 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
     if (dirty) { set(apply); const base = JSON.parse(savedJson.current); apply(base); savedJson.current = JSON.stringify(base); toast('Saved to the draft. Your other edits are still unsaved.', 'ok'); }
     else { toast('Saved to the draft.', 'ok'); reload(); }
   };
+  // Linking offerings is saved by the server at once, like the stack; unsaved edits elsewhere stay unsaved.
+  const onLinked = (k: NonNullable<AgentConfigDraft['knowledge']>) => {
+    const apply = (x: AgentConfigDraft) => { x.knowledge = k; };
+    if (dirty) { set(apply); const base = JSON.parse(savedJson.current); apply(base); savedJson.current = JSON.stringify(base); toast('Saved to the draft. Your other edits are still unsaved.', 'ok'); }
+    else { toast('Saved to the draft.', 'ok'); reload(); }
+  };
   const noStack = !cfg.voice.stackId;
   const pill = dirty ? <span className="pill pill-draft" role="status">Draft · unsaved</span> : doc.latestVersion ? <span className="pill pill-live">Draft saved · latest published v{doc.latestVersion}</span> : <span className="pill">Draft saved · not published</span>;
 
@@ -86,6 +94,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
       {tab === 'basics' && <Basics cfg={cfg} set={set} />}
       {tab === 'persona' && <Persona cfg={cfg} set={set} />}
       {tab === 'job' && <JobFacts cfg={cfg} set={set} />}
+      {tab === 'company' && <Suspense fallback={<Skeleton rows={4} />}><AgentCompany agentId={doc.id} linked={cfg.knowledge} onLinked={onLinked} /></Suspense>}
       {tab === 'rules' && <Rules cfg={cfg} set={set} />}
       {tab === 'tools' && <Tools cfg={cfg} set={set} />}
       {tab === 'voice' && <Card><StackPicker agentId={doc.id} stackId={cfg.voice.stackId} components={cfg.voice.components} voiceId={cfg.voice.voiceId ?? null} onChanged={onVoiceChanged} />

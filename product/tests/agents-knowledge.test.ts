@@ -37,10 +37,12 @@ async function world() {
   };
   // Two approved spans from one source (the workspace builder's knowledge.ingest + span.approve, seeded directly).
   const src = (await one<{ id: string }>(pool, "INSERT INTO knowledge_source (workspace_id, kind, status) VALUES ($1, 'text', 'indexed') RETURNING id", [ws]))!.id;
-  const span = async (ord: number, text: string) => (await one<{ id: string }>(pool,
-    "INSERT INTO knowledge_span (workspace_id, source_id, ordinal, text, status) VALUES ($1,$2,$3,$4,'approved') RETURNING id", [ws, src, ord, text]))!.id;
+  // The offer stands on an offerings-sheet row: prices and discounts never stand on prose (HV law 22, offering.edit).
+  const sheet = (await one<{ id: string }>(pool, "INSERT INTO knowledge_source (workspace_id, kind, status) VALUES ($1, 'sheet', 'indexed') RETURNING id", [ws]))!.id;
+  const span = async (ord: number, text: string, from = src) => (await one<{ id: string }>(pool,
+    "INSERT INTO knowledge_span (workspace_id, source_id, ordinal, text, status) VALUES ($1,$2,$3,$4,'approved') RETURNING id", [ws, from, ord, text]))!.id;
   const sCover = await span(1, 'The family floater covers day-care procedures from the first day.');
-  const sOffer = await span(2, 'Renew before the due date and get 5 percent off the premium.');
+  const sOffer = await span(2, 'Family Health Plus: Early renewal discount: 5 percent off the premium', sheet);
   const off = await ok('offering.edit', { name: 'Family Health Plus', neverSay: ['guaranteed claim approval'], facts: [
     { text: 'Day-care procedures are covered from the first day of the policy.', spanId: sCover, purposes: ['explain'] },
     { text: 'Renewing before the due date takes 5 percent off the premium.', spanId: sOffer, purposes: ['offer'] },

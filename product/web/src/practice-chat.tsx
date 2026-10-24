@@ -5,10 +5,11 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { MessageSquare, RotateCcw, Send, ShieldCheck } from 'lucide-react';
 import { useApp } from './store.tsx';
 import { Btn, Chip, scrollMotion } from './ui.tsx';
+import { WhySaid, type WhyUse } from './why-said.tsx';
 
 interface Note { rule: string; action: 'replace' | 'block' | 'prefix'; label: string; reason: string; original?: string }
-interface Line { who: 'agent' | 'caller'; text: string; notes?: Note[] }
-interface Reply { caller: string | null; said: string; notes: Note[]; ended: boolean }
+interface Line { who: 'agent' | 'caller'; text: string; notes?: Note[]; sources?: WhyUse[] }
+interface Reply { caller: string | null; said: string; notes: Note[]; sources: WhyUse[]; ended: boolean }
 
 const ACTION: Record<Note['action'], string> = { replace: 'Said instead', block: 'Held back', prefix: 'Added first' };
 
@@ -32,7 +33,7 @@ export function PracticeChat({ agentId, agentName }: { agentId: string; agentNam
     if (!r.ok) { setError(r.reason); return; }
     const next: Line[] = [...lines];
     if (r.result.caller !== null) next.push({ who: 'caller', text: r.result.caller });
-    next.push({ who: 'agent', text: r.result.said, notes: r.result.notes });
+    next.push({ who: 'agent', text: r.result.said, notes: r.result.notes, sources: r.result.sources ?? [] });
     setLines(next); setText(''); setKept(false);
     if (r.result.ended) setEnded(true);
   };
@@ -56,6 +57,7 @@ export function PracticeChat({ agentId, agentName }: { agentId: string; agentNam
           {lines.map((l, i) => (
             <li key={i} className={`pchat-line ${l.who}`}>
               <p lang="hi"><b>{l.who === 'agent' ? agentName : 'You, as the caller'}:</b> {l.text || <span className="muted">(nothing said)</span>}</p>
+              {l.sources && <WhySaid uses={l.sources} />}
               {l.notes && l.notes.length > 0 && (
                 <ul className="pchat-notes" aria-label="What the safety checks did">
                   {l.notes.map((n, j) => (

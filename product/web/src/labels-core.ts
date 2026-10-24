@@ -64,6 +64,9 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'campaign.burst.off': { ask: 'Turn a campaign\'s burst off', done: 'Burst turned off' },
   'test.simulate': { ask: 'Run a practice call', done: 'Practice call run' },
   'test.chat': { ask: 'Send a practice chat line', done: 'Practice chat answered' },
+  'knowledge.ingest_site': { ask: 'Read the company website', done: 'Website read' },
+  'offering.import': { ask: 'Import an offerings sheet', done: 'Sheet imported' },
+  'knowledge.fact.decide': { ask: 'Decide which facts she may say', done: 'Facts decided' },
   'test.chat_keep': { ask: 'Keep a practice chat for review', done: 'Practice chat kept' },
   'monitor.create': { ask: 'Turn on a monitor', done: 'Monitor turned on' },
 };

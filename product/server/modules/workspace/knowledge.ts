@@ -7,6 +7,7 @@ import { num, obj, opt, str, uuid, arr } from '../../../shared/validate.ts';
 import { sha256 } from './crypto.ts';
 import { chunkPages, chunkText, clean, type RawSpan } from './chunk.ts';
 import { isKey } from './common.ts';
+import { proposeFacts } from './company.ts';
 
 const MAX_BYTES = 9_000_000, MAX_SPANS = 600, MAX_PAGES = 300, PARSE_MS = 30_000;
 
@@ -69,7 +70,9 @@ export function registerKnowledge(r: Registry) {
         `INSERT INTO knowledge_span (workspace_id, source_id, ordinal, text, location)
          SELECT $1, $2, o, t, l::jsonb FROM unnest($3::int[], $4::text[], $5::text[]) AS u(o, t, l)`,
         [ctx.workspaceId, src!.id, spans.map((_, n) => n + 1), spans.map(s => clean(s.text)), spans.map(s => JSON.stringify(s.location))]);
-      return { sourceId: src!.id, title, format, pages: pages ?? null, spanCount: spans.length, duplicate: false, next: 'Review the passages and approve the ones the agent may use (knowledge.span.approve).' };
+      const proposed = await proposeFacts(ctx, src!.id);   // company.ts: statements with their passage; prices and dates in prose excluded
+      return { sourceId: src!.id, title, format, pages: pages ?? null, spanCount: spans.length, duplicate: false, ...proposed,
+        next: 'Review the proposed facts and approve the ones she may say (knowledge.fact.decide).' };
     },
   }));
 

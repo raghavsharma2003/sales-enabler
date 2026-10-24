@@ -8,6 +8,7 @@ export type ToolName =
   | "agent.config.schema"
   | "agent.create"
   | "agent.get"
+  | "agent.knowledge"
   | "agent.list"
   | "alert.ack"
   | "alert.list"
@@ -40,6 +41,7 @@ export type ToolName =
   | "call.place_single"
   | "call.record"
   | "call.search"
+  | "call.why_said"
   | "campaign.audience.add"
   | "campaign.burst.off"
   | "campaign.burst.set"
@@ -118,8 +120,12 @@ export type ToolName =
   | "judge.calibrate"
   | "judge.edit"
   | "judge.flag_recheck"
+  | "knowledge.fact.decide"
+  | "knowledge.fact.list"
   | "knowledge.ingest"
+  | "knowledge.ingest_site"
   | "knowledge.list"
+  | "knowledge.propose"
   | "knowledge.span.approve"
   | "learning.power"
   | "learning.propose"
@@ -169,6 +175,7 @@ export type ToolName =
   | "number.rent"
   | "number.search"
   | "offering.edit"
+  | "offering.import"
   | "offering.list"
   | "operator.autonomy.lower"
   | "operator.autonomy.raise"
@@ -306,6 +313,10 @@ export interface ToolInput {
   };
   /** Read one agent: its draft, lint, brief preview and versions (read) */
   "agent.get": {
+    agentId: string;
+  };
+  /** Company information for an agent: the offerings it can link, and every linked fact with whether she may say it on her calls and why not (read) */
+  "agent.knowledge": {
     agentId: string;
   };
   /** List this workspace's agents (read) */
@@ -533,6 +544,10 @@ export interface ToolInput {
     includeTest?: boolean;
     limit?: number;
     before?: string;
+  };
+  /** For each of her lines on a call, the facts she used and where each came from (the version that ran) (read) */
+  "call.why_said": {
+    conversationId: string;
   };
   /** Add people to a campaign; a live campaign queues them for the dial gate (external, waits for approval) */
   "campaign.audience.add": {
@@ -1026,6 +1041,18 @@ export interface ToolInput {
     agreement: number;
     reason: string;
   };
+  /** Approve proposed facts (they join an offering, so a linked agent may say them) or reject them, one or many at once (draft) */
+  "knowledge.fact.decide": {
+    factIds: string[];
+    decision: "approved" | "rejected";
+    offeringId?: string;
+  };
+  /** List the facts proposed from company sources, with the passage each came from and its decision (read) */
+  "knowledge.fact.list": {
+    sourceId?: string;
+    status?: "pending" | "approved" | "rejected" | "excluded";
+    limit?: number;
+  };
   /** Add a document (text, PDF or Word) to the knowledge base; its passages wait for your approval (draft) */
   "knowledge.ingest": {
     title?: string;
@@ -1033,12 +1060,22 @@ export interface ToolInput {
     text?: string;
     contentBase64?: string;
   };
+  /** Read the business's website (same site only, robots.txt obeyed, up to 25 pages); facts are proposed for your approval (draft) */
+  "knowledge.ingest_site": {
+    url: string;
+    maxPages?: number;
+    title?: string;
+  };
   /** List knowledge sources, or the passages of one source (read) */
   "knowledge.list": {
     sourceId?: string;
     status?: "pending" | "approved" | "rejected";
     after?: number;
     limit?: number;
+  };
+  /** Propose facts from a source added before facts were proposed automatically (draft) */
+  "knowledge.propose": {
+    sourceId: string;
   };
   /** Approve (or strike) passages so the agent may (or may not) state them as facts (draft) */
   "knowledge.span.approve": {
@@ -1305,6 +1342,13 @@ export interface ToolInput {
       purposes: string[];
     })[];
     neverSay?: string[];
+  };
+  /** Import an offerings or price sheet (CSV or Excel): one offering per row, each cell proposed as a fact for your approval (draft) */
+  "offering.import": {
+    filename?: string;
+    title?: string;
+    text?: string;
+    contentBase64?: string;
   };
   /** List offerings with their facts and never-say lists (read) */
   "offering.list": {
@@ -2044,6 +2088,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "agent.config.schema": { risk: "read", needsApproval: false },
   "agent.create": { risk: "draft", needsApproval: false },
   "agent.get": { risk: "read", needsApproval: false },
+  "agent.knowledge": { risk: "read", needsApproval: false },
   "agent.list": { risk: "read", needsApproval: false },
   "alert.ack": { risk: "draft", needsApproval: false },
   "alert.list": { risk: "read", needsApproval: false },
@@ -2076,6 +2121,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "call.place_single": { risk: "external", needsApproval: true },
   "call.record": { risk: "read", needsApproval: false },
   "call.search": { risk: "read", needsApproval: false },
+  "call.why_said": { risk: "read", needsApproval: false },
   "campaign.audience.add": { risk: "external", needsApproval: true },
   "campaign.burst.off": { risk: "draft", needsApproval: false },
   "campaign.burst.set": { risk: "spend", needsApproval: true },
@@ -2154,8 +2200,12 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "judge.calibrate": { risk: "draft", needsApproval: false },
   "judge.edit": { risk: "draft", needsApproval: false },
   "judge.flag_recheck": { risk: "draft", needsApproval: false },
+  "knowledge.fact.decide": { risk: "draft", needsApproval: false },
+  "knowledge.fact.list": { risk: "read", needsApproval: false },
   "knowledge.ingest": { risk: "draft", needsApproval: false },
+  "knowledge.ingest_site": { risk: "draft", needsApproval: false },
   "knowledge.list": { risk: "read", needsApproval: false },
+  "knowledge.propose": { risk: "draft", needsApproval: false },
   "knowledge.span.approve": { risk: "draft", needsApproval: false },
   "learning.power": { risk: "read", needsApproval: false },
   "learning.propose": { risk: "draft", needsApproval: false },
@@ -2205,6 +2255,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "number.rent": { risk: "spend", needsApproval: true },
   "number.search": { risk: "read", needsApproval: false },
   "offering.edit": { risk: "draft", needsApproval: false },
+  "offering.import": { risk: "draft", needsApproval: false },
   "offering.list": { risk: "read", needsApproval: false },
   "operator.autonomy.lower": { risk: "draft", needsApproval: false },
   "operator.autonomy.raise": { risk: "policy", needsApproval: true },

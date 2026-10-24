@@ -137,6 +137,16 @@
       "name": "tool.test",
       "risk": "test",
       "note": "dry run: exact request with the secret masked, the fields she would get from a sample answer, the timeout path; nothing is sent"
+    },
+    {
+      "name": "agent.knowledge",
+      "risk": "read",
+      "note": "company information for an agent: offerings it can link, every linked fact with whether she may say it and why not (buyer's words)"
+    },
+    {
+      "name": "call.why_said",
+      "risk": "read",
+      "note": "per agent line on a call, the facts used and their source (title, page or row, passage), from the version that ran"
     }
   ],
   "tests": {
@@ -149,7 +159,8 @@
       "product/tests/agents-runtime.test.ts",
       "product/tests/agents-library.test.ts",
       "product/tests/stack-gate.test.ts",
-      "product/tests/agents-chat.test.ts"
+      "product/tests/agents-chat.test.ts",
+      "product/tests/company-data.test.ts"
     ],
     "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
   },

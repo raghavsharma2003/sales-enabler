@@ -6,6 +6,7 @@ import { tool } from '../../tools.ts';
 import { many, one } from '../../db.ts';
 import { arr, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { recordRevision } from './common.ts';
+import { proseExclusion } from '../../../shared/company-facts.ts';
 
 const tag = str({ pattern: /^[a-z][a-z0-9_]{1,23}$/, desc: 'purpose tag, e.g. opening, explain, objection, price, eligibility, next_step' });
 const factIn = obj({ id: opt(uuid()), text: str({ min: 1, max: 600 }), spanId: uuid(), purposes: arr(tag, { min: 1, max: 6 }) });
@@ -27,13 +28,16 @@ export function registerOffering(r: Registry) {
       let facts = before?.facts ?? [];
       if (i.facts) {
         const ids = [...new Set(i.facts.map(f => f.spanId))];
-        const spans = await many<{ id: string; source_id: string; text: string; location: unknown; status: string }>(ctx.q,
-          'SELECT id, source_id, text, location, status FROM knowledge_span WHERE workspace_id = $1 AND id = ANY($2::uuid[])', [ctx.workspaceId, ids]);
+        const spans = await many<{ id: string; source_id: string; text: string; location: unknown; status: string; kind: string }>(ctx.q,
+          'SELECT p.id, p.source_id, p.text, p.location, p.status, s.kind FROM knowledge_span p JOIN knowledge_source s ON s.id = p.source_id WHERE p.workspace_id = $1 AND p.id = ANY($2::uuid[])', [ctx.workspaceId, ids]);
         const byId = new Map(spans.map(s => [s.id, s]));
         facts = i.facts.map(f => {
           const s = byId.get(f.spanId);
           if (!s) throw new Error(`source span ${f.spanId} is not in this workspace`);
           if (s.status !== 'approved') throw new Error(`source span ${f.spanId} is ${s.status}; approve it in Knowledge before it can back a fact`);
+          // HV law 22: a price or a date stands only on an offerings sheet row, never on prose that can go stale.
+          const why = s.kind === 'sheet' ? null : proseExclusion(f.text);
+          if (why) throw new Error(`the fact "${f.text.slice(0, 60)}" cannot stand on a document or web page. ${why}`);
           return { id: f.id ?? randomUUID(), text: f.text, purposes: f.purposes, spanId: s.id, sourceId: s.source_id, location: s.location, quote: s.text.slice(0, 300) };
         });
       }

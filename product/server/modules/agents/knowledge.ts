@@ -6,6 +6,8 @@
 // byte budget still throws. The workspace module owns offerings and spans; this only reads them, inside the workspace.
 import type { AgentConfig, Fact } from '../../../shared/agent-config.ts';
 import { ValidationError } from '../../../shared/validate.ts';
+import { lintAgentConfig } from '../../../shared/safety/index.ts';
+import { shapeLint } from './lint.ts';
 import { many, type Queryable } from '../../db.ts';
 
 interface OfferingFact { id: string; text: string; purposes: string[]; spanId: string }
@@ -60,4 +62,56 @@ export async function withKnowledge(q: Queryable, ws: string, c: AgentConfig): P
   const neverSay = [...new Set(offerings.flatMap(o => o.never_say))].filter(x => !have.has(x));
   return { ...base, facts: [...base.facts, ...facts], neverSay: [...base.neverSay, ...neverSay],
     knowledge: { ...base.knowledge!, materialised: { neverSay } } };
+}
+
+// ------------------------------------------------------------------------------------------------ what she may say
+
+export interface SourceRef { spanId: string; sourceId: string; sourceTitle: string; sourceKind: string; location: Record<string, unknown>; quote: string }
+export interface SayableFact { offering: string; text: string; purpose: Fact['purpose']; onCalls: boolean; why: string | null; key: string | null; source: SourceRef | null }
+
+/** Where each knowledge span came from, for "why she said this" and the agent's company page. */
+export async function sourceRefs(q: Queryable, ws: string, spanIds: string[]): Promise<Map<string, SourceRef>> {
+  if (!spanIds.length) return new Map();
+  const rows = await many<{ id: string; source_id: string; title: string | null; kind: string; location: Record<string, unknown>; text: string }>(q,
+    `SELECT p.id, p.source_id, s.title, s.kind, p.location, p.text FROM knowledge_span p JOIN knowledge_source s ON s.id = p.source_id
+     WHERE p.workspace_id = $1 AND p.id = ANY($2::uuid[])`, [ws, [...new Set(spanIds)]]);
+  return new Map(rows.map(r => [r.id, { spanId: r.id, sourceId: r.source_id, sourceTitle: r.title ?? 'Untitled source', sourceKind: r.kind, location: r.location, quote: r.text.slice(0, 400) }]));
+}
+
+/** Every fact of the agent's linked offerings, and whether she may say it on her calls, with the reason when not. */
+export async function sayableFacts(q: Queryable, ws: string, c: AgentConfig): Promise<SayableFact[]> {
+  const base = stripKnowledge(c);
+  const ids = base.knowledge?.offeringIds ?? [];
+  if (!ids.length) return [];
+  const offerings = await many<OfferingRow>(q, 'SELECT id, name, facts, never_say FROM offering WHERE workspace_id = $1 AND id = ANY($2::uuid[]) AND archived_at IS NULL', [ws, ids]);
+  const spanIds = offerings.flatMap(o => o.facts.map(f => f.spanId));
+  const approved = new Set((await many<{ id: string }>(q, "SELECT id FROM knowledge_span WHERE workspace_id = $1 AND id = ANY($2::uuid[]) AND status = 'approved'", [ws, spanIds])).map(r => r.id));
+  const refs = await sourceRefs(q, ws, spanIds);
+  let known: AgentConfig;
+  try { known = await withKnowledge(q, ws, c); } catch { known = base; }
+  // Why a materialised fact stays off calls, in words for the buyer (the lint messages name internal keys).
+  const findings = lintAgentConfig(known), shape = shapeLint(known);
+  const reason = new Map<string, string>();
+  known.facts.forEach((f, i) => {
+    const k = f.source + '\u0000' + f.value;                   // a sheet row's cells share one passage: key by value too
+    if (findings.some(x => x.effect === 'drop' && x.path === `facts[${i}]`)) reason.set(k, `The safety rules keep facts like this off ${c.category} calls.`);
+    else if (shape.some(x => x.path === `facts[${i}].value`)) reason.set(k, 'It reads as a line to say rather than a fact; reword it in its offering.');
+  });
+  const bySource = new Map(known.facts.filter(f => f.source.startsWith(KB)).map(f => [f.source.slice(KB.length) + '\u0000' + f.value, f]));
+  const want = base.knowledge?.purposes ? new Set(base.knowledge.purposes) : null;
+  const out: SayableFact[] = [];
+  for (const o of ids.map(id => offerings.find(x => x.id === id)).filter((x): x is OfferingRow => !!x)) {
+    for (const f of o.facts) {
+      const purpose = factPurpose(f.purposes);
+      const m = bySource.get(f.spanId + '\u0000' + f.text);
+      let why: string | null = null;
+      if (!approved.has(f.spanId)) why = 'Its source passage is no longer approved.';
+      else if (want && !f.purposes.some(p => want.has(p))) why = 'This agent uses only some kinds of facts, and this is not one of them.';
+      else if (purpose === 'offer' && c.category !== 'promotional') why = `Offers and prices are said only on promotional calls; this agent makes ${c.category} calls.`;
+      else if (!m) why = 'It could not be added to her facts.';
+      else if (reason.has(m.source + '\u0000' + m.value)) why = reason.get(m.source + '\u0000' + m.value)!;
+      out.push({ offering: o.name, text: f.text, purpose, onCalls: !why, why, key: m?.key ?? null, source: refs.get(f.spanId) ?? null });
+    }
+  }
+  return out;
 }

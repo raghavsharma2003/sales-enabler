@@ -13,6 +13,8 @@ import { useVoiceStack } from '../use-voice-stack.tsx';
 import { DID, SHORT, TimelineCard, TimingCard, marksFor, playable } from './call-review.tsx';
 import { clock, date, dur, inr, ms } from '../format.ts';
 import type { CallDoc, CallExplain, CallRow } from '../types.ts';
+import { run } from '../api.ts';
+import { WhySaid, type WhyUse } from '../why-said.tsx';
 
 const GRADE: Record<string, [string, 'leaf' | 'peacock' | 'marigold']> = { verified: ['Confirmed by your system', 'leaf'], manager: ['Confirmed by a person', 'peacock'], ai_guess: ['AI guess', 'marigold'] };
 const outcomeChip = (o: string | null, g: string | null) => !o ? <NotMeasured>No outcome yet</NotMeasured> : <span className="row" style={{ gap: 6 }}><Chip>{prettyCode(o)}</Chip>{g && GRADE[g] && <Chip tone={GRADE[g][1]}>{GRADE[g][0]}</Chip>}</span>;
@@ -73,9 +75,11 @@ function Body({ c }: { c: CallDoc }) {
   const [audioFailed, setAudioFailed] = useState(false);
   const canPlay = playable(c.recordingUri) && !audioFailed;
   const current = c.turns.find(t => t.startMs != null && at >= t.startMs && at <= (t.endMs ?? t.startMs + 1))?.idx;
+  // Her lines that used a company fact, from the version that ran (call.why_said); a line with no match shows nothing.
+  const { hasTool, toast } = useApp();
+  const factUses = useData(['why-said', c.id], hasTool('call.why_said') ? async () => new Map((await run<{ turns: { idx: number; uses: WhyUse[] }[] }>('call.why_said', { conversationId: c.id })).turns.map(t => [t.idx, t.uses])) : null);
   const seek = (msv: number | null) => { if (msv == null) return; setAt(msv); if (audio.current) audio.current.currentTime = msv / 1000; const t = c.turns.find(x => x.startMs != null && msv >= x.startMs && msv <= (x.endMs ?? x.startMs + 1)); if (t) turnRefs.current[t.idx]?.scrollIntoView({ block: 'center', behavior: scrollMotion() }); };
   const [why, setWhy] = useState<CallExplain | null>(null); const [whyBusy, setWhyBusy] = useState(false);
-  const { toast } = useApp();
   const explain = async () => { setWhyBusy(true); try { setWhy(await callExplain(c.id)); } catch (e) { toast(e instanceof Error ? e.message : 'Could not explain.', 'bad'); } setWhyBusy(false); };
   const quotes = c.moments.filter(m => m.quote);
   const best = [...c.outcomes].sort((a, b) => ['verified', 'manager', 'ai_guess'].indexOf(a.grade) - ['verified', 'manager', 'ai_guess'].indexOf(b.grade))[0];
@@ -101,7 +105,7 @@ function Body({ c }: { c: CallDoc }) {
                   <span className="turn-who">{t.who === 'agent' ? 'Agent' : 'Caller'} {t.startMs != null && <span className="tnum muted">{clock(t.startMs / 1000)}</span>}</span>
                   <span className="turn-text" lang="hi">{t.text}</span>
                   <span className="turn-meta">{t.latencyMs ? <Chip title="Time from the caller finishing to her first audio, as the voice runtime measured it">reply gap {ms(t.latencyMs)}</Chip> : t.who === 'agent' && c.turns.slice(0, c.turns.indexOf(t)).some(x => x.who === 'caller') ? <Chip title="The voice runtime recorded no timing for this reply">gap not recorded</Chip> : null}{t.interrupted ? <Chip tone="marigold" title="Someone spoke over the other">cut-in</Chip> : null}{(marks.get(t.idx) ?? []).map((m, k) => <Chip key={k} tone={m.kind === 'disclosure' ? 'leaf' : m.kind === 'no-disclosure' ? 'marigold' : m.kind === 'optout' ? 'brick' : 'peacock'} title={m.title}>{m.text}</Chip>)}</span>
-                </button></li>))}</ol></Card>}
+                </button>{t.who === 'agent' && factUses.data?.get(t.idx) && <WhySaid uses={factUses.data.get(t.idx)!} />}</li>))}</ol></Card>}
           {c.timeline.length > 0 && !c.transcriptWhy && <Card><TimelineCard c={c} onSeek={seek} /></Card>}
         </div>
         <div className="stack">

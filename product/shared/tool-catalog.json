@@ -232,6 +232,32 @@
    }
   },
   {
+   "name": "agent.knowledge",
+   "risk": "read",
+   "summary": "Company information for an agent: the offerings it can link, and every linked fact with whether she may say it on her calls and why not",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
    "name": "agent.list",
    "risk": "read",
    "summary": "List this workspace's agents",
@@ -1550,6 +1576,32 @@
      }
     },
     "required": []
+   }
+  },
+  {
+   "name": "call.why_said",
+   "risk": "read",
+   "summary": "For each of her lines on a call, the facts she used and where each came from (the version that ran)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "conversationId"
+    ]
    }
   },
   {
@@ -4439,6 +4491,85 @@
    }
   },
   {
+   "name": "knowledge.fact.decide",
+   "risk": "draft",
+   "summary": "Approve proposed facts (they join an offering, so a linked agent may say them) or reject them, one or many at once",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "factIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "minItems": 1,
+      "maxItems": 300
+     },
+     "decision": {
+      "type": "string",
+      "enum": [
+       "approved",
+       "rejected"
+      ]
+     },
+     "offeringId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "factIds",
+     "decision"
+    ]
+   }
+  },
+  {
+   "name": "knowledge.fact.list",
+   "risk": "read",
+   "summary": "List the facts proposed from company sources, with the passage each came from and its decision",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "pending",
+       "approved",
+       "rejected",
+       "excluded"
+      ]
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+     }
+    },
+    "required": []
+   }
+  },
+  {
    "name": "knowledge.ingest",
    "risk": "draft",
    "summary": "Add a document (text, PDF or Word) to the knowledge base; its passages wait for your approval",
@@ -4471,6 +4602,41 @@
      }
     },
     "required": []
+   }
+  },
+  {
+   "name": "knowledge.ingest_site",
+   "risk": "draft",
+   "summary": "Read the business's website (same site only, robots.txt obeyed, up to 25 pages); facts are proposed for your approval",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "url": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500
+     },
+     "maxPages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25
+     },
+     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     }
+    },
+    "required": [
+     "url"
+    ]
    }
   },
   {
@@ -4512,6 +4678,30 @@
      }
     },
     "required": []
+   }
+  },
+  {
+   "name": "knowledge.propose",
+   "risk": "draft",
+   "summary": "Propose facts from a source added before facts were proposed automatically",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "sourceId"
+    ]
    }
   },
   {
@@ -6184,6 +6374,41 @@
        "maxLength": 200
       },
       "maxItems": 100
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "offering.import",
+   "risk": "draft",
+   "summary": "Import an offerings or price sheet (CSV or Excel): one offering per row, each cell proposed as a fact for your approval",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "filename": {
+      "type": "string",
+      "maxLength": 200
+     },
+     "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     },
+     "text": {
+      "type": "string",
+      "maxLength": 2000000
+     },
+     "contentBase64": {
+      "type": "string",
+      "maxLength": 12500000
      }
     },
     "required": []

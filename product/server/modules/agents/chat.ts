@@ -12,6 +12,7 @@ import type { SafetyRuleId } from '../../../shared/runtime-protocol.ts';
 import { complete, type ChatMessage } from '../../llm.ts';
 import { contactRows, markerRules, TAIL, type CompiledBrief } from './compile.ts';
 import { END, sentences, spoken, type Turn } from './simulate.ts';
+import { factUses } from '../../../shared/company-facts.ts';
 
 /** What the door did to one sentence, in words a buyer reads beside the reply. `original` is the draft sentence she did
  *  not say (shown only to the builder, never spoken). */
@@ -21,11 +22,14 @@ export interface ChatTurnResult {
   said: string;                    // what she would say, after the door
   notes: ChatNote[];
   signals: Pick<CallerSignals, 'crisis' | 'asksIfAi' | 'optOut' | 'refusesRecording' | 'readingSensitiveDigits' | 'wantsHuman'>;
+  sources: { sentence: string; facts: { key: string; value: string; source: string }[] }[];   // the facts each sentence used
   ended: boolean;                  // she ended the conversation (<end_call>)
   usage: { inputTokens: number; outputTokens: number };
 }
 
 const CRISIS_LINES = ['14416', '112'];
+/** safety.py safe_fallback_line: what she says when a reply cannot be made safe; never a guess. */
+export const SAFE_LINE = { female: 'Ji, ye main pakka karke aapko batati hoon.', male: 'Ji, ye main pakka karke aapko batata hoon.' } as const;
 const LABELS: Partial<Record<SafetyRuleId, string>> = {
   RD1: 'AI disclosure', RD2: 'Honest answer about being an AI', RD3: 'Crisis support', RD4: 'Sensitive details',
   RD5: 'Figure not in her facts', RD6: 'Link not on a verified domain', RD7: 'Pressure or manipulation', RD8: 'Personal details',
@@ -76,7 +80,7 @@ function ledger(s: ChatState, history: Turn[]): string {
 
 /** One reply through the runtime door. Mirrors safety.py reply_door: the first sentence carries the crisis lines, the
  *  honest answer or the disclosure; each sentence is judged alone and joined with the one before; a replacement ends it. */
-export function doorReply(cfg: AgentConfig, raw: string, s: ChatState, prevSaid: string): { said: string; notes: ChatNote[] } {
+export function doorReply(cfg: AgentConfig, raw: string, s: ChatState, prevSaid: string, startsReply = true): { said: string; notes: ChatNote[]; blocked: boolean } {
   const brand = cfg.brand.name;
   const clause = cfg.opening.disclosureClause ?? '';
   const parts = sentences(spoken(raw));
@@ -92,7 +96,7 @@ export function doorReply(cfg: AgentConfig, raw: string, s: ChatState, prevSaid:
   for (let i = 0; i < parts.length; i++) {
     let t = parts[i];
     const rest = parts.slice(i).join(' ');            // a replacement ends the reply: all of this goes unsaid
-    const first = i === 0;
+    const first = startsReply && i === 0;
     if (ctx.crisis && !linesGiven && !CRISIS_LINES.every(x => t.includes(x))) {
       kept.push(safetyText('crisis_support', brand));
       notes.push({ rule: 'RD3', action: 'replace', label: label('RD3'), reason: 'Someone may be in danger: Tele-MANAS 14416 and 112 come first, and a person is offered', original: rest });
@@ -122,21 +126,20 @@ export function doorReply(cfg: AgentConfig, raw: string, s: ChatState, prevSaid:
       notes.push({ rule: v.rule, action: 'replace', label: label(v.rule), reason: v.reason, original: rest });
       break;
     }
-    if (v.action === 'block') {
-      notes.push({ rule: v.rule, action: 'block', label: label(v.rule), reason: v.reason, original: parts[i] });
-      prev = parts[i];
-      continue;
+    if (v.action === 'block') {          // never said; the reply stops here and is written again (chatTurn)
+      notes.push({ rule: v.rule, action: 'block', label: label(v.rule), reason: v.reason, original: rest });
+      return { said: kept.join(' '), notes, blocked: true };
     }
     kept.push(t);
     if (pre) notes.push(pre);
     if (CRISIS_LINES.every(x => t.includes(x))) linesGiven = true;
     prev = t;
   }
-  return { said: kept.join(' '), notes };
+  return { said: kept.join(' '), notes, blocked: false };
 }
 
 /** One exchange: the typed caller line (null for her opening on an outbound call), then her reply through the door. */
-export async function chatTurn(cfg: AgentConfig, brief: CompiledBrief, history: Turn[], message: string | null, contact: Record<string, string>): Promise<ChatTurnResult> {
+export async function chatTurn(cfg: AgentConfig, brief: CompiledBrief, history: Turn[], message: string | null, contact: Record<string, string>, briefFacts = cfg.facts): Promise<ChatTurnResult> {
   const usage = { inputTokens: 0, outputTokens: 0 };
   let sig: CallerSignals | null = null, judged = false, caller: string | null = null;
   const t: Turn[] = history.map(x => ({ who: x.who, text: x.who === 'caller' ? redact(x.text) : x.text }));
@@ -154,11 +157,33 @@ export async function chatTurn(cfg: AgentConfig, brief: CompiledBrief, history: 
   const system = brief.text + '\n\n' + contactRows(contact) + '\n\n' + ledger(s, t) + '\n\n' + TAIL + '\n\n' + markerRules(cfg);
   const msgs: ChatMessage[] = t.map(x => ({ role: x.who === 'agent' ? 'assistant' : 'user', content: x.text }));
   if (!msgs.length) msgs.push({ role: 'user', content: '(call connected; you dialled them)' });
-  const r = await complete({ purpose: 'simulate', messages: [{ role: 'system', content: system }, ...msgs], maxTokens: 300, temperature: 0.7 });
-  usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
-  const prevSaid = [...t].reverse().find(x => x.who === 'agent')?.text ?? '';
-  const { said, notes } = doorReply(cfg, r.text, s, prevSaid);
+  // As the runtime (conversation.py sentences()): a blocked sentence is never said; the reply is written again once, told
+  // which rule the draft broke, continuing from what was already said; a second block ends with the safe line.
+  const kept: string[] = [], notes: ChatNote[] = [];
+  let prevSaid = [...t].reverse().find(x => x.who === 'agent')?.text ?? '', correction: string | null = null, ended = false;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const extra: ChatMessage[] = correction ? [{ role: 'system', content: correction }] : [];
+    const r = await complete({ purpose: 'simulate', messages: [{ role: 'system', content: system }, ...msgs, ...extra], maxTokens: 300, temperature: 0.7 });
+    usage.inputTokens += r.usage.inputTokens; usage.outputTokens += r.usage.outputTokens;
+    const d = doorReply(cfg, r.text, { ...s, disclosed: s.disclosed || kept.some(k => affirmsAi(k, cfg.opening.disclosureClause ?? '')) }, prevSaid, kept.length === 0);
+    if (d.said) { kept.push(d.said); prevSaid = d.said; }
+    notes.push(...d.notes);
+    if (!d.blocked) { ended = END.test(r.text); break; }
+    const b = d.notes[d.notes.length - 1];
+    if (attempt === 1) {
+      const line = SAFE_LINE[cfg.persona.gender === 'male' ? 'male' : 'female'];
+      kept.push(line);
+      notes.push({ rule: b.rule, action: 'replace', label: 'Safe line', reason: 'Her reply was held back twice, so she says she will confirm and come back instead of guessing' });
+      break;
+    }
+    correction = `Your last draft broke a safety rule (${b.rule}: ${b.reason}) and was not said. Write the reply again, without it. ` +
+      (kept.length ? `Continue from what you already said: "${kept.join(' ')}"` : 'Nothing of it was said.');
+  }
+  const said = kept.join(' ');
+  // Which facts each sentence used, for "why she said this" (shared/company-facts.ts factUses; conservative).
+  const sources = sentences(said).map(sentence => ({ sentence, facts: factUses(sentence, briefFacts).map(f => ({ key: f.key, value: f.value, source: f.source })) }))
+    .filter(x => x.facts.length);
   const pick = (x: CallerSignals | null) => ({ crisis: s.crisis, asksIfAi: !!x?.asksIfAi, optOut: !!x?.optOut, refusesRecording: !!x?.refusesRecording,
     readingSensitiveDigits: !!x?.readingSensitiveDigits, wantsHuman: !!x?.wantsHuman });
-  return { caller, said, notes, signals: pick(sig), ended: END.test(r.text) && !s.crisis, usage };
+  return { caller, said, notes, sources, signals: pick(sig), ended: ended && !s.crisis, usage };
 }

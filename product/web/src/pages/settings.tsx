@@ -4,8 +4,8 @@ import { Lock } from 'lucide-react';
 import { run } from '../api.ts';
 import { useApp, useData } from '../store.tsx';
 import { useLeaveGuard, useNav } from '../router.tsx';
-import { Async, Skeleton, Btn, Card, CardHead, Chip, Empty, Locked, Meter, NotMeasured, PageHead, SelectField, Sheet, Table, Tabs, TextArea, TextField, Toggle, type Col } from '../ui.tsx';
-import { activityList, keyList, knowledgeList, memberList, walletGet } from '../data.ts';
+import { Async, Skeleton, Btn, Card, CardHead, Chip, Empty, Locked, Meter, NotMeasured, PageHead, SelectField, Sheet, Table, Tabs, TextField, Toggle, type Col } from '../ui.tsx';
+import { activityList, keyList, memberList, walletGet } from '../data.ts';
 import { ago, count, date, inr, time } from '../format.ts';
 import { prettyId } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
@@ -18,13 +18,14 @@ const Security = lazy(() => import('./security.tsx'));
 const Outcomes = lazy(() => import('./outcomes.tsx'));
 const Webhooks = lazy(() => import('./webhooks.tsx'));
 const Notifications = lazy(() => import('./notifications.tsx'));
+const Knowledge = lazy(() => import('./company-data.tsx'));
 import { RevealSheet } from '../reveal.tsx';
 import { activitySentence, foldRepeats, pageFor, RULE_LABEL } from '../labels.ts';
-import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
+import type { ActivityRow, ApiKey, Member } from '../types.ts';
 
 const TABS = ['team', 'keys', 'brand', 'knowledge', 'outcomes', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'webhooks', 'notifications', 'activity'] as const;
 type Tab = (typeof TABS)[number];
-const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', outcomes: 'Outcomes and checks', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', webhooks: 'Webhooks', notifications: 'Notifications', activity: 'Activity' };
+const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Company information', outcomes: 'Outcomes and checks', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', webhooks: 'Webhooks', notifications: 'Notifications', activity: 'Activity' };
 
 export default function Settings({ tab }: { tab?: string }) {
   const go = useNav();
@@ -128,37 +129,6 @@ function BrandForm({ b, onSave }: { b: BrandDoc; onSave: (v: object) => Promise<
         <TextField label="Website" value={v.website} onChange={set('website')} hint="Links to your own domain are the only ones she may say." /><TextField label="DLT entity ID" value={v.dltEntityId} onChange={set('dltEntityId')} hint="Needed for registered messages. Leave empty if you do not have one." />
         <TextField className="span2" label="How you like to sound" value={v.tone} onChange={set('tone')} hint="A few words, for example: warm, plain, never pushy." /></div>
       <div style={{ marginTop: 16 }}>{dirty ? <Btn kind="primary" onClick={() => onSave(Object.fromEntries(Object.entries(v).filter(([, x]) => x !== '')))}>Save brand</Btn> : <Btn disabled fix={null} reason="No unsaved changes.">Save brand</Btn>}</div></Card>
-  );
-}
-
-function Knowledge() {
-  const { act, refresh } = useApp();
-  const q = useData<KnowledgeItem[]>('knowledge', knowledgeList);
-  const [f, setF] = useState({ title: '', text: '' }); const [open, setOpen] = useState<KnowledgeItem | null>(null);
-  const cols: Col<KnowledgeItem>[] = [{ key: 't', label: 'Source', primary: true, render: k => k.title },
-    { key: 's', label: 'State', render: k => <Chip tone={k.status === 'indexed' ? 'leaf' : k.status === 'failed' ? 'brick' : 'marigold'}>{k.status === 'indexed' ? 'Read' : prettyCode(k.status)}</Chip> },
-    { key: 'p', label: 'Passages', num: true, render: k => k.passages }, { key: 'a', label: 'Approved', num: true, render: k => (k as any).approved ?? 0 },
-    { key: 'r', label: '', render: k => <Btn size="sm" onClick={() => setOpen(k)}>Review passages</Btn> }];
-  return (
-    <div className="stack"><Card><CardHead title="Knowledge" sub="What she may state. Each passage keeps its source; you approve the ones she may use as facts." />
-      <Async q={q} what="Knowledge" tool="knowledge.list" empty={d => d.length === 0 ? <Empty title="No sources yet" body="Add your FAQ, a policy note or opening hours." /> : null}>{d => <Table caption="Knowledge sources" cols={cols} rows={d} rowKey={r => r.id} />}</Async></Card>
-      <Card><CardHead title="Add a source" sub="Company knowledge only. Customer rows never go in here." />
-        <TextField label="Title" value={f.title} onChange={e => setF({ ...f, title: e.target.value })} />
-        <div style={{ marginTop: 12 }}><TextArea label="Text" value={f.text} onChange={e => setF({ ...f, text: e.target.value })} rows={5} hint="Paste the text. PDFs and Word files can be sent through the API." /></div>
-        <div style={{ marginTop: 12 }}>{f.title.trim() && f.text.trim() ? <Btn kind="primary" onClick={async () => { const r = await act('knowledge.ingest', { title: f.title.trim(), text: f.text }, { describe: 'Added. Its passages wait for your approval.' }); if (r.ok) { setF({ title: '', text: '' }); refresh(); } }}>Add source</Btn> : <Btn disabled fix={null} reason="Add a title and some text.">Add source</Btn>}</div></Card>
-      {open && <Passages item={open} onClose={() => { setOpen(null); refresh(); }} />}</div>
-  );
-}
-interface Span { id: string; ordinal: number; text: string; status: string }
-function Passages({ item, onClose }: { item: KnowledgeItem; onClose: () => void }) {
-  const { act } = useApp();
-  const q = useData(['spans', item.id], async () => (await run<{ spans: Span[] }>('knowledge.list', { sourceId: item.id })).spans);
-  return (
-    <Sheet title={item.title} onClose={onClose} wide>
-      <Async q={q} what="Passages" tool="knowledge.list" empty={d => d.length === 0 ? <Empty title="No passages" /> : null}>{d => <ul className="issues">{d.map(s => (
-        <li key={s.id}><div className="row" style={{ justifyContent: 'space-between' }}><Chip tone={s.status === 'approved' ? 'leaf' : s.status === 'rejected' ? 'brick' : 'marigold'}>{s.status === 'pending' ? 'Waiting for you' : prettyCode(s.status)}</Chip></div><p lang="hi">{s.text}</p>
-          <div className="row"><Btn size="sm" onClick={async () => { await act('knowledge.span.approve', { spanIds: [s.id], decision: 'approved' }, { describe: 'Approved.' }); q.reload(); }}>She may state this</Btn><Btn size="sm" kind="ghost" onClick={async () => { await act('knowledge.span.approve', { spanIds: [s.id], decision: 'rejected' }, { describe: 'Struck.' }); q.reload(); }}>Strike it</Btn></div></li>))}</ul>}</Async>
-    </Sheet>
   );
 }
 

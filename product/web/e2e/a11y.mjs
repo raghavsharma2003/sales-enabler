@@ -18,6 +18,8 @@ export async function screens(call) {
     ['Agent: tools', `/agents/${riya}?tab=tools`], ['Agent: voice stack', `/agents/${riya}?tab=voice`],
     ['Agent: test panel', `/agents/${riya}?test=1`, async (p, tag) => { if (tag === 'm') await p.getByRole('heading', { name: 'Hear her yourself' }).waitFor(); }],
     ['Agent: practice chat', `/agents/${riya}?test=1`, async p => { const box = p.getByLabel('What the caller says'); await box.fill('Aap AI ho kya?'); await p.getByRole('button', { name: 'Send' }).click(); await p.locator('.pchat-notes').first().waitFor({ timeout: 15000 }); }],
+    ['Agent: company information', `/agents/${riya}?tab=company`, async p => { await p.getByRole('heading', { name: 'What she draws on' }).waitFor(); }],
+    ['Settings: company information', '/settings/knowledge', async p => { await p.getByRole('heading', { name: 'Facts to review' }).waitFor(); }],
     ['Contacts', '/contacts'], ['Contact', `/contacts/${ct[0]?.id}`], ['Import', '/contacts/import', async p => { const sample = p.getByRole('button', { name: 'Use a made-up sample' }); await sample.evaluate(e => e.scrollIntoView({ block: 'center' })); await sample.click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.getByText('3. What will happen to each row').waitFor({ timeout: 15000 }); }],
     ['Import: from a sample', '/contacts/import?from=sample'], ['Import: from HubSpot', '/contacts/import?from=hubspot'], ['Import: from Zoho CRM', '/contacts/import?from=zoho_crm'], ['Import: from Salesforce', '/contacts/import?from=salesforce'],
     ['Audiences', '/audiences'], ['Campaigns', '/campaigns'], ['New campaign', '/campaigns/new'], ['Campaign', `/campaigns/${camp}`],

@@ -248,6 +248,26 @@
     {
       "id": "duty.override.remove",
       "risk": "policy"
+    },
+    {
+      "id": "knowledge.ingest_site",
+      "risk": "draft"
+    },
+    {
+      "id": "offering.import",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.fact.list",
+      "risk": "read"
+    },
+    {
+      "id": "knowledge.fact.decide",
+      "risk": "draft"
+    },
+    {
+      "id": "knowledge.propose",
+      "risk": "draft"
     }
   ],
   "routes": [

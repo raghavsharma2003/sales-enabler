@@ -171,3 +171,11 @@ a.btn.btn-primary { color: var(--on-terra); }
 .filepick p { margin: 0; overflow-wrap: anywhere; }
 .approval-detail { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--ink-2); }
 .cell-sub { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--ink-2); margin-top: 2px; }
+/* Company information (pages/company-data.tsx) */
+.cd-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cd-fact { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.cd-fact > input[type="checkbox"] { margin-top: 4px; width: 20px; height: 20px; flex: none; }
+.cd-body { min-width: 0; flex: 1; display: grid; gap: 4px; } .cd-body p { margin: 0; overflow-wrap: anywhere; }
+.cd-body .chip { margin-right: 4px; }
+.cd-body blockquote { margin: 4px 0 0; padding: 6px 10px; border-left: 3px solid var(--line); color: var(--ink-2); overflow-wrap: anywhere; white-space: pre-wrap; }
+.cd-fact .cd-fact { border: 0; padding: 0; background: none; }

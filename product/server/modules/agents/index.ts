@@ -20,7 +20,7 @@ import { DISCLOSURE, disclosureChecked } from '../../../shared/safety/disclosure
 import { LANGUAGES, type Language } from '../../../shared/agent-config.ts';
 import { shapeLint } from './lint.ts';
 import { guardDraft } from './guard.ts';
-import { withKnowledge } from './knowledge.ts';
+import { sayableFacts, sourceRefs, withKnowledge } from './knowledge.ts';
 import { loadHttpTool, registerHttpTools } from './httptools.ts';
 import { checkSpec, HttpToolError } from '../../../shared/contracts/http-tool.ts';
 import { agentLanguages, languageName, languageProblems } from './languages.ts';
@@ -28,7 +28,8 @@ import { stackLanguage } from '../../../shared/stacks.ts';
 import { gateStatus } from '../../../shared/stack-gate.ts';
 import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
 import { chatTurn } from './chat.ts';
-import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
+import { factUses } from '../../../shared/company-facts.ts';
+import { passCriteriaV, sentences, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
 import { LIBRARY, libraryCaller, toSimCaller, type CallerShape, type LibraryCaller } from './library.ts';
 
@@ -63,14 +64,28 @@ function guardLanguages(prev: AgentConfig | null, next: AgentConfig) {
 /** preview() of the config as it would compile: linked knowledge materialised first (a missing offering is shown, not thrown). */
 async function previewOf(ctx: ToolCtx, c: AgentConfig) {
   try { return preview(await withKnowledge(ctx.q, ctx.workspaceId, c)); } catch (e) {
-    if (e instanceof ValidationError) return { compiles: false as const, lint: [...shapeLint(c), ...lintAgentConfig(c)], error: { kind: 'knowledge', message: e.message } };
+    if (e instanceof ValidationError) return { compiles: false as const, lint: companyLint(c, [...shapeLint(c), ...lintAgentConfig(c)]), error: { kind: 'knowledge', message: e.message } };
     throw e;
   }
 }
 
+/** Findings on linked company facts, in the buyer's words: the materialised keys (kb1_...) never reach a person. Drops are
+ *  one line pointing to the Company information tab, which says which facts and why; a fact worded as a line names it. */
+function companyLint<F extends { path: string; message: string; effect?: string }>(c: AgentConfig, found: F[]): (F | { rule: 'COMPANY'; path: string; message: string; effect: 'drop' | 'refuse' })[] {
+  const kb = (path: string) => { const m = /^facts\[(\d+)\]/.exec(path); return m ? c.facts[Number(m[1])] : undefined; };
+  const isKb = (f: F) => !!kb(f.path)?.source.startsWith('kb:');
+  const out: (F | { rule: 'COMPANY'; path: string; message: string; effect: 'drop' | 'refuse' })[] = found.filter(f => !isKb(f));
+  const dropped = found.filter(f => isKb(f) && f.effect === 'drop').length;
+  if (dropped) out.push({ rule: 'COMPANY', path: 'knowledge', effect: 'drop', message: `${dropped} company fact${dropped === 1 ? ' is' : 's are'} kept off this agent's calls; Company information says which and why` });
+  for (const f of found.filter(f => isKb(f) && f.effect !== 'drop')) {
+    out.push({ rule: 'COMPANY', path: 'knowledge', effect: 'refuse', message: `the company fact "${kb(f.path)!.value.slice(0, 60)}" reads as a line to say; reword it in its offering` });
+  }
+  return out;
+}
+
 /** What the brief editor shows: lint findings, the budget meters, and the compiled text when it compiles. */
 function preview(c: AgentConfig) {
-  const lint = [...shapeLint(c), ...lintAgentConfig(c)];
+  const lint = companyLint(c, [...shapeLint(c), ...lintAgentConfig(c)]);
   try {
     const r = compileReport(c);
     return { compiles: true as const, lint, brief: { hash: r.hash, bytes: r.bytes, sections: r.sections, dropped: r.dropped, text: r.text } };
@@ -389,6 +404,13 @@ const libraryRow = (c: LibraryCaller) => ({ id: c.id, source: 'default' as const
 /** The agent's live version: its newest published one. Experiment candidates are newer but never live. */
 const LIVE_VERSION_SQL = `SELECT id, number FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1`;
 
+/** Each sentence's facts with where they came from: a company source (title, place, passage) or the agent's own brief. */
+async function whySaid(ctx: ToolCtx, uses: { sentence: string; facts: { key: string; value: string; source: string }[] }[]) {
+  const refs = await sourceRefs(ctx.q, ctx.workspaceId, uses.flatMap(u => u.facts.filter(f => f.source.startsWith('kb:')).map(f => f.source.slice(3))));
+  return uses.map(u => ({ sentence: u.sentence, facts: u.facts.map(f => ({ key: f.key, value: f.value,
+    from: f.source.startsWith('kb:') ? refs.get(f.source.slice(3)) ?? null : null, inBrief: !f.source.startsWith('kb:') })) }));
+}
+
 /** The config a version is made from: linked knowledge materialised, as compile() and the reply door will see it. */
 async function asCompiled(ctx: ToolCtx, c: AgentConfig): Promise<AgentConfig> {
   try { return await withKnowledge(ctx.q, ctx.workspaceId, c); } catch (e) { if (e instanceof ValidationError) return c; throw e; }
@@ -646,6 +668,39 @@ export function registerAgentTools(r: Registry): void {
     },
   }));
 
+  r.register(tool(obj({ agentId: uuid() }), {
+    name: 'agent.knowledge', risk: 'read', summary: "Company information for an agent: the offerings it can link, and every linked fact with whether she may say it on her calls and why not",
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const linked = new Set(a.draft.knowledge?.offeringIds ?? []);
+      const offerings = (await many<{ id: string; name: string; facts: unknown[] }>(ctx.q, 'SELECT id, name, facts FROM offering WHERE workspace_id = $1 AND archived_at IS NULL ORDER BY created_at, id', [ctx.workspaceId]))
+        .map(o => ({ id: o.id, name: o.name, facts: o.facts.length, linked: linked.has(o.id) }));
+      const facts = await sayableFacts(ctx.q, ctx.workspaceId, a.draft);
+      return { category: a.draft.category, offerings, facts, onCalls: facts.filter(f => f.onCalls).length,
+        rule: 'Prices and dates come only from an offerings sheet. When she is asked something no fact covers, she says she will confirm it and come back; she never guesses.' };
+    },
+  }));
+
+  r.register(tool(obj({ conversationId: uuid() }), {
+    name: 'call.why_said', risk: 'read', summary: 'For each of her lines on a call, the facts she used and where each came from (the version that ran)',
+    run: async (ctx, i) => {
+      const c = await one<{ id: string; config: { agent: AgentConfig } | null }>(ctx.q, `SELECT cv.id, v.config FROM conversation cv LEFT JOIN agent_version v ON v.id = cv.agent_version_id
+        WHERE cv.id = $1 AND cv.workspace_id = $2`, [i.conversationId, ctx.workspaceId]);
+      if (!c) throw new ValidationError('conversationId', 'no such call in this workspace');
+      if (!c.config) return { turns: [], note: 'This call ran on no saved agent version, so there are no facts to point to.' };
+      const cfg = c.config.agent;
+      const dropped = new Set(compileReport(cfg).dropped);
+      const facts = cfg.facts.filter(f => !dropped.has(f.key) && !f.perContact);
+      const turns = await many<{ idx: number; text: string }>(ctx.q, "SELECT idx, text FROM turn WHERE conversation_id = $1 AND speaker = 'agent' ORDER BY idx", [c.id]);
+      const out = [];
+      for (const t of turns) {
+        const uses = sentences(t.text).map(sentence => ({ sentence, facts: factUses(sentence, facts).map(f => ({ key: f.key, value: f.value, source: f.source })) })).filter(u => u.facts.length);
+        if (uses.length) out.push({ idx: t.idx, uses: await whySaid(ctx, uses) });
+      }
+      return { turns: out };
+    },
+  }));
+
   // A typed practice chat: the builder is the caller. Stateless on the server (the panel holds the chat and sends it back);
   // nothing is dialled and nothing reaches the call log. Kept only on test.chat_keep, into the test-run history.
   const chatTurnV = obj({ who: str({ oneOf: ['agent', 'caller'] }), text: str({ max: 2000 }) });
@@ -655,12 +710,13 @@ export function registerAgentTools(r: Registry): void {
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
       const cfg = await withKnowledge(ctx.q, ctx.workspaceId, a.draft);
-      const brief = compile(cfg);
+      const brief = compileReport(cfg);              // the facts rows it dropped are not hers to use, so never her source
       const history = (i.history ?? []) as { who: 'agent' | 'caller'; text: string }[];
       if (!history.length && !i.message && a.draft.job === 'inbound_support') throw new ValidationError('message', 'on an inbound line the caller speaks first: type their first line');
       if (history.length && !i.message) throw new ValidationError('message', 'type what the caller says next');
-      const res = await chatTurn(cfg, brief, history, i.message ?? null, i.contact ?? { name: 'Asha (made up)' });
-      return { ...res, draftHash: draftHash(a.draft), briefHash: brief.hash };
+      const dropped = new Set(brief.dropped);
+      const res = await chatTurn(cfg, brief, history, i.message ?? null, i.contact ?? { name: 'Asha (made up)' }, cfg.facts.filter(f => !dropped.has(f.key)));
+      return { ...res, sources: await whySaid(ctx, res.sources), draftHash: draftHash(a.draft), briefHash: brief.hash };
     },
   }));
 

@@ -14,6 +14,7 @@ import { registerSso, ssoRoutes } from './sso.ts';
 import { registerBrand, brandView, primaryBrand } from './brand.ts';
 import { registerIntegrations } from './integrations.ts';
 import { registerKnowledge } from './knowledge.ts';
+import { registerCompanyData } from './company.ts';
 import { acceptInvite, registerMembers } from './members.ts';
 import { registerOffering } from './offering.ts';
 import { registerSearch } from './search.ts';
@@ -66,6 +67,7 @@ export const module: Module = {
     registerApiKeys(registry);
     registerBrand(registry);
     registerKnowledge(registry);
+    registerCompanyData(registry);
     registerOffering(registry);
     registerIntegrations(registry);
     registerWebhooks(registry);

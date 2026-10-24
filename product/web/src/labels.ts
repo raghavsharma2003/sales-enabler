@@ -153,7 +153,7 @@ export const PAST: Record<string, string> = {
   'message_template.sync': 'checked WhatsApp template reviews', 'message_template.send': 'sent a WhatsApp template to a person',
   'followthrough.rule.set': 'set a WhatsApp follow-up after calls', 'followthrough.rule.disable': 'turned off a WhatsApp follow-up after calls',
   'message.send': 'sent a WhatsApp message',
-  'knowledge.ingest': 'added a knowledge source', 'knowledge.span.approve': 'decided which passages she may state', 'learning.propose': 'looked for improvements from an agent\'s calls',
+  'knowledge.ingest': 'added a knowledge source', 'knowledge.ingest_site': 'read the company website', 'offering.import': 'imported an offerings sheet', 'knowledge.fact.decide': 'decided which company facts she may say', 'knowledge.propose': 'proposed facts from a company source', 'knowledge.span.approve': 'decided which passages she may state', 'learning.propose': 'looked for improvements from an agent\'s calls',
   'live.listen': 'listened to a live call', 'live.takeover': 'took over a live call', 'live.whisper': 'whispered to the agent on a live call',
   'member.invite': 'invited a teammate', 'member.remove': 'removed a teammate', 'member.role.set': 'changed a teammate\'s role',
   'memory.extract': 'noted something a caller said, for review', 'memory.policy.set': 'changed what is remembered',
@@ -247,5 +247,6 @@ export function lintWhere(path: string | undefined): { tab: string; tabId: strin
   if (path === 'opening.usefulFirst') return { tab: 'Job and facts', tabId: 'job', field: 'something useful to say first' };
   if (path.startsWith('opening.')) return { tab: 'Job and facts', tabId: 'job', field: 'the opening' };
   if (path === 'jobDescription') return { tab: 'Basics', tabId: 'basics', field: 'what the calls are for' };
+  if (path === 'knowledge') return { tab: 'Company information', tabId: 'company', field: 'linked offerings' };
   return null;
 }

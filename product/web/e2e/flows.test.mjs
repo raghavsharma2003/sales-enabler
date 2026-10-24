@@ -9,6 +9,7 @@ import { createHmac } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import pg from 'pg';
 import { audit, axe } from './a11y.mjs';
+import http from 'node:http';
 import { EMI_ROWS, xlsxFile } from '../dev/xlsx-sample.mjs';
 import { HS_TOKEN, SF, startFakeCrm } from '../dev/fake-crm.mjs';
 
@@ -86,6 +87,8 @@ async function hold(locator) {
   } finally { await page.mouse.up(); }
 }
 const sheet = () => page.getByRole('dialog');
+/** Wait until a control can be used again (it is disabled while its change is being saved). */
+const expectEnabled = async locator => { for (let i = 0; i < 50 && await locator.isDisabled(); i++) await page.waitForTimeout(100); };
 
 test('API key: create, approve by holding, the secret shows once, a second reveal is refused', async () => {
   await page.goto(BASE + '/settings/keys');
@@ -1393,7 +1396,7 @@ test('Practice chat: type as the caller; crisis lines, the honest AI answer and 
   assert.doesNotMatch(await her().locator('p').first().innerText(), /40%/);
   await her().getByText(/^Held back:/).first().waitFor();
   await her().getByText('What she would have said').first().click();
-  await her().getByText(/40% ka special discount/).waitFor();
+  await her().getByText(/40% ka special discount/).first().waitFor();
   // A crisis line: Tele-MANAS 14416 and 112, a person offered, no agenda.
   await box.fill('Ab jeene ka mann nahi karta, sab khatam kar dena chahta hoon.'); await send.click();
   await page.locator('.pchat-line.agent').nth(2).waitFor({ timeout: 15000 });
@@ -1425,6 +1428,77 @@ test('Practice chat: type as the caller; crisis lines, the honest AI answer and 
     await pp.screenshot({ path: path.join(shotDir, 'practice-chat-390.png') });
   } finally { await phone.close(); }
   assert.deepEqual((await count()).calls, n0.calls);
+});
+
+test('Company information: read a website (robots.txt obeyed), import a price sheet, approve facts in bulk; prose prices are held out; the agent says which facts she may use', async () => {
+  // A fictional company's site on 127.0.0.1 (the e2e server may read private addresses): /private is closed to robots.
+  const pages = {
+    '/robots.txt': 'User-agent: *\nDisallow: /private/\n',
+    '/': '<html><head><title>Kaveri Home Appliances</title></head><body><main><p>Kaveri Home Appliances repairs washing machines and refrigerators across Mysuru.</p><p>Our technicians carry spare parts for the common models in their vans.</p><p>The festive offer is just ₹499 for a full service.</p><a href="/private/rota">rota</a><a href="/care">care</a></main></body></html>',
+    '/care': '<html><head><title>Care tips</title></head><body><main><p>Clean the washing machine filter once a month so it drains well.</p></main></body></html>',
+    '/private/rota': '<html><body><p>Staff rota, never read by a robot.</p></body></html>',
+  };
+  const hits = [];
+  const srv = http.createServer((req, res) => { hits.push(req.url); const b = pages[req.url]; if (!b) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'content-type': req.url.endsWith('.txt') ? 'text/plain' : 'text/html; charset=utf-8' }); res.end(b); });
+  await new Promise(ok => srv.listen(0, '127.0.0.1', ok));
+  const site = `http://127.0.0.1:${srv.address().port}`;
+  try {
+    await page.goto(`${BASE}/settings/knowledge`);
+    await page.getByRole('heading', { name: 'Add company information' }).waitFor();
+    await page.getByLabel('Website address').fill(site);
+    await page.getByRole('button', { name: 'Read the website' }).click();
+    await page.getByText(/repairs washing machines and refrigerators across Mysuru/).first().waitFor({ timeout: 20000 });
+    assert.ok(!hits.includes('/private/rota'), 'a page robots.txt closes is never requested');
+    await page.getByText(/^Their technicians carry spare parts/).first().waitFor();   // the business's "our" becomes a fact, not a line
+    // The prose price is held out, with the reason, and cannot be approved.
+    await page.getByRole('heading', { name: /Held out: prices and dates/ }).waitFor();
+    // An offerings sheet: one offering per row; its price is allowed.
+    await page.getByRole('radio', { name: /Offerings sheet/ }).check();
+    await page.locator('#cd-sheet').setInputFiles({ name: 'kaveri-plans.csv', mimeType: 'text/csv', buffer: Buffer.from('Plan,Price,Valid until\nWasher care,"₹1,499",31/03/2027\n') });
+    await page.getByText('Washer care, price: ₹1,499').waitFor({ timeout: 15000 });
+    const all = page.getByRole('checkbox', { name: /^Choose all \d+$/ });
+    const n = Number((await all.locator('xpath=..').innerText()).match(/\d+/)[0]);
+    await all.check();
+    await page.getByRole('button', { name: `Approve ${n}` }).click();
+    await page.getByText('Nothing waiting for you').waitFor({ timeout: 15000 });
+    const approved = (await pool.query("SELECT count(*)::int AS n FROM knowledge_fact WHERE workspace_id = $1 AND status = 'approved'", [ws])).rows[0].n;
+    assert.ok(approved >= n, `the server holds the approvals (${approved})`);
+    const held = (await pool.query("SELECT count(*)::int AS n FROM knowledge_fact WHERE workspace_id = $1 AND status = 'excluded' AND text LIKE '%499 for a full service%'", [ws])).rows[0].n;
+    assert.equal(held, 1, 'the prose price is held out on the server too');
+    const shotDir = process.env.E2E_RESHOOT === '1' ? path.join(process.cwd(), 'product/web/shots') : DIAG;
+    fs.mkdirSync(shotDir, { recursive: true });
+    await page.getByRole('heading', { name: 'Add company information' }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: path.join(shotDir, 'company-information-1440.png'), fullPage: true });
+    // The agent links the offerings and sees which facts she may say, and why not.
+    const riya = await riyaId();
+    await page.goto(`${BASE}/agents/${riya}?tab=company`);
+    await page.getByRole('heading', { name: 'What she draws on' }).waitFor();
+    for (const name of ['Company information', 'Washer care']) {
+      const box = page.getByRole('checkbox', { name: new RegExp(`^${name}`) });
+      if (await box.isChecked()) continue;
+      const saved = page.waitForResponse(r => r.url().includes('/brief.edit') && r.request().method() === 'POST');
+      await box.check();
+      assert.equal((await (await saved).json()).status, 'confirmed', `linking ${name} is saved`);
+      await expectEnabled(box);
+    }
+    await page.getByRole('heading', { name: /^She may say \d+ of \d+ facts$/ }).waitFor({ timeout: 15000 });
+    await page.getByText(/repairs washing machines and refrigerators across Mysuru/).first().waitFor();
+    const draft = (await pool.query('SELECT draft FROM agent WHERE id = $1', [riya])).rows[0].draft;
+    assert.equal(draft.knowledge.offeringIds.length, 2, 'the server holds the links');
+    await page.screenshot({ path: path.join(shotDir, 'agent-company-1440.png'), fullPage: true });
+    const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce', storageState: await ctx.storageState() });
+    try {
+      const p = await phone.newPage();
+      for (const [url, h, shot] of [[`/agents/${riya}?tab=company`, /^She may say/, 'agent-company-390.png'], ['/settings/knowledge', /^Add company information$/, 'company-information-390.png']]) {
+        await p.goto(BASE + url);
+        await p.getByRole('heading', { name: h }).waitFor({ timeout: 15000 });
+        assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `no sideways scroll at 390: ${url}`);
+        await p.screenshot({ path: path.join(shotDir, shot), fullPage: true });
+      }
+    } finally { await phone.close(); }
+    // Leave Riya as she was for the flows after this one.
+    await tool('brief.edit', { agentId: riya, patch: [{ op: 'set', path: 'knowledge', value: { offeringIds: [] } }] });
+  } finally { srv.close(); }
 });
 
 test('Approval sheet: an action the person started says they asked for it, not Vyakti', async () => {
