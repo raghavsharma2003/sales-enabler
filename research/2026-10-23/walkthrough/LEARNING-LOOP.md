@@ -90,26 +90,62 @@ Each was looked at before the UI shipped.
    has been learned" lists the lesson. Its "1410" was stored before the number formatting fix; new lessons say "1,410".
    The early hang-up issue above it is still open (open item 3).
 
-## Still open (not fixed here, in order of how much they get in the way)
+## Closed on 2026-10-24 (each with a test that failed first)
 
-1. **The agents module lists the candidate version as the latest.**
-   - The `agent.get` versions list puts the experiment's treatment version first.
-   - Anything that takes "the latest version" as the live one picks the candidate. The walk script did this: it posted
-     control calls on the treatment until it was changed to read `campaign.agent_version_id`.
-   - Belongs to the agents module: mark candidate versions, or order by published-and-live.
-2. **Simulation passes when both versions fail everything.**
-   - With no simulation model in dev, both versions score 0 of 12, and "no regression" reads as a pass.
-   - With a real model this is a real comparison. A probe where the current version passes nothing should say
-     "inconclusive" rather than "passed".
-3. **The issue stays open after adoption.**
-   - The early hang-up issue that started the loop is not linked to the result.
-   - It should be annotated "a change was adopted on <date>; watching", and closed by its monitor once the rate falls.
-4. **The default pickers.**
+1. **The candidate version read as the latest.**
+   - Versions now have a kind: published or candidate (migration 0204).
+   - `agent.get` returns `liveVersion`.
+   - The readers that took "the newest version" were fixed. The campaign form and the inbound number form would have
+     run the untested change for everyone. The others were learning's proposal base, memory, the calls test-call
+     default, the publish parent and card, `version.diff`, and `version.restore`.
+   - `version.restore` to a candidate had published it to every call as a new version.
+   - `campaign.draft` refuses a candidate.
+2. **Simulation "passed" when both versions failed everything.** It now reads "inconclusive", with a note. The
+   proposal can still be tested on real calls.
+3. **The issue stayed open after adoption.**
+   - Adoption writes the change onto the issue that started it.
+   - The monitor closes the issue once the calls since it opened are at or under 80% of its threshold. That margin
+     stops it flapping at the line.
+   - The resolution names the change as "observed together, not proof".
+4. **The e2e test's one failure.** It was a connection-pool deadlock, not a wrong result.
+   - Calls check the experiment after every connected call. A check held the row lock and asked the pool for a second
+     connection, while the other checks waited on that lock holding the rest of the pool.
+   - Fix: a check that finds the row locked skips (`SKIP LOCKED`).
+   - Before the fix, the loop test hung on a pool of 3. After it, it passed on pools of 2, 3 and 10, and 15 of 15 runs
+     under load took 26-31 s.
+
+## Learning on real analysis shapes (2026-10-24)
+
+- **What learning reads now.**
+  - Before, learning's moment evidence read a table nothing writes, and it never saw insight themes.
+  - It now reads the moments analysis writes, by kind, with caller lines for objections, questions and confusion. It
+    also reads reason codes, outcomes (including none) and the agent's latest insight themes.
+  - A crisis call's words never reach the model, and an opt-out is counted, never quoted.
+- **The fixtures** (`product/tests/fixtures/analysed-calls.ts`) write the analysis bench's own synthetic cases in the
+  shapes analysis stores, with themes grounded by calls' own check.
+- **Objection handling.** A recurring objection theme (3+ calls, 5%+ of the sample, 2+ verified quotes) that no
+  existing note answers becomes one drafted objection note:
+  - an English note about behaviour, appended after the business's own notes, which stay unchanged;
+  - never the caller's words (`copied_quote`), never a line she could say (the agents compile lint now gates every
+    proposal).
+- **Found on the way.** A whole-list change re-judged the business's existing notes, and the insurance-renewal
+  template's own note tripped the reply door. That blocked every objection proposal on that template. Only text the
+  change writes new is judged now.
+
+## Still open (in order of how much they get in the way)
+
+1. **The dev server shows no themes.** Its sample analysis answers the insight request with "no themes" and emits only
+   question moments, by the calls module's design. So the objection flow can't be walked on the dev server; it is
+   proven on the fixtures.
+2. **The default pickers.**
    - The Insights agent picker and the funnel's campaign picker default to the first item, not the one with open work.
    - Small, but on a busy workspace the loop's cards can be off-screen.
-5. **`outcome.define` duplicates.** Defining "Renewal" twice makes two definitions. It should offer to reuse the existing
+3. **`outcome.define` duplicates.** Defining "Renewal" twice makes two definitions. It should offer to reuse the existing
    one.
-6. **Seeded call times** in `web/dev/seed.ts` can be later than now. Dev only.
+4. **Seeded call times** in `web/dev/seed.ts` can be later than now. Dev only.
+5. **Nested connections.** Other learning tools (probe, start, stop, propose's compile check) still take a second pooled
+   connection inside their own transaction. None waits on a lock held by its own kind, and they are person-driven, but
+   a pool-wide cap on nested calls is the general fix.
 
 Two things look like gaps but are designed states:
 - **The 7-day minimum and the 100-outcome A/A minimum.** The walk simulated 7 days by backdating `started_at`, and the
