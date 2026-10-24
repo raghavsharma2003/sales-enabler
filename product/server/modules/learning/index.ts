@@ -141,8 +141,11 @@ sentence she could say, never the caller's words, no quotes, no first person, no
 /** Moment kinds whose caller line may be shown to the model, as evidence of what people say. An opt-out is counted,
  *  never quoted: the words of someone who asked to be left alone are not material for persuading the next person. */
 const QUOTABLE_MOMENTS = ['objection', 'question', 'confusion', 'callback_request', 'commitment'];
-/** Calls whose words never reach the model that writes the brief: a person in crisis. */
-const NEVER_QUOTED = `(c.reason_code = 'END_CRISIS' OR coalesce(c.end_reason, '') = 'crisis_handoff' OR 'safety' = ANY(c.flags))`;
+/** Calls whose words never reach the model that writes the brief: a person in crisis, and a person who asked to be left
+ *  alone (opted out). Their calls still count; no line of theirs is quoted, from a moment, a theme or an outcome read. */
+const NEVER_QUOTED = `(c.reason_code IN ('END_CRISIS', 'END_OPTED_OUT') OR coalesce(c.end_reason, '') IN ('crisis_handoff', 'opt_out')
+  OR 'safety' = ANY(c.flags) OR 'opt_out' = ANY(c.flags)
+  OR EXISTS (SELECT 1 FROM call_moment o WHERE o.conversation_id = c.id AND o.workspace_id = c.workspace_id AND o.kind = 'opt_out'))`;
 
 /** What learning reads: the triggering issue and the agent's open issues; what analysis wrote on the live version's calls
  *  (moments counted by kind, with up to four caller lines per quotable kind; reason codes; outcomes, including none);
@@ -169,7 +172,8 @@ async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: V
     `SELECT coalesce(c.outcome, 'none') AS v, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, base.id])).map(r => [r.v, r.n]));
   const themes = await latestThemes(q, ws, agentId);
   const calls = await many<{ id: string; outcome: string | null; reason_code: string | null; judge: unknown }>(q,
-    `SELECT c.id, c.outcome, c.reason_code, c.analysis->'judge' AS judge FROM conversation c
+    // The AI's outcome read keeps its value and calibration; its quote is dropped for calls whose words are never shown.
+    `SELECT c.id, c.outcome, c.reason_code, CASE WHEN ${NEVER_QUOTED} AND jsonb_typeof(c.analysis->'judge') = 'object' THEN (c.analysis->'judge') - 'quote' ELSE c.analysis->'judge' END AS judge FROM conversation c
        WHERE c.workspace_id = $1 AND c.agent_version_id = ANY($2::uuid[]) AND ${LIVE}
        ORDER BY c.started_at DESC LIMIT 40`, [ws, versions]);
   const lessons = await many<{ text: string; status: string; change_hash: string | null }>(q,
