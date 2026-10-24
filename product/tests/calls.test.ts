@@ -10,7 +10,7 @@ import { reserve } from '../server/ledger.ts';
 import { setFakeLlm, type LlmRequest } from '../server/llm.ts';
 import { FakeRuntime, setRuntime, sign } from '../server/runtime-client.ts';
 import { tool, type Actor, type Registry } from '../server/tools.ts';
-import { obj, opt, str, uuid } from '../shared/validate.ts';
+import { any, obj, opt, str, uuid } from '../shared/validate.ts';
 import type { RunManifest, RuntimeEvent } from '../shared/runtime-protocol.ts';
 import { module as calls } from '../server/modules/calls/index.ts';
 import { module as agents } from '../server/modules/agents/index.ts';
@@ -34,7 +34,7 @@ const contactsStub: Module = { name: 'siblings-stub', register: r => {
     run: async (_ctx, i) => { suppressed.push(i.contactId); return { ok: true }; } }));
   r.register(tool(obj({ conversationId: uuid() }), { name: 'memory.extract', risk: 'draft', summary: 'stub', run: async (_ctx, i) => { extracted.push(i.conversationId); return {}; } }));
   r.register(tool(obj({ agentId: opt(uuid()) }), { name: 'experiment.list', risk: 'read', summary: 'stub', run: async (_ctx, i) => experiments.get(i.agentId ?? '') ?? [] }));
-  r.register(tool(obj({ attemptId: uuid(), outcome: str(), at: opt(str()) }), { name: 'attempt.retry_per_ladder', risk: 'external', summary: 'stub',
+  r.register(tool(obj({ attemptId: uuid(), outcome: str(), at: opt(str()), stated: opt(any()), statedNote: opt(any()) }), { name: 'attempt.retry_per_ladder', risk: 'external', summary: 'stub',
     run: async (_ctx, i) => { retried.push({ attemptId: i.attemptId, outcome: i.outcome }); return {}; } }));
   r.register(tool(obj({ experimentId: uuid() }), { name: 'experiment.check', risk: 'draft', summary: 'stub', run: async (_ctx, i) => { checked.push(i.experimentId); return {}; } }));
 } };

@@ -42,12 +42,18 @@ function List() {
 }
 
 // ---------- create ----------
-const PRESETS: [string, string][] = [['', 'Standard'], ['renewal', 'Renewal reminders'], ['lending', 'Payment reminders'], ['subscription', 'Subscription follow-up'], ['promotional', 'Promotional']];
+// The retry pattern the campaign runs (server campaigns/retry.ts RETRY_PATTERNS): what you see is what runs.
+const RETRY: [string, string, string][] = [
+  ['standard', 'Standard', 'Up to 3 calls each, 2 hours then a day apart, after busy, no answer or switched off.'],
+  ['gentle', 'Gentle', 'Up to 2 calls each, a day apart, after busy, no answer or switched off.'],
+  ['persistent', 'Persistent', 'Up to 4 calls each, 1 hour, 4 hours, then a day apart, after busy, no answer, switched off or voicemail.'],
+  ['none', 'No retries', 'One call each.'],
+];
 function Create() {
   const { act } = useApp(); const go = useNav();
   const agents = useData('agents', agentList);
   const auds = useData('audiences', audienceList);
-  const [f, setF] = useState({ name: '', category: '' as '' | 'service' | 'transactional' | 'promotional', agentId: '', audienceId: '', start: '10:00', end: '19:00', days: [1, 2, 3, 4, 5, 6], concurrency: 4, perDay: 2, perWeek: 5, cap: '', preset: '' });
+  const [f, setF] = useState({ name: '', category: '' as '' | 'service' | 'transactional' | 'promotional', agentId: '', audienceId: '', start: '10:00', end: '19:00', days: [1, 2, 3, 4, 5, 6], concurrency: 4, perDay: 2, perWeek: 5, cap: '', retry: 'standard' });
   const [busy, setBusy] = useState(false);
   const published = (agents.data ?? []).filter(a => a.latestVersion);
   const agentCat = published.find(a => a.id === f.agentId)?.category;
@@ -58,7 +64,7 @@ function Create() {
     let versionId: string | null = null;
     try { versionId = (await agentGet(f.agentId)).latestVersionId; } catch { /* handled below */ }
     if (!versionId) { setBusy(false); return; }
-    const r = await act<{ id: string; warnings?: string[] }>('campaign.draft', { name: f.name.trim(), category: f.category, agentVersionId: versionId, audienceId: f.audienceId, preset: f.preset || undefined,
+    const r = await act<{ id: string; warnings?: string[] }>('campaign.draft', { name: f.name.trim(), category: f.category, agentVersionId: versionId, audienceId: f.audienceId, retry: { pattern: f.retry },
       window: { days: f.days, ranges: [{ start: f.start, end: f.end }] }, budgets: { perDay: f.perDay, perWeek: f.perWeek, perRun: Math.min(30, f.perDay * 3) }, concurrency: f.concurrency, capInrMilli: f.cap ? Math.round(Number(f.cap) * 1000) : undefined }, { describe: 'Saved as a draft. No one has been called.' });
     setBusy(false);
     if (r.ok) go(`/campaigns/${r.result.id}`);
@@ -75,7 +81,7 @@ function Create() {
             <div className="formgrid"><TextField className="span2" label="Campaign name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="e.g. Renewals November" />
               <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField className="span2" label="Agent" value={f.agentId} onChange={e => { const a = published.find(x => x.id === e.target.value); setF({ ...f, agentId: e.target.value, category: (['service', 'transactional', 'promotional'].includes(a?.category ?? '') ? a!.category : f.category) as typeof f.category }); }} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : mismatch ? `This agent is set up for ${mismatch} calls and the campaign is set to ${f.category}. Choose ${mismatch} in step 1, or pick another agent.` : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
               <Async q={auds} what="Audiences" tool="audience.list">{d => <SelectField label="Who to call" value={f.audienceId} onChange={e => setF({ ...f, audienceId: e.target.value })} hint={(() => { const a = d.find(x => x.id === f.audienceId); return a ? `${a.callable == null ? '?' : count(a.callable)} callable of ${a.matched == null ? '?' : count(a.matched)}` : <Link to="/contacts/import">Import a list</Link>; })()}><option value="">Choose an audience</option>{d.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>}</Async>
-              <SelectField label="Retry pattern" value={f.preset} onChange={e => setF({ ...f, preset: e.target.value })} hint="How many days apart and at what hours she tries again.">{PRESETS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div></Card>
+              <SelectField label="Retry pattern" value={f.retry} onChange={e => setF({ ...f, retry: e.target.value })} hint={`${RETRY.find(r => r[0] === f.retry)?.[2] ?? ''} Never after a wrong number or an opt-out. A time the person asks for comes first, inside your hours.`}>{RETRY.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div></Card>
           <Card><CardHead title="3. When and how fast" sub="Times are in each contact's local time. The dial gate enforces the legal hours again at every attempt." />
             <div className="formgrid"><TextField label="From" type="time" value={f.start} onChange={e => setF({ ...f, start: e.target.value })} /><TextField label="To" type="time" value={f.end} onChange={e => setF({ ...f, end: e.target.value })} /></div>
             <fieldset className="chipset"><legend>Days</legend>{DAY_NAMES.map((d, i) => <label key={d} className={`choice${f.days.includes(i + 1) ? ' on' : ''}`}><input type="checkbox" checked={f.days.includes(i + 1)} onChange={() => setF({ ...f, days: f.days.includes(i + 1) ? f.days.filter(x => x !== i + 1) : [...f.days, i + 1].sort() })} />{d}</label>)}</fieldset>
@@ -135,7 +141,10 @@ function Detail({ id }: { id: string }) {
               <ul className="billing" style={{ marginTop: 8 }}>{c.counts.map((k, i) => <li key={i}><span>{prettyCode(k.status)}{k.code ? ` · ${prettyCode(k.code)}` : ''}</span><strong className="tnum">{count(k.n)}</strong></li>)}</ul></Card>}
             <Card><CardHead title="Window and policy" actions={c.state !== 'done' ? <div className="row">{c.state === 'draft' && <Btn size="sm" onClick={() => setCapOpen(true)}>{c.capInrMilli ? 'Change spend cap' : 'Set spend cap'}</Btn>}<Btn size="sm" onClick={() => setEdit(true)}>Change window</Btn></div> : undefined} />
               <dl className="kv"><WhoRows agentVersionId={c.agentVersionId} audienceId={c.audienceId} /><div><dt>Calling rules</dt><dd className="tnum">Version {c.policyVersion}</dd></div><div><dt>Hours</dt><dd className="tnum">{c.window.ranges.map(r => `${r.start} to ${r.end}`).join(', ') || '—'}</dd></div><div><dt>Days</dt><dd>{dayList(c.window.days) || '—'}</dd></div>
-                <div><dt>At once</dt><dd className="tnum">{c.concurrency ?? '—'}</dd></div><div><dt>Spend cap</dt><dd className="tnum">{c.capInrMilli ? inr(c.capInrMilli) : <NotMeasured>No cap set</NotMeasured>}</dd></div></dl></Card>
+                <div><dt>At once</dt><dd className="tnum">{c.concurrency ?? '—'}</dd></div><div><dt>Spend cap</dt><dd className="tnum">{c.capInrMilli ? inr(c.capInrMilli) : <NotMeasured>No cap set</NotMeasured>}</dd></div>
+                <div><dt>Retries</dt><dd>{c.retry || '—'}</dd></div></dl></Card>
+            {c.callbacks.length > 0 && <Card><CardHead title="Callbacks people asked for" sub="She calls at the time they gave, moved inside your calling hours when needed." />
+              <ul className="facts" data-testid="campaign-callbacks">{c.callbacks.map(b => <li key={b.attemptId}><Link to={`/contacts/${b.contactId}`}>{b.contactName || 'A contact'}</Link><p className="small">{b.text ?? 'Calling back at the time they asked'}</p></li>)}</ul></Card>}
             <Card><CardHead title="Calls" /><p className="small muted">Every call with its words, its reason and its cost.</p><Link to={`/calls?campaign=${c.id}`}>Open this campaign's calls</Link></Card>
           </div>
         </div>

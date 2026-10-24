@@ -11,10 +11,11 @@ import { many, one, type Queryable } from '../../db.ts';
 import { complete } from '../../llm.ts';
 import { tool, type PrepareCtx, type Registry, type ToolCtx } from '../../tools.ts';
 import { bool, num, obj, opt, record, str, uuid } from '../../../shared/validate.ts';
-import { compileBrief, type BriefFact } from './brief.ts';
+import { compileBrief, type BriefFact, type BriefLead } from './brief.ts';
 import { forgetContactMemory } from './forget.ts';
 import { contactMinorStatus } from './minor.ts';
 import { purgeTranscripts } from './transcript-purge.ts';
+import { dayTime } from '../campaigns/retry.ts';
 import { AUTHORITY, BASES, KEYS, PURPOSES, REFUSED, RETENTION_DAYS, gate, valueOk, type Drop, type Purpose } from './gates.ts';
 
 interface Policy { enabled: boolean; undoMinutes: number; allowedCategories: Record<string, string> }
@@ -187,7 +188,22 @@ async function usableFacts(q: Queryable, ws: string, contactId: string, purpose:
   return rows.map(r => ({ id: r.id, kind: r.kind, key: r.key, value: String(r.value), saidAt: r.said_at }));
 }
 
-async function brief(ctx: ToolCtx, i: { contactId: string; agentId: string }) {
+/** A callback this person asked for, when this dial is that callback: only from an attempt in this workspace for this
+ *  contact, whose stored words are still an exact caller line of the call they were said on (a purged or erased
+ *  transcript loses it). A shape: when they asked to be called, never their words. */
+async function callbackLead(q: Queryable, ws: string, contactId: string, attemptId: string): Promise<BriefLead | null> {
+  const a = await one<{ cb: { quote?: string; conversationId?: string; at?: string } | null; tz: string }>(q, `SELECT a.callback AS cb, coalesce(ct.timezone, 'Asia/Kolkata') AS tz
+    FROM attempt a JOIN contact ct ON ct.id = a.contact_id AND ct.workspace_id = a.workspace_id
+    WHERE a.id = $1 AND a.workspace_id = $2 AND a.contact_id = $3 AND a.kind = 'callback'`, [attemptId, ws, contactId]);
+  if (!a?.cb?.quote || !a.cb.conversationId || !a.cb.at) return null;
+  const said = await one<{ at: Date }>(q, `SELECT coalesce(cv.ended_at, cv.started_at) AS at FROM conversation cv
+    WHERE cv.id = $1 AND cv.workspace_id = $2 AND cv.contact_id = $3 AND cv.transcript_purged_at IS NULL
+      AND EXISTS (SELECT 1 FROM turn t WHERE t.conversation_id = cv.id AND t.speaker = 'caller' AND strpos(t.text, $4) > 0)`, [a.cb.conversationId, ws, contactId, a.cb.quote]);
+  if (!said) return null;
+  return { label: 'callback', key: 'they_asked_for', value: dayTime(new Date(a.cb.at), a.tz), saidAt: said.at };
+}
+
+async function brief(ctx: ToolCtx, i: { contactId: string; agentId: string; attemptId?: string }) {
   const { q, workspaceId: ws } = ctx;
   const empty = (status: string) => ({ text: '', status, factIds: [] as string[], bytes: 0 });
   if (!(await one(q, 'SELECT 1 FROM contact WHERE id = $1 AND workspace_id = $2', [i.contactId, ws]))) return empty('unknown_contact');
@@ -199,8 +215,9 @@ async function brief(ctx: ToolCtx, i: { contactId: string; agentId: string }) {
   const age = await contactMinorStatus(q, ws, i.contactId);
   if (age === 'minor' || age === 'unclear') return empty(age === 'minor' ? 'minor' : 'age_unclear');
   const facts = await usableFacts(q, ws, i.contactId, am.purpose);
-  if (!facts.length) return empty('empty');
-  const b = compileBrief(facts);       // throws BriefTooLarge; the registry returns not_executed and the caller dials without memory
+  const lead = i.attemptId ? await callbackLead(q, ws, i.contactId, i.attemptId) : null;
+  if (!facts.length && !lead) return empty('empty');
+  const b = compileBrief(facts, new Date(), lead ?? undefined);       // throws BriefTooLarge; the registry returns not_executed and the caller dials without memory
   return { text: b.text, status: 'ok', factIds: b.factIds, bytes: b.bytes };
 }
 
@@ -249,7 +266,7 @@ export const module: Module = {
       run: (ctx, i, prepared) => extract(ctx, i.conversationId, prepared as Prepared | undefined),
     }));
 
-    r.register(tool(obj({ contactId: uuid(), agentId: uuid() }), {
+    r.register(tool(obj({ contactId: uuid(), agentId: uuid(), attemptId: opt(uuid()) }), {
       name: 'memory.brief', risk: 'read', summary: "the contact's usable memory for this agent's purpose, as notes of at most 1200 bytes",
       run: brief,
     }));

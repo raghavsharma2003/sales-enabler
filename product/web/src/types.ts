@@ -50,7 +50,7 @@ export interface ContactDoc {
   consent: { id: string; purpose: string; channel: string; basis: string; source: string | null; granted: boolean; created_at: string }[];
   suppressions: { id: string; reason: string; scope: string; created_at?: string }[];
   service: { allowed: boolean; reasons: string[] }; promotional: { allowed: boolean; reasons: string[] };
-  attempts: { id: string; status: string; blocked_by: string | null; precheck: { allowed?: boolean; code?: string; explain?: { message: string; why?: string } } | null; outcome_class: string | null; dialed_at: string | null; created_at: string; conversation_id: string | null; campaign_id: string }[];
+  attempts: { id: string; status: string; kind?: string; callback_text?: string | null; blocked_by: string | null; precheck: { allowed?: boolean; code?: string; explain?: { message: string; why?: string } } | null; outcome_class: string | null; dialed_at: string | null; created_at: string; conversation_id: string | null; campaign_id: string }[];
   memory: { optedOut: boolean; facts: { id: string; conversationId: string | null; key: string; value: string; quote: string | null; purpose: string; basis: string; status: string; usable: boolean; saidAt: string | null }[] } | null;
 }
 export interface ImportColumn { header: string; sample: string[]; field: string; key?: string; confidence: number; why: string }
@@ -69,6 +69,7 @@ export interface CampaignDoc {
   id: string; name: string; category: string; state: string; policyVersion: number; agentVersionId: string | null; audienceId: string | null;
   window: { days: number[]; ranges: { start: string; end: string }[] }; concurrency: number | null; capInrMilli: number | null; preset?: string;
   counts: { status: string; n: number; code?: string | null }[]; blockers: Blocker[]; version: string;
+  retry: string; callbacks: { attemptId: string; contactId: string; contactName: string | null; at: string; text: string | null }[];
 }
 export interface Estimate { people: number; attempts: number; connectedMinutes: number; perMinuteInrMilli: number | null; p10InrMilli: number; p90InrMilli: number; suggestedCapInrMilli: number | null; basis: string; gstIncluded: boolean }
 export interface FunnelStage { key: string; label: string; n: number | null; note?: string }

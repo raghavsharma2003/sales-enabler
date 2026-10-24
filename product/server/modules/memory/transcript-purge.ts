@@ -8,6 +8,7 @@
 //   conversation    transcript [], analysis with every free-text field removed (counts, codes and verdicts kept)
 //   call_moment     quote and note NULL          outcome   evidence.quote removed
 //   hand_off        brief.summary removed        call_insight   quotes from this call removed from each theme
+//   attempt         callback.quote removed (a callback asked for on this call keeps its time)
 // An erased person's verified outcomes lose their reference and amount (redactErasedOutcomes).
 // Not touched here: memory facts (their own retention and forget), safety and opt-out records (the audit of what the
 // agent was stopped from saying and of the opt-out itself), follow-up payloads (operational messages, not the transcript).
@@ -64,6 +65,8 @@ async function purgeOne(c: pg.PoolClient, id: string, ws: string, reason: Transc
   if (analysis) await c.query('UPDATE conversation SET analysis = $3 WHERE id = $1 AND workspace_id = $2', [id, ws, JSON.stringify(redactAnalysis(analysis))]);
   await c.query("UPDATE turn SET text = '', heard_text = NULL WHERE conversation_id = $1", [id]);
   await c.query('UPDATE call_moment SET quote = NULL, note = NULL WHERE conversation_id = $1 AND workspace_id = $2', [id, ws]);
+  // A callback asked for on this call keeps its time and loses the words it was read from.
+  await c.query("UPDATE attempt SET callback = callback - 'quote' WHERE workspace_id = $1 AND callback->>'conversationId' = $2", [ws, id]);
   await c.query("UPDATE outcome SET evidence = evidence - 'quote' WHERE conversation_id = $1 AND workspace_id = $2", [id, ws]);
   await c.query("UPDATE hand_off SET brief = brief - 'summary' WHERE conversation_id = $1 AND workspace_id = $2 AND jsonb_typeof(brief) = 'object'", [id, ws]);
   // Cross-call themes keep verbatim quotes with the call they came from; drop this call's, keep the theme and its counts.

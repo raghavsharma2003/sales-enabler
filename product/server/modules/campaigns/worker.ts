@@ -168,13 +168,13 @@ export function ticketFacts(facts: Fact[], category: string, vars: Record<string
 const truncBytes = (s: string, max: number) => { const b = Buffer.from(s, 'utf8'); return b.length <= max ? s : b.subarray(0, max).toString('utf8').replace(/�+$/, ''); };
 
 /** memory.brief through the registry (the memory module owns it). Missing tool -> 'none'; slower than 800 ms -> 'not_loaded_timeout'. */
-export async function memoryBrief(d: WorkerDeps, ws: string, contactId: string | null, agentId: string, enabled: boolean): Promise<Pick<CallTicket['contact'], 'memoryBrief' | 'memoryStatus'>> {
+export async function memoryBrief(d: WorkerDeps, ws: string, contactId: string | null, agentId: string, enabled: boolean, attemptId?: string): Promise<Pick<CallTicket['contact'], 'memoryBrief' | 'memoryStatus'>> {
   if (!enabled) return { memoryBrief: '', memoryStatus: 'disabled' };
   if (!contactId || !d.registry.get('memory.brief')) return { memoryBrief: '', memoryStatus: 'none' };
   let timer: NodeJS.Timeout | undefined;
   try {
     const r = await Promise.race([
-      d.registry.execute<{ text?: string; status?: string }>(d.pool, 'memory.brief', { contactId, agentId }, { workspaceId: ws, actor: SYSTEM }),
+      d.registry.execute<{ text?: string; status?: string }>(d.pool, 'memory.brief', { contactId, agentId, ...(attemptId ? { attemptId } : {}) }, { workspaceId: ws, actor: SYSTEM }),
       new Promise<'timeout'>(res => { timer = setTimeout(() => res('timeout'), MEMORY_BRIEF_TIMEOUT_MS); }),
     ]);
     if (r === 'timeout') return { memoryBrief: '', memoryStatus: 'not_loaded_timeout' };
@@ -209,7 +209,7 @@ export async function buildTicket(d: WorkerDeps, a: AttemptRow, v: GatePass, con
   const ro = rowOverrides(v.version.config.agent!, row);
   const agent = ro.agent;
   const stack = resolveStack(agent.voice);   // G10 already refused a voice setting that names no stack
-  const mem = await memoryBrief(d, a.workspace_id, v.contact?.id ?? null, v.version.agent_id, agent.memory?.read !== false);
+  const mem = await memoryBrief(d, a.workspace_id, v.contact?.id ?? null, v.version.agent_id, agent.memory?.read !== false, a.kind === 'callback' ? a.id : undefined);   // a callback they asked for leads the brief
   const stored = { ...(v.contact?.custom ?? {}), ...(v.contact ? await freshAttributes(d, v.contact.id, (agent.facts ?? []).filter(f => f.perContact).map(f => f.key)) : {}) };
   return {
     protocol: 1, conversationId, attemptId: a.id, workspaceId: a.workspace_id, direction: 'outbound',

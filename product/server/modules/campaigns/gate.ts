@@ -2,6 +2,7 @@
 // every path: campaign, api, single, test, retry, callback, transfer. It holds money before any I/O (G9) and
 // releases the hold itself when a later check refuses. Every check fails closed: a check that cannot run (a bad
 // time zone, a query error) refuses with check_unavailable, inside a savepoint so the claim can still record why.
+import type { RetryPolicy } from './retry.ts';
 import { createHash, createHmac } from 'node:crypto';
 import type { AgentConfig, CallCategory } from '../../../shared/agent-config.ts';
 import { numberHash } from '../../identity.ts';
@@ -45,6 +46,8 @@ export interface CampaignPolicy {
   reviewStopAfter?: number; preset?: string; categoryOverride?: { from: CallCategory; reason: string; by: string };
   /** Contacts who prefer one of these languages meet that version (campaigns/languages.ts); variants route on their own. */
   languageRoutes?: { language: string; agentVersionId: string }[];
+  /** The form's retry pattern (campaigns/retry.ts). Absent on older campaigns: the service ladder applies. */
+  retry?: RetryPolicy;
 }
 
 export interface VersionRow { id: string; hash: string; kind?: string; config: { agent?: AgentConfig; brief?: { text: string; hash: string; bytes: number }; lint?: { ok: boolean } }; agent_status: string; agent_id: string }

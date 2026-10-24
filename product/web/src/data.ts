@@ -172,7 +172,7 @@ export async function campaignGet(id: string): Promise<CampaignDoc> {
   const c = r.campaign, p = c.policy ?? {};
   return { id: c.id, name: c.name, category: c.call_category, state: c.state, policyVersion: c.policy_version, agentVersionId: c.agent_version_id, audienceId: c.audience_id,
     window: p.window ?? { days: [], ranges: [] }, concurrency: p.concurrency ?? null, capInrMilli: p.capInrMilli ?? null, preset: p.preset, counts: arr(r.counts),
-    blockers: arr<Blocker>(r.blockers), version: r.version };
+    blockers: arr<Blocker>(r.blockers), version: r.version, retry: r.retry ?? '', callbacks: arr(r.callbacks) };
 }
 export async function campaignEstimate(id: string): Promise<Estimate> { return run<Estimate>('campaign.estimate', { id }); }
 export async function campaignFunnel(campaignId: string, audienceId: string | null): Promise<FunnelStage[]> {

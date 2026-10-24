@@ -313,6 +313,19 @@ export interface ToolInput {
     outcome: "busy" | "no_answer" | "switched_off" | "voicemail" | "short_call" | "provider_error" | "dropped_by_vp" | "callback" | "relative_answered" | "unknown" | "opt_out" | "wrong_party" | "invalid" | "operator_block" | "completed";
     /** ISO 8601 time with offset */
     at?: string;
+    /** a callback time the caller stated, read from their own words */
+    stated?: {
+      /** ISO 8601 time with offset */
+      at: string;
+      quote: string;
+      conversationId: string;
+    };
+    /** they asked for a callback but named no clear time */
+    statedNote?: {
+      note: string;
+      quote: string;
+      conversationId: string;
+    };
   };
   /** Save an audience: a filter over attributes (re-evaluated each time) or a fixed list of people (draft) */
   "audience.create": {
@@ -488,6 +501,14 @@ export interface ToolInput {
     /** an audience id from audience.list */
     audienceId?: string;
     preset?: "renewal" | "lending" | "subscription" | "promotional";
+    retry?: {
+      /** standard, gentle, persistent or none */
+      pattern?: "standard" | "gentle" | "persistent" | "none";
+      /** calls per person in all, the first included */
+      maxAttempts?: number;
+      gapsMin?: number[];
+      retryOn?: ("busy" | "no_answer" | "switched_off" | "voicemail" | "short_call")[];
+    };
     /** calling window: days 1 (Mon) - 7 (Sun), ranges in the contact's local time */
     window?: {
       days: number[];
@@ -911,6 +932,7 @@ export interface ToolInput {
   "memory.brief": {
     contactId: string;
     agentId: string;
+    attemptId?: string;
   };
   /** remember what the caller said that matters for the next call (gated; never from test calls) (draft) */
   "memory.extract": {

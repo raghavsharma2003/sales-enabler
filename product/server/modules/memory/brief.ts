@@ -31,14 +31,18 @@ export function age(saidAt: Date, now: Date): string {
 // Values are already linted at write; this keeps the shape (no quotes, separators or line breaks inside a value).
 const shape = (v: string) => v.replace(/["'“”‘’|;=\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
 
+/** A note that is not a remembered fact but leads the brief when it applies: a callback the person asked for on this call. */
+export interface BriefLead { label: string; key: string; value: string; saidAt: Date }
+
 /** Compile the brief. Returns the text and the fact ids it used (for the run manifest). Throws BriefTooLarge. */
-export function compileBrief(facts: BriefFact[], now: Date = new Date()): { text: string; factIds: string[]; bytes: number } {
+
+export function compileBrief(facts: BriefFact[], now: Date = new Date(), lead?: BriefLead): { text: string; factIds: string[]; bytes: number } {
   const newest = new Map<string, BriefFact>();
   for (const f of [...facts].sort((a, b) => b.saidAt.getTime() - a.saidAt.getTime())) {
     const k = `${f.kind}.${f.key}`;
     if (!newest.has(k)) newest.set(k, f);       // within a key the newest value wins; contradictions never both appear
   }
-  const parts: string[] = [], ids: string[] = [];
+  const parts: string[] = lead ? [`${lead.label}: ${lead.key}=${shape(lead.value)} (${age(lead.saidAt, now)})`] : [], ids: string[] = [];
   for (const g of GROUPS) {
     const rows = [...newest.values()].filter(f => f.kind === g.kind)
       .sort((a, b) => b.saidAt.getTime() - a.saidAt.getTime()).slice(0, g.max);

@@ -22,6 +22,7 @@ import {
 } from './defaults.ts';
 import { loadDialPolicy, loadVersion, type CampaignPolicy, type CampaignRow } from './gate.ts';
 import { tick } from './worker.ts';
+import { callbackText, clampToWindow, describeRetry, nextByPattern, resolveRetry, retryInput, RETRYABLE } from './retry.ts';
 import { categoryWord, lineNeeded, windowProblem, type Explained } from './explain.ts';
 import { verifyConfirm, verifyStart } from './verify.ts';
 // The one money import: the wallet blocker's words and the per-call hold, shared with the money module's wallet.check.
@@ -214,7 +215,7 @@ export function registerCampaignTools(registry: Registry): void {
     id: opt(uuid()), name: str({ min: 1, max: 120 }), category: categoryV,
     agentVersionId: opt(described(uuid(), 'a PUBLISHED agent version id (version.list, or agent.get versions[].id), not the agent id; publish a draft with version.publish first')),
     audienceId: opt(described(uuid(), 'an audience id from audience.list')),
-    preset: opt(str({ oneOf: Object.keys(BUDGET_PRESETS) })), window: opt(windowV), budgets: opt(budgetsV),
+    preset: opt(str({ oneOf: Object.keys(BUDGET_PRESETS) })), retry: retryInput, window: opt(windowV), budgets: opt(budgetsV),
     concurrency: opt(num({ int: true, min: 1, max: 1000 })), cliPool: opt(arr(uuid(), { max: 50 })),
     perMinuteInrMilli: opt(num({ int: true, min: 1, max: 100_000 })), maxDurationS: opt(num({ int: true, min: 30, max: 3600 })),
     capInrMilli: opt(num({ int: true, min: 1 })), startAt: opt(iso()), endAt: opt(iso()), predialUrl: opt(str({ pattern: /^https:\/\//, max: 500 })),
@@ -257,6 +258,7 @@ export function registerCampaignTools(registry: Registry): void {
         ...(i.perMinuteInrMilli ? { perMinuteInrMilli: i.perMinuteInrMilli } : {}), ...(i.maxDurationS ? { maxDurationS: i.maxDurationS } : {}),
         ...(i.capInrMilli ? { capInrMilli: i.capInrMilli } : {}), ...(i.startAt ? { startAt: i.startAt } : {}), ...(i.endAt ? { endAt: i.endAt } : {}),
         ...(i.predialUrl ? { predial: { url: i.predialUrl } } : {}), ...(i.languageRoutes ? { languageRoutes: i.languageRoutes } : {}),
+        ...(i.retry || prev?.policy.retry ? { retry: resolveRetry(i.retry, prev?.policy.retry) } : {}),
       };
       if (prev) {
         await setPolicy(ctx.q, prev, policy, { name: i.name, call_category: category, agent_version_id: i.agentVersionId ?? prev.agent_version_id, audience_id: i.audienceId ?? prev.audience_id });
@@ -720,7 +722,13 @@ export function registerCampaignTools(registry: Registry): void {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id);
       const counts = await many(ctx.q, `SELECT status, blocked_by, count(*)::int AS n FROM attempt WHERE campaign_id = $1 AND workspace_id = $2
         GROUP BY status, blocked_by ORDER BY n DESC`, [c.id, ctx.workspaceId]);
-      return { campaign: c, counts, blockers: c.state === 'draft' ? await launchBlockers(ctx.q, ctx.workspaceId, c) : [],
+      // Callbacks people asked for that are still to come: "Calling back Sat 6:10 pm, as they asked".
+      const callbacks = await many(ctx.q, `SELECT a.id AS "attemptId", a.contact_id AS "contactId", ct.name AS "contactName", a.scheduled_for AS at, a.callback->>'text' AS text
+        FROM attempt a JOIN contact ct ON ct.id = a.contact_id AND ct.workspace_id = a.workspace_id
+        WHERE a.campaign_id = $1 AND a.workspace_id = $2 AND a.kind = 'callback' AND a.status IN ('created','queued') AND ct.erased_at IS NULL
+        ORDER BY a.scheduled_for LIMIT 50`, [c.id, ctx.workspaceId]);
+      return { campaign: c, counts, retry: c.policy.retry ? describeRetry(c.policy.retry) : 'Service default: busy and no answer are tried again a few times; never after a wrong number or an opt-out.', callbacks,
+        blockers: c.state === 'draft' ? await launchBlockers(ctx.q, ctx.workspaceId, c) : [],
         warnings: c.state === 'draft' ? await launchWarnings(ctx.q, ctx.workspaceId, c) : [], version: await campaignVersion(ctx.q, ctx.workspaceId, c.id) };
     },
   }));
@@ -729,7 +737,8 @@ export function registerCampaignTools(registry: Registry): void {
     name: 'attempt.list', risk: 'read', summary: 'Attempts with their precheck: why someone was or was not called, and when they next can be',
     run: async (ctx, i) => ({
       attempts: await many(ctx.q, `SELECT id, campaign_id, contact_id, kind, status, blocked_by, next_eligible_at, scheduled_for, precheck, number_id, cli_e164,
-          outcome_class, retry_of, dialed_at, dispatched_at, conversation_id, created_at
+          outcome_class, retry_of, dialed_at, dispatched_at, conversation_id, created_at,
+          callback - 'quote' AS callback, coalesce(callback->>'text', callback->>'note') AS callback_text
         FROM attempt WHERE workspace_id = $1 AND ($2::uuid IS NULL OR campaign_id = $2::uuid) AND ($3::uuid IS NULL OR contact_id = $3::uuid)
           AND ($4::text IS NULL OR status = $4) ORDER BY created_at DESC LIMIT $5`,
         [ctx.workspaceId, i.campaignId ?? null, i.contactId ?? null, i.status ?? null, i.limit ?? 100]),
@@ -738,7 +747,9 @@ export function registerCampaignTools(registry: Registry): void {
 
   // ---- the ladder (A3 when VP runs it) ----
 
-  reg(tool(obj({ attemptId: uuid(), outcome: str({ oneOf: OUTCOME_CLASSES }), at: opt(iso()) }), {
+  reg(tool(obj({ attemptId: uuid(), outcome: str({ oneOf: OUTCOME_CLASSES }), at: opt(iso()),
+    stated: opt(obj({ at: iso(), quote: str({ min: 1, max: 200 }), conversationId: uuid() }, 'a callback time the caller stated, read from their own words')),
+    statedNote: opt(obj({ note: str({ min: 1, max: 200 }), quote: str({ min: 1, max: 200 }), conversationId: uuid() }, 'they asked for a callback but named no clear time')) }), {
     name: 'attempt.retry_per_ladder', risk: 'external', summary: 'Schedule the next attempt by the retry ladder for this outcome (unknown outcomes are never retried)',
     describe: async (i, ctx) => `Retry ${await label(ctx, 'attempt', i.attemptId)} after a ${i.outcome} outcome`,
     run: async (ctx, i) => {
@@ -751,6 +762,54 @@ export function registerCampaignTools(registry: Registry): void {
       const rule = RETRY_LADDER[outcome];
       await ctx.q.query('UPDATE attempt SET outcome_class = $2, counts_to_budget = counts_to_budget AND $3 WHERE id = $1', [a.id, outcome, rule.countsToBudget]);
       if (a.kind === 'test') return { scheduled: false, reason: 'test calls are not retried' };
+      // An erased or suppressed person is never retried, whatever the ladder says (the dial gate would refuse anyway).
+      if (a.contact_id) {
+        const who = await one<{ erased: boolean; suppressed: boolean }>(ctx.q, `SELECT ct.erased_at IS NOT NULL AS erased, EXISTS (SELECT 1 FROM suppression s
+            WHERE s.workspace_id = ct.workspace_id AND (s.contact_id = ct.id OR s.e164 = ct.e164) AND (s.scope = 'workspace' OR s.scope_id = $3)) AS suppressed
+          FROM contact ct WHERE ct.id = $1 AND ct.workspace_id = $2`, [a.contact_id, ctx.workspaceId, a.campaign_id]);
+        if (who?.erased) return { scheduled: false, reason: 'the person was erased' };
+        if (who?.suppressed) return { scheduled: false, reason: 'the person is suppressed (opted out or blocked)' };
+      }
+      if (outcome === 'opt_out') return { scheduled: false, reason: 'no retry after an opt-out' };
+      if (i.statedNote && !i.stated) {
+        await ctx.q.query('UPDATE attempt SET callback = $2 WHERE id = $1', [a.id, JSON.stringify({ note: i.statedNote.note, quote: i.statedNote.quote, conversationId: i.statedNote.conversationId })]);
+        return { scheduled: false, reason: i.statedNote.note };
+      }
+      const existingStated = i.stated ? await one<{ id: string }>(ctx.q, 'SELECT id FROM attempt WHERE workspace_id = $1 AND idempotency_key = $2', [ctx.workspaceId, 'retry:' + a.id]) : null;
+      if (existingStated) return { scheduled: true, attemptId: existingStated.id, replayed: true };
+      const chain = (await one<{ n: number; callbacks: number }>(ctx.q, `WITH RECURSIVE chain AS (
+          SELECT id, retry_of, kind FROM attempt WHERE id = $1
+          UNION ALL SELECT p.id, p.retry_of, p.kind FROM attempt p JOIN chain ch ON p.id = ch.retry_of)
+        SELECT count(*)::int AS n, count(*) FILTER (WHERE kind = 'callback')::int AS callbacks FROM chain`, [a.id]))!;
+      const campaign = a.campaign_id ? await getCampaign(ctx.q, ctx.workspaceId, a.campaign_id) : null;
+      if (campaign && ['completed', 'cancelled'].includes(campaign.state)) return { scheduled: false, reason: `the campaign is ${campaign.state}` };
+      const category = ((campaign?.call_category ?? a.call_category) as CallCategory) ?? 'service';
+      const ctz = a.contact_id ? (await one<{ timezone: string }>(ctx.q, 'SELECT timezone FROM contact WHERE id = $1', [a.contact_id]))?.timezone ?? 'Asia/Kolkata' : 'Asia/Kolkata';
+      const dp = await loadDialPolicy(ctx.q, ctx.workspaceId);
+      const insert = async (kind: 'retry' | 'callback', at: Date, callback: unknown) => (await one<{ id: string }>(ctx.q, `INSERT INTO attempt (workspace_id, campaign_id, contact_id, to_e164, kind,
+          scheduled_for, agent_version_id, call_category, facts, retry_of, idempotency_key, api_key_id, requested_by, callback) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id`,
+        [ctx.workspaceId, a.campaign_id, a.contact_id, a.to_e164, kind, at, a.agent_version_id, a.call_category, JSON.stringify(a.facts ?? {}),
+          a.id, 'retry:' + a.id, a.api_key_id, actorRef(ctx), callback === null ? null : JSON.stringify(callback)]))!.id;
+      // A time the caller stated beats the ladder for this person, clamped into the calling window and TRAI's hours.
+      if (i.stated) {
+        if (chain.callbacks >= 2) return { scheduled: false, reason: 'this person has already been called back twice at a time they asked; a person should follow up' };
+        const want = new Date(i.stated.at);
+        const at = clampToWindow(want, ctz, category, campaign?.policy.window, dp);
+        if (!at) return { scheduled: false, reason: 'no time inside the calling hours is left for the time they asked' };
+        const clamped = at.getTime() !== want.getTime();
+        const text = callbackText(at, ctz, clamped);
+        const id = await insert('callback', at, { statedAt: want.toISOString(), at: at.toISOString(), clamped, quote: i.stated.quote, conversationId: i.stated.conversationId, text });
+        return { scheduled: true, attemptId: id, at: at.toISOString(), stated: true, clamped, text };
+      }
+      // The campaign's own pattern for endings where the person did not pick up.
+      if (campaign?.policy.retry && ((RETRYABLE as readonly string[]).includes(outcome) || ['invalid', 'wrong_party', 'completed', 'unknown', 'operator_block'].includes(outcome))) {
+        const next = nextByPattern(campaign.policy.retry, outcome, chain.n, a.dialed_at ?? new Date());
+        if ('reason' in next) return { scheduled: false, reason: next.reason, pattern: describeRetry(campaign.policy.retry) };
+        const existing = await one<{ id: string }>(ctx.q, 'SELECT id FROM attempt WHERE workspace_id = $1 AND idempotency_key = $2', [ctx.workspaceId, 'retry:' + a.id]);
+        if (existing) return { scheduled: true, attemptId: existing.id, replayed: true };
+        const at = clampToWindow(next.at, ctz, category, campaign.policy.window, dp) ?? next.at;
+        return { scheduled: true, attemptId: await insert('retry', at, null), at: at.toISOString(), step: chain.n, of: campaign.policy.retry.maxAttempts - 1, pattern: campaign.policy.retry.pattern };
+      }
       if (!rule.steps.length) return { scheduled: false, reason: outcome === 'unknown' ? 'unknown outcomes are never retried automatically' : `no retry after ${outcome}` };
       const existing = await one<{ id: string }>(ctx.q, 'SELECT id FROM attempt WHERE workspace_id = $1 AND idempotency_key = $2', [ctx.workspaceId, 'retry:' + a.id]);
       if (existing) return { scheduled: true, attemptId: existing.id, replayed: true };
