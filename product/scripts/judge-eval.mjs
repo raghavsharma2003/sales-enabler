@@ -79,7 +79,7 @@ for (const c of doc.cases) {
 for (const f of (opt('set') ? opt('set').split(',') : [])) {
   const set = JSON.parse(readFileSync(f, 'utf8'));
   const tag = f.split('/').pop().replace(/\.json$/, '');
-  const add = (list, t, truth, kind) => { if (wants(t)) rows.push(...(list ?? []).map((x, i) => ({ id: `${tag}.${kind}.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, task: t, truth }))); };
+  const add = (list, t, truth, kind) => { if (wants(t)) rows.push(...(list ?? []).map((x, i) => ({ id: `${tag}.${kind}.${i + 1}`, source: tag, lang: x.lang ?? 'unknown', text: x.text, persona: x.persona, task: t, truth }))); };
   add(set.caller_crisis, 'crisis', true, 'crisis'); add(set.caller_benign, 'crisis', false, 'benign');
   add(set.opt_out, 'opt_out', true, 'opt_out'); add(set.benign, 'opt_out', false, 'benign');
   if (briefTask) { add(set.flag, 'brief_review', true, 'flag'); add(set.pass, 'brief_review', false, 'pass'); }
@@ -125,17 +125,17 @@ const costOf = u => u && priceIn !== null && priceOut !== null ? (u.inputTokens 
 
 /** Ask the judge about one line. The floor's own verdict is read separately; here the model is always asked, so the
  *  judge's recall is measured on every line (judgeCallerCrisis skips the model when the floor already fired). */
-async function askBrief(text) {
+async function askBrief(text, persona) {
   const c = structuredClone(briefBase);
-  c.persona = { ...c.persona, notes: text.split('\n').map(x => x.trim()).filter(Boolean) };
+  c.persona = { ...c.persona, ...(persona ?? {}), notes: text.split('\n').map(x => x.trim()).filter(Boolean) };
   const r = await review.reviewBrief(c, { assumeConfigured: true, threshold: 0, alwaysAsk: true });
   const mine = f => f.path.startsWith('persona.notes');
   const top = r.model.filter(mine).sort((a, b) => b.confidence - a.confidence)[0];
   return { floor: r.rules.some(mine), floorOptOut: false, judge: r.mode === 'model' ? { confidence: top?.confidence ?? 0, kind: top?.kind ?? 'none' } : null,
     event: r.mode === 'unavailable' ? { type: 'judge_unavailable', reason: r.reason } : null, latencyMs: r.latencyMs ?? 0, usage: r.usage ?? null };
 }
-async function ask(text) {
-  if (briefTask) return askBrief(text);
+async function ask(text, persona) {
+  if (briefTask) return askBrief(text, persona);
   const saved = CRISIS_JUDGE.skip_when_floor_fires;
   CRISIS_JUDGE.skip_when_floor_fires = false;
   try { return await judgeCallerCrisis(text, { mode: 'shadow', assumeConfigured: true }); }
@@ -151,7 +151,7 @@ async function worker() {
     requests++;                                   // counted before the wait, so concurrent workers never overshoot the cap
     const r = rows[next++];
     await slot();
-    const res = await ask(r.text);
+    const res = await ask(r.text, r.persona);
     spentInr += costOf(res.usage);
     const v = res.judge;
     // The label for this row's task, as the judge read it (its own recall; the raise-time precedence rules are not applied).

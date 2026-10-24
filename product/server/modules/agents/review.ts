@@ -12,7 +12,7 @@ type Kind = 'human' | 'hide_ai' | 'crisis' | 'manipulation';
 interface Contract {
   llm_purpose: string; threshold: number; timeout_ms: number; max_input_chars: number; max_field_chars: number; max_tokens: number;
   temperature: number; kinds: Record<Kind, HardRule>; labels: { model: string; rules_only: string; unavailable: string };
-  system_prompt: string; user_template: string;
+  system_prompt: string; user_template: string; context_template: string;
 }
 export const BRIEF_REVIEW = contract as unknown as Contract;
 const PURPOSE = BRIEF_REVIEW.llm_purpose as Purpose;
@@ -45,8 +45,19 @@ function fields(v: unknown, path: string, out: [string, string][] = []): [string
   return out;
 }
 const SKIP = /^(agentId|versionHash|job|category|voice\.|brand\.verifiedDomains|sectorPacks|languages\.|goals\[\d+\]\.id$|facts\[\d+\]\.(key|purpose|source)$)/;
+// Persona and brand settings (name, gender, register, energy, humour, honorific; the brand's names) are not instructions:
+// a persona name is allowed while she still says she is an AI. They are given as context, never as fields to judge
+// (rejected.2026-10-24.brief-review-flags-persona-names: gpt-4.1 flagged persona.name as a human claim, 12 of 81).
+const SETTING = /^(persona\.(name|gender|register|energy|humour|honorific)|brand\.(name|spokenName))$/;
 export function reviewFields(c: AgentConfig): [string, string][] {
-  return fields(c, '').filter(([p]) => !SKIP.test(p));
+  return fields(c, '').filter(([p]) => !SKIP.test(p) && !SETTING.test(p));
+}
+
+function reviewContext(c: AgentConfig): string {
+  const p = c.persona as { name?: string; gender?: string } | undefined;
+  const b = c.brand as { name?: string; spokenName?: string } | undefined;
+  return BRIEF_REVIEW.context_template.replace('{name}', (p?.name || 'unnamed').slice(0, 60)).replace('{gender}', (p?.gender || 'unspecified').slice(0, 20))
+    .replace('{brand}', (b?.spokenName || b?.name || 'the business').slice(0, 80));
 }
 
 export function reviewInput(c: AgentConfig): { text: string; fields: [string, string][] } {
@@ -58,7 +69,7 @@ export function reviewInput(c: AgentConfig): { text: string; fields: [string, st
     if (used + row.length > BRIEF_REVIEW.max_input_chars) break;
     rows.push(row); used += row.length + 1;
   }
-  return { text: BRIEF_REVIEW.user_template.replace('{fields}', rows.join('\n')), fields: fs.slice(0, rows.length) };
+  return { text: BRIEF_REVIEW.user_template.replace('{context}', reviewContext(c)).replace('{fields}', rows.join('\n')), fields: fs.slice(0, rows.length) };
 }
 
 /** The model's findings, validated against the fields it was shown. null when the reply is not the schema. */

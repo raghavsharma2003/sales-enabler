@@ -1,0 +1,43 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.brief-review-persona-settings",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "The brief review never judges persona or brand settings. persona.name, gender, register, energy, humour and honorific, and brand.name and spokenName, are given to the model as one context line ('the agent is the AI assistant of <brand>; its persona is named <name> (<gender>)'), never as numbered fields, so a finding can never cite them. The prompt says a persona's name, gender, voice or tone is not a breach, and drops 'If unsure ... report it with a lower confidence' for 'report a field only when its own words claim, imply or instruct a breach'. Notes and guidance are still judged in full.",
+   "rationale": "rejected.2026-10-24.brief-review-flags-persona-names: gpt-4.1 flagged persona.name or gender as 'human' in 12 of 81 bench reviews at 0.6-0.7, which would block an honest publish.",
+   "reverse_if": "The blind brief-review score shows that real human-claim backstories are missed because they sat in a persona setting rather than a note."
+  },
+  {
+   "id": "rejected.2026-10-24.tl1-honest-exemption-shadows-negation",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "T-L1's honest-disclosure exemption ('admit / confirm / say that you are an AI', sentence-wide) without a negation guard: 'Never admit that you are an AI.' and 'Do not confirm that she is a bot.' linted clean",
+   "tried": "rules.json lint.T-L1.none[3]: \\b(admit|confirm|say|tell them|disclose)[a-z]* (that )?(you are|...) (an? )?(ai|bot|...)",
+   "broke": "Found while adding DEV cases (an honest line with 'says plainly that she is an AI' was refused because the exemption needed adjacency). Fixed: the exemption starts with a lookahead that refuses it when never, don't, do not, must not, should not, avoid, mat or kabhi comes within 12 characters before the verb, and it allows up to 15 characters before 'that you are/she is'. Both now refuse; honest lines pass. DEV T-L1 refuse 38/38 and allow 0/32; 0 of 1,039 benign agent lines flagged. The blind lint set is spent, so this is not re-scored."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.brief-review-persona-settings",
+   "to": "rejected.2026-10-24.brief-review-flags-persona-names",
+   "relation": "derived-from"
+  },
+  {
+   "from": "rejected.2026-10-24.tl1-honest-exemption-shadows-negation",
+   "to": "measure.2026-10-24.tl1-third-person",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-brief-review-persona",
+   "details": "Brief review: persona and brand settings are context only; prompt fix; 14 persona-name DEV cases. T-L1: a negation now disables the honest exemption (a pre-existing hole closed). PREREG-9 amendment 1: rules.json changed in lint only (caller, lexicon and normalisation hashes identical). Gates: tsc clean, fresh-DB 573/573, ui-contract strict 178/178, voice unittest OK."
+  }
+ ]
+}

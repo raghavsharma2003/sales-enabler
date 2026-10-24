@@ -1227,7 +1227,7 @@
         "\\b(never|don'?t|do not|must not|should not|na|mat|kabhi nahi)\\b[^.?!]{0,8}\\b(claim|pretend|say|tell|act|pose|insist|deny|kaho|bolo)[a-z]*\\b[^.?!]{0,30}\\b(human|real person|insaan|not an ai|employee|staff)\\b",
         "\\b(honest|honestly|truthfully|always (say|admit|confirm|disclose))\\b[^.?!]{0,30}\\b(ai|bot)\\b",
         "\\b(sound|speak|talk|feel|warm)[a-z]*\\b[^.?!]{0,20}\\b(like a human|human-?like|natural|like a real person)\\b(?![^.?!]{0,20}\\b(pretend|claim|say you are))",
-        "\\bsay (yes|haan)\\b|\\b(admit|confirm|say|tell them|disclose)[a-z]* (that )?(you are|you'?re|she is|main) (an? )?(ai|bot|virtual|automated)\\b"
+        "^(?!.*\\b(never|don'?t|do not|must not|should not|avoid|mat|kabhi)\\b[^.?!]{0,12}\\b(admit|confirm|say|tell|disclose)).*(\\bsay (yes|haan)\\b|\\b(admit|confirm|say|tell them|tell|disclose)[a-z]*\\b[^.?!]{0,15}\\b(that )?(you are|you'?re|she is|he is|main|i am|i'?m) (an? |the |our )?(ai|bot|virtual|automated)\\b)"
       ],
       "noneClause": [
         "\\b(never|not|don'?t|do not|must not|should not|mat|kabhi nahi|kabhi mat|na)\\b[^.?!]{0,12}\\b(say|says|said|claim|claims|tell|tells|pretend|pretends|act|acts|pose|poses|kehna|bolna|kaho|bolo|kehti|bolti|batana)\\b[^.?!]{0,30}\\b(human|person|insaan|insan|employee|staff|real)\\b",

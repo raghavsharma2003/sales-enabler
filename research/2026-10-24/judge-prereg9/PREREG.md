@@ -75,3 +75,13 @@ The BLIND 9 sweep may be printed for information but never used to choose. After
 - The chosen `t` becomes judge.json `threshold`. If B is chosen, B's text becomes judge.json `system_prompt`, with
   the Python port in the same push.
 - Raise mode and the check-in remain the owner's call: `open.2026-10-23.judge-raise-soft-checkin`.
+
+## Amendment 1 (2026-10-24T04:18:33Z, before any BLIND 9 request and before any candidate DEV run)
+
+Two fixed files changed for work unrelated to the crisis judge (brief review and the T-L1 lint). The rule, the
+candidates, the DEV sets and BLIND 9 are unchanged.
+
+| File | New hash (sha256, first 16 hex) | What changed | Effect on this measurement |
+|---|---|---|---|
+| `product/shared/safety/rules.json` | `846bab6697b31ad2` | Only the `lint` section: the T-L1 honest-disclosure exemption no longer applies after a negation | None. These sections are unchanged (canonical JSON sha256, first 16 hex): `caller` `dd62d45c5980fdbf`, `lexicon` `5e6c579b3359bd69`, `normalisation` `a74f790f10632b1a` |
+| `product/scripts/judge-eval.mjs` | `a790b0a86d705963` | `--task brief-review` rows may carry a persona object | None. Crisis rows carry no persona |

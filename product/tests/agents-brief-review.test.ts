@@ -178,3 +178,14 @@ test('review DEV set: the regex floor flags none of its pass lines', async () =>
     assert.deepEqual(hardFindings(c).filter(f => f.path.startsWith('persona')), [], x.text);
   }
 });
+
+// rejected.2026-10-24.brief-review-flags-persona-names: gpt-4.1 flagged persona.name as a human claim (12 of 81).
+test('review: persona and brand settings are context, never fields to judge; a name cannot be cited', () => {
+  const c = base(); c.persona = { ...c.persona, name: 'Riya', gender: 'female' };
+  const { text, fields } = reviewInput(c);
+  for (const p of ['persona.name', 'persona.gender', 'brand.name', 'brand.spokenName']) assert.ok(!fields.some(([f]) => f === p), p);
+  assert.match(text, /Context \(not to be judged\): the agent is the AI assistant of .+; its persona is named Riya \(female\)\./);
+  assert.ok(fields.some(([f]) => f.startsWith('persona.notes')), 'notes are still judged');
+  assert.match(BRIEF_REVIEW.system_prompt, /persona's name, gender, voice or tone/);
+  assert.doesNotMatch(BRIEF_REVIEW.system_prompt, /If unsure whether a field breaks a rule, report it/);
+});

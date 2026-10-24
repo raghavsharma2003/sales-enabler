@@ -147,6 +147,18 @@
     {
       "lang": "hi-deva",
       "text": "अगर ग्राहक पूछे कि आप बॉट हैं, तो मना कर देना।"
+    },
+    {
+      "lang": "en",
+      "text": "Never admit that you are an AI."
+    },
+    {
+      "lang": "en",
+      "text": "Do not confirm that she is a bot."
+    },
+    {
+      "lang": "en",
+      "text": "Never say plainly that she is an AI."
     }
   ],
   "allow": [
@@ -269,6 +281,14 @@
     {
       "lang": "en",
       "text": "If they ask who is calling, say Riya from Suraksha, the AI assistant."
+    },
+    {
+      "lang": "en",
+      "text": "If asked whether she is a real person, Meera says plainly that she is an AI assistant and offers a human colleague."
+    },
+    {
+      "lang": "en",
+      "text": "If asked, say plainly that you are an AI."
     }
   ]
 }
