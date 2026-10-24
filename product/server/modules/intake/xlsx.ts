@@ -49,10 +49,10 @@ function read(buf: Buffer, e: Entry, budget: { left: number }): string {
   if (e.method === 0) data = raw;
   else if (e.method === 8) {
     try { data = inflateRawSync(raw, { maxOutputLength: limit }); } catch (err) {
-      throw new XlsxError(/maxOutputLength|buffer|ERR_BUFFER/i.test(String(err)) ? 'this .xlsx expands to more than VP reads; split it' : 'this .xlsx is damaged (could not decompress)');
+      throw new XlsxError(/maxOutputLength|buffer|ERR_BUFFER/i.test(String(err)) ? 'this .xlsx expands to more than Vyakti reads; split it' : 'this .xlsx is damaged (could not decompress)');
     }
   } else throw new XlsxError(`this .xlsx uses an unsupported compression (${e.method})`);
-  if (data.length > limit) throw new XlsxError('this .xlsx expands to more than VP reads; split it');
+  if (data.length > limit) throw new XlsxError('this .xlsx expands to more than Vyakti reads; split it');
   budget.left -= data.length;
   return data.toString('utf8');
 }

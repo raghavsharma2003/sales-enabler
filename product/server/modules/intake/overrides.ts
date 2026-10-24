@@ -25,7 +25,7 @@ export function checkVoice(raw: string): Check {
   const v = raw.trim();
   if (!v) return { ok: false, why: 'empty' };
   const exact = [...ALL_VOICES].find(x => x.toLowerCase() === v.toLowerCase());
-  return exact ? { ok: true, value: exact } : { ok: false, why: `"${v.slice(0, 40)}" is not a voice VP offers` };
+  return exact ? { ok: true, value: exact } : { ok: false, why: `"${v.slice(0, 40)}" is not a voice Vyakti offers` };
 }
 
 /** Findings of the agent's own opening lints on a first_message, as if it were opening.usefulFirst. */

@@ -59,7 +59,7 @@ async function getSource(q: Queryable, ws: string, id: string): Promise<SourceRo
 /** Receive one part of a file. Parts arrive in order; re-sending the last part is a no-op. */
 export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean;
   converted?: { from: 'xlsx'; fileBytes: number; fileSha256: string; sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number; errorCells: number } }) {
-  if (Buffer.byteLength(p.text) > (p.converted ? MAX_CONVERTED_BYTES : MAX_FILE_BYTES)) throw new HttpError(413, 'too_large', p.converted ? 'this sheet holds more than VP reads in one file; split it' : 'files are limited to 20 MB');
+  if (Buffer.byteLength(p.text) > (p.converted ? MAX_CONVERTED_BYTES : MAX_FILE_BYTES)) throw new HttpError(413, 'too_large', p.converted ? 'this sheet holds more than Vyakti reads in one file; split it' : 'files are limited to 20 MB');
   if (p.converted && (p.uploadId || !p.final)) throw new HttpError(422, 'whole_file', 'send an Excel file in one request (final=true), not in parts');
   let up: { id: string; parts: number; bytes: number; last_part_sha: string | null; status: string; source_id: string | null } | null;
   if (!p.uploadId) {
