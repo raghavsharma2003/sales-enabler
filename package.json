@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
+    "gen": "node --import tsx product/scripts/tool-catalog.ts && node --import tsx product/scripts/sdk-gen.ts",
     "test": "node scripts/run-tests.mjs",
     "context": "node scripts/context.mjs",
     "context:check": "node scripts/check-context.mjs",

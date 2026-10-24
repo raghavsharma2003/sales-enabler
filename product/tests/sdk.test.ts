@@ -31,11 +31,21 @@ before(async () => {
 });
 after(async () => { await close?.(); await pool?.end(); });
 
+// What to do when a tool was added or changed without regenerating (CI caught memory's outcome.import this way).
+const FIX = [
+  'The tool catalog or the SDK types are out of date with the registry. To fix, from the repository root run:',
+  '    npm run gen',
+  '  (that is: node --import tsx product/scripts/tool-catalog.ts && node --import tsx product/scripts/sdk-gen.ts)',
+  '  then commit product/shared/tool-catalog.json and product/sdk/tools.gen.ts with your change.',
+].join('\n');
+
 test('the SDK types are generated from the current catalog, and the catalog lists every registered tool', async () => {
-  assert.equal(readFileSync(outPath, 'utf8'), generateFromCatalog(), 'run scripts/tool-catalog.ts then scripts/sdk-gen.ts');
+  assert.ok(readFileSync(outPath, 'utf8') === generateFromCatalog(), `${FIX}\n  product/sdk/tools.gen.ts differs from what product/shared/tool-catalog.json generates`);
   const { default: pgm } = await import('pg');
   const reg = buildApp(new pgm.Pool({ connectionString: 'postgresql://unused@/unused' }), modules).registry;
-  assert.deepEqual(Object.keys(TOOLS).sort(), reg.list().map(t => t.name).sort(), 'the catalog is behind the registry: run scripts/tool-catalog.ts');
+  const have = new Set(Object.keys(TOOLS)), want = reg.list().map(t => t.name);
+  const missing = want.filter(n => !have.has(n)), gone = [...have].filter(n => !want.includes(n));
+  assert.ok(!missing.length && !gone.length, `${FIX}\n  registered but not in the catalog: ${missing.join(', ') || 'none'}\n  in the catalog but no longer registered: ${gone.join(', ') || 'none'}`);
   for (const t of reg.list()) assert.equal(TOOLS[t.name as keyof typeof TOOLS].needsApproval, t.needsApproval, t.name);
 });
 

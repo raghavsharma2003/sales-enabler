@@ -29,10 +29,11 @@ How a call can come back:
 - **Key permissions.** The key's role (Builder) and scopes apply, exactly as on the HTTP API.
 - **No approvals.** The SDK has no way to approve. A person approves in Vyakti.
 
-After adding or changing a tool, regenerate:
+After adding or changing a tool, regenerate from the repository root and commit `product/shared/tool-catalog.json`
+and `product/sdk/tools.gen.ts` with your change:
 
 ```
-node --import tsx product/scripts/tool-catalog.ts && node --import tsx product/scripts/sdk-gen.ts
+npm run gen
 ```
 
 `tests/sdk.test.ts` fails when either file is behind the registry.
