@@ -214,27 +214,32 @@ Every measured decision is re-taken by benches on the real Azure and Vertex mode
   Speculation and prewarm help only unpaced brains (`decision.2026-10-24.latency-flags-provider-aware`). The ears' first
   partial lags 858 ms median (`measure.2026-10-24.staging-partial-lag`), so barge-in stays 700 ms until it comes from
   audio onset (`decision.2026-10-24.barge-long-ms-stays-700`).
-- **Operator, op5** (48 tasks, two runs each on 08b5916):
-  - gpt-4.1-mini 41 and 41;
-  - gpt-4.1 32 and 33.
-
-  gpt-4.1's drop came from a conduct line (`measure.2026-10-24.operator-ablation-conduct-line`), fixed in 6fd8da5. The
-  default is re-chosen by `decision.2026-10-24.operator-default-symmetric-rule` on op6.
-- **Analysis, r6** (TEST, 42 calls):
-  - mini single on the r5-outcome-first contract 42/42 on both passes;
-  - tiered 42/42;
-  - objections 52/52.
-
-  The default stays tiered (`decision.2026-10-24.analysis-default-tiered`) until a second round matches.
-- **Crisis judge, BLIND 8** (Flash-Lite at the pre-registered 0.9):
-  - floor or judge recall 75/100 with FP 9/100;
-  - judge alone 73/100 with FP 0/100.
-
-  BLIND 9 (PREREG-9: prompt candidates, chosen on DEV) is running.
+- **Operator, op6** (48 tasks, two runs each on a9c58df):
+  - strict: gpt-4.1 37 and 36 (the cost cap cut 4 and 5 tasks); gpt-4.1-mini 39 and 41;
+  - the symmetric rule picks mini, but the default is held at gpt-4.1 for op7
+    (`decision.2026-10-24.operator-default-held-for-op7`): mini put rupees x100 into spend cards 3 times.
+  - Since then: a money card must carry the amount the member wrote, and no amount means no card
+    (`decision.2026-10-24.spend-card-matches-request`, `decision.2026-10-24.no-amount-no-money-card`).
+  - op7 runs with the wrong-amount card counted as a safety failure, written before the first request.
+- **Analysis, r7** (TEST, 42 calls, the shipped outcome-first contract):
+  - mini single and tiered both 42/42 on every pass, in two consecutive rounds, with 0 discordant pairs on any field.
+  - So the default is now **mini single**, with tiered selectable (`decision.2026-10-24.analysis-default-mini-single-outcome-first`).
+  - Tiered escalated 0 of 117 calls, so what it adds on unsure calls is unmeasured
+    (`open.2026-10-24.analysis-escalation-path-unexercised`).
+  - The product counts would-escalate calls so that real traffic can answer it.
+- **Crisis judge, BLIND 10** (prompt A at 0.5, Flash-Lite on Vertex):
+  - judge alone: recall 58/60, FP 6/140;
+  - floor or judge: recall 59/60, FP 12/140.
+  - The recall bar is met; the FP bar (≤2/140) is not. Both judge misses were timeouts.
+  - Open gaps: the floor's 'heart attack' hyperbole FPs, the Devanagari 'drank poison' line, and the judge's hyperbole
+    FPs (`open.2026-10-24.floor-deva-poison-drink-gap`, `open.2026-10-24.judge-hyperbole-fp-blind10`).
+- **Brief review:** Flash-Lite on Vertex with a self-minted token (`decision.2026-10-24.brief-review-flashlite`,
+  `decision.2026-10-24.server-vertex-auth`). BLIND-BR2 is written and unread.
 - **Product quality gates:**
   - axe WCAG 2.1 AA, 0 violations on 24 screens (`decision.2026-10-24.web-a11y-gate`);
-  - fresh-DB suite 586/586 at 3515b53;
-  - CI green.
+  - fresh-DB suite 667/667 at 10b04d5;
+  - browser flows 61/61 at a3780c9 (CI runs the voice runtime's packages, so call flows no longer skip);
+  - web-e2e red at 0882b06 (flow 14, a plan with no stated amount), fixed in fa8af3f.
 - **Shipped today:**
   - signed recordings and audio erasure;
   - version restore;
@@ -247,22 +252,26 @@ Every measured decision is re-taken by benches on the real Azure and Vertex mode
 ### Running now (builders are separate sessions on this branch; only the main loop holds keys)
 | Lane | Doing |
 |---|---|
-| voice | provider-aware flags, audio-onset barge-in, brand-name guard, Live spokenText fix, AAC/MP3 sample renditions |
-| calls | ship r5-outcome-first as the mini-single contract, with the client rule moved with OUTCOME; then round 7 (integrator) |
-| web | buyer walkthrough round 3 (D2C COD/NDR, university admissions) |
-| enterprise | SSO, SCIM-lite, audit export |
-| safety | crisis and manipulation lint moved into shared/safety; disclosure, crisis and opt-out lexicons for 7 more languages (not native-reviewed) |
-| agents | stated language lists re-checked against vendor docs; no-cache and Range for samples |
-| memory | transcript and analysis-text retention and erasure |
-| learning | the 20-run pool check, then evidence shapes on the outcome-first contract |
-| main loop | op6 plus the brief-review blind (Azure); BLIND 9 (VM); then the Flash-Lite brief-review blind; staging re-measure after voice lands |
+| voice | Plivo AMD, the opening built from the ticket, the in-call HTTP tools runtime |
+| calls | inbound calls control plane; mini single as the analysis default, plus the would-escalate count |
+| web | buyer walkthrough 3, gaps 15-19, lazy-load Settings to get back under 200 KB |
+| enterprise | 2FA, session limits, IP allowlist, audit streaming (waiting on whether a relayed owner directive is enough to go) |
+| safety | Devanagari drink-poison gap, heart-attack FP, T-L7; BLIND 11 and BLIND-BR2 |
+| agents | decision-4 gate status on the stack cards |
+| intake | HubSpot and Zoho import |
+| money | billing pulse |
+| operator | op7 readiness after the money-card fix |
+| learning | verified outcomes as the reward |
+| memory | retries |
+| workspace | Slack and email notifications |
+| main loop | op7 (Azure); staging re-measure on the VM; judge shadow on staging after 18:30 UTC |
 | campaigns | blocked on the owner's "go" |
 
 ## Open threads with the owner
 
 | Thread | Status |
 |---|---|
-| Judge raise mode | Shadow today. Raise mode with a soft check-in (she pauses and asks how they are) is the owner's call (`open.2026-10-23.judge-raise-soft-checkin`). BLIND 9 will report against the bar of floor-or-judge recall ≥90/100 at benign FP ≤2/100. |
+| Judge raise mode | Shadow today. Raise mode with a soft check-in (she pauses and asks how they are) is the owner's call (`open.2026-10-23.judge-raise-soft-checkin`). BLIND 10: floor-or-judge recall 59/60 met the bar; FP 12/140 did not (bar ≤2/140). |
 | Campaigns "go" | The campaigns builder waits on the owner typing "go" for the Plivo KYC adapter and the dial path. |
 | Trial credit | The amount a new workspace starts with. The blueprint recommends ₹500. It is in config, default 0, because price is deferred (`open.2026-10-22.trial-credit-amount`). |
 | Price and billing documents | Price is deferred. Tax invoice, GSTIN and receipts wait on it (`open.2026-10-24.enterprise-billing-documents`). What test spend draws on is open too (`open.2026-10-24.test-spend-vs-empty-wallet`). |
