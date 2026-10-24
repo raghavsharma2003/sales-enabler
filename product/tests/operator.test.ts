@@ -431,7 +431,7 @@ test("MA-01: a plan's retry_per_ladder waits for a tap and stops the plan; a ris
     { toolCalls: [callTool('campaign_pause', {})] },
     { text: 'ok' },
   ]);
-  const f = frames((await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'phir se try karo' })).text);
+  const f = frames((await call(owner, 'POST', `/v1/operator/threads/${t}/messages`, { text: 'phir se try karo, aur campaign pause karo' })).text);
   const desc = (n: string) => seen[0].tools!.find(x => x.name === n)!.description;
   assert.match(desc('attempt_retry_per_ladder'), /waits for a human tap/);
   assert.doesNotMatch(desc('campaign_pause'), /waits for a human tap/, 'the tool list says what the kernel will do');

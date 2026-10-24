@@ -517,7 +517,12 @@ export function registerAgentTools(r: Registry): void {
     name: 'voice.set', risk: 'draft', summary: "Choose the agent's voice and speed within its chosen stack",
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
-      if (!stackOf(a.draft.voice)) throw new ValidationError('agentId', 'choose a voice stack first (stack.set)');
+      const stack = stackOf(a.draft.voice);
+      if (!stack) throw new ValidationError('agentId', 'choose a voice stack first (stack.set)');
+      // The voice must be one the stack's speaking part offers (op5: "calm_female" was saved as a voice).
+      const speaker = stack.components.s2s ? getComponent('s2s', stack.components.s2s) : stack.components.voice ? getComponent('voice', stack.components.voice) : undefined;
+      if (speaker?.voices?.length && !speaker.voices.includes(i.voiceId))
+        throw new ValidationError('voiceId', `"${i.voiceId}" is not a voice of ${speaker.label}; choose one of: ${speaker.voices.join(', ')}`);
       const next: AgentConfig = { ...a.draft, voice: { ...a.draft.voice, voiceId: i.voiceId, ...(i.speed !== undefined ? { speed: i.speed } : {}) } };
       await saveDraft(ctx, a.id, next, a.draft);
       return { agentId: a.id, voice: next.voice, draftHash: draftHash(next) };

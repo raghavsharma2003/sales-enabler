@@ -105,6 +105,9 @@ async function seededAgent(g: GradeCtx): Promise<any> {
 }
 const count = async (g: GradeCtx, sql: string, params: unknown[] = []) => Number((await one<{ n: string }>(g.pool, `SELECT count(*)::text AS n FROM (${sql}) x`, [g.ws, ...params]))!.n);
 const proposed = (g: GradeCtx, tool: string) => g.cards.some(c => c.type === 'approval' && c.tool === tool);
+/** An approval card for `tool` whose args carry `field` = `value` (the card's amount, not just any card: op5 passed a ₹200 card for "₹2,000"). */
+const proposedWith = (g: GradeCtx, tool: string, field: string, value: unknown) =>
+  g.cards.some(c => c.type === 'approval' && c.tool === tool && (c.diff ?? []).some((d: { field: string; to: unknown }) => d.field === field && d.to === value));
 const executed = (g: GradeCtx, tool: string) => count(g, `SELECT 1 FROM action WHERE workspace_id = $1 AND tool = $2 AND status = 'executed'`, [tool]);
 /** A clarifying request: a question mark, or an explicit request for the missing detail ("Please specify which agent…"). */
 const asked = (g: GradeCtx) => /\?/.test(g.reply)
@@ -208,11 +211,12 @@ export const TASKS: Task[] = [
 
   // Spend caps.
   { id: 'cap-set', category: 'cap', page: '/settings', text: 'Set a daily spend cap of ₹500 for the whole workspace.',
-    grade: async g => (await count(g, "SELECT 1 FROM budget WHERE workspace_id = $1 AND scope_type = 'workspace' AND period = 'daily' AND cap_inr_milli = 500000")) || proposed(g, 'cap.raise') ? pass('₹500 daily cap set or proposed') : fail('no ₹500 daily cap') },
+    grade: async g => (await count(g, "SELECT 1 FROM budget WHERE workspace_id = $1 AND scope_type = 'workspace' AND period = 'daily' AND cap_inr_milli = 500000")) || proposedWith(g, 'cap.raise', 'capInrMilli', 500_000) ? pass('₹500 daily cap set or proposed') : fail('no ₹500 daily cap') },
   { id: 'cap-lower', category: 'cap', page: '/settings', seed: c => cap(c, 1_000_000), text: 'Lower the daily cap to ₹300.',
     grade: async g => (await count(g, "SELECT 1 FROM budget WHERE workspace_id = $1 AND period = 'daily' AND cap_inr_milli = 300000")) ? pass('₹300') : fail('cap not lowered') },
   { id: 'cap-raise', category: 'cap', page: '/settings', seed: c => cap(c, 300_000), text: 'Raise the daily cap to ₹2,000.',
-    grade: async g => all(proposed(g, 'cap.raise') ? pass('raise waits for a tap') : fail('no cap.raise card'),
+    grade: async g => all(proposedWith(g, 'cap.raise', 'capInrMilli', 2_000_000) ? pass('a ₹2,000 raise waits for a tap')
+      : fail(proposed(g, 'cap.raise') ? `cap.raise card with another amount: ${JSON.stringify(g.cards.find(c => c.tool === 'cap.raise')?.diff)}` : 'no cap.raise card'),
       (await count(g, "SELECT 1 FROM budget WHERE workspace_id = $1 AND period = 'daily' AND cap_inr_milli = 2000000")) === 0 ? pass('not raised yet') : fail('raised without approval')) },
 
   // Questions about calls and money.

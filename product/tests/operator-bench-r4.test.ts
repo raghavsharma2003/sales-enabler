@@ -116,8 +116,8 @@ test('confirm-first: "Shall I create it?" for a draft gets one nudge to do it no
   ]);
   const r = await turn(c.member, { text: 'Create a service follow-up agent.', page: '/agents' });
   assert.equal(seen.length, 3);
-  assert.match(seen[1]!.messages.at(-1)!.content, /Drafts, edits and tests are free and reversible: do it now/);
-  assert.match(seen[0]!.messages[0]!.content, /Never ask "shall I" or "please confirm" first/);
+  assert.match(seen[1]!.messages.at(-1)!.content, /call the tool now instead of asking permission/);
+  assert.match(seen[0]!.messages[0]!.content, /call its tool without asking permission/);
   assert.deepEqual(notices(r.frames), [], 'a nudge, not a correction');
   assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM agent WHERE workspace_id = $1', [c.ws]))!.n, 1);
   // A real question ("which") is not nudged.

@@ -21,10 +21,11 @@
     "0500_operator.sql"
   ],
   "tests": {
-    "passed": 60,
-    "total": 60,
+    "passed": 65,
+    "total": 65,
     "files": [
       "tests/operator-bench-fixes.test.ts",
+      "tests/operator-bench-op5.test.ts",
       "tests/operator-bench-r3.test.ts",
       "tests/operator-bench-r4.test.ts",
       "tests/operator-bench.test.ts",
@@ -33,7 +34,7 @@
       "tests/operator-toolset.test.ts",
       "tests/operator.test.ts"
     ],
-    "db": "throwaway cluster; full suite on a fresh database 529/533 (0 fail, 4 skipped) at the 2026-10-24 bench-r4 fix commit; ui-contract --strict 177/177"
+    "db": "throwaway cluster; full suite on a fresh database 573/577 (0 fail, 4 skipped) at the 2026-10-24 op5 fix commit; ui-contract --strict 178/178"
   },
   "works": [
     "Tool loop: the model sees only the tools the member's role may call, as function tools built from the validators' JSON Schemas (dots mapped to underscores), plus operator_plan; every call goes through registry.execute with actor {agent, 'operator:<member>', member role} and the threadId",
@@ -65,7 +66,11 @@
     "Scope guard: after a write comes back NOT DONE, a write to a different tool the member's words do not point at is held; the retry instruction says to change nothing the member did not ask about",
     "fixFor reads the agent draft's schema (agents' new agent.config.schema read tool) for brief.edit paths and names limits (min/max, lengths, items) and the fields that exist; no 'needs: ;' on empty required lists",
     "Page tools list exact names first: deployment.split on /agents, contact.list on /campaigns",
-    "campaign.estimate returns display strings (₹ range incl. GST, per minute, suggested cap)"
+    "campaign.estimate returns display strings (₹ range incl. GST, per minute, suggested cap)",
+    "Conduct: draft without asking permission, but a draft exists only once its tool returned DONE this turn; never describe a change not made (op5: the earlier line caused 21 claimed writes with no tool call)",
+    "Claim check catches reduced passives ('Draft agent created ...', 'now set to speak Hindi') and exempts only negations, modals or conditions before the verb, 'Nothing has been deleted yet', state descriptions ('is set at') and past facts ('was created on')",
+    "Money in a reply is held to the card or result this turn when either carries an amount, not to what the member typed",
+    "Scope by action: a protective write (suppress, pause, stop, forget, erase, DPDP) the member's words do not ask for becomes an approval card, never a run; the retry guard matches actions, not nouns"
   ],
   "untested": [
     "Numeric-provenance predicate, one-question-per-turn and the 'never say done before a receipt' conduct rules are prompt text only, not code predicates yet",

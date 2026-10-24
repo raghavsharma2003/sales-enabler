@@ -164,7 +164,9 @@ export async function runBench(o: { pool?: pg.Pool; tasks?: string[]; category?:
     const ctx = { pool, registry: app.registry, ws, member };
     const t0 = Date.now();
     try {
-      // Seeds use templates, tools and SQL only: they never call a model, so setup costs nothing on a real run.
+      // Seeds use templates, tools and SQL, but a seed that creates, edits or publishes an agent runs the agents module's
+      // brief review (agents/review.ts), which calls a model on a real run when one is configured. Those calls are small,
+      // reach the harness ledger like any other, and are answered by the fake model in fake mode.
       const seed = t.seed ? await t.seed(ctx) : {};
       if (fake) { const steps = scriptFor(t)!(seed); let i = 0; script = () => steps[Math.min(i++, steps.length - 1)]!; }
       const headers = { 'content-type': 'application/json', 'x-vp-dev-member': member };

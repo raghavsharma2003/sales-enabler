@@ -5,23 +5,37 @@
 //   - "Tap to confirm deployment." with no card shown            -> tapWithoutCard
 //   - "120 seconds" after reading 180 s                          -> numbers (durations)
 //   - "₹9,608-24,021" for an estimate of ₹9.61-₹24.02 (2 of 2)   -> numbers (money)
+// Bench op5 (research/2026-10-24/benches-op5/): gpt-4.1 made 21 claimed writes after zero tool calls, in reduced
+// passives the subject rule missed ("Draft agent created for EMI due reminders", "now set to speak Hindi"); the checks
+// misread "covers 5 people" as ₹5, "Nothing has been deleted yet" as a claim, and a clarifying question as a request for
+// permission; and a reply was never held to its own card (₹2,000 said, ₹200 on the card).
 // Each check is narrow on purpose: a false correction costs the member's trust as much as a false claim.
 
 export type Problem = { kind: 'claim' | 'tap' | 'number' | 'confirm_first'; notice?: string; repair: string };
 
 // ---- a past-tense change, in the assistant's voice --------------------------------------------------------------
-const VERBS = 'added|updated|published|created|saved|changed|launched|imported|renamed|removed|deleted|scheduled|attached|edited|switched|moved|raised|lowered|replaced|drafted|set up|turned (?:on|off)|enabled|disabled|uploaded|connected';
+const VERBS = 'added|updated|published|created|saved|changed|launched|imported|renamed|removed|deleted|scheduled|attached|edited|switched|moved|raised|lowered|replaced|drafted|set up|turned (?:on|off)|enabled|disabled|uploaded|connected|configured|built|made|set|applied|suppressed|paused|stopped|deployed';
 // "to set up", "need to add": an infinitive is a plan, not a claim.
 const CLAIM_VERB = new RegExp(`(?<!\\bto )(?<!\\bto be )\\b(${VERBS})\\b`, 'i');
-const CLAIM_SUBJECT = /\b(i|i've|i have|i'm|we|we've|we have)\b|\b(has|have) been\b|\b(is|are) now\b|^\s*(done|added|updated|published|created|saved|changed|launched|imported|renamed|removed|deleted|scheduled|attached|edited)\b/i;
-const NOT_A_CLAIM = /\?\s*$|\b(not|never|no|cannot|unable|failed|couldn't|wasn't|didn't|haven't|hasn't|won't|can|could|will|would|shall|should|may|might|want|once|after|if|when|let me|need|needs|please|before)\b|'ll\b|n't\b/i;
-const sentences = (text: string) => text.split(/(?<=[.!?])\s+|\n+/).filter(s => s.trim());
+const CLAIM_SUBJECT = /\b(i|i've|i have|i'm|we|we've|we have)\b|\b(has|have) been\b|\b(is|are) now\b/i;
+// A reduced passive: the verb within the first few words, with no "was/were" before it ("Draft agent created for ...").
+const REDUCED_PASSIVE = new RegExp(`^\\s*(?:[\\w'’-]+\\s+){0,4}?(${VERBS})\\b`, 'i');
+const NOW_STATE = /\b(is|are)?\s*now (on|set|using|live|active|called|named|in|configured|switched|speaks|uses|runs)\b|^\s*(done|all set)\b/i;
+// What turns a sentence into a non-claim: a question, or a negation, modal or condition BEFORE the verb (not after:
+// "Draft created; it can be undone" is still a claim). "Nothing has been deleted yet" is a negation.
+const GOVERNED = new RegExp(`\\b(not|never|no|nothing|none|neither|cannot|unable|failed to|can|could|will|would|shall|should|may|might|want|wants|once|after|if|when|before|let me|need|needs|please|going to|ready to|about to)\\b[^.!?;]{0,40}?\\b(${VERBS})\\b|n't\\b[^.!?;]{0,40}?\\b(${VERBS})\\b|'ll\\b[^.!?;]{0,40}?\\b(${VERBS})\\b`, 'i');
+// "I made no changes", "changed nothing".
+const NEGATED_AFTER = new RegExp(`\\b(${VERBS})\\s+(no|nothing|none)\\b`, 'i');
+const PAST_FACT = /\b(was|were)\s+(\w+\s+)?(created|added|made|set up|published|launched|imported)\b[^.!?]*\b(on|in|at|ago|yesterday|last|earlier|previously|before)\b/i;
+const sentences = (text: string) => text.split(/(?<=[.!?…])\s+|\n+|(?<=…)/).filter(s => s.trim());
 
-/** True when a sentence states, in the assistant's voice, that it changed something. */
+/** True when a sentence states, in the assistant's voice or as a bare passive, that a change was made. */
 export function claimsChange(text: string, proposed: boolean): boolean {
-  return sentences(text).some(sen =>
-    (/^\s*(done|all set)\b/i.test(sen) || /\b(is|are) now (on|set|using|live|active|called|named|in)\b/i.test(sen) || (CLAIM_VERB.test(sen) && CLAIM_SUBJECT.test(sen)))
-    && !NOT_A_CLAIM.test(sen) && !(proposed && /approv|tap|waiting|pending|card/i.test(sen)));
+  return sentences(text).some(sen => {
+    if (/\?\s*$/.test(sen) || GOVERNED.test(sen) || PAST_FACT.test(sen) || NEGATED_AFTER.test(sen)) return false;
+    if (proposed && /approv|tap|waiting|pending|card/i.test(sen)) return false;
+    return NOW_STATE.test(sen) || (CLAIM_VERB.test(sen) && (CLAIM_SUBJECT.test(sen) || (REDUCED_PASSIVE.test(sen) && !/\b(was|were|been|is|are)\b/i.test(sen.slice(0, sen.search(CLAIM_VERB) + 1)))));
+  });
 }
 
 // ---- "tap to confirm" with nothing to tap --------------------------------------------------------------------------
@@ -30,8 +44,12 @@ export const tapsWithoutCard = (text: string) => TAP_ASK.test(text);
 
 // ---- asking to confirm a draft the member already asked for ---------------------------------------------------------
 const CONFIRM_ASK = /\b(shall i|should i|do you want me to|would you like me to|want me to (go ahead|proceed)|can you confirm|please confirm|confirm (that|if|whether)|is that (ok|okay|correct|right|fine)|ok to proceed|go ahead\?|proceed\?)/i;
-const OPEN_QUESTION = /\b(which|what|who|whom|when|where|how many|how much)\b/i;
-export const asksToConfirm = (text: string) => sentences(text).some(s => CONFIRM_ASK.test(s) && !OPEN_QUESTION.test(s));
+// A question that offers a choice or asks for a missing fact is a clarification, never a permission ask (op5: nudging
+// one made gpt-4.1 draft a campaign nobody specified).
+const CLARIFYING = /\b(which|what|who|whom|when|where|how many|how much|or|specific|specify|details?|prefer|preference|default|instead|name|times?|window|audience|budget|cap)\b/i;
+export const asksToConfirm = (text: string) => sentences(text).some(s => CONFIRM_ASK.test(s) && !CLARIFYING.test(s));
+/** The member's message asks for a draft-type change in so many words ("create an agent", "make it calmer"). */
+const ASKS_FOR_DRAFT = /^\s*(please\s+)?(create|make|draft|add|build|set up|edit|change|update|rename|switch|put|use)\b/i;
 
 // ---- numbers: money and durations against the turn's tool results -----------------------------------------------------
 export interface Known { money: number[]; plain: number[] }
@@ -41,8 +59,9 @@ const num = (s: string) => Number(s.replace(/,/g, ''));
  *  rupees (value / 1000), never as a rupee amount themselves; a number written after ₹ in a string counts as money. */
 export function knownNumbers(facts: unknown[], userText: string): Known {
   const k: Known = { money: [], plain: [] };
+  let memberMoney = true;
   const fromText = (t: string, member = false) => {
-    for (const m of t.matchAll(/(?:₹|rs\.?|inr)\s?([\d,]+(?:\.\d+)?)/gi)) k.money.push(num(m[1]!));
+    for (const m of t.matchAll(/(?:₹|\brs\.?|\binr)\s?([\d,]+(?:\.\d+)?)/gi)) k.money.push(num(m[1]!));
     // Any figure the member typed may be money ("cap it at 500"); a tool's bare number is not.
     for (const m of t.matchAll(/\d[\d,]*(?:\.\d+)?/g)) { k.plain.push(num(m[0])); if (member) k.money.push(num(m[0])); }
   };
@@ -53,7 +72,12 @@ export function knownNumbers(facts: unknown[], userText: string): Known {
     else if (v && typeof v === 'object') for (const [kk, x] of Object.entries(v)) walk(x, kk);
   };
   facts.forEach(f => walk(f));
-  fromText(userText, true);
+  // When a card or result this turn carries an amount, the reply is held to it, not to what the member typed: the
+  // card is what will happen (op5: "₹2,000" said, ₹200 on the card, passed because the member had typed 2,000).
+  memberMoney = k.money.length === 0;
+  const before = k.money.length;
+  fromText(userText, memberMoney);
+  if (!memberMoney) k.money.length = before;
   k.plain.push(24);                                        // approval cards expire after 24 hours
   return k;
 }
@@ -66,7 +90,7 @@ const UNIT_S: Record<string, number> = { s: 1, sec: 1, secs: 1, second: 1, secon
 export function unsupportedNumbers(text: string, k: Known): string[] {
   const bad: string[] = [];
   const LAKH = { lakh: 1e5, lakhs: 1e5, crore: 1e7, crores: 1e7, k: 1e3 } as Record<string, number>;
-  for (const m of text.matchAll(/(?:₹|rs\.?\s|inr\s)\s?([\d,]+(?:\.\d+)?)\s*(lakhs?|crores?|k\b)?(?:\s*(?:-|–|—|to)\s*(?:₹\s?)?([\d,]+(?:\.\d+)?)\s*(lakhs?|crores?|k\b)?)?/gi)) {
+  for (const m of text.matchAll(/(?:₹|\brs\.?\s|\binr\s)\s?([\d,]+(?:\.\d+)?)\s*(lakhs?|crores?|k\b)?(?:\s*(?:-|–|—|to)\s*(?:₹\s?)?([\d,]+(?:\.\d+)?)\s*(lakhs?|crores?|k\b)?)?/gi)) {
     for (const [v, u] of [[m[1], m[2]], [m[3], m[4] ?? m[2]]] as [string | undefined, string | undefined][]) {
       if (!v) continue;
       const a = num(v) * (u ? LAKH[u.toLowerCase()] ?? 1 : 1);
@@ -96,7 +120,7 @@ export function checkReply(o: { text: string; wrote: boolean; proposed: boolean;
   if (!o.wrote && claimsChange(text, o.proposed)) return { kind: 'claim',
     notice: 'Correction: nothing was changed by this message. No tool confirmed the change described above.',
     repair: 'Check failed: your reply says something was changed, but no tool changed anything in this turn (every write was NOT DONE, or none was called). Either make the change now with the tools, or reply again stating plainly what was not done and why. Do not claim a change without a DONE result.' };
-  if (!o.wrote && !o.proposed && o.toolCalls === 0 && asksToConfirm(text)) return { kind: 'confirm_first',
-    repair: 'The client already asked for this. Drafts, edits and tests are free and reversible: do it now with the tools, then say what you did and that it can be undone. Ask only if a fact you need is missing, and then ask for that fact, not for permission. Anything that reaches people, spends, deletes or changes policy becomes an approval card on its own.' };
+  if (!o.wrote && !o.proposed && o.toolCalls === 0 && ASKS_FOR_DRAFT.test(o.userText) && asksToConfirm(text)) return { kind: 'confirm_first',
+    repair: 'The client already asked for this. If you have every fact the tool needs, call the tool now instead of asking permission; if a fact is missing, ask for that fact. The draft exists only once its tool returns DONE in this turn: never describe it before then. Anything that reaches people, spends, deletes or changes policy becomes an approval card on its own.' };
   return null;
 }
