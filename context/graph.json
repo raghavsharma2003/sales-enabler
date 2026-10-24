@@ -19322,6 +19322,165 @@
    "title": "The outcome rule is a table of PERSON shapes mapped to the VALUE that names them: agrees -> agreeing; refuses -> refusing; not the person called -> wrong-person, never null; complains AND asks for a human -> needs-human, never null; asks never to be called again -> refusing, never call-later; asks to be called later -> call-later; null only for no shape, a language they cannot follow, a hang-up before the question, or distress. And tiered never escalates when the first pass names a NO_DECISION reason (CONV_LANGUAGE_MISMATCH)",
    "rationale": "Answers rejected.2026-10-23.analysis-stance-rule-mini-false-nulls (mini returned null on wrong-person and complaint-to-human calls and called an opt-out a callback) and rejected.2026-10-23.tiered-escalates-no-decision-model-codes (6 of 12 escalations were language-mismatch calls whose outcome code discards). Written from the DEV patterns the integrator reported; TEST not consulted. Not measured on a real model here.",
    "reverse_if": "The DEV gate or the two TEST passes show mini or tiered losing calls to the new table versus round 3."
+  },
+  {
+   "id": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "type": "measurement",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Second buyer walkthrough on the dev server (NBFC collections at 1440, hospital chain at 390, the seeded workspace at both): 136 steps, 7 failed (3 walk-script selectors, 2 no seeded recording, 2 scripted assistant gave no Review button), 0 sideways scroll; 18 web frictions fixed, 13 routed to the server.",
+   "method": "Playwright on Chromium (fake microphone, devsim runtime, scripted Operator model), fresh Postgres 16; every screenshot opened; 12 new browser flows failed on the old build and pass on the new one.",
+   "n": 136,
+   "not_verified": "The assistant's real replies, her real voice, recording playback, a real number search or DND answer."
+  },
+  {
+   "id": "rejected.2026-10-24.web-billing-reads-inrmilli",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Billing lines read inrMilli; invoice.get sends costInrMilli, so every line showed \u20b90.00 under a non-zero total (seeded: \u20b910.92 total).",
+   "tried": "The Billing card mapped byComponent lines with l.inrMilli ?? l.inr_milli.",
+   "broke": "Every line rendered \u20b90.00; the lines did not add up to the total. Fixed in web; a flow now sums the lines against invoice.get."
+  },
+  {
+   "id": "rejected.2026-10-24.tools-tab-endcall-transfer-switches",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Tools-tab switches for \"End the call herself\" and \"Connect to a person\" that change nothing at runtime.",
+   "tried": "end_call and transfer were listed in TOOL_INFO as toggles; templates leave them off.",
+   "broke": "The runtime always grants ending after a goodbye (compile.ts markerRules; vpvoice/conversation.py:447 skips both) and hands over on handOff.when, so an OFF switch told the buyer she cannot hang up (must-be C) while she can. The web now states both as they work; tool.attach still accepts the two names (agents-tools test) and agent-config still lists them as tools."
+  },
+  {
+   "id": "rejected.2026-10-24.telephony-disabled-env-var-in-refusal",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "A buyer-facing refusal that names a server setting: \"set VP_TELEPHONY_LIVE=1 with credentials on the server\".",
+   "tried": "TelephonyDisabled (product/server/modules/campaigns/telephony.ts:43) puts the operator hint in the tool reason.",
+   "broke": "Number search on the Numbers page showed it verbatim. The web now rewrites any refusal naming a VP_ setting (plainReason); API and MCP callers still get the raw text until the server says it plainly with a code."
+  },
+  {
+   "id": "rejected.2026-10-24.tabs-wrap-or-clip",
+   "type": "rejection",
+   "status": "confirmed",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Tab strips that wrap to two rows on desktop and clip on phone with no scroll sign.",
+   "tried": "Tabs scrolled sideways below 900 px with the scrollbar hidden, and wrapped above it.",
+   "broke": "Phone: the fourth agent tab read \"Objec\" with nothing saying more exist (round 1 leftover). Desktop beside the assistant: \"Versions\" and Settings' \"Integrations / Activity\" fell to a second row. Replaced by one row with a fade and arrow buttons on the hidden side."
+  },
+  {
+   "id": "open.2026-10-24.launch-check-agent-languages",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Should launch checks warn when the list's preferred languages are ones the agent does not speak? (Deccan Fincorp: Kannada, Bengali, Tamil, Telugu contacts; an agent with Hindi, English, Hinglish; no warning.)",
+   "closes_when": "launchBlockers (product/server/modules/campaigns/index.ts:76) returns a warning with counts and a fix link to the agent's languages, or a decision records why not."
+  },
+  {
+   "id": "open.2026-10-24.per-contact-facts-without-column",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Nothing checks that an agent's per-contact facts (emi_amount, emi_due) have a matching list column (\"EMI amount\", \"Due date\"), before launch or at import.",
+   "closes_when": "source.preview or launchBlockers names each per-contact fact with no matching attribute."
+  },
+  {
+   "id": "open.2026-10-24.build-your-own-prices-usd",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Build-your-own part prices are in US dollars ($ per audio hour, $ per million tokens) while stack cards are \u20b9 per minute (must-be A).",
+   "closes_when": "Each part in shared/components.ts carries a \u20b9 figure at the money module's rate, with USD only in the basis note."
+  },
+  {
+   "id": "open.2026-10-24.publish-without-diff",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Publish shows no diff and nothing about what goes live (stack, last practice result, change since the previous version); sharpened must-be 15 asks for an explicit publish with a diff.",
+   "closes_when": "version.publish describe (product/server/modules/agents/index.ts:502) returns detail rows the approval sheet already renders."
+  },
+  {
+   "id": "open.2026-10-24.approval-requester-in-brief",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "brief.today needsTap items carry no requester, so an approval cannot say who asked (the assistant, a teammate, the person).",
+   "closes_when": "product/server/modules/operator/tools.ts:41 selects the actor type and name; the sheet shows it."
+  },
+  {
+   "id": "open.2026-10-24.activity-subject-campaign-draft",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Activity says \"saved a campaign draft: <audience name>\": subjectOf picks the first matching input key (audienceId) rather than the created campaign; publishing reads \"asked for approval to make a change\".",
+   "closes_when": "product/server/subject.ts:8 prefers the created record for *.draft and names the tool in proposal lines."
+  },
+  {
+   "id": "open.2026-10-24.vp-in-money-copy",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "\"VP\" is still shown to buyers in money copy (estimate basis, Billing price note and statement note): round 1's S3.",
+   "closes_when": "product/server/modules/money/money.ts:59,72,214 and money/index.ts:55 say Vyakti; the web no-\"VP\" guard is extended to server strings that reach people."
+  },
+  {
+   "id": "open.2026-10-24.enterprise-billing-documents",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Billing is a usage statement only: no tax invoice, GSTIN, payment method or receipts, which enterprise buyers ask for first (must-be 19).",
+   "closes_when": "Owner decides the billing documents for v1 once price is set; invoice.get grows them."
+  },
+  {
+   "id": "open.2026-10-24.numbers-kyc-before-search",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Numbers does not state KYC documents, typical time and monthly price per series before a search (sharpened must-be 16), even with telephony off.",
+   "closes_when": "number.search (product/server/modules/campaigns/index.ts:442) or a series list returns the checklist, time and price."
+  },
+  {
+   "id": "open.2026-10-24.call-log-agent-version",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "call.search / call.get return agent_version_id without agent name or version number, so the call log cannot show the version (must-be 13) without N+1 reads.",
+   "closes_when": "product/server/modules/calls/tools.ts:184 joins agent name and version number."
+  },
+  {
+   "id": "open.2026-10-24.test-spend-vs-empty-wallet",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Today shows spend (\u20b90.09 of practice calls) while the wallet is \u20b90 and Empty: what does test spend draw on?",
+   "closes_when": "A decision: tests draw on the wallet, a test allowance, or nothing; Today and Billing say which."
+  },
+  {
+   "id": "open.2026-10-24.stack-voice-samples",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Every curated stack card says \"No sample recorded yet\": a buyer cannot hear a voice before building an agent.",
+   "closes_when": "One recorded sample per curated stack (VM, within the Vertex rate rule) is attached to stack.list."
   }
  ],
  "edges": [
@@ -34261,6 +34420,91 @@
    "from": "decision.2026-10-24.analysis-outcome-shapes",
    "to": "rejected.2026-10-23.tiered-escalates-no-decision-model-codes",
    "relation": "answers"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "rejected.2026-10-24.web-billing-reads-inrmilli",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "rejected.2026-10-24.tools-tab-endcall-transfer-switches",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "rejected.2026-10-24.telephony-disabled-env-var-in-refusal",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "rejected.2026-10-24.tabs-wrap-or-clip",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.launch-check-agent-languages",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.per-contact-facts-without-column",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.build-your-own-prices-usd",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.publish-without-diff",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.approval-requester-in-brief",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.activity-subject-campaign-draft",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.vp-in-money-copy",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.enterprise-billing-documents",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.numbers-kyc-before-search",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.call-log-agent-version",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.test-spend-vs-empty-wallet",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "open.2026-10-24.stack-voice-samples",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.web-buyer-walkthrough-2",
+   "to": "decision.2026-10-21.wt-synthesis-must-be-changes",
+   "relation": "tests"
   }
  ]
 }

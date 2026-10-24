@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-walkthrough2-routing",
+      "details": "Buyer walkthrough round 2 (d3b9f97: NBFC collections at 1440 px, hospital chain at 390 px, 136 steps, 19 web fixes, 507/507 on its side) accepted. Its 13 server items were routed: agents gets R2 (launch warning when the agent's languages miss the list's), R3 (per-contact facts with no matching column) and R8 (publish with a diff); calls gets R1 (no env var in any refusal, with a guard over every module), R6 (campaign.draft activity subject) and R11 (agent name and version on the call log); money gets R4 (build-your-own parts priced in rupees) and R5 ('VP' still in money copy), and logs R9 and R12 as owner questions; operator gets R7 (requester in brief.today). R10 (KYC, time and price before a number search) waits on the campaigns KYC step; R13 (voice samples) is the integrator's VM task. Web next: tests must not rewrite tracked screenshots; WCAG 2.1 AA via axe-core on every main screen; stack-card sample playback from a manifest."
+    }
+  ]
+}
