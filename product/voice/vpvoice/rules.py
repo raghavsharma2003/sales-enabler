@@ -44,11 +44,13 @@ KNOWN = {
     'redact': {'about', 'digit_token', 'words_to_digits', 'context_window_chars', 'kinds', 'not_secret_code'},
     'redact_kind': {'kind', 'context', 'minDigits', 'maxDigits', 'about'},
     'masks': {'otp', 'card', 'cvv', 'upi_pin', 'aadhaar'},
-    'lint': {'T-L1', 'T-L2', 'T-L3', 'T-L4'},
+    'lint': {'T-L1', 'T-L2', 'T-L3', 'T-L4', 'T-L6', 'T-L7'},
     'T-L1': {'about', 'any', 'none', 'noneClause', 'never_say_hides_ai', 'disclosure_clause_requires'},
     'T-L2': {'about', 'categories', 'dropPurposes'},
     'T-L3': {'about', 'allowedPurposes', 'offerLanguage'},
     'T-L4': {'about', 'shorteners'},
+    'T-L6': {'about', 'any', 'never_say_hides_crisis'},
+    'T-L7': {'about', 'any', 'negated_prefix'},
     'links': {'pattern', 'about'},
     'checkin': {'about', 'shapes', 'answer_shapes'},
 }
@@ -499,6 +501,19 @@ def lint_agent_config(cfg):
             continue
         if fires(L['T-L1'], t):
             out.append({'rule': 'T-L1', 'path': path, 'message': 'tells the agent to claim to be human or hide being an AI', 'effect': 'refuse'})
+    # T-L6 / T-L7: crisis lines and manipulation (the TS door's lintAgentConfig; agents/guard.ts delegates there)
+    negated = rx(L['T-L7']['negated_prefix'])
+    for path, s in _strings(cfg, ''):
+        if re.match(r'(agentId|versionHash|voice\.|brand\.verifiedDomains)', path): continue
+        t = normalise(s)
+        if path.startswith('neverSay'):
+            if rx(L['T-L6']['never_say_hides_crisis']).search(t):
+                out.append({'rule': 'T-L6', 'path': path, 'message': 'neverSay would stop her giving the crisis lines', 'effect': 'refuse'})
+            continue
+        if any(rx(p).search(t) for p in L['T-L6']['any']):
+            out.append({'rule': 'T-L6', 'path': path, 'message': 'tells the agent to skip or remove the crisis lines', 'effect': 'refuse'})
+        if any(not negated.search(t[:m.start()]) for p in L['T-L7']['any'] for m in rx(p).finditer(t)):
+            out.append({'rule': 'T-L7', 'path': path, 'message': 'tells the agent to manipulate (false urgency, fear, threats, guilt or pressure)', 'effect': 'refuse'})
     clause = (cfg.get('opening') or {}).get('disclosureClause', '') or ''
     if not rx(L['T-L1']['disclosure_clause_requires']).search(normalise(clause)):
         out.append({'rule': 'T-L1', 'path': 'opening.disclosureClause', 'message': 'the disclosure clause must say she is an AI', 'effect': 'refuse'})

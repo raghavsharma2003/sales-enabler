@@ -1,0 +1,44 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Crisis-line and manipulation checks on agent config live in shared/safety's lint, read by both doors: rules.json lint.T-L6 (crisis lines, plus a neverSay entry that would hide them) and lint.T-L7 (manipulation, with negated_prefix tested on the text before each match). agents/guard.ts delegates (T-L1 to ai_honesty or disclosure, T-L6 to crisis_lines, T-L7 to manipulation); its local regexes are gone. One source of truth. lintAgentConfig now refuses these everywhere it runs (compile, campaign gate, learning gates), not only on draft writes.",
+   "rationale": "open.2026-10-24.crisis-manipulation-lint-in-safety.",
+   "reverse_if": "Never: weakening the regex door is not allowed; tighten it with DEV evidence instead."
+  },
+  {
+   "id": "measure.2026-10-24.crisis-manipulation-lint-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Config lint for crisis lines and manipulation, same sets before and after. Guard before: crisis 3/8, manipulation 0/10, benign flagged 0/1,064, templates 0/16. Faithful port into rules.json: identical (3/8, 0/10, 0/1,064). After DEV tuning: crisis 8/8, manipulation 8/10, benign flagged 0/1,064, templates 0/16. TS and Python agree on all 147 DEV lines checked line by line.",
+   "n": "8 crisis and 10 manipulation DEV lines (sets/dev-brief-review.json); 1,064 benign (DEV pass 53, DEV lint allow 32, cases.json replyDoor benign agent lines); 16 templates; 17 new cases.json lint vectors",
+   "method": "hardFindings (guard) and lintAgentConfig on each line as a persona note; Python lint_agent_config on the same lines",
+   "not_verified": "Recall after tuning is in-sample. Still missed: 'only two slots left ... to get them to book' and 'sirf aaj ke liye discount ... kal se double', left to the brief review because a real deadline stated as fact is allowed. Not scored on any blind set."
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-24.crisis-manipulation-lint-dev",
+   "to": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "relation": "supports"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-lint-crisis-manipulation",
+   "details": "Guard's crisis-line and manipulation regexes moved into rules.json lint T-L6/T-L7, both doors; guard delegates; DEV crisis 3/8 to 8/8 and manipulation 0/10 to 8/10 with 0/1,064 benign flagged. PREREG-9 amendment 2: caller, lexicon, normalisation and callerSignals vectors unchanged. Gates: tsc clean, fresh-DB 586/586, ui-contract strict 179/179, voice unittest OK."
+  }
+ ]
+}

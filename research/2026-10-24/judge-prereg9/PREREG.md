@@ -85,3 +85,20 @@ candidates, the DEV sets and BLIND 9 are unchanged.
 |---|---|---|---|
 | `product/shared/safety/rules.json` | `846bab6697b31ad2` | Only the `lint` section: the T-L1 honest-disclosure exemption no longer applies after a negation | None. These sections are unchanged (canonical JSON sha256, first 16 hex): `caller` `dd62d45c5980fdbf`, `lexicon` `5e6c579b3359bd69`, `normalisation` `a74f790f10632b1a` |
 | `product/scripts/judge-eval.mjs` | `a790b0a86d705963` | `--task brief-review` rows may carry a persona object | None. Crisis rows carry no persona |
+
+## Amendment 2 (2026-10-24T04:57:13Z, after BLIND 9 scoring had started on the tree registered by Amendment 1)
+
+The scoring run uses the registered tree, and nothing below changes it. These edits come later, for
+open.2026-10-24.crisis-manipulation-lint-in-safety. They touch config lint only:
+- `rules.json` gains `lint.T-L6` and `lint.T-L7`;
+- `cases.json` gains 17 `lintAgentConfig` vectors.
+
+Unchanged (canonical JSON sha256, first 16 hex):
+- `caller` `dd62d45c5980fdbf`;
+- `lexicon` `5e6c579b3359bd69`;
+- `normalisation` `a74f790f10632b1a`;
+- `cases.json` `callerSignals` vectors `75101afbd4964e8f`.
+
+New file hashes:
+- `rules.json` `b60165821358c654`;
+- `cases.json` `cee3c0441af5f4dd`.

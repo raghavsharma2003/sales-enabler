@@ -1282,6 +1282,32 @@
         "shorturl.at",
         "tiny.cc"
       ]
+    },
+    "T-L6": {
+      "about": "Refuse any config text that tells the agent to skip, remove or discourage the crisis lines (Tele-MANAS 14416 and 112), or a neverSay entry that would stop her saying them. Moved from agents/guard.ts (open.2026-10-24.crisis-manipulation-lint-in-safety); both doors read it.",
+      "any": [
+        "\\b(never|don'?t|do not|must not|should not|avoid|skip|no need to|without|stop (giving|mentioning|saying|reading|offering))\\b[^.?!]{0,40}\\b(helpline|help line|crisis (line|number)s?|tele-?manas|14416|112|emergency (line|number)s?|suicide)\\b|\\b(remove|drop|delete|disable|turn off|switch off|leave out)\\b[^.?!]{0,25}\\b(helpline|crisis|tele-?manas|14416|112|emergency (line|number))|\\b(helpline|tele-?manas|14416|112)\\b[^.?!]{0,20}\\b(mat|nahi|na)\\b[^.?!]{0,12}\\b(batana|batao|bolna|bolo|dena|do)\\b",
+        "\\b(if|when|agar|jab|koi)\\b[^.?!]{0,40}(self-?harm|suicid|cannot go on|can'?t go on|want to die|wants to die|depress|sound(s)? low|feel(s)? low|hopeless|jeene ka (mann|man) nahi|marna chah|pareshan|udaas|dukhi)[^.?!]{0,60}\\b(keep going|carry on|move on|return to|go back to|continue with|continue the (call|pitch|agenda|payment)|stick to|seedha|sidhe|goal poora|keep (pushing|selling|pitching))\\b",
+        "\\b(helpline|help line|crisis|tele-?manas|14416|112)\\b[^.?!]{0,20}\\b(mat|nahi|na)\\b[^.?!]{0,8}\\b(karna|karo|kariye|lena|lo|batana|batao|dena|do|bolna|bolo)\\b",
+        "(हेल्पलाइन|टेली-?मानस|14416|112)[^.?!।]{0,25}(मत|नहीं|ना)[^.?!।]{0,10}(करना|करो|बताना|बताओ|देना|दो|बोलना)",
+        "(अगर|जब)[^.?!।]{0,30}(परेशान|उदास|दुखी|मरना|जीने का मन नहीं)[^.?!।]{0,60}(भुगतान|पेमेंट|ईएमआई|सीधे)"
+      ],
+      "never_say_hides_crisis": "(helpline|help line|crisis|tele-?manas|14416|\\b112\\b|emergency (line|number)|suicide|हेल्पलाइन)"
+    },
+    "T-L7": {
+      "about": "Refuse any config text that tells the agent to manipulate: false urgency, fear, threats, guilt, shame, fake deadlines, pushing past a no. A match right after a negation ('never pressure them') describes the rule, not a breach: negated_prefix is tested on the text before each match (up to the match start). Moved from agents/guard.ts; both doors read it.",
+      "any": [
+        "\\b(create|use|add|build|invent|fake|manufacture)\\b[^.?!]{0,15}\\b(false |fake |artificial )?(urgency|scarcity|fear|panic|guilt|pressure)\\b|\\b(scare|frighten|threaten|intimidate|guilt[- ]trip|shame|harass|pressuri[sz]e|pressure|bully)\\b[^.?!]{0,12}\\b(them|the caller|callers|customers?|people|him|her|into)\\b|\\b(fake|false|made[- ]up|invented)\\b[^.?!]{0,12}\\b(deadline|expiry|last chance|limited[- ]time)|\\b(don'?t|never|do not)\\b[^.?!]{0,10}\\b(take|accept)\\b[^.?!]{0,6}\\bno\\b|\\b(keep|continue)\\b[^.?!]{0,15}\\b(pushing|pitching|insisting)\\b[^.?!]{0,30}\\b(even if|after|until)\\b|\\b(darao|dara do|dhamki|dhamkao|sharminda karo)\\b",
+        "\\b(say|tell|mention|bolo|kaho|batao|remind|warn|threaten)[a-z]*\\b[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)[^.?!]{0,60}(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)",
+        "(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)",
+        "\\b(say|tell|mention|bolo|kaho|batao|remind|warn)[a-z]*\\b[^.?!]{0,30}(if (they|he|she) (do not|don'?t|doesn'?t|cannot|can'?t) pay|unless (they|he|she) pay|non-?payment|agar[^.?!]{0,15}nahi|nahi (bhara|bhari|kiya|diya|bharoge|karoge)|by (today|tonight|tomorrow)|aaj (hi )?nahi)[^.?!]{0,60}(legal notice|legal action|police|court|jail|arrest|\\bfir\\b|case (file|darj)|ghar (pe|par) (log|aadmi|recovery)|log aayenge|recovery agents?|hamesha ke liye kharab)",
+        "\\b(if|when|agar|jab)\\b[^.?!]{0,30}\\b(say no|says no|refuse|refuses|hesitate|hesitates|mana kare|mana karein|nahi bole|not interested)\\b[^.?!]{0,50}\\b(keep|baar baar|again and again|push|pushing|insist|poochte raho|puchte raho|until|jab tak)\\b",
+        "\\b(remind|tell|say|make them feel|kaho|bolo|batao)[a-z]*\\b[^.?!]{0,60}\\b(children|kids|family|parivar|bachche|bachon|bacche)\\b[^.?!]{0,40}\\b(suffer|shame|sharmind|sharm|blame|responsible|guilty|dukh|takleef|bhugtenge)",
+        "(कहो|बोलो|बताओ|कहिए)[^.?!।]{0,60}(परिवार|बच्चों|बच्चे)[^.?!।]{0,40}(शर्मिंदगी|शर्म|दुख|तकलीफ|भुगत)",
+        "\\b(tell|say|bolo|kaho|batao|mention)\\b[^.?!]{0,60}\\b(even though|although|while in fact|jabki|halanki|halaanki)\\b",
+        "\\b(mana kare|mana karein|mana karte|refuse kare|nahi bole|says? no)\\b[^.?!]{0,10}\\b(toh bhi|to bhi|tab bhi|phir bhi|even then|still)\\b[^.?!]{0,40}\\b(baar baar|poochte raho|puchte raho|push|insist|keep (asking|pushing))"
+      ],
+      "negated_prefix": "\\b(never|no|not|don'?t|do not|without|avoid|mat|nahi)\\b[^.?!]{0,20}$"
     }
   },
   "links": {

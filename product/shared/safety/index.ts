@@ -57,6 +57,8 @@ interface Rules {
     'T-L2': { categories: CallCategory[]; dropPurposes: Fact['purpose'][] };
     'T-L3': { allowedPurposes: Record<CallCategory, Fact['purpose'][]>; offerLanguage: string };
     'T-L4': { shorteners: string[] };
+    'T-L6': { any: string[]; never_say_hides_crisis: string };
+    'T-L7': { any: string[]; negated_prefix: string };
   };
   links: { pattern: string };
 }
@@ -463,7 +465,7 @@ export function verhoeff(digits: string): boolean {
 // ---------------------------------------------------------------------------------------------------------------
 // Compile lints
 
-export interface LintFinding { rule: 'T-L1' | 'T-L2' | 'T-L3' | 'T-L4'; path: string; message: string; effect: 'refuse' | 'drop' }
+export interface LintFinding { rule: 'T-L1' | 'T-L2' | 'T-L3' | 'T-L4' | 'T-L6' | 'T-L7'; path: string; message: string; effect: 'refuse' | 'drop' }
 
 const SKIP_PATHS = new Set(['agentId', 'versionHash', 'voice.stackId', 'voice.voiceId']);
 
@@ -491,6 +493,22 @@ export function lintAgentConfig(cfg: AgentConfig): LintFinding[] {
       continue;
     }
     if (fires(L['T-L1'], t)) out.push({ rule: 'T-L1', path, message: 'tells the agent to claim to be human or hide being an AI', effect: 'refuse' });
+  }
+  // T-L6 / T-L7: no text may switch off the crisis lines or tell her to manipulate (one source of truth; agents/guard.ts
+  // delegates here). Ids, hashes, voice parts and domains are not instructions.
+  for (const [path, s] of strings(cfg, '')) {
+    if (/^(agentId|versionHash|voice\.|brand\.verifiedDomains)/.test(path)) continue;
+    const t = normalise(s);
+    if (path.startsWith('neverSay')) {
+      if (re(L['T-L6'].never_say_hides_crisis).test(t)) out.push({ rule: 'T-L6', path, message: 'neverSay would stop her giving the crisis lines', effect: 'refuse' });
+      continue;
+    }
+    if (L['T-L6'].any.some(p => re(p).test(t))) out.push({ rule: 'T-L6', path, message: 'tells the agent to skip or remove the crisis lines', effect: 'refuse' });
+    // A manipulation match right after a negation ("never pressure them") states the rule; every match is checked.
+    const negated = re(L['T-L7'].negated_prefix);
+    if (L['T-L7'].any.some(p => [...t.matchAll(re(p, '', 'giu'))].some(m => !negated.test(t.slice(0, m.index))))) {
+      out.push({ rule: 'T-L7', path, message: 'tells the agent to manipulate (false urgency, fear, threats, guilt or pressure)', effect: 'refuse' });
+    }
   }
   const clause = cfg.opening?.disclosureClause ?? '';
   if (!re(L['T-L1'].disclosure_clause_requires).test(normalise(clause)))
