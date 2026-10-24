@@ -142,6 +142,7 @@ export type ToolName =
   | "member.role.set"
   | "memory.brief"
   | "memory.extract"
+  | "memory.extract_thread"
   | "memory.policy.get"
   | "memory.policy.set"
   | "message_template.draft"
@@ -1162,6 +1163,10 @@ export interface ToolInput {
   /** remember what the caller said that matters for the next call (gated; never from test calls) (draft) */
   "memory.extract": {
     conversationId: string;
+  };
+  /** remember what a person wrote on WhatsApp that matters for the next call or message (the same gates as a call; verified senders only) (draft) */
+  "memory.extract_thread": {
+    threadId: string;
   };
   /** the workspace's memory switch, undo window, allowed sensitive categories, and how long facts are kept (read) */
   "memory.policy.get": Record<string, never>;
@@ -2238,6 +2243,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "member.role.set": { risk: "policy", needsApproval: true },
   "memory.brief": { risk: "read", needsApproval: false },
   "memory.extract": { risk: "draft", needsApproval: false },
+  "memory.extract_thread": { risk: "draft", needsApproval: false },
   "memory.policy.get": { risk: "read", needsApproval: false },
   "memory.policy.set": { risk: "policy", needsApproval: true },
   "message_template.draft": { risk: "draft", needsApproval: false },

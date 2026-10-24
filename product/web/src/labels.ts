@@ -156,7 +156,7 @@ export const PAST: Record<string, string> = {
   'knowledge.ingest': 'added a knowledge source', 'knowledge.ingest_site': 'read the company website', 'offering.import': 'imported an offerings sheet', 'knowledge.fact.decide': 'decided which company facts she may say', 'knowledge.propose': 'proposed facts from a company source', 'knowledge.span.approve': 'decided which passages she may state', 'learning.propose': 'looked for improvements from an agent\'s calls',
   'live.listen': 'listened to a live call', 'live.takeover': 'took over a live call', 'live.whisper': 'whispered to the agent on a live call',
   'member.invite': 'invited a teammate', 'member.remove': 'removed a teammate', 'member.role.set': 'changed a teammate\'s role',
-  'memory.extract': 'noted something a caller said, for review', 'memory.policy.set': 'changed what is remembered',
+  'memory.extract': 'noted something a caller said, for review', 'memory.extract_thread': 'noted something a person wrote on WhatsApp, for review', 'memory.policy.set': 'changed what is remembered',
   'money.reconcile': 'compared charges with metered cost', 'monitor.create': 'turned on a monitor',
   'number.byo.connect': 'connected a number they own', 'number.kyc.submit': 'sent KYC documents for a number', 'number.pause': 'paused a number', 'number.pause_flagged': 'paused a flagged number', 'number.rent': 'rented a number',
   'offering.edit': 'changed an offering',

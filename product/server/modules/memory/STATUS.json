@@ -9,19 +9,21 @@
   "fact.review.list",
   "memory.brief",
   "memory.extract",
+  "memory.extract_thread",
   "memory.policy.get",
   "memory.policy.set"
  ],
  "tests": {
-  "passed": 41,
-  "total": 41,
+  "passed": 45,
+  "total": 45,
   "files": {
    "memory.test.ts": 17,
    "memory-retention.test.ts": 4,
    "calls-outcome-import.test.ts": 6,
    "memory-sweep.test.ts": 6,
    "memory-review.test.ts": 3,
-   "memory-relational.test.ts": 5
+   "memory-relational.test.ts": 5,
+   "memory-whatsapp.test.ts": 4
   }
  },
  "works": [
@@ -43,7 +45,8 @@
   "erasure also redacts an erased person's verified outcomes (reference and amount) and their pending outcome-import preview rows (redactErasedOutcomes, run by memory.transcript_purge)",
   "memory.retention nightly job (retention.ts): expired facts, review-tier proposals unreviewed for 14 days and extraction receipts past the transcripts window are deleted for good, with no resurrection; one counts-only audit row per workspace; memory.policy.get.retention {rules, dueNow, lastSweep}",
   "workspace-wide memory review queue: fact.review.list (proposed facts across contacts, oldest first, exact quote, call link, the date it is dropped) and fact.review.decide (a person approves, corrects then approves, or rejects up to 50 at once; rejected proposals are deleted); web /contacts/review in its own lazy chunk",
-  "relational memory: the brief carries 'last: outcome=\u2026' (the last real call's outcome for the same purpose) and at most one 'personal:' detail; personal keys (life_event, relocation) are kept only when the caller agreed to her keeping it in the same call (keepAgreements, in code); a caller's 'yeh yaad mat rakhna' keeps nothing from that call and never reaches the model; 'mere baare mein kuch yaad mat rakhna' / 'sab bhool jao' forgets them at once with a counts-only forget_request (code-detected, never a model marker)"
+  "relational memory: the brief carries 'last: outcome=\u2026' (the last real call's outcome for the same purpose) and at most one 'personal:' detail; personal keys (life_event, relocation) are kept only when the caller agreed to her keeping it in the same call (keepAgreements, in code); a caller's 'yeh yaad mat rakhna' keeps nothing from that call and never reaches the model; 'mere baare mein kuch yaad mat rakhna' / 'sab bhool jao' forgets them at once with a counts-only forget_request (code-detected, never a model marker)",
+  "memory.extract_thread {threadId} (system; channels calls it): a WhatsApp thread's new messages propose facts through the same gates as a call (exact quote inside one inbound message, span {messageId,start,end}, refused categories, basis, purpose from the connection's agent, personal agreement, forget phrases); verified senders only, never an opted-out thread; a per-thread cursor (memory_thread_cursor) so each message is read once; facts carry channel 'whatsapp' and stay in the tenant (Meta s.4.7); storeFacts is shared with calls"
  ],
  "untested": [
   "real LLM extraction quality",

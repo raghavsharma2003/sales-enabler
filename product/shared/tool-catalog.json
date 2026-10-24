@@ -5218,6 +5218,26 @@
    }
   },
   {
+   "name": "memory.extract_thread",
+   "risk": "draft",
+   "summary": "remember what a person wrote on WhatsApp that matters for the next call or message (the same gates as a call; verified senders only)",
+   "needsApproval": false,
+   "roles": [],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "threadId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "threadId"
+    ]
+   }
+  },
+  {
    "name": "memory.policy.get",
    "risk": "read",
    "summary": "the workspace's memory switch, undo window, allowed sensitive categories, and how long facts are kept",
