@@ -45,7 +45,7 @@ export interface CampaignPolicy {
   reviewStopAfter?: number; preset?: string; categoryOverride?: { from: CallCategory; reason: string; by: string };
 }
 
-export interface VersionRow { id: string; hash: string; config: { agent?: AgentConfig; brief?: { text: string; hash: string; bytes: number }; lint?: { ok: boolean } }; agent_status: string; agent_id: string }
+export interface VersionRow { id: string; hash: string; kind?: string; config: { agent?: AgentConfig; brief?: { text: string; hash: string; bytes: number }; lint?: { ok: boolean } }; agent_status: string; agent_id: string }
 export interface ContactRow { id: string; e164: string; name: string | null; language: string | null; timezone: string; custom: Record<string, unknown>; erased_at?: Date | null }
 export interface NumberRow { id: string; e164: string; series: Series; carrier: string; status: string; kyc_status: string; a2p_status: string }
 export interface DialPolicy { outer_band: TimeRange; concurrency: number; sector: string | null; sector_packs: string[]; holidays: string[] }
@@ -132,7 +132,7 @@ export async function loadDialPolicy(q: Queryable, ws: string): Promise<DialPoli
 
 export async function loadVersion(q: Queryable, ws: string, id: string | null): Promise<VersionRow | null> {
   if (!id) return null;
-  return one<VersionRow>(q, `SELECT v.id, v.hash, v.config, a.status AS agent_status, a.id AS agent_id FROM agent_version v
+  return one<VersionRow>(q, `SELECT v.id, v.hash, v.kind, v.config, a.status AS agent_status, a.id AS agent_id FROM agent_version v
     JOIN agent a ON a.id = v.agent_id WHERE v.id = $1 AND a.workspace_id = $2`, [id, ws]);
 }
 

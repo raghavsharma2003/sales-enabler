@@ -89,7 +89,7 @@ async function versionCandidate(ctx: { q: pg.PoolClient | pg.Pool; workspaceId: 
   const a = await one(ctx.q, 'SELECT 1 FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
   if (!a) throw new Error('no such agent');
   const n = (await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [i.agentId]))!.n;
-  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, note, config) VALUES ($1,$2,'hc',$3,'system',$4,$5) RETURNING id`,
+  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, note, config, kind) VALUES ($1,$2,'hc',$3,'system',$4,$5,'candidate') RETURNING id`,
     [i.agentId, n, i.parentVersionId, i.note, JSON.stringify({ agent: i.config, brief: { text: 'compiled', hash: 'bh', bytes: 8 } })]);
   return { versionId: v!.id, number: n, versionHash: 'hc', brief: { hash: 'bh', bytes: 8 } };
 }
@@ -646,4 +646,42 @@ test('an experiment never changes safety rules, the disclosure, hand-off or reco
   for (const k of ['brand', 'category', 'sectorPacks', 'neverSay', 'handOff', 'recording', 'memory', 'voice', 'tools']) assert.deepEqual(v!.tr[k], v!.c[k], k);
   assert.equal(v!.tr.opening.disclosureClause, v!.c.opening.disclosureClause);
   assert.deepEqual([...v!.tr.facts].sort((a: any, b: any) => a.key.localeCompare(b.key)), [...v!.c.facts].sort((a: any, b: any) => a.key.localeCompare(b.key)));
+});
+
+test('concurrent checks of one experiment never starve the connection pool: a second check skips while one is running', { skip }, async () => {
+  // Calls run experiment.check after every connected call, so checks of one experiment overlap. A check locks the
+  // experiment row and may then call a sibling tool (the A3 revert here), which needs a second connection. If the other
+  // checks wait for the row lock while holding the pool's remaining connections, nothing can move. On a pool of 2 this
+  // hung for good before the fix; it is the cause of the loop e2e test's one 300 s timeout.
+  const t = await workspace();
+  const { experimentId } = await runningExperiment(t, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  await dialUntil(t, bothReach(80), (arm, i) => (arm === 'treatment' ? (i % 20 === 0 ? 'confirmed' : 'declined') : (i % 2 === 0 ? 'confirmed' : 'declined')));
+  const small = createPool(URL_);
+  (small.options as { max: number }).max = 2;
+  bindLearning({ pool: small, registry });
+  try {
+    const actor: Actor = { type: 'member', id: t.member, role: 'owner' };
+    const check = () => registry.execute<any>(small, 'experiment.check', { experimentId }, { workspaceId: t.ws, actor });
+    const timeout = new Promise<'hung'>(res => setTimeout(() => res('hung'), 15_000).unref());
+    const both = await Promise.race([Promise.all([check(), check()]), timeout]);
+    assert.notEqual(both, 'hung', 'two concurrent checks on a pool of 2 deadlocked');
+    const states = (both as any[]).map(r => r.result.state ?? r.result.busy);
+    assert.ok(states.includes('stopped_guardrail'), JSON.stringify(both));
+    const other = (both as any[]).find(r => r.result.state !== 'stopped_guardrail');
+    if (other) assert.match(other.result.note, /another check/, 'the skipped check says why');
+  } finally { bindLearning({ pool, registry }); void small.end().catch(() => {}); }
+});
+
+test('a new proposal is built on the live version, never on a running experiment\'s candidate', { skip }, async () => {
+  const t = await workspace();
+  const { started } = await runningExperiment(t, { baselineRate: 0.5, mdeAbs: 0.05, minDays: 0 });
+  void started;
+  const cand = await one<{ id: string }>(pool, "SELECT id FROM agent_version WHERE agent_id = $1 AND kind = 'candidate'", [t.agentId]);
+  assert.ok(cand, 'the running test made a candidate version');
+  const [evidence] = await calls(t.ws, t.versionId, 5, 1);
+  fakeProposals(evidence!);
+  const again = await t.call('learning.propose', { agentId: t.agentId, max: 1 });
+  assert.equal(again.status, 'confirmed', JSON.stringify(again));
+  const p = await one<{ base_version_id: string }>(pool, 'SELECT base_version_id FROM proposal WHERE id = $1', [again.result.proposals[0].id]);
+  assert.equal(p!.base_version_id, t.versionId, 'the base is version 1, the live one');
 });

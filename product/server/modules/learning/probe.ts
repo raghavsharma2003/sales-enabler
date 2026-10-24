@@ -17,7 +17,9 @@ export const GUARDED: GuardedMetric[] = [
 ];
 
 export interface ProbeVerdict {
-  verdict: 'pass' | 'regressed' | 'invalid';
+  verdict: 'pass' | 'regressed' | 'invalid' | 'inconclusive';
+  /** Why a verdict that is not a regression is not a pass either, in words. */
+  note?: string;
   pairs: number;
   passes: { current: number; proposed: number };
   metrics: Record<string, { current: number; proposed: number; regressed: boolean }>;
@@ -49,6 +51,12 @@ export function compareProbe(current: SimRun[], proposed: SimRun[], guarded: Gua
     if (regressed) out.regressions.push(`${g.name} worsened ${round(c)} -> ${round(p)}`);
   }
   if (out.regressions.length) out.verdict = 'regressed';
+  // Both versions failing every practice call says nothing about the change: the simulation could not tell them apart
+  // (seen with no simulation model, where everything fails). Never read that as a pass.
+  else if (out.passes.current === 0 && out.passes.proposed === 0) {
+    out.verdict = 'inconclusive';
+    out.note = `the current version passed none of the ${out.pairs} practice calls, so the simulation could not tell the two versions apart`;
+  }
   return out;
 }
 

@@ -132,7 +132,7 @@ export function registerTools(r: Registry): void {
       } else {
         const v = await one<{ id: string; config: any }>(ctx.pool,
           `SELECT v.id, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id AND a.workspace_id = $2
-           WHERE v.agent_id = $1 ${i.versionId ? 'AND v.id = $3' : ''} ORDER BY v.number DESC LIMIT 1`,
+           WHERE v.agent_id = $1 ${i.versionId ? 'AND v.id = $3' : "AND v.kind = 'published'"} ORDER BY v.number DESC LIMIT 1`,
           i.versionId ? [i.agentId, ctx.workspaceId, i.versionId] : [i.agentId, ctx.workspaceId]);
         if (!v) throw new Error(i.versionId ? 'no such version of this agent' : 'this agent has no version yet; test its draft with useDraft');
         cfg = v.config; versionId = v.id;

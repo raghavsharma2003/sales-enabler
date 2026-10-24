@@ -20,7 +20,9 @@ export interface AgentRow { id: string; name: string; job: string; status: 'draf
 export interface LintItem { message: string; severity?: string }
 export interface AgentDoc {
   id: string; name: string; updatedAt: string; draftHash: string; config: AgentConfigDraft; compiles: boolean; lint: LintItem[]; briefBytes: number | null;
-  versions: { id: string; number: number; note: string | null; createdAt: string; by: string }[]; latestVersionId: string | null; latestVersion: number | null;
+  versions: { id: string; number: number; note: string | null; createdAt: string; by: string; candidate: boolean }[];
+  /** The live version (newest published): what a new campaign or line runs. Never an experiment's candidate. */
+  latestVersionId: string | null; latestVersion: number | null;
 }
 export interface AgentConfigDraft {
   brand: { name: string; spokenName: string; verifiedDomains?: string[] };

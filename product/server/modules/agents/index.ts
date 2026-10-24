@@ -344,7 +344,10 @@ const libraryRow = (c: LibraryCaller) => ({ id: c.id, source: 'default' as const
   languageMix: c.languageMix, trap: c.trap, hiddenKeys: c.hiddenKeys, checks: c.passCriteria });
 
 /** The one path that creates an immutable version: validate, require a chosen stack, number it, hash it, compile ONCE. */
-async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null) {
+/** The agent's live version: its newest published one. Experiment candidates are newer but never live. */
+const LIVE_VERSION_SQL = `SELECT id, number FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1`;
+
+async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null, kind: 'published' | 'candidate' = 'published') {
   try { resolveStack(cfg.voice); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
   await ctx.q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['agent_version:' + agentId]);
   const n = await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [agentId]);
@@ -355,10 +358,10 @@ async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, pa
   // Campaigns' launch gate (G10) reads config.lint.ok; a version only exists if it compiled, so ok is true by construction.
   const lint = { ok: true, findings: [...shapeLint(agent), ...lintAgentConfig(agent)], dropped: report.dropped };
   const actor = ctx.actor.type === 'vp_success' ? 'system' : ctx.actor.type;
-  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, author_id, note, config)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-    [agentId, n!.n, agent.versionHash, parentId, actor, ctx.actor.id ?? null, note, JSON.stringify({ agent, brief, lint })]);
-  return { versionId: v!.id, number: n!.n, versionHash: agent.versionHash, parentId, brief: { hash: brief.hash, bytes: brief.bytes } };
+  const v = await one<{ id: string }>(ctx.q, `INSERT INTO agent_version (agent_id, number, hash, parent_id, author_type, author_id, note, config, kind)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+    [agentId, n!.n, agent.versionHash, parentId, actor, ctx.actor.id ?? null, note, JSON.stringify({ agent, brief, lint }), kind]);
+  return { versionId: v!.id, number: n!.n, kind, versionHash: agent.versionHash, parentId, brief: { hash: brief.hash, bytes: brief.bytes } };
 }
 
 /** Compile errors as tool refusals: the reason names the lint finding or the section to cut. */
@@ -420,7 +423,8 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({}), {
     name: 'agent.list', risk: 'read', summary: "List this workspace's agents",
-    run: async ctx => ({ agents: await many(ctx.q, `SELECT a.id, a.name, a.job, a.status, a.updated_at, (SELECT max(number) FROM agent_version v WHERE v.agent_id = a.id) AS latest_version
+    run: async ctx => ({ agents: await many(ctx.q, `SELECT a.id, a.name, a.job, a.status, a.updated_at, (SELECT max(number) FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published') AS latest_version,
+        (SELECT v.id FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published' ORDER BY v.number DESC LIMIT 1) AS live_version_id
       FROM agent a WHERE a.workspace_id = $1 ORDER BY a.updated_at DESC LIMIT 200`, [ctx.workspaceId]) }),
   }));
 
@@ -429,10 +433,13 @@ export function registerAgentTools(r: Registry): void {
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
       const stack = stackOf(a.draft.voice);
-      const versions = await many(ctx.q, 'SELECT id, number, hash, created_at FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 20', [a.id]);
+      const versions = await many(ctx.q, 'SELECT id, number, hash, kind, note, author_type, created_at FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 20', [a.id]);
+      const liveVersion = await one<{ id: string; number: number }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
       const tests = await many(ctx.q, 'SELECT id, passed, draft_hash, created_at FROM agent_test_run WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC LIMIT 10', [a.id, ctx.workspaceId]);
       return { agent: { id: a.id, name: a.name, job: a.job, status: a.status, updatedAt: a.updated_at }, draft: a.draft, draftHash: draftHash(a.draft),
-        ...preview(a.draft), stack: stack ? stackCard(stack) : null, stackChosen: !!stack, versions, tests };
+        ...preview(a.draft), stack: stack ? stackCard(stack) : null, stackChosen: !!stack,
+        // liveVersion is what a new campaign or inbound line runs; versions[0] may be an experiment candidate.
+        liveVersion, versions, tests };
     },
   }));
 
@@ -579,7 +586,7 @@ export function registerAgentTools(r: Registry): void {
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId, true);
       if (draftHash(a.draft) !== i.draftHash) throw new ValidationError('draftHash', 'the draft changed since it was shown; review the new draft and publish again');
-      const prev = await one<{ id: string }>(ctx.q, 'SELECT id FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [a.id]);
+      const prev = await one<{ id: string }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
       return createVersion(ctx, a.id, a.draft, prev?.id ?? null, i.note ?? null);
     },
   }));
@@ -621,12 +628,12 @@ export function registerAgentTools(r: Registry): void {
     name: 'version.candidate', risk: 'draft', summary: 'Create an immutable, undeployed candidate version (e.g. an experiment arm) without touching the draft',
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
-      const parent = await one<{ id: string }>(ctx.q, 'SELECT id FROM agent_version WHERE id = $1 AND agent_id = $2', [i.parentVersionId, a.id]);
+      const parent = await one<{ id: string }>(ctx.q, "SELECT id FROM agent_version WHERE id = $1 AND agent_id = $2 AND kind = 'published'", [i.parentVersionId, a.id]);
       if (!parent) throw new ValidationError('parentVersionId', 'must be a published version of this agent');
       const cfg = validateConfig(i.config);
       guardDraft(null, cfg);                         // a treatment arm reaches people: the hard safety guard applies here too
       compileOrRefuse({ ...cfg, agentId: a.id });   // refuse with the lint or budget reason before numbering anything
-      return createVersion(ctx, a.id, cfg, parent.id, i.note);
+      return createVersion(ctx, a.id, cfg, parent.id, i.note, 'candidate');
     },
   }));
 
@@ -758,7 +765,7 @@ export function registerAgentTools(r: Registry): void {
   }));
 
   r.register(tool(obj({ agentId: uuid(), from: opt(uuid()), to: opt(str({ max: 40 })) }), {
-    name: 'version.diff', risk: 'read', summary: 'Compare two versions, or the draft with the latest version',
+    name: 'version.diff', risk: 'read', summary: 'Compare two versions, or the draft with the live (newest published) version',
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
       const get = async (id: string) => {
@@ -767,7 +774,7 @@ export function registerAgentTools(r: Registry): void {
         if (!v) throw new ValidationError('from', 'no such version of this agent');
         return { label: `version ${v.number}`, agent: v.config.agent, brief: v.config.brief };
       };
-      const latest = await one<{ id: string }>(ctx.q, 'SELECT id FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [a.id]);
+      const latest = await one<{ id: string }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
       const draftSide = () => { const p = preview(a.draft); return { label: 'draft', agent: a.draft, brief: p.compiles ? { hash: p.brief.hash, bytes: p.brief.bytes } : null }; };
       const to = !i.to || i.to === 'draft' ? draftSide() : await get(uuid()(i.to, 'to'));
       const fromId = i.from ?? latest?.id;

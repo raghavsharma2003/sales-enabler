@@ -241,9 +241,9 @@ function Versions({ doc, dirty }: { doc: AgentDoc; dirty: boolean }) {
     <Card><CardHead title="How she changed" sub="Each published version is fixed. Campaigns pick a published version, never a draft." />
       {dirty && <p className="hint hint-bad">You have changes that are not saved, so they are not in this list yet.</p>}
       {doc.versions.length === 0 ? <p className="muted">Nothing is published yet. Save the draft, choose a voice stack, then publish.</p> :
-        <ol className="versions">{doc.versions.map((v, i) => (
-          <li key={v.id}><span className={`pill ${i === 0 ? 'pill-live' : ''}`} style={{ marginLeft: 0 }}>v{v.number}{i === 0 ? ' · Latest' : ''}</span>
-            <span>{v.note ?? 'Published'}</span><span className="small muted">{v.by} · {date(v.createdAt, true)}</span></li>))}</ol>}
+        <ol className="versions">{doc.versions.map(v => (
+          <li key={v.id}><span className={`pill ${v.id === doc.latestVersionId ? 'pill-live' : ''}`} style={{ marginLeft: 0 }}>v{v.number}{v.id === doc.latestVersionId ? ' · Live' : v.candidate ? ' · Test candidate' : ''}</span>
+            <span>{v.candidate ? `${v.note ?? 'A change under test'}. Runs only for the people a test assigns to it; never live.` : v.note ?? 'Published'}</span><span className="small muted">{v.by} · {date(v.createdAt, true)}</span></li>))}</ol>}
       {doc.briefBytes != null && <p className="small muted" style={{ marginTop: 12 }}>The compiled brief for this draft is {doc.briefBytes.toLocaleString('en-IN')} bytes.</p>}</Card>
   );
 }

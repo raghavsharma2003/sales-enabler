@@ -386,7 +386,7 @@ test('Ask the assistant on a launch blocker with no page: the dock gets the sent
   const agv = (await tool('agent.get', { agentId: ag.id })).result;
   const wrong = ['service', 'transactional', 'promotional'].find(c => c !== agv.draft.category);
   const audId = (await tool('audience.list')).result.audiences[0].id;
-  const mk = await tool('campaign.draft', { name: 'Assistant fix check', category: wrong, agentVersionId: agv.versions[0].id, audienceId: audId });
+  const mk = await tool('campaign.draft', { name: 'Assistant fix check', category: wrong, agentVersionId: agv.liveVersion.id, audienceId: audId });
   assert.equal(mk.status, 'confirmed', JSON.stringify(mk));
   const id = { id: mk.result.id, name: 'Assistant fix check' };
   const fixes = (await tool('campaign.get', { id: id.id })).result.blockers.filter(b => b.fix && typeof b.fix === 'object' && b.fix.tool === 'campaign.draft' && !/limit|cap/i.test(b.fix.label));
@@ -864,7 +864,7 @@ test('Campaign draft: the spend cap is set from the page, with the estimate\'s s
   const cat = ver.draft.category;
   // An audience with callable people, so the estimate has something to price and suggests a cap.
   const aud = (await tool('audience.list')).result.audiences.find(x => x.kind === 'list');
-  const made = await tool('campaign.draft', { name: 'Cap check', category: cat, agentVersionId: ver.versions[0].id, audienceId: aud.id });
+  const made = await tool('campaign.draft', { name: 'Cap check', category: cat, agentVersionId: ver.liveVersion.id, audienceId: aud.id });
   assert.equal(made.status, 'confirmed', JSON.stringify(made));
   const id = made.result.id;
   await page.goto(`${BASE}/campaigns/${id}`);

@@ -106,3 +106,16 @@ test('probe: boolean metrics from the simulator (hung_up, safety_violations, dis
   assert.ok(!v.notReported.includes('safety_violations'));
   assert.match(v.regressions.join(' '), /safety_violations/);
 });
+
+test('probe: when the current version passes no practice call, the simulation cannot tell the versions apart: inconclusive, never pass', () => {
+  // Seen on the dev walk: with no simulation model both versions scored 0 of 12, and "no regression" read as a pass.
+  const run = (id: string, seed: number, passed: boolean): SimRun => ({ simCallerId: id, seed, passed, metrics: { hung_up: false, safety_violations: false } as any });
+  const none = [run('a', 1, false), run('b', 1, false), run('a', 2, false)];
+  const v = compareProbe(none, none.map(r => ({ ...r })));
+  assert.equal(v.verdict, 'inconclusive', JSON.stringify(v));
+  assert.match(v.note!, /passed none of the 3 practice calls/);
+  // The proposed version passing some is a real difference, not inconclusive; a guarded regression still rejects.
+  assert.equal(compareProbe(none, [run('a', 1, true), run('b', 1, false), run('a', 2, false)]).verdict, 'pass');
+  const worse = compareProbe(none, [{ ...run('a', 1, false), metrics: { hung_up: true, safety_violations: false } as any }, run('b', 1, false), run('a', 2, false)]);
+  assert.equal(worse.verdict, 'regressed');
+});

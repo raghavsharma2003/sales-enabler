@@ -21,12 +21,12 @@ export function normaliseConfig(d: any): AgentConfigDraft {
 }
 export async function agentGet(id: string): Promise<AgentDoc> {
   const r = await run<any>('agent.get', { agentId: id });
-  const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' ? 'Assistant' : 'Vyakti' }))
+  const versions = arr<any>(r.versions).map(v => ({ id: v.id, number: v.number, note: v.note ?? null, createdAt: v.created_at ?? v.createdAt, by: v.author_type === 'member' ? 'A teammate' : v.author_type === 'operator' ? 'Assistant' : 'Vyakti', candidate: v.kind === 'candidate' }))
     .sort((a, b) => b.number - a.number);
   return {
     id, name: r.agent.name, updatedAt: r.agent.updatedAt, draftHash: r.draftHash, config: normaliseConfig(r.draft), compiles: !!r.compiles,
     lint: arr<any>(r.lint).map(l => (typeof l === 'string' ? { message: l } : { message: l.message ?? l.rule ?? JSON.stringify(l), severity: l.severity })),
-    briefBytes: r.brief?.bytes ?? null, versions, latestVersionId: versions[0]?.id ?? null, latestVersion: versions[0]?.number ?? null,
+    briefBytes: r.brief?.bytes ?? null, versions, latestVersionId: r.liveVersion?.id ?? null, latestVersion: r.liveVersion?.number ?? null,
   };
 }
 /** Which agent and version a campaign or call ran, from its agent version id (agent.list, then each agent's versions). */

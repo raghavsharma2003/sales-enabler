@@ -238,6 +238,8 @@ export function registerCampaignTools(registry: Registry): void {
       if (i.agentVersionId) {
         const v = await loadVersion(ctx.q, ctx.workspaceId, i.agentVersionId);
         if (!v) throw new ValidationError('agentVersionId', await versionHint(ctx.q, ctx.workspaceId, i.agentVersionId));
+        // An experiment's candidate runs only for the contacts the experiment assigns to it, never a whole audience.
+        if (v.kind === 'candidate') throw new ValidationError('agentVersionId', "this version is a test candidate from an experiment; a campaign runs the agent's published version");
         if (v.config.agent?.category && v.config.agent.category !== category) warnings.push(`the agent version is for ${v.config.agent.category} calls; launch is blocked until they match`);
       }
       if (i.audienceId && !(await one(ctx.q, 'SELECT 1 FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId])))

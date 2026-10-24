@@ -188,3 +188,25 @@ test('deployment.revert_to_last_good: A3 for the system and for a member, restor
   const other = await workspace();
   refused(await other.call('deployment.revert_to_last_good', { agentId }, SYSTEM), /no such agent/);
 });
+
+test('an experiment candidate is never "the live version": agent.get names the live one, lists kinds, and publish and diff build on it', { skip }, async () => {
+  // Readers that took "the newest version" as the live one picked an experiment's candidate: a new campaign or inbound
+  // line would have run the untested change, a new proposal would have been built on it, and publish would have
+  // parented the next version on it.
+  const w = await workspace();
+  const { agentId, v1 } = await published(w);
+  const treatment = { ...withStack(), persona: { ...withStack().persona, humour: 0 as const } };
+  const cand = ok<any>(await w.call('version.candidate', { agentId, config: treatment, parentVersionId: v1.versionId, note: 'learning treatment' }, SYSTEM));
+  const g = ok<any>(await w.call('agent.get', { agentId }));
+  assert.deepEqual(g.liveVersion && { id: g.liveVersion.id, number: g.liveVersion.number }, { id: v1.versionId, number: 1 }, JSON.stringify(g.versions));
+  assert.deepEqual(g.versions.map((v: any) => [v.number, v.kind]), [[2, 'candidate'], [1, 'published']]);
+  const listed = ok<any>(await w.call('agent.list', {})).agents.find((a: any) => a.id === agentId);
+  assert.equal(listed.latest_version, 1, 'the list shows the published version number');
+  assert.equal(listed.live_version_id, v1.versionId);
+  assert.equal(ok<any>(await w.call('version.diff', { agentId })).from.label, 'version 1', 'the draft is compared with the live version');
+  const v3 = ok<any>(await w.approve(await w.call('version.publish', { agentId, draftHash: g.draftHash, note: 'next' })));
+  assert.equal(v3.parentId, v1.versionId, 'the next published version descends from the live one, not the candidate');
+  assert.equal(ok<any>(await w.call('agent.get', { agentId })).liveVersion.id, v3.versionId);
+  // A candidate must descend from a published version, never from another candidate.
+  refused(await w.call('version.candidate', { agentId, config: treatment, parentVersionId: cand.versionId, note: 'x' }, SYSTEM), /published version of this agent/);
+});

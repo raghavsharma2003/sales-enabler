@@ -60,8 +60,8 @@ async function main() {
   const up = await tool('source.upload', { kind: 'csv', name: 'renewals.csv', text: CSV, filename: 'renewals.csv' });
   const commit = await tool('source.commit', { uploadId: up.uploadId, consentPurpose: 'service', audienceName: 'Renewals Oct' });
   await tool('audience.create', { name: 'Pune and Lucknow', filter: { any: [{ key: 'city', op: 'eq', value: 'Pune' }, { key: 'city', op: 'eq', value: 'Lucknow' }] } });
-  const vRiya = (await tool('agent.get', { agentId: riya })).versions[0].id as string;
-  const vMeera = (await tool('agent.get', { agentId: meera })).versions[0].id as string;
+  const vRiya = (await tool('agent.get', { agentId: riya })).liveVersion.id as string;
+  const vMeera = (await tool('agent.get', { agentId: meera })).liveVersion.id as string;
   const window = { days: [1, 2, 3, 4, 5, 6], ranges: [{ start: '10:00', end: '19:00' }] };
   const camp = await tool('campaign.draft', { name: 'Renewals Oct', category: 'service', agentVersionId: vRiya, audienceId: commit.audienceId, preset: 'renewal', window, concurrency: 4, capInrMilli: 2_000_000 });
   await tool('campaign.draft', { name: 'Appointment reminders Nov', category: 'service', agentVersionId: vMeera, audienceId: commit.audienceId, window, concurrency: 2 });

@@ -1007,3 +1007,16 @@ test('a non-retryable runtime refusal still fails before any ring, as before', {
   assert.deepEqual(a, { status: 'failed', outcome_class: 'provider_error' });
   assert.equal((await one<{ n: number }>(pool, 'SELECT count(*)::int AS n FROM attempt WHERE retry_of = $1', [id]))!.n, 1, 'the ladder still schedules its retry');
 });
+
+test('campaign.draft refuses an experiment candidate version: a campaign runs a published version', { skip }, async () => {
+  // A candidate runs only for the contacts an experiment assigns to it. Picked as "the newest version", it would have
+  // sent an untested change to the whole audience.
+  const w = await world();
+  const cand = (await one<{ id: string }>(pool, `INSERT INTO agent_version (agent_id, number, hash, parent_id, config, kind) SELECT agent_id, 2, 'hc', id, config, 'candidate'
+    FROM agent_version WHERE id = $1 RETURNING id`, [w.versionId]))!.id;
+  const r: any = await registry.execute(pool, 'campaign.draft', { name: 'c', category: 'service', agentVersionId: cand }, as(w));
+  assert.equal(r.status, 'not_executed', JSON.stringify(r));
+  assert.match(r.reason, /test candidate/);
+  const okd: any = await registry.execute(pool, 'campaign.draft', { name: 'c', category: 'service', agentVersionId: w.versionId }, as(w));
+  assert.equal(okd.status, 'confirmed', JSON.stringify(okd));
+});

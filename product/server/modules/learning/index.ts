@@ -51,9 +51,10 @@ const changeHash = (ops: ChangeOp[]) => sha(canonicalJson(ops));
 interface VersionRow { id: string; number: number; agent_id: string; config: any }
 const agentOf = (v: VersionRow): AgentConfig => (v.config?.agent ?? v.config) as AgentConfig;
 
-async function latestVersion(q: Queryable, ws: string, agentId: string): Promise<VersionRow | null> {
+/** The live version: the newest published one. An experiment's candidate is newer but never a base for a proposal. */
+async function liveVersion(q: Queryable, ws: string, agentId: string): Promise<VersionRow | null> {
   return one<VersionRow>(q, `SELECT v.id, v.number, v.agent_id, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id
-    WHERE a.workspace_id = $1 AND a.id = $2 ORDER BY v.number DESC LIMIT 1`, [ws, agentId]);
+    WHERE a.workspace_id = $1 AND a.id = $2 AND v.kind = 'published' ORDER BY v.number DESC LIMIT 1`, [ws, agentId]);
 }
 async function versionById(q: Queryable, ws: string, id: string): Promise<VersionRow | null> {
   return one<VersionRow>(q, `SELECT v.id, v.number, v.agent_id, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id
@@ -135,7 +136,7 @@ const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 
 
 async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId?: string }) {
   const ws = ctx.workspaceId;
-  const base = await latestVersion(ctx.q, ws, i.agentId);
+  const base = await liveVersion(ctx.q, ws, i.agentId);
   if (!base) throw new Error('this agent has no published version yet; learning starts from what has run');
   if (i.issueId && !(await one(ctx.q, 'SELECT 1 FROM issue WHERE id = $1 AND workspace_id = $2', [i.issueId, ws]))) throw new Error('no such issue');
   const ev = await gatherEvidence(ctx.q, ws, i.agentId, base, i.issueId);
@@ -224,7 +225,8 @@ async function probe(ctx: ToolCtx, i: { proposalId: string; simCallerIds?: strin
   if (proposed.status !== 'confirmed') return { status: 'simulator_unavailable', reason: 'reason' in proposed ? proposed.reason : proposed.status };
 
   const verdict = compareProbe(current.result.runs ?? [], proposed.result.runs ?? []);
-  const status = verdict.verdict === 'pass' ? 'awaiting_approval' : 'rejected';
+  // Inconclusive is not a rejection: nothing regressed, and the test on real calls is what decides. It is labelled as such.
+  const status = verdict.verdict === 'pass' || verdict.verdict === 'inconclusive' ? 'awaiting_approval' : 'rejected';
   await ctx.q.query(`UPDATE proposal SET simulation = $2, gates = $3, status = $4 WHERE id = $1`,
     [p.id, JSON.stringify({ simCallerIds: callers, seeds, verdict, label: 'simulated, not proved' }), JSON.stringify(gates.passed ? { passed: true, failures: [], checked: gates.checked } : gates), status]);
   if (status === 'rejected') await addLesson(ctx.q, ws, p.agent_id, `Simulation rejected a ${p.kind} change: ${verdict.regressions.join('; ')}`, 'rejected', p.id, p.change_hash, { simulation: verdict });
@@ -344,9 +346,9 @@ async function treatmentVersion(ws: string, base: VersionRow, cfg: AgentConfig, 
 
 interface ExperimentRow { id: string; agent_id: string; proposal_id: string | null; control_version_id: string; treatment_version_id: string | null; design: any; state: string; result: any; started_at: Date; expires_at: Date | null }
 
+const EXPERIMENT_COLS = 'id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state, result, started_at, expires_at';
 async function experimentFor(q: Queryable, ws: string, id: string, lock = false): Promise<ExperimentRow> {
-  const e = await one<ExperimentRow>(q, `SELECT id, agent_id, proposal_id, control_version_id, treatment_version_id, design, state, result, started_at, expires_at
-    FROM experiment WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
+  const e = await one<ExperimentRow>(q, `SELECT ${EXPERIMENT_COLS} FROM experiment WHERE id = $1 AND workspace_id = $2${lock ? ' FOR UPDATE' : ''}`, [id, ws]);
   if (!e) throw new Error('no such experiment');
   return e;
 }
@@ -441,7 +443,15 @@ export function hazardTrip(control: { n: number; hazard: number }, treatment: { 
 
 async function check(ctx: ToolCtx, i: { experimentId: string }) {
   const ws = ctx.workspaceId;
-  const e = await experimentFor(ctx.q, ws, i.experimentId, true);
+  // Calls check after every connected call, so checks of one experiment overlap. A check holds the row lock and may call
+  // a sibling tool (revert, rollout, brief.edit) on a second connection; a check that waited for the lock here would hold
+  // a pooled connection while it waited, and enough of them starve the pool for good. So a check that finds the row
+  // locked skips: the running check reports, and the next call or the learning.check job looks again.
+  const e = await one<ExperimentRow>(ctx.q, `SELECT ${EXPERIMENT_COLS} FROM experiment WHERE id = $1 AND workspace_id = $2 FOR UPDATE SKIP LOCKED`, [i.experimentId, ws]);
+  if (!e) {
+    const seen = await experimentFor(ctx.q, ws, i.experimentId);
+    return { state: seen.state, result: undefined, note: 'another check of this experiment is running; it reports, and the next check looks again' };
+  }
   if (e.state === 'decided') return adoptionCheck(ctx, e);
   if (e.state !== 'running') return { state: e.state, result: undefined };
   const d = e.design;

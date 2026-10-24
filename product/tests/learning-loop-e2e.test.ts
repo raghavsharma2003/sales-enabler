@@ -74,7 +74,7 @@ test('the learning loop runs from finished calls to an adopted change carried by
   ok(await admin.run('stack.set', { agentId, stackId: 'v2-flashlite' }), 'stack.set');
   const g0 = ok(await admin.tool('agent.get', { agentId }), 'agent.get');
   ok(await admin.run('version.publish', { agentId, draftHash: g0.draftHash, note: 'First published version' }), 'version.publish');
-  const v1 = ok(await admin.tool('agent.get', { agentId }), 'agent.get').versions[0].id as string;
+  const v1 = ok(await admin.tool('agent.get', { agentId }), 'agent.get').liveVersion.id as string;
   const csv = ['Name,Mobile,City', ...Array.from({ length: 500 }, (_, i) => `Loop Person ${i + 1},9000${String(i).padStart(6, '0')},Pune`)].join('\n');
   const up = ok(await admin.tool('source.upload', { kind: 'csv', name: 'loop.csv', text: csv, filename: 'loop.csv' }), 'source.upload');
   const audienceId = ok(await admin.run('source.commit', { uploadId: up.uploadId, consentPurpose: 'service', audienceName: 'Loop people' }), 'source.commit').audienceId;
@@ -154,6 +154,7 @@ test('the learning loop runs from finished calls to an adopted change carried by
   const [e0] = ok(await admin.tool('experiment.list'), 'experiment.list') as any[];
   assert.equal(e0.state, 'running', 'started: ' + JSON.stringify(started).slice(0, 800));
   const perArm = e0.design.horizonPerArm as number;
+  assert.equal(ok(await admin.tool('agent.get', { agentId }), 'agent.get').liveVersion.id, v1, 'while the test runs, version 1 stays the live version; the candidate is not');
   t.diagnostic(`horizon: ${perArm} outcomes per version`);
 
   // ---- 9. new calls are split per contact; a contact asked twice stays in its arm. Calls run experiment.check after
@@ -187,9 +188,11 @@ test('the learning loop runs from finished calls to an adopted change carried by
   assert.doesNotMatch(rollout.summary, /[0-9a-f]{8}/i, 'the card names things, not ids');
 
   // ---- 11. not adopted before the rollout is approved; adopted after it
-  assert.equal(ok(await admin.tool('experiment.check', { experimentId }), 'check').adoption.status, 'waiting');
+  // A check that finds another check running says so and skips; a person would look again, and so does this test.
+  const checkNow = async () => { for (let k = 0; ; k++) { const r = ok(await admin.tool('experiment.check', { experimentId }), 'check'); if (!r.note || k > 20) return r; await new Promise(res => setTimeout(res, 100)); } };
+  assert.equal((await checkNow()).adoption.status, 'waiting');
   ok((await admin.fetch('POST', `/v1/actions/${rollout.id}/decide`, { approve: true })).body, 'approve rollout');
-  const adopted = ok(await admin.tool('experiment.check', { experimentId }), 'check');
+  const adopted = await checkNow();
   assert.equal(adopted.adoption.status, 'adopted', JSON.stringify(adopted));
   assert.equal(adopted.adoption.draft, 'updated');
   [p] = ok(await admin.tool('proposal.list'), 'proposal.list') as any[];

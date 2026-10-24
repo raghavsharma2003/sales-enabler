@@ -26,7 +26,7 @@ async function policy(q: Queryable, ws: string): Promise<Policy> {
 
 /** The agent's purpose family and memory switches, from its newest published version (else its draft). */
 async function agentMemory(q: Queryable, ws: string, agentId: string): Promise<{ purpose: Purpose | null; read: boolean; write: boolean } | null> {
-  const a = await one<{ cfg: any; draft: any }>(q, `SELECT (SELECT v.config FROM agent_version v WHERE v.agent_id = a.id ORDER BY v.number DESC LIMIT 1) AS cfg, a.draft
+  const a = await one<{ cfg: any; draft: any }>(q, `SELECT (SELECT v.config FROM agent_version v WHERE v.agent_id = a.id AND v.kind = 'published' ORDER BY v.number DESC LIMIT 1) AS cfg, a.draft
     FROM agent a WHERE a.id = $1 AND a.workspace_id = $2`, [agentId, ws]);
   if (!a) return null;
   return fromConfig(a.cfg?.agent ?? a.draft);

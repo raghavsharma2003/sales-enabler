@@ -120,7 +120,8 @@ function ProposalItem({ p, onChange }: { p: ProposalRow; onChange: () => void })
       {p.changes.map((c, k) => <div key={k} className="small" style={{ margin: '6px 0' }}><strong>{c.part}</strong>
         {c.before !== null && <div className="muted">{p.status === 'promoted' ? 'Before' : 'Now'}: {c.before || 'nothing set'}</div>}<div>{p.status === 'promoted' ? 'Now' : 'Would be'}: {c.after}</div></div>)}
       <p>{p.rationale ?? 'No rationale recorded.'}</p>
-      <p className="small muted">{p.simulated === 'pass' ? 'Simulated on practice callers: no worse on any measure that is checked. A simulation, not proof. ' : ''}
+      <p className="small muted">{p.simulated === 'pass' ? 'Simulated on practice callers: no worse on any measure that is checked. A simulation, not proof. '
+          : p.simulated === 'inconclusive' ? 'Simulation inconclusive: the current version passed none of the practice calls, so it could not tell the two apart. Nothing got worse; the test on real calls decides. ' : ''}
         {p.calls_to_prove != null ? `Needs about ${count(p.calls_to_prove)} calls to prove. ` : ''}Drafted {date(p.created_at)}.</p>
       {ready && !ready.ready && <p className="small" role="status">Not yet: {ready.reason}{ready.fix === 'outcome' && <> <Link to="/campaigns">Set what counts as success on the campaign</Link></>}</p>}
       {ready?.ready && ready.note && <p className="small" role="status">{ready.note}</p>}
