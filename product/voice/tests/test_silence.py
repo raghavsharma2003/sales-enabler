@@ -86,7 +86,7 @@ class FakeLive:
 
 
 class Live(unittest.TestCase):
-    def run_call(self, t, opening, speak_at=None):
+    def run_call(self, t, opening, speak_at=None, env=None):
         fake = FakeLive(opening)
         async def connect(http, google, setup, model): return fake
         saved = s2s.connect; s2s.connect = connect
@@ -97,7 +97,7 @@ class Live(unittest.TestCase):
                     def resource(self, m): return m
                 comp.make_s2s = lambda system, tools=(): {'google': G(), 'spec': {'model': 'gemini-live'}, 'http': None, 'voice': 'Despina'}
                 s, p = sink(t['conversationId']); line = FakeLine()
-                sess = s2s.LiveSession(t, comp, s, line, env={}, watchdog_s=0.05)
+                sess = s2s.LiveSession(t, comp, s, line, env=env or {}, watchdog_s=0.05)
                 await sess.start()
                 if speak_at is not None:
                     await asyncio.sleep(speak_at); fake.q.put_nowait(Msg({'serverContent': {'inputTranscription': {'text': 'haan ji'}}}))
@@ -118,6 +118,15 @@ class Live(unittest.TestCase):
         self.assertTrue(any(line in json.dumps(o, ensure_ascii=False) for o in fake.sent), 'the model was given the silence line')
         agent = [e['text'] for e in evs(p) if e['type'] == 'turn' and e['speaker'] == 'agent']
         self.assertEqual(agent[-1], line, 'and she said it before the call ended')
+
+    def test_speech_to_speech_call_saves_its_recording(self):
+        import tempfile
+        t = agent_ticket(stack='v2-live', silence=0.5); t['agent']['voice'] = {'stackId': 'v2-live'}; t['agent']['recording'] = {'enabled': True}
+        with tempfile.TemporaryDirectory() as d:
+            ended, fake, p = self.run_call(t, OPEN, env={'VP_RECORDINGS_DIR': d})
+            end = [e for e in evs(p) if e['type'] == 'call.ended'][0]
+            self.assertTrue(end.get('recordingUri'), 'both legs saved, as the cascade does (telephony ask 6)')
+            self.assertTrue(any(f.endswith('.wav') for _, _, fs in os.walk(d) for f in fs))
 
     def test_tamil_on_the_speech_to_speech_path(self):
         t = agent_ticket('ta-IN', stack='v2-live', silence=0.5); t['agent']['voice'] = {'stackId': 'v2-live'}

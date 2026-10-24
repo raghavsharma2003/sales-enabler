@@ -3,7 +3,7 @@
 # at once and the model is told to say the honest / safe line instead. That is weaker than the cascade's door, which
 # is why the stack is beta (stacks.ts: "must pass the reply-door attack battery before live calls").
 import asyncio, base64, json, logging, time
-from . import brief, catalog, safety
+from . import brief, catalog, recordings, safety
 from .audio import Recorder, Resampler
 from .conversation import ComponentError, Draft
 from .providers.google import ws_text
@@ -277,6 +277,15 @@ class LiveSession(Session):
         finally:
             self.ending = False
 
+    def save_recording(self):
+        """Both legs (caller as received, her audio on the playback clock), as the cascade saves them (recordings.py)."""
+        d = self.env.get('VP_RECORDINGS_DIR')
+        if not d or not self.rec.enabled or self.conv.state['recording_refused']: return
+        try:
+            self.recording_uri = recordings.save(d, self.id, self.t.get('workspaceId', ''), self.rec.write)
+        except Exception:
+            log.exception('recording')
+
     def stop_recording(self): self.rec.stop()
 
     async def close_media(self):
@@ -284,6 +293,7 @@ class LiveSession(Session):
             if self.up is not None: await self.up.close()
         except Exception:
             pass
+        self.save_recording()
         try: await self.line.send_json({'t': 'ended', 'endReason': self.ended})
         except Exception: pass
         await self.line.close()

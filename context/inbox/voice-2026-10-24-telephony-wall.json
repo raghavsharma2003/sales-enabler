@@ -1,0 +1,13 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-telephony-wall",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Runtime half of the live phone path (telephony builder asks 1-4, 6): VP_PLIVO_API_BASE honoured only on a loopback host; VP_TELEPHONY_ALLOWED_TO checked before any dial (422 not_allowlisted, no record or event) and any transfer (False), and with Plivo credentials but no list nothing is dialled unless VP_TELEPHONY_ALLOWLIST=off; X-Plivo-Signature-V3 (or -Ma-V3 with PLIVO_MAIN_AUTH_TOKEN) required on answer, hang-up, machine, transfer, whisper and inbound callbacks whenever PLIVO_AUTH_TOKEN is set, URL rebuilt from VP_PUBLIC_URL, nonce accepted once in 10 min (in-process cache); the stream token stays random and single-use and now also expires 60 s after its answer XML is handed out (outbound: at the answer callback; inbound: at ticket creation, which is the relay's answer); s2s calls now save their two-leg recording like the cascade. The runtime remains the one caller of Plivo's Call API for agent calls",
+   "rationale": "Telephony builder (session_01EMpetZaBqaoTD8i89vtAx9) asks, 2026-10-24. Python implementation checked against the shared vectors product/tests/fixtures/plivo-v3-vectors.json (6/6 bases and signatures). The nonce cache is per process: a replay to another runtime process within 10 min is not caught (the hook path is per call, so a replay can only target the same call's process).",
+   "reverse_if": "Plivo changes its signature scheme, or runtimes scale out behind one callback URL (then the nonce cache moves to shared storage)"
+  }
+ ],
+ "edges": [{"from": "decision.2026-10-24.voice-telephony-wall", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements"}],
+ "events": [{"date": "2026-10-24", "event": "voice-telephony-wall", "details": "Runtime: Plivo V3 signatures, dial/transfer allowlist, loopback-only API base, 60 s stream token, s2s recording. call.ended.carrier waits for the control-plane field."}]
+}

@@ -19,6 +19,7 @@ from .providers import ProviderUnavailable, build
 
 log = logging.getLogger('vp.voice.server')
 JOIN_TTL_S = 600
+STREAM_TTL_S = 60                  # a carrier stream must connect this soon after its answer XML is handed out
 
 
 def ws_base(url): return url.replace('https://', 'wss://', 1).replace('http://', 'ws://', 1)
@@ -31,10 +32,13 @@ class CallRecord:
         self.t = ticket; self.body_hash = body_hash; self.comp = comp; self.sink = sink; self.token = token; self.join = join
         self.token_used = False; self.created = time.time(); self.session = None; self.ended_at = None
         self.call_uuid = None; self.request_uuid = None; self.transfer_to = None; self.whisper = None
+        self.stream_from = time.time() if ticket['transport']['kind'] == 'sip_inbound' else None   # when the stream URL was handed out
         self.live_tokens = {}          # single-use join tokens for listen / takeover sockets: token -> (kind, expires)
 
     def take_token(self, given):
         if self.token_used or self.session is not None or self.ended_at or time.time() - self.created > JOIN_TTL_S: return False
+        if self.t['transport']['kind'] in ('sip', 'sip_inbound'):        # the stream: single use, and soon after the answer
+            if self.stream_from is None or time.time() - self.stream_from > STREAM_TTL_S: return False
         if not given or not hmac.compare_digest(given.encode(), self.token.encode()): return False
         self.token_used = True
         return True
@@ -55,6 +59,8 @@ class Runtime:
         self.max_calls = max(1, int(self.env.get('VP_MAX_CALLS_PER_PROCESS') or 20))
         self.retry_after_s = max(1, int(self.env.get('VP_RETRY_AFTER_S') or 5))
         self.worker = self.env.get('VP_WORKER_ID') or None
+        from .plivo_sig import Nonces
+        self.plivo_nonces = Nonces()
 
     # ---------------------------------------------------------------- helpers
     def hook(self, cid, what):
@@ -144,6 +150,10 @@ class Runtime:
             comp = self.make_components(t['stack']['id'], voice, t, self.http, self.env)
         except ProviderUnavailable as e:
             return self.err(503, 'stack_unavailable', str(e), missing=e.missing)
+        if tr['kind'] == 'sip' and t['direction'] == 'outbound':
+            from .transports import allowed_to
+            why = allowed_to(self.env, tr['to'])
+            if why: return self.err(422, 'not_allowlisted', why)          # before any record, event or request to the carrier
         sink = EventSink(cid, self.make_poster(self.http))
         token = secrets.token_urlsafe(24)
         exp = int((time.time() + JOIN_TTL_S) * 1000)
@@ -389,6 +399,25 @@ class Runtime:
         return ws
 
     # ---------------------------------------------------------------- media: telephony
+    async def carrier_form(self, req, trunk):
+        """The carrier's form body, after Plivo's V3 signature (plivo_sig.py) when Plivo credentials are configured: a
+        missing, wrong or replayed signature is refused (401) before anything is read or done."""
+        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        token = self.env.get('PLIVO_AUTH_TOKEN') or ''
+        if trunk.lower() != 'plivo' or not token: return f
+        from . import plivo_sig
+        nonce = req.headers.get('X-Plivo-Signature-V3-Nonce') or ''
+        url = self.public + req.rel_url.path + ('?' + req.rel_url.query_string if req.rel_url.query_string else '')
+        params = {k: f.getall(k) for k in set(f.keys())} if f else {}
+        main = self.env.get('PLIVO_MAIN_AUTH_TOKEN') or ''
+        ok = (plivo_sig.valid(token, req.method, url, params, nonce, req.headers.get('X-Plivo-Signature-V3') or '')
+              or (main and plivo_sig.valid(main, req.method, url, params, nonce, req.headers.get('X-Plivo-Signature-Ma-V3') or '')))
+        if not ok or len(nonce) > 200: log.warning('carrier callback refused: bad signature on %s', req.rel_url.path); raise web.HTTPUnauthorized()
+        if not self.plivo_nonces.fresh(nonce): log.warning('carrier callback refused: replayed nonce on %s', req.rel_url.path); raise web.HTTPUnauthorized()
+        return f
+
+    def _trunk(self, rec): return (rec.t['transport'].get('trunk') or '').lower()
+
     def _hooked(self, req, what):
         rec = self.calls.get(req.match_info['id'])
         if rec is None or not hmac.compare_digest(req.match_info['hook'], self.hook(req.match_info['id'], what)): raise web.HTTPForbidden()
@@ -397,14 +426,15 @@ class Runtime:
     async def sip_answer(self, req):
         rec = self._hooked(req, 'answer')
         from .transports import answer_xml
-        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        f = await self.carrier_form(req, self._trunk(rec))
         rec.call_uuid = f.get('CallUUID') or rec.call_uuid
+        if rec.stream_from is None: rec.stream_from = time.time()      # the stream URL's short life starts here
         url = ws_base(self.public) + f"/v1/media/sip/stream/{rec.t['conversationId']}?token={rec.token}"
         return web.Response(text=answer_xml(url, rec.t['limits']['maxDurationS']), content_type='application/xml')
 
     async def sip_hangup(self, req):
         rec = self._hooked(req, 'hangup')
-        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        f = await self.carrier_form(req, self._trunk(rec))
         cause = f.get('HangupCauseName') or f.get('HangupCause') or ''
         if rec.session is None or not rec.token_used:
             from .transports import hangup_reason
@@ -424,7 +454,7 @@ class Runtime:
         trunk = req.match_info['trunk']
         if not hmac.compare_digest(req.match_info['hook'], self.hook(trunk, 'inbound')): raise web.HTTPForbidden()
         from .transports import answer_xml, unanswered_xml
-        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        f = await self.carrier_form(req, trunk)
         secret = self.env.get('VP_TELEPHONY_WEBHOOK_SECRET', '')
         body = json.dumps({'provider': trunk, 'callId': f.get('CallUUID') or '', 'to': f.get('To') or '', 'from': f.get('From') or ''}).encode()
         if not self.control or len(secret) < 32 or not f.get('CallUUID') or not f.get('To'):
@@ -446,7 +476,7 @@ class Runtime:
         """Plivo's machine-detection verdict. A machine ends the call as 'voicemail' unless a person already talked with
         her (a caller turn beyond the first hello)."""
         rec = self._hooked(req, 'machine')
-        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        f = await self.carrier_form(req, self._trunk(rec))
         if str(f.get('Machine') or '').lower() != 'true' or f.get('Event', 'MachineDetection') != 'MachineDetection': return web.Response(text='ok')
         s = rec.session
         if s is None or not rec.token_used: await self._end_unjoined(rec, 'voicemail')
@@ -456,6 +486,7 @@ class Runtime:
 
     async def sip_transfer(self, req):
         rec = self._hooked(req, 'transfer')
+        await self.carrier_form(req, self._trunk(rec))
         from .transports import transfer_xml
         if not rec.transfer_to: raise web.HTTPNotFound()
         cid = rec.t['conversationId']
@@ -465,6 +496,7 @@ class Runtime:
     async def sip_whisper(self, req):
         """The warm summary, spoken to the colleague who answered the transfer, before the caller is connected."""
         rec = self._hooked(req, 'whisper')
+        await self.carrier_form(req, self._trunk(rec))
         from .transports import whisper_xml
         if not rec.whisper: raise web.HTTPNotFound()
         return web.Response(text=whisper_xml(rec.whisper), content_type='application/xml')
@@ -472,7 +504,9 @@ class Runtime:
     async def transfer(self, rec, kind, value):
         """Bridge the caller to the workspace's own number (Plivo). False when the transport or target can't."""
         if kind != 'phone' or not value or not tk.phone(rec.t) or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
-        from .transports import plivo_request
+        from .transports import allowed_to, plivo_request
+        why = allowed_to(self.env, value)
+        if why: log.warning('transfer refused for %s: %s', rec.t['conversationId'], why); return False
         rec.transfer_to = value
         try: rec.whisper = rec.session.whisper_line() if rec.session is not None else None
         except Exception: log.exception('whisper line'); rec.whisper = None

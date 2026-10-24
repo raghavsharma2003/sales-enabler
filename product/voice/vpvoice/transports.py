@@ -107,8 +107,28 @@ LINES = {'plivo': PlivoLine, 'exotel': ExotelLine}
 
 
 # ---- Plivo REST (outbound dial, hang-up, transfer). Credentials: PLIVO_AUTH_ID, PLIVO_AUTH_TOKEN.
+LOOPBACK = ('127.0.0.1', 'localhost', '[::1]', '::1')
+
+
 def plivo_api(env):
-    return f"https://api.plivo.com/v1/Account/{env.get('PLIVO_AUTH_ID', '')}/"
+    """Plivo's API, or VP_PLIVO_API_BASE when it is on this machine (a fake Plivo for cross-process tests; any other
+    host is ignored, so the setting can never send a real call somewhere else)."""
+    from urllib.parse import urlsplit
+    b = (env.get('VP_PLIVO_API_BASE') or '').rstrip('/')
+    if not b or (urlsplit(b).hostname or '') not in LOOPBACK: b = 'https://api.plivo.com'
+    return f"{b}/v1/Account/{env.get('PLIVO_AUTH_ID', '')}/"
+
+
+def allowed_to(env, number):
+    """The runtime's own wall in front of Plivo (the control plane's gate keeps the same list): None when `number` may
+    be dialled or bridged, else why not. VP_TELEPHONY_ALLOWED_TO is a comma-separated E.164 list; with Plivo
+    credentials and no list, nothing is dialled unless VP_TELEPHONY_ALLOWLIST=off (the explicit production switch)."""
+    raw = env.get('VP_TELEPHONY_ALLOWED_TO') or ''
+    if raw.strip():
+        return None if digits(number) in {digits(x) for x in raw.split(',') if digits(x)} else 'the number is not on VP_TELEPHONY_ALLOWED_TO'
+    if env.get('PLIVO_AUTH_ID') and (env.get('VP_TELEPHONY_ALLOWLIST') or '').lower() != 'off':
+        return 'no VP_TELEPHONY_ALLOWED_TO is set and VP_TELEPHONY_ALLOWLIST is not off'
+    return None
 
 
 def plivo_auth(env):
