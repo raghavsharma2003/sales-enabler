@@ -1221,11 +1221,13 @@
      },
      "agentVersionId": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "a PUBLISHED agent version id (version.list, or agent.get versions[].id), not the agent id; publish a draft with version.publish first"
      },
      "audienceId": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "an audience id from audience.list"
      },
      "preset": {
       "type": "string",
@@ -5736,7 +5738,8 @@
     "properties": {
      "uploadId": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "the uploadId (a UUID) that source.upload returned, or the one the assistant was given for a file attached in chat; never a file name"
      },
      "overrides": {
       "type": "object",
@@ -5837,7 +5840,8 @@
     "properties": {
      "uploadId": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "the uploadId (a UUID) that source.upload returned, or the one the assistant was given for a file attached in chat; never a file name"
      },
      "overrides": {
       "type": "object",
