@@ -70,6 +70,8 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'campaign.burst.set': { ask: 'Let a campaign burst', done: 'Burst turned on' },
   'campaign.burst.off': { ask: 'Turn a campaign\'s burst off', done: 'Burst turned off' },
   'test.simulate': { ask: 'Run a practice call', done: 'Practice call run' },
+  'test.chat': { ask: 'Send a practice chat line', done: 'Practice chat answered' },
+  'test.chat_keep': { ask: 'Keep a practice chat for review', done: 'Practice chat kept' },
   'monitor.create': { ask: 'Turn on a monitor', done: 'Monitor turned on' },
 };
 /** Activity's wording for an approval request whose card keeps the server's own sentence as its title (no TOOL_LABEL). */
@@ -228,7 +230,7 @@ export const PAST: Record<string, string> = {
   'share.link.create': 'made a link to share one item', 'share.link.revoke': 'turned a share link off',
   'source.commit': 'imported a contact list', 'source.hook_secret.rotate': 'replaced the signing secret of a contact webhook', 'source.crm.pull': 'pulled a contact list from a CRM', 'source.sync': 'synced a contact list from a CRM', 'source.sync.schedule': 'changed when a CRM list syncs', 'source.map': 'matched the columns of a contact list', 'source.upload': 'uploaded a contact list',
   'stack.set': 'chose a voice stack for an agent',
-  'test.browser_call': 'started a test call in the browser', 'test.ring_member_phone': 'rang their own phone for a test', 'test.simulate': 'ran a practice call', 'test.simulate_batch': 'ran a set of practice calls',
+  'test.browser_call': 'started a test call in the browser', 'test.ring_member_phone': 'rang their own phone for a test', 'test.simulate': 'ran a practice call', 'test.chat': 'typed a practice chat', 'test.chat_keep': 'kept a practice chat for review', 'test.simulate_batch': 'ran a set of practice calls',
   'tool.attach': 'changed what an agent can do on a call', 'tool.create': 'defined a tool for calls', 'tool.edit': 'changed a tool for calls', 'tool.test': 'tried a tool for calls without sending anything',
   'version.candidate': 'prepared a version to test', 'version.publish': 'published an agent', 'version.restore': 'rolled an agent back to an earlier version', 'version.language_variant': 'published an agent in another language', 'voice.set': 'chose a voice for an agent',
   'wallet.credit': 'credited the wallet by hand', 'wallet.topup': 'added money to the wallet',

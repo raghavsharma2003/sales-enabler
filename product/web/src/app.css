@@ -316,3 +316,9 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .walletchip-dim { color: var(--nav-ink-dim); }   /* a token pair checked at 5:1 on forest-2, never opacity: contrast tools cannot see through it */
 .walletadd { display: block; font-size: 0.75rem; text-decoration: underline; text-underline-offset: 3px; margin-top: 2px; }
 .nowrap { white-space: nowrap; }
+.pchat { list-style: none; margin: 0; padding: 6px; display: grid; gap: 6px; max-height: 360px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.pchat-line { padding: 8px 10px; border-radius: 8px; background: var(--sunk); font-size: 0.9375rem; } .pchat-line.agent { background: var(--peacock-bg); }
+.pchat-line p { margin: 0; overflow-wrap: anywhere; }
+.pchat-notes { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 0.875rem; } .pchat-notes svg { vertical-align: -2px; color: var(--peacock); }
+.pchat-notes details { margin-top: 2px; } .pchat-notes summary { cursor: pointer; min-height: 24px; }
+.pchat-form { display: grid; gap: 8px; } .pchat-form textarea { width: 100%; resize: vertical; }

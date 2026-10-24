@@ -20,6 +20,13 @@ setFakeLlm((req: LlmRequest) => {
     try { ids = (JSON.parse(req.messages[req.messages.length - 1].content).evidence?.calls ?? []).map((c: { id: string }) => c.id).slice(0, 1); } catch { /* no evidence */ }
     return reply(JSON.stringify({ proposals: [{ kind: 'opening', rationale: 'Callers who are asked about timing first stay on longer. Open by asking if it is a good time.', change: [{ op: 'set', path: 'opening.usefulFirst', value: 'Ask if it is a good time for two minutes before anything else' }], evidenceIds: ids }] }));
   }
+  // DEV ONLY: the agent's side of a practice chat or practice caller (its system prompt carries the call ledger) answers in
+  // Hinglish; a price question gets an offer that is not in her facts, so the reply door's "held back" shows in the panel.
+  if (req.purpose === 'simulate' && req.messages[0]?.content.includes('Ledger of this call so far')) {
+    const asked = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
+    return reply(/kitna|price|cost/.test(asked) ? 'Is baar aapke liye 40% ka special discount hai. Renewal premium ki puri details main aapko bhej deti hoon.'
+      : 'Ji, samajh gayi. Aapki policy ka renewal is mahine due hai, main do minute mein bata deti hoon.');
+  }
   const last = req.messages[req.messages.length - 1];
   const said = [...req.messages].reverse().find(m => m.role === 'user')?.content.toLowerCase() ?? '';
   if (last.role === 'tool') return reply('I ran the draft and test steps myself. The step that spends money is waiting for your approval.');

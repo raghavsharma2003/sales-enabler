@@ -51,6 +51,16 @@
       "note": "LLM caller (purpose 'simulate') from sim_caller; every agent sentence through replyDoor; graded by code; stored in agent_test_run; simCallerId(s) accept 'default:<slug>' library ids or saved caller uuids"
     },
     {
+      "name": "test.chat",
+      "risk": "test",
+      "note": "typed practice chat: the builder is the caller; same compile, ledger, TAIL and runtime door as a call (crisis lines, honest AI answer, first-breath disclosure, RD rules); notes per verdict; nothing dialled or logged"
+    },
+    {
+      "name": "test.chat_keep",
+      "risk": "test",
+      "note": "keeps a practice chat in agent_test_run as kind 'chat' (caller digits masked); the publish card reads only kind 'simulate'"
+    },
+    {
       "name": "version.publish",
       "risk": "external",
       "note": "A2; version() = draft hash; stores agent_version.config = { agent, brief } with versionHash and parent"
@@ -138,7 +148,8 @@
       "product/tests/agents-contracts.test.ts",
       "product/tests/agents-runtime.test.ts",
       "product/tests/agents-library.test.ts",
-      "product/tests/stack-gate.test.ts"
+      "product/tests/stack-gate.test.ts",
+      "product/tests/agents-chat.test.ts"
     ],
     "method": "node --import tsx --test against vp_mod_agents on the throwaway Postgres 16; LLM always setFakeLlm"
   },

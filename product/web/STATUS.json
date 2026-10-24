@@ -6,7 +6,7 @@
   "Agents list",
   "Agent builder (basics, persona, job and facts, objections and hand-off, tools, voice stack, versions)",
   "Voice stack picker (no default, graded figures)",
-  "Docked test panel (practice callers, browser call)",
+  "Docked test panel (browser call, practice chat, practice callers)",
   "Contacts (people, audiences, import wizard with column mapping and per-row verdicts)",
   "Contact page (consent, DND, attempts, memory)",
   "Campaigns list",
@@ -134,6 +134,8 @@
   "test.browser_call",
   "test.ring_member_phone",
   "test.simulate",
+  "test.chat",
+  "test.chat_keep",
   "version.publish",
   "wallet.get",
   "wallet.topup"

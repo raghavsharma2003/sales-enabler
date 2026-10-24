@@ -209,6 +209,8 @@ export type ToolName =
   | "stack.set"
   | "template.list"
   | "test.browser_call"
+  | "test.chat"
+  | "test.chat_keep"
   | "test.ring_member_phone"
   | "test.simulate"
   | "test.simulate_batch"
@@ -1568,6 +1570,25 @@ export interface ToolInput {
     versionId?: string;
     useDraft?: boolean;
   };
+  /** Practice chat: type as the caller and read her reply from the saved draft, through the same safety door as a call (test) */
+  "test.chat": {
+    agentId: string;
+    history?: ({
+      who: "agent" | "caller";
+      text: string;
+    })[];
+    message?: string;
+    contact?: Record<string, string>;
+  };
+  /** Keep a practice chat in the agent's test-run history for review (test) */
+  "test.chat_keep": {
+    agentId: string;
+    turns: ({
+      who: "agent" | "caller";
+      text: string;
+    })[];
+    notes?: unknown[];
+  };
   /** Ring your own verified phone with this agent (optionally as a real row), so you hear what they will hear (test) */
   "test.ring_member_phone": {
     agentVersionId: string;
@@ -2042,6 +2063,8 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "stack.set": { risk: "draft", needsApproval: false },
   "template.list": { risk: "read", needsApproval: false },
   "test.browser_call": { risk: "test", needsApproval: false },
+  "test.chat": { risk: "test", needsApproval: false },
+  "test.chat_keep": { risk: "test", needsApproval: false },
   "test.ring_member_phone": { risk: "test", needsApproval: false },
   "test.simulate": { risk: "test", needsApproval: false },
   "test.simulate_batch": { risk: "test", needsApproval: false },

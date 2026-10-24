@@ -7931,6 +7931,125 @@
    }
   },
   {
+   "name": "test.chat",
+   "risk": "test",
+   "summary": "Practice chat: type as the caller and read her reply from the saved draft, through the same safety door as a call",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "history": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "who": {
+         "type": "string",
+         "enum": [
+          "agent",
+          "caller"
+         ]
+        },
+        "text": {
+         "type": "string",
+         "maxLength": 2000
+        }
+       },
+       "required": [
+        "who",
+        "text"
+       ]
+      },
+      "maxItems": 60
+     },
+     "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+     },
+     "contact": {
+      "type": "object",
+      "additionalProperties": {
+       "type": "string",
+       "maxLength": 200
+      }
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "test.chat_keep",
+   "risk": "test",
+   "summary": "Keep a practice chat in the agent's test-run history for review",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "turns": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "who": {
+         "type": "string",
+         "enum": [
+          "agent",
+          "caller"
+         ]
+        },
+        "text": {
+         "type": "string",
+         "maxLength": 2000
+        }
+       },
+       "required": [
+        "who",
+        "text"
+       ]
+      },
+      "minItems": 2,
+      "maxItems": 80
+     },
+     "notes": {
+      "type": "array",
+      "items": {
+       "description": "a door note"
+      },
+      "maxItems": 200
+     }
+    },
+    "required": [
+     "agentId",
+     "turns"
+    ]
+   }
+  },
+  {
    "name": "test.ring_member_phone",
    "risk": "test",
    "summary": "Ring your own verified phone with this agent (optionally as a real row), so you hear what they will hear",

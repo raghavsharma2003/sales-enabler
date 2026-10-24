@@ -4,7 +4,7 @@ export const TOOLS = {
   today: ['brief.today', 'campaign.list', 'campaign.pause', 'wallet.get', 'handoff.list'],
   handoffs: ['handoff.list', 'handoff.claim', 'handoff.resolve'],
   shell: ['alert.list', 'alert.ack'],
-  agents: ['agent.list', 'agent.get', 'agent.create', 'template.list', 'brief.edit', 'stack.set', 'version.publish', 'simcaller.list', 'test.simulate', 'test.browser_call', 'money.estimate'],
+  agents: ['agent.list', 'agent.get', 'agent.create', 'template.list', 'brief.edit', 'stack.set', 'version.publish', 'simcaller.list', 'test.simulate', 'test.chat', 'test.chat_keep', 'test.browser_call', 'money.estimate'],
   contacts: ['contact.list', 'contact.search', 'contact.get', 'contact.memory.get', 'attempt.list', 'audience.list', 'audience.get', 'audience.create', 'source.upload', 'source.map', 'source.commit', 'integration.list', 'source.crm.lists', 'source.crm.pull', 'source.crm.sources', 'source.sync', 'source.sync.schedule', 'fact.approve', 'fact.forget'],
   campaigns: ['campaign.get', 'campaign.draft', 'campaign.estimate', 'campaign.funnel', 'campaign.launch', 'campaign.resume', 'campaign.stop', 'campaign.window.narrow', 'campaign.window.widen'],
   calls: ['call.search', 'call.get', 'call.explain'],

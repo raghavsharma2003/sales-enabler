@@ -1,7 +1,7 @@
-// The docked test panel for an agent: six practice callers (simulate) and a browser call. A test never falls back to another
+// The docked test panel for an agent: a browser call, a typed practice chat, six practice callers (simulate). A test never falls back to another
 // stack: if no stack is chosen, the result says "invalid, with the reason", never a pass.
 import { useVoiceStack } from './use-voice-stack.tsx';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
 import { Btn, Chip, scrollMotion } from './ui.tsx';
@@ -10,6 +10,8 @@ import { practiceCallers, simulate } from './data.ts';
 import type { SimResult } from './types.ts';
 import { BrowserCallView } from './browser-call-view.tsx';
 import type { Join } from './browser-call.ts';
+
+const PracticeChat = lazy(() => import('./practice-chat.tsx').then(m => ({ default: m.PracticeChat })));
 
 const TWEAKS = ['Speak a little slower', 'Do not mention discounts', 'Shorter opening', 'Warmer tone'];
 
@@ -67,6 +69,8 @@ export function TestPanel() {
           : <Btn icon={<Mic size={16} aria-hidden />} busy={call.state === 'asking'} onClick={browser}>Call me in the browser</Btn>}
         {call.state === 'unavailable' && <p className="state state-missing small" role="status">{call.reason ?? 'Browser calls are not available yet.'}</p>}
       </section>
+
+      {hasTool('test.chat') && <Suspense fallback={<p className="small muted">Loading the practice chat…</p>}><PracticeChat key={a.id} agentId={a.id} agentName={a.name} /></Suspense>}
 
       <section aria-labelledby="sim-h" className="stack-s">
         <h4 id="sim-h">Practice callers</h4>

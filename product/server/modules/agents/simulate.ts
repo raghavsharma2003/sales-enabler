@@ -57,7 +57,7 @@ export interface DoorEvent { turn: number; rule: string; action: 'replace' | 'bl
 export interface Grade { check: string; pass: boolean; detail: string }
 export interface SimResult { transcript: Turn[]; door: DoorEvent[]; grades: Grade[]; passed: boolean; endedBy: 'agent' | 'caller' | 'turn_limit'; usage: { inputTokens: number; outputTokens: number } }
 
-const END = /<\s*\/?\s*end[_ ]?call\s*\/?\s*>/i;
+export const END = /<\s*\/?\s*end[_ ]?call\s*\/?\s*>/i;
 const HANGUP = /<\s*hang\s*-?up\s*>/i;
 const AI_SAID = /\bAI\b|ए\.?आई|एआई/i;
 const LAUGH = /हा\s?हा|haha|<\s*(laugh|chuckle)/i;

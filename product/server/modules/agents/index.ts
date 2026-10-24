@@ -6,7 +6,7 @@ import type { AgentConfig, ToolGrant } from '../../../shared/agent-config.ts';
 import { RISK_CLASSES } from '../../../shared/approval.ts';
 import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackLanguages, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
 import { COMPONENTS, getComponent, type Component } from '../../../shared/components.ts';
-import { lintAgentConfig } from '../../../shared/safety/index.ts';
+import { lintAgentConfig, redact } from '../../../shared/safety/index.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
 import type { Module } from '../../app.ts';
 import { appendAudit } from '../../audit.ts';
@@ -27,6 +27,7 @@ import { agentLanguages, languageName, languageProblems } from './languages.ts';
 import { stackLanguage } from '../../../shared/stacks.ts';
 import { gateStatus } from '../../../shared/stack-gate.ts';
 import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
+import { chatTurn } from './chat.ts';
 import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
 import { LIBRARY, libraryCaller, toSimCaller, type CallerShape, type LibraryCaller } from './library.ts';
@@ -328,7 +329,7 @@ async function publishSummary(ctx: ToolCtx, agentId: string, note?: string): Pro
   parts.push(stack ? `Voice: ${stack.label}.` : 'No voice stack is chosen yet, so publishing will refuse.');
   const run = await one<{ passed: boolean; grades: { pass: boolean }[]; sim_caller_key: string | null; shape: { label?: string } | null; created_at: Date; draft_hash: string }>(ctx.q,
     `SELECT r.passed, r.grades, r.sim_caller_key, s.shape, r.created_at, r.draft_hash FROM agent_test_run r LEFT JOIN sim_caller s ON s.id = r.sim_caller_id
-     WHERE r.agent_id = $1 AND r.workspace_id = $2 ORDER BY r.created_at DESC LIMIT 1`, [a.id, ctx.workspaceId]);
+     WHERE r.agent_id = $1 AND r.workspace_id = $2 AND r.kind = 'simulate' ORDER BY r.created_at DESC LIMIT 1`, [a.id, ctx.workspaceId]);
   if (!run) parts.push('No practice call has been run.');
   else {
     const who = (run.sim_caller_key && libraryCaller(run.sim_caller_key)?.label) || run.shape?.label || 'a custom caller';
@@ -497,7 +498,7 @@ export function registerAgentTools(r: Registry): void {
       const stack = stackOf(a.draft.voice);
       const versions = await many(ctx.q, 'SELECT id, number, hash, kind, note, author_type, created_at FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 20', [a.id]);
       const liveVersion = await one<{ id: string; number: number }>(ctx.q, LIVE_VERSION_SQL, [a.id]);
-      const tests = await many(ctx.q, 'SELECT id, passed, draft_hash, created_at FROM agent_test_run WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC LIMIT 10', [a.id, ctx.workspaceId]);
+      const tests = await many(ctx.q, 'SELECT id, kind, passed, draft_hash, created_at FROM agent_test_run WHERE agent_id = $1 AND workspace_id = $2 ORDER BY created_at DESC LIMIT 10', [a.id, ctx.workspaceId]);
       return { agent: { id: a.id, name: a.name, job: a.job, status: a.status, updatedAt: a.updated_at }, draft: a.draft, draftHash: draftHash(a.draft),
         ...(await previewOf(ctx, a.draft)), stack: stack ? stackCard(stack) : null, stackChosen: !!stack,
         // liveVersion is what a new campaign or inbound line runs; versions[0] may be an experiment candidate.
@@ -642,6 +643,37 @@ export function registerAgentTools(r: Registry): void {
       const res = await simulate(cfg, brief, sc, i.maxTurns ?? 12);
       const runId = await storeRun(ctx, a.id, scId, a.draft, brief.hash, res, null);
       return { runId, simCallerId: scId, briefHash: brief.hash, ...res };
+    },
+  }));
+
+  // A typed practice chat: the builder is the caller. Stateless on the server (the panel holds the chat and sends it back);
+  // nothing is dialled and nothing reaches the call log. Kept only on test.chat_keep, into the test-run history.
+  const chatTurnV = obj({ who: str({ oneOf: ['agent', 'caller'] }), text: str({ max: 2000 }) });
+  r.register(tool(obj({ agentId: uuid(), history: opt(arr(chatTurnV, { max: 60 })), message: opt(str({ min: 1, max: 1000 })),
+    contact: opt(record(str({ max: 200 }), { maxKeys: 10 })) }), {
+    name: 'test.chat', risk: 'test', summary: 'Practice chat: type as the caller and read her reply from the saved draft, through the same safety door as a call',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const cfg = await withKnowledge(ctx.q, ctx.workspaceId, a.draft);
+      const brief = compile(cfg);
+      const history = (i.history ?? []) as { who: 'agent' | 'caller'; text: string }[];
+      if (!history.length && !i.message && a.draft.job === 'inbound_support') throw new ValidationError('message', 'on an inbound line the caller speaks first: type their first line');
+      if (history.length && !i.message) throw new ValidationError('message', 'type what the caller says next');
+      const res = await chatTurn(cfg, brief, history, i.message ?? null, i.contact ?? { name: 'Asha (made up)' });
+      return { ...res, draftHash: draftHash(a.draft), briefHash: brief.hash };
+    },
+  }));
+
+  r.register(tool(obj({ agentId: uuid(), turns: arr(chatTurnV, { min: 2, max: 80 }), notes: opt(arr(any('a door note'), { max: 200 })) }), {
+    name: 'test.chat_keep', risk: 'test', summary: 'Keep a practice chat in the agent\'s test-run history for review',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const brief = compile(await withKnowledge(ctx.q, ctx.workspaceId, a.draft));
+      const transcript = i.turns.map(t => ({ who: t.who, text: t.who === 'caller' ? redact(t.text) : t.text }));
+      const row = await one<{ id: string }>(ctx.q, `INSERT INTO agent_test_run (workspace_id, agent_id, kind, draft_hash, brief_hash, transcript, door, grades, passed, ended_by)
+        VALUES ($1,$2,'chat',$3,$4,$5,$6,'[]'::jsonb,false,'chat') RETURNING id`,
+        [ctx.workspaceId, a.id, draftHash(a.draft), brief.hash, JSON.stringify(transcript), JSON.stringify(i.notes ?? [])]);
+      return { runId: row!.id, kind: 'chat', turns: transcript.length };
     },
   }));
 
