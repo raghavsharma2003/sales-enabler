@@ -1,5 +1,6 @@
 // The only network door of the UI. Every page action is one tool: POST /v1/tools/:name {args}.
 // The kernel answers with a Receipt (confirmed / needs_approval / not_executed / unknown); the UI never guesses a status.
+import { plainReason } from './labels.ts';
 export type Risk = 'read' | 'draft' | 'test' | 'external' | 'spend' | 'destructive' | 'policy';
 
 export type Receipt<T = unknown> =
@@ -76,7 +77,7 @@ export async function run<T = unknown>(name: string, args: unknown = {}, threadI
   if (r.status === 'confirmed') return r.result;
   if (r.status === 'needs_approval') throw new ToolRefused(name, 'This needs your approval first.');
   if (r.status === 'not_executed' && /^unknown tool/.test(r.reason)) throw new ToolMissing(name);
-  throw new ToolRefused(name, r.reason, (r as { path?: string }).path);
+  throw new ToolRefused(name, plainReason(r.reason), (r as { path?: string }).path);
 }
 
 export interface ActionRow { id: string; tool: string; args: unknown; risk_class: Risk; status: string; summary: string; proposed_by: string; created_at: string; expires_at: string | null; executed_at: string | null; result: unknown }

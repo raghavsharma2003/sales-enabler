@@ -1,7 +1,7 @@
 // UI primitives. Small on purpose: no component library. Every state the design language names (empty, zero, loading,
 // failed, not measured, under-powered, sample, stale, locked-by-role) has its own component so they never look alike.
 import { useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type InputHTMLAttributes, type TextareaHTMLAttributes, type SelectHTMLAttributes } from 'react';
-import { AlertTriangle, Check, CircleDashed, Lock, PlugZap, RefreshCw, X } from 'lucide-react';
+import { AlertTriangle, Check, ChevronLeft, ChevronRight, CircleDashed, Lock, PlugZap, RefreshCw, X } from 'lucide-react';
 import { Link, useNav } from './router.tsx';
 import type { ToolData } from './store.tsx';
 import type { Metric } from './types.ts';
@@ -72,19 +72,44 @@ export function Card({ children, className, as: T = 'section', ...rest }: { chil
 export function CardHead({ title, sub, actions, id }: { title: ReactNode; sub?: ReactNode; actions?: ReactNode; id?: string }) {
   return <div className="cardhead"><div><h2 id={id}>{title}</h2>{sub && <p className="sub">{sub}</p>}</div>{actions && <div className="cardhead-actions">{actions}</div>}</div>;
 }
+/** Tabs are one row. When they do not all fit (a phone, or a narrow column beside the assistant) the row scrolls sideways,
+ *  the hidden side fades out and gets an arrow button, and the selected tab is scrolled into view. A tab is never cut
+ *  off without a sign that there is more. */
 export function Tabs<T extends string>({ value, onChange, items, label }: { value: T; onChange: (v: T) => void; items: { id: T; label: string; count?: number }[]; label: string }) {
+  const row = useRef<HTMLDivElement>(null);
+  const [more, setMore] = useState({ left: false, right: false });
+  const measure = () => { const el = row.current; if (!el) return; const left = el.scrollLeft > 2, right = el.scrollLeft + el.clientWidth < el.scrollWidth - 2; setMore(m => (m.left === left && m.right === right ? m : { left, right })); };
+  useEffect(() => {
+    const el = row.current; if (!el) return;
+    measure();
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure); ro?.observe(el);
+    el.addEventListener('scroll', measure, { passive: true });
+    return () => { ro?.disconnect(); el.removeEventListener('scroll', measure); };
+  }, []);
+  useEffect(() => {
+    const el = row.current, on = el?.querySelector<HTMLElement>('[aria-selected="true"]'); if (!el || !on) return;
+    if (on.offsetLeft < el.scrollLeft || on.offsetLeft + on.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollTo({ left: Math.max(0, on.offsetLeft - 24) });
+    measure();
+  }, [value, items.length]);
+  const page = (dir: 1 | -1) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.7, behavior: 'smooth' });
   const onKey = (e: React.KeyboardEvent) => {
     const i = items.findIndex(x => x.id === value);
-    if (e.key === 'ArrowRight') onChange(items[(i + 1) % items.length].id);
-    else if (e.key === 'ArrowLeft') onChange(items[(i - 1 + items.length) % items.length].id);
+    const next = e.key === 'ArrowRight' ? items[(i + 1) % items.length] : e.key === 'ArrowLeft' ? items[(i - 1 + items.length) % items.length] : null;
+    if (!next) return;
+    onChange(next.id);
+    requestAnimationFrame(() => row.current?.querySelector<HTMLElement>(`[data-tab="${next.id}"]`)?.focus());
   };
   return (
-    <div className="tabs" role="tablist" aria-label={label} onKeyDown={onKey}>
-      {items.map(t => (
-        <button key={t.id} role="tab" type="button" aria-selected={t.id === value} tabIndex={t.id === value ? 0 : -1} className="tab" onClick={() => onChange(t.id)}>
-          {t.label}{t.count != null && <span className="tab-count tnum">{t.count}</span>}
-        </button>
-      ))}
+    <div className={cx('tabs-wrap', more.left && 'more-left', more.right && 'more-right')}>
+      <div className="tabs" role="tablist" aria-label={label} onKeyDown={onKey} ref={row}>
+        {items.map(t => (
+          <button key={t.id} role="tab" type="button" data-tab={t.id} aria-selected={t.id === value} tabIndex={t.id === value ? 0 : -1} className="tab" onClick={() => onChange(t.id)}>
+            {t.label}{t.count != null && <span className="tab-count tnum">{t.count}</span>}
+          </button>
+        ))}
+      </div>
+      {more.left && <button type="button" className="tabs-more tabs-more-left" tabIndex={-1} aria-label={`Earlier ${label.toLowerCase()}`} onClick={() => page(-1)}><ChevronLeft size={18} aria-hidden /></button>}
+      {more.right && <button type="button" className="tabs-more tabs-more-right" tabIndex={-1} aria-label={`More ${label.toLowerCase()}`} onClick={() => page(1)}><ChevronRight size={18} aria-hidden /></button>}
     </div>
   );
 }

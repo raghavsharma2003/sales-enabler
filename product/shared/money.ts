@@ -10,8 +10,10 @@ export const milliToInr = (m: InrMilli): number => m / 1000;
 export function formatInr(m: InrMilli, opts: { paise?: boolean } = {}): string {
   const negative = m < 0;
   const abs = Math.abs(m);
-  const rupees = Math.floor(abs / 1000);
-  const paise = Math.round((abs % 1000) / 10);
+  // Round to the paisa first, then split: rounding the paise alone turned ₹1.995 into "₹1.100".
+  const totalPaise = Math.round(abs / 10);
+  const rupees = Math.floor(totalPaise / 100);
+  const paise = totalPaise % 100;
   const s = String(rupees);
   const last3 = s.slice(-3);
   const rest = s.slice(0, -3);

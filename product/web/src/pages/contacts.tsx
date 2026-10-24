@@ -105,7 +105,7 @@ function Import() {
   const [csv, setCsv] = useState('');
   const [pv, setPv] = useState<ImportPreview | null>(null);
   const [busy, setBusy] = useState(false);
-  const [purpose, setPurpose] = useState(''); const [aud, setAud] = useState('Imported list');
+  const [purpose, setPurpose] = useState(''); const [aud, setAud] = useState(() => `Import of ${date(new Date())}`);
   const [filter, setFilter] = useState<'all' | 'problems'>('problems');
   const file = useRef<HTMLInputElement>(null);
 
@@ -203,14 +203,22 @@ function ContactPage({ id }: { id: string }) {
           <div className="stack">
             <Card><CardHead title="Consent" />{c.consent.length === 0 ? <p className="muted">No consent is recorded for this person. Service and transactional calls to existing customers do not need one; promotional calls do.</p> :
               <ul className="facts">{c.consent.map(k => <li key={k.id}><div className="row" style={{ justifyContent: 'space-between' }}><strong>{CONSENT_FOR[k.purpose] ?? prettyCode(k.purpose)}</strong><Chip tone={k.granted ? 'leaf' : 'brick'}>{k.granted ? 'Granted' : 'Withdrawn'}</Chip></div><p className="small muted">{CONSENT_BASIS[k.basis] ?? prettyCode(k.basis)} · {k.channel === 'voice' ? 'phone calls' : prettyCode(k.channel).toLowerCase()} · {date(k.created_at)}</p></li>)}</ul>}</Card>
-            <Card><CardHead title="Do Not Disturb" /><Kv rows={[['Status', dndChip(c.dnd.status)], ['Last checked', c.dnd.checkedAt ? date(c.dnd.checkedAt, true) : 'Not yet'], [ 'Check', c.dnd.fresh ? 'Recent enough for promotional calls' : 'Needs a fresh check before promotional calls']]} /><DndExplain checkedAt={c.dnd.checkedAt} status={c.dnd.status} /><DndButton contactId={c.id} onDone={q.reload} /></Card>
+            <Card><CardHead title="Do Not Disturb" /><Kv rows={dndRows(c.dnd)} /><DndExplain checkedAt={c.dnd.checkedAt} status={c.dnd.status} /><DndButton contactId={c.id} onDone={q.reload} /></Card>
             <StopCard contactId={c.id} me={me} onDone={q.reload} />
-            <Card><CardHead title="Details from your lists" /><Kv rows={c.attributes.filter(a => a.key !== 'name').map(a => [a.key.replace(/_/g, ' '), <span key={a.key}>{a.key === 'language' ? langShort(String(a.value)) : isoDay(a.value) ?? String(a.value)}{a.stale && <span className="muted"> · stale</span>}</span>] as [string, React.ReactNode])} /></Card>
+            <Card><CardHead title="Details from your lists" /><Kv rows={c.attributes.filter(a => a.key !== 'name').map(a => [detailLabel(a.key), <span key={a.key}>{a.key === 'language' ? langShort(String(a.value)) : isoDay(a.value) ?? String(a.value)}{a.stale && <span className="muted"> · stale</span>}</span>] as [string, React.ReactNode])} /></Card>
           </div>
         </div>
       </>)}</Async></div>
   );
 }
+
+/** The DND rows say only what is true: "recent enough" is about an answer, so a number the register never answered gets no such line. */
+function dndRows(d: { status: string; checkedAt: string | null; fresh?: boolean }): [string, React.ReactNode][] {
+  if (d.status === 'unknown') return [['Status', dndChip(d.status)], [d.checkedAt ? 'Last tried' : 'Last checked', d.checkedAt ? date(d.checkedAt, true) : 'Not yet'], ['Answer', d.checkedAt ? 'The register gave no answer' : 'Never looked up']];
+  return [['Status', dndChip(d.status)], ['Last checked', d.checkedAt ? date(d.checkedAt, true) : 'Not yet'], ['Check', d.fresh ? 'Recent enough for promotional calls' : 'Needs a fresh check before promotional calls']];
+}
+/** A list column as a label: "emi_amount" and "emi amount" both read "Emi amount"; a column already written by a person stays as it is. */
+const detailLabel = (key: string) => { const t = key.replace(/_/g, ' ').trim(); return t.charAt(0).toUpperCase() + t.slice(1); };
 
 const CONSENT_FOR: Record<string, string> = { all: 'All calls', service: 'Service calls', transactional: 'Transactional calls', promotional: 'Promotional calls' };
 const CONSENT_BASIS: Record<string, string> = { withdrawal: 'Asked to stop', opt_out: 'Asked to stop', express: 'Said yes', written: 'Agreed in writing', verbal: 'Agreed on a call', existing_customer: 'Existing customer' };

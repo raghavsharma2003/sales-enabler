@@ -33,7 +33,7 @@ export function ApprovalSheet() {
   return (
     <Sheet title={done ? 'Result' : 'Approve to continue'} onClose={closePending}>
       <div className="stack-s">
-        <div className="row"><Chip tone={p.risk === 'spend' || p.risk === 'external' ? 'terra' : 'marigold'} icon={<ShieldCheck size={13} aria-hidden />}>{w.label}</Chip><span className="small muted">Asked by Vyakti · expires {date(p.expiresAt, true)}</span></div>
+        <div className="row"><Chip tone={p.risk === 'spend' || p.risk === 'external' ? 'terra' : 'marigold'} icon={<ShieldCheck size={13} aria-hidden />}>{w.label}</Chip><span className="small muted">{p.by === 'you' ? 'You asked for this' : 'Waiting for approval'} · expires {date(p.expiresAt, true)}</span></div>
         <p style={{ fontSize: '1.0625rem', fontWeight: 600 }}>{toolAsk(p.tool, p.summary)}</p>
         {args.length > 0 && <dl className="kv small">{args.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>}
         <p className="muted">{w.line} {undoLine(p.risk)}</p>

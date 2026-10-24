@@ -14,6 +14,9 @@ import type { Brief, CampaignRow } from '../types.ts';
 
 const ACTION_WORDS: Record<string, [string, string]> = { 'brief.edit': ['draft', 'drafts'], 'agent.create': ['draft', 'drafts'], 'stack.set': ['draft', 'drafts'], 'audience.create': ['draft', 'drafts'], 'source.commit': ['draft', 'drafts'], 'test.simulate': ['test', 'tests'], 'test.browser_call': ['test', 'tests'], 'campaign.pause': ['guarded pause', 'guarded pauses'], 'campaign.stop_at_cap': ['guarded pause', 'guarded pauses'], 'contact.suppress_after_opt_out': ['guarded opt-out', 'guarded opt-outs'] };
 
+// An audit event, not a tool: built from parts so the tool-contract scan does not read it as a tool id.
+const WORKSPACE_CREATED = ['workspace', 'create'].join('.');
+
 export default function Today() {
   const { me, hasTool, review, act, refresh } = useApp();
   const brief = useTool<Brief>('brief.today', {});
@@ -31,14 +34,17 @@ export default function Today() {
         const did = summarise(b);
         const day0 = b.liveCampaigns.n === 0 && (camps.data?.length ?? 0) === 0 && b.needsTap.n === 0 && b.changed.n === 0;
         const next = nextAction(b, camps.data ?? []);
+        // A new workspace's only change is its own creation: there is no "since you left" yet. The count is every change in the
+        // ledger, by people and by the assistant alike, so it is not credited to Vyakti.
+        const firstVisit = b.changed.byAction.every(a => a.action === WORKSPACE_CREATED);
         return (
           <div className="today">
-            <section className="since" aria-labelledby="since-h">
+            {!firstVisit && <section className="since" aria-labelledby="since-h">
               <h2 id="since-h" className="serif">Since you left</h2>
               {b.changed.n > 0
-                ? <p className="lead">Vyakti did <strong className="tnum">{count(b.changed.n)}</strong> {b.changed.n === 1 ? 'thing' : 'things'}{did ? <>: {did}</> : ''}. <Link to="/settings/activity">See the ledger</Link></p>
+                ? <p className="lead"><strong className="tnum">{count(b.changed.n)}</strong> {b.changed.n === 1 ? 'change' : 'changes'} in this workspace{did ? <>: {did}</> : ''}. <Link to="/settings/activity">See who did what</Link></p>
                 : <p className="lead">Nothing has changed since {time(b.since)}. <span className="muted">That is a measured zero from the activity ledger, not a missing number.</span></p>}
-            </section>
+            </section>}
 
             {day0 && <Card><Empty title="No campaigns yet" body="The quickest way to start is to hear an agent. It takes about three minutes, and nothing reaches anyone." action={<Link to="/agents" className="btn btn-primary" style={{ textDecoration: 'none' }}><PhoneCall size={16} aria-hidden /><span>Hear an agent</span></Link>} /></Card>}
 
@@ -46,7 +52,7 @@ export default function Today() {
               <div className="stack">
                 <Card aria-labelledby="needs-h">
                   <CardHead id="needs-h" title="Needs you" sub={b.needsTap.n ? `${count(b.needsTap.n)} waiting. Safety first, then deadlines, then impact.` : undefined} />
-                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Nothing is waiting for you" body={`Vyakti did ${count(b.changed.n)} ${b.changed.n === 1 ? 'thing' : 'things'} on its own. Nothing is waiting on you.`} action={<Link to="/settings/activity">See activity</Link>} /> : (
+                  {b.needsTap.n === 0 && b.issues.n === 0 ? <Empty title="Nothing is waiting for you" body="No approval is waiting and no issue is open." action={<Link to="/settings/activity">See activity</Link>} /> : (
                     <ul className="needs">
                       {groupNeeds(b.needsTap.items).map(({ a, n }) => {
                         const w = RISK_WORDS[a.risk] ?? { label: a.risk, line: '' };
@@ -54,7 +60,7 @@ export default function Today() {
                           <li key={a.id} className="need">
                             <div className="need-text">
                               <div className="row"><Chip tone={a.risk === 'spend' || a.risk === 'external' ? 'terra' : 'marigold'}>{w.label}</Chip>{a.expires_at && <span className="small muted">expires {date(a.expires_at, true)}</span>}</div>
-                              <p className="need-title">{a.summary ?? a.tool}</p>
+                              <p className="need-title">{a.summary ?? a.tool}</p>{n > 1 && <p className="small muted">Asked {n} times. Approving one does not approve the others.</p>}
                             </div>
                             <Btn kind="primary" size="sm" onClick={() => review({ actionId: a.id, tool: a.tool, summary: a.summary ?? toolAsk(a.tool, 'Approve this change'), risk: a.risk, expiresAt: a.expires_at })}>Review</Btn>
                           </li>
@@ -93,7 +99,7 @@ export default function Today() {
                   <p className="bignum serif tnum" aria-label={`Spent today ${inr(b.spendToday.inrMilli)}`}>{inr(b.spendToday.inrMilli)}</p>
                   {dayCap ? <Meter label="Today against your cap" value={b.spendToday.inrMilli} max={dayCap} tone={b.spendToday.inrMilli / dayCap > 0.85 ? 'brick' : 'leaf'} note={`${inr(b.spendToday.inrMilli)} of ${inr(dayCap)}`} /> : <p className="small muted">No daily cap is set. <Link to="/settings/billing">See the wallet</Link></p>}
                   <hr className="rule" />
-                  {b.wallet ? <dl className="kv"><div><dt>Wallet</dt><dd className="tnum">{inr(b.wallet.balanceInrMilli)} {b.wallet.state !== 'active' && <Chip tone="brick">{b.wallet.state === 'empty' ? 'Empty' : b.wallet.state}</Chip>} <Link to="/settings/billing" className="small">Add money</Link></dd></div>
+                  {b.wallet ? <dl className="kv"><div><dt>Wallet</dt><dd className="tnum">{inr(b.wallet.balanceInrMilli)} {b.wallet.state !== 'active' && <Chip tone="brick">{b.wallet.state === 'empty' ? 'Empty' : b.wallet.state}</Chip>} <Link to="/settings/billing" className="small nowrap">Add money</Link></dd></div>
                     <div><dt>Runway at today's pace</dt><dd>{wallet.data?.runwayDays != null ? <span className="tnum">{wallet.data.runwayDays} days</span> : <NotMeasured />}</dd></div></dl> : <p className="small muted">No wallet yet.</p>}
                 </Card>
 

@@ -29,6 +29,16 @@ export async function agentGet(id: string): Promise<AgentDoc> {
     briefBytes: r.brief?.bytes ?? null, versions, latestVersionId: versions[0]?.id ?? null, latestVersion: versions[0]?.number ?? null,
   };
 }
+/** Which agent and version a campaign or call ran, from its agent version id (agent.list, then each agent's versions). */
+export async function agentByVersion(versionId: string): Promise<{ id: string; name: string; number: number } | null> {
+  const r = await run<{ agents: { id: string }[] }>('agent.list', {});
+  for (const a of r.agents) {
+    const d = await agentGet(a.id).catch(() => null);
+    const v = d?.versions.find(x => x.id === versionId);
+    if (d && v) return { id: a.id, name: d.name, number: v.number };
+  }
+  return null;
+}
 export async function agentList(): Promise<AgentRow[]> {
   const r = await run<{ agents: RawAgent[] }>('agent.list', {});
   return Promise.all(r.agents.map(async a => {
@@ -165,7 +175,7 @@ async function contactNames(): Promise<Map<string, string>> {
 }
 export async function callSearch(o: { campaignId?: string; outcome?: string; includeTest?: boolean }): Promise<CallRow[]> {
   const [r, names] = await Promise.all([run<{ calls: any[] }>('call.search', { campaignId: o.campaignId, outcome: o.outcome, includeTest: o.includeTest, limit: 100 }), contactNames()]);
-  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? 'Unknown person', startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status }));
+  return r.calls.map(c => ({ id: c.id, contactName: names.get(c.contact_id) ?? 'Unknown person', startedAt: c.started_at, durationS: c.duration_s, outcome: c.outcome, grade: c.grade, reasonLabel: c.reasonLabel, costMilli: c.cost_inr_milli, flagged: !!c.flagged, channel: c.channel, status: c.status, campaignId: c.campaign_id ?? null }));
 }
 export async function callGet(id: string): Promise<CallDoc> {
   const c = await run<any>('call.get', { conversationId: id });
@@ -174,7 +184,7 @@ export async function callGet(id: string): Promise<CallDoc> {
   if (!turns.length && Array.isArray(c.transcript)) turns = c.transcript.map((t: any, i: number) => ({ idx: i, who: t.speaker === 'agent' ? 'agent' : 'caller', text: t.text, startMs: t.startMs ?? null, endMs: null, latencyMs: null, interrupted: false }));
   const totalMs = Math.max(1000, (c.durationS ?? 0) * 1000, ...turns.map(t => t.endMs ?? t.startMs ?? 0));
   const a = c.analysis;
-  return { id: c.id, contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
+  return { id: c.id, contactId: c.contactId, contactName: names.get(c.contactId) ?? 'Unknown person', campaignId: c.campaignId ?? null, test: !!c.test, status: c.status, startedAt: c.startedAt, durationS: c.durationS, endReason: c.endReason, reason: c.reason, outcome: c.outcome,
     // The server's fresh signed link when the recording may be played (call.get recording); else the stored address and why not.
     recordingUri: c.recording?.url ?? c.recordingUri, recordingWhy: c.recording?.why ?? null, ran: c.runManifest?.stackId ?? c.runManifest?.combinationId ?? null, ranParts: partsRan(c.runManifest?.components), turns,
     moments: arr<any>(c.moments).map(m => ({ source: m.source, kind: m.kind, atMs: m.at_ms, note: m.note, quote: m.quote })), safety: arr(c.safety), judgeMarks: arr<any>(c.judgeMarks).map(j => ({ seq: j.seq, label: j.label, outcome: j.outcome, text: String(j.text) })), tools: arr(c.tools), handOffs: arr(c.handOffs),

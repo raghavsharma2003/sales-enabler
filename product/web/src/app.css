@@ -106,9 +106,15 @@ textarea.input { min-height: 88px; resize: vertical; line-height: 1.5; }
 .seg-o { min-height: 40px; padding: 0 14px; border: 0; background: transparent; cursor: pointer; font-size: 0.9375rem; }
 .seg-o + .seg-o { border-left: 1px solid var(--line); }
 .seg-o[aria-checked="true"] { background: var(--forest); color: var(--nav-ink); font-weight: 600; }
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; scrollbar-width: none; }
+.tabs-wrap { position: relative; margin-bottom: 20px; --tabs-bg: var(--paper); }
+.card .tabs-wrap, .dock .tabs-wrap { --tabs-bg: var(--surface); }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; scroll-padding-inline: 44px; }
 .tabs::-webkit-scrollbar { display: none; }
-@media (min-width: 900px) { .tabs { flex-wrap: wrap; overflow-x: visible; } }
+.tabs-more { position: absolute; top: 0; bottom: 1px; width: 44px; border: 0; padding: 0; cursor: pointer; color: var(--ink); display: grid; place-items: center; }
+.tabs-more-right { right: 0; justify-items: end; background: linear-gradient(to right, transparent, var(--tabs-bg) 45%); }
+.tabs-more-left { left: 0; justify-items: start; background: linear-gradient(to left, transparent, var(--tabs-bg) 45%); }
+.tabs-more:hover { color: var(--terra-ink); }
+@media (min-width: 900px) { .tabs { gap: 0; } .tab { padding: 0 12px; } }
 .tab { min-height: 44px; padding: 0 14px; border: 0; background: transparent; cursor: pointer; color: var(--ink-2); font-weight: 600; font-size: 0.9375rem; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
 .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--terra); }
 .tab-count { margin-left: 8px; font-size: 0.75rem; background: var(--sunk); border-radius: 999px; padding: 1px 7px; color: var(--ink-2); }
@@ -309,3 +315,4 @@ input[type="range"] { width: 100%; accent-color: var(--terra); min-height: 44px;
 .table tr.clickrow { cursor: pointer; }
 .table tr.clickrow:hover td { background: var(--sunk); }
 .walletadd { display: block; font-size: 0.75rem; text-decoration: underline; text-underline-offset: 3px; margin-top: 2px; }
+.nowrap { white-space: nowrap; }

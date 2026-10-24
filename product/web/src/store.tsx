@@ -5,11 +5,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import * as api from './api.ts';
 import { ApiError, ToolMissing, ToolRefused, type Me, type Receipt } from './api.ts';
 import type { OperatorCard } from './types.ts';
-import { toolAsk, toolDone } from './labels.ts';
+import { plainReason, toolAsk, toolDone } from './labels.ts';
 
 export interface ThreadMsg { id: string; role: 'user' | 'vp' | 'echo'; text: string; cards?: OperatorCard[]; streaming?: boolean; by?: string; step?: string; notice?: string }
 export interface Toast { id: number; kind: 'ok' | 'bad' | 'info'; text: string }
-export interface Pending { actionId: string; tool: string; summary: string; risk: string; expiresAt: string; resolve: (r: ActResult) => void; state: 'asking' | 'running' | 'done'; outcome?: Receipt | { declined: boolean }; error?: string }
+export interface Pending { actionId: string; tool: string; summary: string; risk: string; expiresAt: string; by?: 'you'; resolve: (r: ActResult) => void; state: 'asking' | 'running' | 'done'; outcome?: Receipt | { declined: boolean }; error?: string }
 export type ActResult<T = unknown> = { ok: true; result: T; receipt: Receipt<T> } | { ok: false; reason: string; declined?: boolean; unknown?: boolean };
 
 export interface AgentCtx { id: string; name: string; dirty: boolean; stackId: string | null; components?: { ears?: string; brain?: string; voice?: string; s2s?: string }; version: number; saved: boolean }
@@ -86,12 +86,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     if (r.status === 'needs_approval') {
       return new Promise<ActResult<T>>(resolve => {
-        setPending({ actionId: r.actionId, tool, summary: r.summary, risk: r.risk, expiresAt: r.expiresAt, resolve: resolve as (x: ActResult) => void, state: 'asking' });
+        setPending({ actionId: r.actionId, tool, summary: r.summary, risk: r.risk, expiresAt: r.expiresAt, by: 'you', resolve: resolve as (x: ActResult) => void, state: 'asking' });
       });
     }
     if (r.status === 'not_executed') {
       const missing = /^unknown tool/.test(r.reason);
-      const reason = missing ? `${tool} is not available on this server yet.` : r.reason;
+      const reason = missing ? `${tool} is not available on this server yet.` : plainReason(r.reason);
       toast(reason, 'bad'); return { ok: false, reason };
     }
     toast('The result is unknown. Vyakti did not retry it. Check Activity before trying again.', 'bad');

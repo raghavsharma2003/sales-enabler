@@ -7,7 +7,7 @@ import { agentGet, diffOps } from '../data.ts';
 import { Link, useQuery } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Field, PageHead, Segmented, SelectField, Tabs, TextArea, TextField, Toggle } from '../ui.tsx';
 import { StackPicker, BETA_REASON, type StackChange } from '../stack-picker.tsx';
-import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
+import { CATEGORY_INFO, HANDOFF_WHEN, JOBS, JOB_INFO, LANGUAGES, LANG_LABEL, PURPOSES, PURPOSE_HINT, PURPOSE_LABEL, REGISTER_INFO, SECTOR_LABEL, SECTOR_PACKS, TOOL_INFO, jobLabel, langShort } from '../catalog.ts';
 import { date } from '../format.ts';
 import { voiceStackOf } from '../catalog.ts';
 import type { AgentConfigDraft, AgentDoc } from '../types.ts';
@@ -182,11 +182,11 @@ function JobFacts({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
         <p className="hint"><Lock size={12} aria-hidden style={{ verticalAlign: '-1px' }} /> Disclosure: {cfg.opening.disclosureClause}.</p></Card>
       <Card><CardHead title="Goals" sub="What counts as done. She records one outcome per goal." />
         <ListEditor items={cfg.goals} onChange={f => set(c => f(c.goals))} blank={() => ({ id: 'goal_' + Date.now().toString(36), description: '', outcome: '', required: true })} addLabel="Add a goal"
-          render={(g, _p, i) => <div className="formgrid"><TextField className="span2" label="What counts as done" value={g.description} onChange={e => set(c => { c.goals[i].description = e.target.value; })} /><TextField label="Outcome name" value={g.outcome} onChange={e => set(c => { c.goals[i].outcome = e.target.value.replace(/\s+/g, '_').toLowerCase(); })} hint="Shows in Calls and Insights." /><Toggle checked={g.required} onChange={v => set(c => { c.goals[i].required = v; })} label="Required" hint="She keeps going until this is done or the caller declines." /></div>} /></Card>
+          render={(g, _p, i) => <div className="formgrid"><TextArea className="span2 field-grow" rows={1} label="What counts as done" value={g.description} onChange={e => set(c => { c.goals[i].description = e.target.value; })} /><TextField label="Outcome name" value={g.outcome} onChange={e => set(c => { c.goals[i].outcome = e.target.value.replace(/\s+/g, '_').toLowerCase(); })} hint="Shows in Calls and Insights." /><Toggle checked={g.required} onChange={v => set(c => { c.goals[i].required = v; })} label="Required" hint="She keeps going until this is done or the caller declines." /></div>} /></Card>
       <Card><CardHead title="Facts she may state" sub="Each fact says what it is for. An offer never leaks into a service call." />
         <ListEditor items={cfg.facts} onChange={f => set(c => f(c.facts))} blank={() => ({ key: '', value: '', purpose: 'service' as const, source: 'manual' })} addLabel="Add a fact"
-          render={(f, _p, i) => <div className="formgrid"><TextField label="Name" value={f.key} onChange={e => set(c => { c.facts[i].key = e.target.value; })} placeholder="clinic_address" /><SelectField label="Purpose" value={f.purpose} onChange={e => set(c => { c.facts[i].purpose = e.target.value as typeof f.purpose; })} hint={PURPOSE_HINT[f.purpose]}>{PURPOSES.map(x => <option key={x} value={x}>{x}</option>)}</SelectField>
-            <TextField className="span2" label="Value" value={f.value} onChange={e => set(c => { c.facts[i].value = e.target.value; })} disabled={f.perContact} hint={f.perContact ? 'Filled from each contact at call time.' : undefined} lang="hi" /><p className="small muted span2"><Link2 size={12} aria-hidden style={{ verticalAlign: '-1px' }} /> Source: {f.source}</p></div>} /></Card>
+          render={(f, _p, i) => <div className="formgrid"><TextField label="Name" value={f.key} onChange={e => set(c => { c.facts[i].key = e.target.value; })} placeholder="clinic_address" /><SelectField label="Purpose" value={f.purpose} onChange={e => set(c => { c.facts[i].purpose = e.target.value as typeof f.purpose; })} hint={PURPOSE_HINT[f.purpose]}>{PURPOSES.map(x => <option key={x} value={x}>{PURPOSE_LABEL[x]}</option>)}</SelectField>
+            <TextArea className="span2 field-grow" rows={1} label="Value" value={f.value} onChange={e => set(c => { c.facts[i].value = e.target.value; })} disabled={f.perContact} hint={f.perContact ? 'Filled from each contact at call time.' : undefined} lang="hi" /><p className="small muted span2"><Link2 size={12} aria-hidden style={{ verticalAlign: '-1px' }} /> Source: {f.source}</p></div>} /></Card>
       <Card><CardHead title="Never say" sub="Names and claims she must not use. Safety rules exist whether or not you add any." />
         <ListEditor items={cfg.neverSay} onChange={f => set(c => f(c.neverSay))} blank={() => ''} addLabel="Add one" empty="Nothing added."
           render={(it, _p, i) => <TextField label={`Never say ${i + 1}`} value={it} onChange={e => set(c => { c.neverSay[i] = e.target.value; })} />} /></Card>
@@ -216,11 +216,21 @@ function Rules({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
   );
 }
 
+// Ending the call and handing over are not switches: the runtime always lets her end the call after a real goodbye, and hands
+// over on the situations chosen on the hand-off tab. A switch here that read "off" while she still did both would be untrue.
 function Tools({ cfg, set }: { cfg: AgentConfigDraft; set: S }) {
   const has = (n: string) => cfg.tools.some(t => t.name === n);
+  const n = cfg.handOff.when.length, to = cfg.handOff.target;
+  const dest = to.kind === 'phone' ? (to.value ? `the number ${to.value}` : 'a phone number not set yet') : to.kind === 'callback' ? 'a callback task' : to.value ? `the ${to.value} queue` : 'a support queue';
   return (
     <Card><CardHead title="What she can do during a call" sub="Each ability has a risk class. Anything that reaches people is checked at one gate, in code, for every call." />
-      <ul className="toollist">{Object.entries(TOOL_INFO).map(([k, v]) => (
+      <ul className="toollist" aria-label="Always part of every call">
+        <li><div className="stack-s"><strong>{TOOL_INFO.end_call.label}</strong><span className="small muted">She says a real goodbye, then hangs up. Never mid-question, and never while someone sounds in crisis. The longest call and longest silence are on the hand-off tab.</span></div>
+          <Chip tone="leaf">Always on</Chip></li>
+        <li><div className="stack-s"><strong>{TOOL_INFO.transfer.label}</strong><span className="small muted">{n ? `In ${n} ${n === 1 ? 'situation' : 'situations'} she hands over to ${dest}${cfg.handOff.warmSummary ? ', with a one-line summary' : ''}.` : 'She does not hand over in any situation yet.'} <Link to="?tab=rules">Change when she hands over</Link></span></div>
+          <Chip tone={n ? 'leaf' : 'neutral'}>{n ? 'On' : 'Off'}</Chip></li>
+      </ul>
+      <ul className="toollist" aria-label="Abilities you choose">{Object.entries(TOOL_INFO).filter(([k]) => k !== 'end_call' && k !== 'transfer').map(([k, v]) => (
         <li key={k}><Toggle checked={has(k)} onChange={on => set(c => { c.tools = on ? [...c.tools, { name: k, risk: v.risk }] : c.tools.filter(t => t.name !== k); })} label={v.label} hint={v.blurb} />
           <Chip tone={v.risk === 'external' ? 'terra' : 'neutral'}>{v.risk === 'external' ? 'Reaches people' : v.risk === 'read' ? 'Reads only' : 'Writes a note'}</Chip></li>))}</ul></Card>
   );

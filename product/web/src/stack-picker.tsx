@@ -107,9 +107,11 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
         {list.map(s => <StackCard key={s.id} s={s} selected={s.id === stackId} isDefault={s.id === d.default} price={prices[s.id]} busy={busy === s.id} onPick={() => void choose(s.id)} />)}
       </ul>
 
-      <section className="buildown" aria-labelledby="build-h">
-        <h3 id="build-h">Build your own</h3>
+      {/* Closed until wanted (open when the agent already runs its own parts): the full parts list is a long page on a phone. */}
+      <details className="buildown" open={isCustom || undefined}>
+        <summary><h3 id="build-h">Build your own</h3>
         <p className="sub">Choose each part yourself. Every option says who makes it, where it is processed, how fast it was measured to be and what it costs.</p>
+        <span className="buildown-toggle"><span className="when-closed">Show the parts</span><span className="when-open">Hide the parts</span></span></summary>
         <Segmented label="How to build it" value={build.mode} onChange={mode => setBuild(b => ({ ...b, mode }))} options={[{ value: 'cascade', label: 'Speech recognition, language model and voice' }, { value: 's2s', label: 'One speech-to-speech model' }]} />
         <div className="partpick">
           {(build.mode === 's2s' ? ['s2s'] as Part[] : ['ears', 'brain', 'voice'] as Part[]).map(part => (
@@ -119,7 +121,7 @@ function Loaded({ agentId, stackId, components, voiceId, onChanged, d }: Props &
         <dl className="kv small buildprice"><div><dt>Provider cost per minute</dt><dd>{!buildPrice ? <span className="muted">Choose every part to see the cost.</span> : buildPrice.refused ? <span className="risk">{buildPrice.refused}</span> : <PriceView price={buildPrice} />}</dd></div></dl>
         <div className="row" style={{ marginTop: 12 }}><Btn kind="primary" busy={busy === CUSTOM} onClick={() => void useParts()}>Use these parts</Btn></div>
         <p className="small muted">A stack you build runs test calls only until it has been measured.</p>
-      </section>
+      </details>
 
       {speaker && speaker.voices.length > 0 && (
         <section aria-labelledby="voice-h">

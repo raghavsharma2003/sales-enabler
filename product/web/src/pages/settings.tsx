@@ -12,7 +12,7 @@ import { prettyCode } from './contacts.tsx';
 import { costPart } from '../labels.ts';
 import { Link } from '../router.tsx';
 import Integrations from './integrations.tsx';
-import { activitySentence, pageFor, RULE_LABEL } from '../labels.ts';
+import { activitySentence, foldRepeats, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
 const TABS = ['team', 'keys', 'brand', 'knowledge', 'billing', 'compliance', 'privacy', 'operator', 'integrations', 'activity'] as const;
@@ -33,12 +33,14 @@ export default function Settings({ tab }: { tab?: string }) {
 }
 
 const ROLES = ['owner', 'builder', 'operator', 'compliance', 'viewer'];
+const ROLE_NAME: Record<string, string> = { owner: 'Owner', builder: 'Builder', operator: 'Operator', compliance: 'Compliance', viewer: 'Viewer' };
+const roleName = (r: string) => ROLE_NAME[r] ?? r;
 const ROLE_HINT: Record<string, string> = { owner: 'Everything, including money and policy', builder: 'Builds agents and campaigns', operator: 'Runs campaigns and watches calls', compliance: 'Policy, suppression and data requests', viewer: 'Sees everything with phone numbers hidden' };
 
 /** Picking a role in the list changes nothing by itself; the explicit button asks for the change. */
 function RoleCell({ m, onDone }: { m: Member; onDone: () => void }) {
   const { act } = useApp(); const [r, setR] = useState(m.role);
-  return <div className="row" style={{ gap: 8 }}><select className="input" style={{ minHeight: 40, width: 'auto' }} aria-label={`Role for ${m.name}`} value={r} onChange={e => setR(e.target.value)}>{ROLES.map(x => <option key={x}>{x}</option>)}</select>
+  return <div className="row" style={{ gap: 8 }}><select className="input" style={{ minHeight: 40, width: 'auto' }} aria-label={`Role for ${m.name}`} value={r} onChange={e => setR(e.target.value)}>{ROLES.map(x => <option key={x} value={x}>{roleName(x)}</option>)}</select>
     {r !== m.role && <Btn size="sm" kind="primary" onClick={async () => { await act('member.role.set', { memberId: m.id, role: r }, { describe: 'Role changed.' }); onDone(); }}>Ask to change</Btn>}</div>;
 }
 function Team() {
@@ -48,15 +50,15 @@ function Team() {
   const owner = can(['owner']);
   const cols: Col<Member>[] = [
     { key: 'n', label: 'Name', primary: true, render: m => <>{m.name}<br /><span className="small muted">{m.email}</span></> },
-    { key: 'r', label: 'Role', render: m => owner ? <RoleCell m={m} onDone={refresh} /> : <Chip>{m.role}</Chip> },
+    { key: 'r', label: 'Role', render: m => owner ? <RoleCell m={m} onDone={refresh} /> : <Chip>{roleName(m.role)}</Chip> },
     { key: 's', label: 'Status', render: m => <Chip tone={m.status === 'active' ? 'leaf' : 'marigold'}>{m.status === 'active' ? 'Active' : 'Invited'}</Chip> },
   ];
   return (
     <Card><CardHead title="Team" sub="Changing a role is a policy change and asks for approval." actions={owner ? <Btn kind="primary" onClick={() => setOpen(true)}>Invite</Btn> : <Locked role="owner" />} />
       <Async q={q} what="Team" tool="member.list">{d => <Table caption="Team" cols={cols} rows={d} rowKey={r => r.id} />}</Async>
-      <dl className="rolehints">{ROLES.map(r => <div key={r}><dt>{r}</dt><dd className="small muted">{ROLE_HINT[r]}</dd></div>)}</dl>
+      <dl className="rolehints">{ROLES.map(r => <div key={r}><dt>{roleName(r)}</dt><dd className="small muted">{ROLE_HINT[r]}</dd></div>)}</dl>
       {open && <Sheet title="Invite a teammate" onClose={() => setOpen(false)}><TextField label="Work email" type="email" value={email} onChange={e => setEmail(e.target.value)} data-autofocus />
-        <SelectField label="Role" value={role} onChange={e => setRole(e.target.value)} hint={ROLE_HINT[role]}>{ROLES.map(r => <option key={r}>{r}</option>)}</SelectField>
+        <SelectField label="Role" value={role} onChange={e => setRole(e.target.value)} hint={ROLE_HINT[role]}>{ROLES.map(r => <option key={r} value={r}>{roleName(r)}</option>)}</SelectField>
         <div className="row" style={{ justifyContent: 'flex-end' }}><Btn kind="ghost" onClick={() => setOpen(false)}>Cancel</Btn>{/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? <Btn kind="primary" onClick={async () => { const r = await act('member.invite', { email, role }, { describe: 'Invitation sent.' }); if (r.ok) { setOpen(false); setEmail(''); refresh(); } }}>Ask to invite</Btn> : <Btn disabled reason="Enter a valid email.">Ask to invite</Btn>}</div></Sheet>}
     </Card>
   );
@@ -141,7 +143,10 @@ function Passages({ item, onClose }: { item: KnowledgeItem; onClose: () => void 
   );
 }
 
-interface Invoice { period: { from: string; to: string }; costInrMilli: number; byComponent: { component?: string; key?: string; inrMilli?: number; inr_milli?: number }[]; byCampaign: unknown[]; price: { status: string; text: string }; note: string }
+// invoice.get lines carry costInrMilli (older servers sent inrMilli); reading the wrong one showed ₹0.00 on every line under a non-zero total.
+interface InvoiceLine { component?: string; key?: string; campaignId?: string | null; costInrMilli?: number; inrMilli?: number; inr_milli?: number; connectedSeconds?: number }
+interface Invoice { period: { from: string; to: string }; costInrMilli: number; byComponent: InvoiceLine[]; byCampaign?: InvoiceLine[]; price: { status: string; text: string }; note: string }
+const lineCost = (l: InvoiceLine) => l.costInrMilli ?? l.inrMilli ?? l.inr_milli ?? 0;
 function Billing() {
   const { act, refresh, can } = useApp();
   const w = useData('wallet', walletGet);
@@ -163,7 +168,8 @@ function Billing() {
         <p className="small muted">{d.price.text}</p>
         <p className="bignum serif tnum" style={{ marginTop: 8 }}>{inr(d.costInrMilli, { paise: true })}</p>
         {d.byComponent.length === 0 ? <p className="small muted">Nothing has been spent in this period. That is a measured zero from the usage lines.</p> :
-          <ul className="billing">{d.byComponent.map((l, i) => <li key={i}><strong>{costPart(l.component ?? l.key ?? '', prettyCode)}</strong><span className="tnum">{inr(l.inrMilli ?? l.inr_milli ?? 0, { paise: true })}</span></li>)}</ul>}
+          <><h3 className="dayhead">By part</h3><ul className="billing" aria-label="Spend by part">{d.byComponent.map((l, i) => <li key={i}><strong>{costPart(l.component ?? l.key ?? '', prettyCode)}</strong><span className="tnum">{inr(lineCost(l), { paise: true })}</span></li>)}</ul></>}
+        {(d.byCampaign ?? []).some(l => lineCost(l) > 0) && <><h3 className="dayhead">By campaign</h3><ul className="billing" aria-label="Spend by campaign">{(d.byCampaign ?? []).filter(l => lineCost(l) > 0).map((l, i) => <li key={i}><strong>{l.campaignId ? <Link to={`/campaigns/${l.campaignId}`}>{l.key}</Link> : 'Tests and other spend'}</strong><span className="tnum">{inr(lineCost(l), { paise: true })}</span></li>)}</ul></>}
         <p className="small muted">{d.note}</p></>}</Async></Card>
     </div>
   );
@@ -245,7 +251,7 @@ function Activity() {
       const groups: [string, ActivityRow[]][] = [];
       for (const r of d) { const k = dayLabel(r.at); const g = groups[groups.length - 1]; if (g && g[0] === k) g[1].push(r); else groups.push([k, [r]]); }
       return <div className="stack">{groups.map(([day, rows]) => <section key={day} aria-label={day}><h3 className="dayhead">{day}</h3>
-        <ul className="billing">{rows.map(r => { const to = pageFor(r.action); return <li key={r.id}><div><span className="tnum muted">{time(r.at).replace(' IST', '')}</span> &nbsp;{activitySentence(r.line, r.action, r.subject)}</div>{to && <Link to={to} className="small">Open</Link>}</li>; })}</ul></section>)}</div>;
+        <ul className="billing">{foldRepeats(rows, r => activitySentence(r.line, r.action, r.subject)).map(({ row: r, n }) => { const to = pageFor(r.action); return <li key={r.id}><div><span className="tnum muted">{time(r.at).replace(' IST', '')}</span> &nbsp;{activitySentence(r.line, r.action, r.subject)}{n > 1 && <span className="muted"> ({n} times)</span>}</div>{to && <Link to={to} className="small">Open</Link>}</li>; })}</ul></section>)}</div>;
     }}</Async></Card></div>;
 }
 export { count, Lock };

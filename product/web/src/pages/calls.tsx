@@ -4,8 +4,8 @@ import { useMemo, useRef, useState } from 'react';
 import { Check, CircleX, Info, Play } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Link, useQuery } from '../router.tsx';
-import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, Table, Tabs, TextField, type Col } from '../ui.tsx';
-import { callExplain, callGet, callSearch } from '../data.ts';
+import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, SelectField, Table, Tabs, TextField, type Col } from '../ui.tsx';
+import { callExplain, callGet, callSearch, campaignList } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
 import { costPart, RULE_LABEL } from '../labels.ts';
 import { voiceStackOf } from '../catalog.ts';
@@ -20,26 +20,36 @@ export default function Calls({ id }: { id?: string }) { return id ? <CallPage i
 
 function List() {
   const [qs, setQs] = useQuery();
-  const [text, setText] = useState('');
+  const [text, setText] = useState(''); const [why, setWhy] = useState('');
+  const camps = useData('campaign-names', campaignList);
+  const campName = (id: string | null) => (id && camps.data?.find(x => x.id === id)?.name) || null;
   const view = qs.get('view') ?? '';
   const campaignId = qs.get('campaign') ?? '';
   const q = useData(['calls', campaignId, view], () => callSearch({ campaignId: campaignId || undefined, includeTest: view === 'test' }));
   const cols: Col<CallRow>[] = [
     { key: 'w', label: 'Who', primary: true, render: c => <>{c.contactName}{c.channel === 'test' && <> <Chip>Test</Chip></>}</> }, { key: 'o', label: 'Outcome', render: c => outcomeChip(c.outcome, c.grade) },
-    { key: 'r', label: 'Why it ended', hideMobile: true, render: c => c.reasonLabel ?? <NotMeasured /> }, { key: 't', label: 'When', render: c => date(c.startedAt, true) },
-    { key: 'd', label: 'Length', num: true, render: c => dur(c.durationS) }, { key: 'c', label: 'Cost', num: true, hideMobile: true, render: c => c.costMilli == null ? <NotMeasured /> : inr(c.costMilli, { paise: true }) },
+    { key: 'p', label: 'Campaign', render: c => campName(c.campaignId) ?? <span className="muted">{c.channel === 'test' ? 'Practice' : 'None'}</span> },
+    { key: 'r', label: 'Why it ended', render: c => c.reasonLabel ?? <NotMeasured /> }, { key: 't', label: 'When', render: c => date(c.startedAt, true) },
+    { key: 'd', label: 'Length', num: true, render: c => dur(c.durationS) }, { key: 'c', label: 'Cost', num: true, render: c => c.costMilli == null ? <NotMeasured /> : inr(c.costMilli, { paise: true }) },
   ];
   return (
     <div className="page">
       <PageHead title="Calls" sub="Every call, with what was said, why it ended, and what it cost. Practice calls are hidden unless you ask." />
       <Card>
         <Tabs label="Which calls" value={view} onChange={v => setQs({ view: v || null })} items={[{ id: '', label: 'Real calls' }, { id: 'test', label: 'With practice calls' }]} />
-        <div className="filters"><TextField label="Filter by name" type="search" value={text} onChange={e => setText(e.target.value)} />{campaignId && <div className="field"><label>Campaign</label><div className="row"><Chip tone="peacock">One campaign</Chip><button type="button" className="btn btn-sm" onClick={() => setQs({ campaign: null })}>Clear</button></div></div>}</div>
+        <div className="filters"><TextField label="Filter by name" type="search" value={text} onChange={e => setText(e.target.value)} />
+          {q.data && q.data.length > 0 && <SelectField label="Why it ended" value={why} onChange={e => setWhy(e.target.value)}><option value="">Any reason</option>{[...new Set(q.data.map(c => c.reasonLabel).filter((x): x is string => !!x))].sort().map(r => <option key={r} value={r}>{r}</option>)}</SelectField>}{campaignId && <div className="field"><label>Campaign</label><div className="row"><Chip tone="peacock">One campaign</Chip><button type="button" className="btn btn-sm" onClick={() => setQs({ campaign: null })}>Clear</button></div></div>}</div>
         <Async q={q} what="Calls" tool="call.search" empty={d => d.length === 0 ? <Empty title="No calls yet" body="Once a campaign or a test dials, each call appears here with its words, reason and cost." /> : null}>
-          {d => <Table caption="Calls" cols={cols} rows={d.filter(c => !text || c.contactName.toLowerCase().includes(text.toLowerCase()))} rowKey={r => r.id} onRow={r => `/calls/${r.id}`} />}</Async>
+          {d => <Table caption="Calls" cols={cols} rows={d.filter(c => (!text || c.contactName.toLowerCase().includes(text.toLowerCase())) && (!why || c.reasonLabel === why))} rowKey={r => r.id} onRow={r => `/calls/${r.id}`} />}</Async>
       </Card>
     </div>
   );
+}
+
+function CampaignName({ id }: { id: string }) {
+  const camps = useData('campaign-names', campaignList);
+  const name = camps.data?.find(x => x.id === id)?.name;
+  return <Link to={`/campaigns/${id}`}>{name ?? 'Its campaign'}</Link>;
 }
 
 function CallPage({ id }: { id: string }) {
@@ -67,7 +77,7 @@ function Body({ c }: { c: CallDoc }) {
   return (
     <>
       <PageHead crumb={<><Link to="/calls">Calls</Link><span aria-hidden>/</span><span>{c.contactName}</span></>} title={c.contactName} pill={c.test ? <span className="pill">Practice call</span> : undefined}
-        sub={<span className="tnum">{c.startedAt ? date(c.startedAt, true) : '—'} · {dur(c.durationS)} · {prettyCode(c.status)}</span>}
+        sub={<span className="tnum">{c.startedAt ? date(c.startedAt, true) : '—'} · {dur(c.durationS)} · {prettyCode(c.status)}{c.campaignId && <> · <CampaignName id={c.campaignId} /></>}</span>}
         actions={c.contactId ? <Link to={`/contacts/${c.contactId}`} className="btn" style={{ textDecoration: 'none' }}><span>Open the contact</span></Link> : undefined} />
       <div className="cols-main">
         <div className="stack">

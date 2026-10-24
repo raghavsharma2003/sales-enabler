@@ -80,6 +80,7 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .pin::after { content: ""; position: absolute; inset: -15px; }
 .lane-axis { display: flex; justify-content: space-between; font-size: 0.8125rem; color: var(--ink-2); }
 .moments { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; } .moments .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.moments .choice { text-align: left; justify-content: flex-start; }
 .turns { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .turn button { width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 10px 12px; cursor: pointer; display: grid; gap: 4px; min-height: 44px; }
 .turn button:hover { background: var(--sunk); } .turn.now button { background: var(--sunk); border-color: var(--line-strong); }
@@ -104,7 +105,13 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .dayhead { font-size: 0.9375rem; color: var(--ink-2); margin: 4px 0 0; font-weight: 700; }
 .stacksum { border: 1px solid var(--line-strong); border-radius: 10px; background: var(--surface); padding: 16px; display: grid; gap: 8px; }
 .stacksum h3, .buildown h3 { margin: 0; font-size: 1.0625rem; }
-.buildown { display: grid; gap: 10px; }
+.buildown { display: block; border-top: 1px solid var(--line); padding-top: 16px; }
+.buildown > * + * { margin-top: 10px; }
+.buildown > summary { list-style: none; cursor: pointer; display: grid; gap: 4px; }
+.buildown > summary::-webkit-details-marker { display: none; }
+.buildown-toggle { justify-self: start; min-height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); font-weight: 600; font-size: 0.9375rem; color: var(--ink); }
+.buildown-toggle .when-open, .buildown[open] .buildown-toggle .when-closed { display: none; }
+.buildown[open] .buildown-toggle .when-open { display: inline; }
 .partpick { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; align-items: start; }
 .partset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .partset legend { font-weight: 600; font-size: 0.9375rem; margin-bottom: 8px; padding: 0; }
@@ -130,3 +137,6 @@ textarea.mono { font-family: "IBM Plex Mono", "JetBrains Mono", ui-monospace, mo
 .callaudio { width: 100%; margin: 4px 0 12px; }
 .reviewbox h3 { margin: 0 0 8px; font-size: 1.0625rem; }
 .turn-meta .chip { white-space: normal; max-width: 100%; }
+.toollist + .toollist { border-top: 1px solid var(--line); }
+/* A text box that grows with its text, so a goal or a fact is read whole, never cut off at the edge of a one-line field. */
+.field-grow textarea { field-sizing: content; min-height: 44px; resize: vertical; }

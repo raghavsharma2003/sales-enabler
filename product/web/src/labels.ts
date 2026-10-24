@@ -3,6 +3,14 @@
 import { inr, phone as fmtPhone } from './format.ts';
 import type { Blocker } from './types.ts';
 
+/** Server configuration is never a person's problem to read: a refusal that names an environment variable (or the telephony
+ *  adapter being off) becomes what it means for them. Every other refusal is the server's own words, unchanged. */
+export function plainReason(reason: string): string {
+  if (/telephony provider is not enabled/i.test(reason)) return 'Phone lines are not switched on for this workspace yet, so numbers cannot be searched, rented or rung from here. Practice callers and browser test calls work without one.';
+  if (/\bVP_[A-Z0-9_]{3,}\b/.test(reason)) return 'This is not switched on for this workspace yet. Your Vyakti administrator can turn it on.';
+  return reason;
+}
+
 /** A cost line's part, as the stack picker names parts (the runtime reports ears / brain / voice / telephony / platform). */
 export const COST_PART: Record<string, string> = { ears: 'Speech recognition', brain: 'Language model', voice: 'Voice', s2s: 'Speech-to-speech model',
   telephony: 'Phone line', platform: 'Platform', analysis: 'Call analysis' };
@@ -184,6 +192,14 @@ export const PAST: Record<string, string> = {
   'simcaller.list': 'looked at the practice callers', 'simcaller.save': 'saved a practice caller',
 };
 /** Where to look at what an activity row was about (a page, not an object: the ledger carries no object id for most rows). */
+/** Consecutive rows that say the same thing become one row with a count: six practice calls in a minute read
+ *  "ran a practice call (6 times)", not six identical lines. The first (newest) row of a run is kept. */
+export function foldRepeats<T>(rows: T[], key: (r: T) => string): { row: T; n: number }[] {
+  const out: { row: T; n: number; k: string }[] = [];
+  for (const r of rows) { const k = key(r), last = out[out.length - 1]; if (last && last.k === k) last.n++; else out.push({ row: r, n: 1, k }); }
+  return out.map(({ row, n }) => ({ row, n }));
+}
+
 export function pageFor(tool: string): string | null {
   const p = tool.split('.')[0];
   return ({ agent: '/agents', brief: '/agents', stack: '/agents', version: '/agents', voice: '/agents', test: '/agents', campaign: '/campaigns', audience: '/audiences', source: '/contacts', contact: '/contacts', call: '/calls',

@@ -1,7 +1,7 @@
 // The docked test panel for an agent: six practice callers (simulate) and a browser call. A test never falls back to another
 // stack: if no stack is chosen, the result says "invalid, with the reason", never a pass.
 import { voiceStackOf } from './catalog.ts';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Mic, Play } from 'lucide-react';
 import { useApp, useData } from './store.tsx';
 import { Btn, Chip } from './ui.tsx';
@@ -22,6 +22,9 @@ export function TestPanel() {
   const chosen = picks ?? (callers.data ?? []).slice(0, 6).map(c => c.id);
   const [busy, setBusy] = useState(false);
   const [call, setCall] = useState<{ state: 'idle' | 'asking' | 'unavailable' | 'live'; reason?: string; join?: Join; conversationId?: string }>({ state: 'idle' });
+  // Hearing her comes first (the guided start's "Hear her now" lands here), and a live call is kept in view so captions and Hang up are on screen.
+  const callRef = useRef<HTMLElement>(null);
+  useEffect(() => { if (call.state === 'live' || call.state === 'unavailable') callRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, [call.state]);
   if (!a) return <div className="testpanel"><p className="muted">Open an agent to test her here.</p></div>;
   const stack = voiceStackOf(a) ?? null;
   const picked = (callers.data ?? []).filter(c => chosen.includes(c.id));
@@ -49,11 +52,20 @@ export function TestPanel() {
       <div className="stack-s">
         <h3 className="serif" style={{ fontSize: '1.25rem' }}>Test {a.name}</h3>
         <div className="row" style={{ gap: 6 }}>
-          <Chip tone={a.dirty ? 'marigold' : 'leaf'}>{a.dirty ? 'Unsaved changes' : `Saved draft v${a.version}`}</Chip>
+          <Chip tone={a.dirty ? 'marigold' : 'leaf'}>{a.dirty ? 'Unsaved changes' : a.version ? `Saved draft · published v${a.version}` : 'Saved draft · not published'}</Chip>
           {stack ? <span className="chip chip-peacock chip-wrap" title="The stack a test runs on">{stack.label.split(' (')[0]}</span> : <Chip tone="brick">No voice stack</Chip>}
         </div>
         {a.dirty && <p className="small muted">Tests run the saved draft. Save your changes to test them.</p>}
       </div>
+
+      <section aria-labelledby="bc-h" className="stack-s" ref={callRef}>
+        <h4 id="bc-h">Hear her yourself</h4>
+        <p className="small muted">She calls you in the browser as a made-up customer, with live captions. She says once that she is an AI.</p>
+        {call.state === 'live' && call.join && call.conversationId
+          ? <BrowserCallView join={call.join} conversationId={call.conversationId} agentName={a.name} onClose={() => setCall({ state: 'idle' })} />
+          : <Btn icon={<Mic size={16} aria-hidden />} busy={call.state === 'asking'} onClick={browser}>Call me in the browser</Btn>}
+        {call.state === 'unavailable' && <p className="state state-missing small" role="status">{call.reason ?? 'Browser calls are not available yet.'}</p>}
+      </section>
 
       <section aria-labelledby="sim-h" className="stack-s">
         <h4 id="sim-h">Practice callers</h4>
@@ -81,15 +93,6 @@ export function TestPanel() {
             {sim.some(r => r.verdict === 'fail') && <Btn size="sm" onClick={() => say(`Practice caller failed on ${a.name}. Suggest a fix as a diff.`)}>Ask the assistant for a fix</Btn>}
           </div>
         )}
-      </section>
-
-      <section aria-labelledby="bc-h" className="stack-s">
-        <h4 id="bc-h">Hear her yourself</h4>
-        <p className="small muted">She calls you in the browser as a made-up customer, with live captions. She says once that she is an AI.</p>
-        {call.state === 'live' && call.join && call.conversationId
-          ? <BrowserCallView join={call.join} conversationId={call.conversationId} agentName={a.name} onClose={() => setCall({ state: 'idle' })} />
-          : <Btn icon={<Mic size={16} aria-hidden />} busy={call.state === 'asking'} onClick={browser}>Call me in the browser</Btn>}
-        {call.state === 'unavailable' && <p className="state state-missing small" role="status">{call.reason ?? 'Browser calls are not available yet.'}</p>}
       </section>
 
       <section aria-labelledby="tw-h" className="stack-s">

@@ -85,7 +85,7 @@ function CreateAgent({ onCreated }: { onCreated: () => void }) {
         <div>{desc.trim().length >= 20
           ? <Btn kind="primary" onClick={() => { say(`Build a calling agent for this job: ${desc.trim()}`); }}>Ask the assistant to build it</Btn>
           : <Btn disabled reason="Describe the job in at least a sentence.">Ask the assistant to build it</Btn>}</div>
-        <p className="small muted">The assistant opens beside this page. When the agent exists, this step turns to done.</p>
+        <p className="small muted">The assistant takes it from here and asks before anything reaches anyone. When the agent exists, this step turns to done.</p>
       </> : <>
         {industries.length > 1 && <div role="radiogroup" aria-label="Industry" className="chipset" style={{ marginTop: 0 }}>{['', ...industries].map(i => <button key={i || 'all'} type="button" role="radio" aria-checked={ind === i} className={`choice${ind === i ? ' on' : ''}`} onClick={() => setInd(i)}>{i ? INDUSTRY(i) : 'All industries'}</button>)}</div>}
         {tpl.state === 'missing' ? <p className="small muted">Templates are not switched on in this server yet. Describe the job instead.</p> : !tpl.data ? <p className="small muted">Loading templates…</p> :

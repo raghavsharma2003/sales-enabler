@@ -481,7 +481,11 @@ test('Stack picker: the voice runtime\'s own word on each stack (unknown shows n
 // ---- Voice stack: the whole stack is chosen part by part, and there is a default (owner directive 2026-10-22) ----
 const draftVoice = async agentId => (await tool('agent.get', { agentId })).result.draft.voice;
 const opt = (group, label) => page.getByRole('radiogroup', { name: group }).locator('.partopt', { has: page.locator('strong', { hasText: new RegExp(`^${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }) });
-const openVoiceTab = async agentId => { await page.goto(`${BASE}/agents/${agentId}?tab=voice`); await page.getByRole('heading', { name: 'Build your own' }).waitFor(); };
+// "Build your own" is a disclosure, closed unless the agent already runs its own parts; these flows open it as a person would.
+const openVoiceTab = async agentId => {
+  await page.goto(`${BASE}/agents/${agentId}?tab=voice`); await page.getByRole('heading', { name: 'Build your own' }).waitFor();
+  if (!(await page.locator('details.buildown').evaluate(d => d.open))) await page.getByText('Show the parts').click();
+};
 let stackAgent;
 
 test('Voice stack: a new agent starts on the default and the summary says so, in plain part names', async () => {
@@ -1009,4 +1013,151 @@ test('Call page on a devsim browser call: her AI statement is marked and reply t
   await page.locator('ol.turns > li').first().getByText(said ? 'Says she is an AI' : 'No AI statement found in her opening').waitFor();
   const text = await callCard().innerText();
   if (timed > 0) assert.match(text, /Median reply gap/); else assert.match(text, /did not record reply timing/);
+});
+
+// ---- Second buyer walkthrough (research/2026-10-24/walkthrough/FRICTION.md): each flow is one friction a buyer met ----
+const phonePage = async () => { const c = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce', storageState: await ctx.storageState() }); return [c, await c.newPage()]; };
+const riyaId = async () => (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
+
+test('Tabs: on a phone the agent tabs are one row that says it scrolls, and the chosen tab is in view; on desktop they never wrap', async () => {
+  const id = await riyaId();
+  const [c, p] = await phonePage();
+  try {
+    await p.goto(`${BASE}/agents/${id}`);
+    const tabs = p.getByRole('tablist', { name: 'Builder sections' }).getByRole('tab');
+    await tabs.first().waitFor();
+    const tops = await tabs.evaluateAll(els => els.map(e => e.getBoundingClientRect().top));
+    assert.equal(new Set(tops.map(Math.round)).size, 1, 'all tabs sit on one row');
+    const more = p.getByRole('button', { name: 'More builder sections' });
+    await more.waitFor();
+    await more.click();
+    await p.getByRole('button', { name: 'Earlier builder sections' }).waitFor();
+    await p.goto(`${BASE}/agents/${id}?tab=versions`);
+    const on = p.getByRole('tab', { name: 'Versions' });
+    await on.waitFor();
+    await p.waitForTimeout(300);
+    const [r, box] = await on.evaluate(e => [e.getBoundingClientRect().toJSON(), e.closest('[role=tablist]').getBoundingClientRect().toJSON()]);
+    assert.ok(r.left >= box.left - 1 && r.right <= box.right + 1, 'the chosen tab is fully in view');
+  } finally { await c.close(); }
+  await page.goto(`${BASE}/agents/${id}`);
+  await page.getByRole('tablist', { name: 'Builder sections' }).getByRole('tab').first().waitFor();
+  const dtops = await page.getByRole('tablist', { name: 'Builder sections' }).getByRole('tab').evaluateAll(els => els.map(e => Math.round(e.getBoundingClientRect().top)));
+  assert.equal(new Set(dtops).size, 1, 'desktop tabs are one row, not two');
+});
+
+test('Billing: each line is the server\'s own figure, and the lines add up to the total', async () => {
+  const inv = (await tool('invoice.get')).result;
+  await page.goto(`${BASE}/settings/billing`);
+  const list = page.getByRole('list', { name: 'Spend by part' });
+  await list.waitFor();
+  const shown = (await list.locator('li span.tnum').allInnerTexts()).map(t => Math.round(Number(t.replace(/[₹,]/g, '')) * 100));
+  // Each line is shown to the paisa, so the sum of the shown lines may differ from the total by under half a paisa per line.
+  const want = inv.byComponent.map(l => Math.round(l.costInrMilli / 10));
+  assert.deepEqual(shown, want, 'each line is the server\'s figure for that part, to the paisa');
+  assert.ok(Math.abs(shown.reduce((a, b) => a + b, 0) * 10 - inv.costInrMilli) <= 5 * shown.length, 'the lines add up to the total, within rounding');
+  if (inv.costInrMilli > 0) assert.ok(shown.some(n => n > 0), 'a non-zero total has a non-zero line');
+});
+
+test('Numbers: a search the server cannot run says what it means for the buyer, never a server setting', async () => {
+  await page.goto(`${BASE}/numbers`);
+  await page.getByRole('button', { name: 'Search' }).click();
+  await page.waitForTimeout(1500);
+  const text = await page.locator('main').innerText();
+  assert.doesNotMatch(text, /\bVP_[A-Z_]+|set .*=1|credentials on the server/, 'no environment variable or server instruction reaches the page');
+  const raw = await tool('number.search', { series: '1600', limit: 10 });
+  if (raw.status === 'not_executed') await page.getByText('Phone lines are not switched on for this workspace yet', { exact: false }).waitFor();
+});
+
+test('Contact: a number the register never answered is not called "recent enough" for promotional calls', async () => {
+  const c = (await pool.query('SELECT id FROM contact WHERE workspace_id = $1 AND erased_at IS NULL ORDER BY created_at LIMIT 1', [ws])).rows[0].id;
+  const g = (await tool('contact.get', { id: c })).result;
+  await page.goto(`${BASE}/contacts/${c}`);
+  const card = page.locator('section, article, div.card').filter({ has: page.getByRole('heading', { name: 'Do Not Disturb' }) }).last();
+  await card.waitFor();
+  if ((g?.dnd?.status ?? 'unknown') === 'unknown') {
+    assert.doesNotMatch(await card.innerText(), /Recent enough/, 'no "recent enough" for a number with no answer');
+    await card.getByText(/Never looked up|The register gave no answer/).waitFor();
+  }
+});
+
+test('Agent tools: ending the call and handing over are stated as they work, not as switches that do nothing', async () => {
+  await page.goto(`${BASE}/agents/${await riyaId()}?tab=tools`);
+  await page.getByRole('heading', { name: 'What she can do during a call' }).waitFor();
+  assert.equal(await page.getByRole('switch', { name: 'End the call herself' }).count(), 0, 'no switch for ending the call');
+  assert.equal(await page.getByRole('switch', { name: 'Connect to a person' }).count(), 0, 'no switch for handing over');
+  const always = page.getByRole('list', { name: 'Always part of every call' });
+  await always.getByText('Always on').waitFor();
+  await always.getByRole('link', { name: 'Change when she hands over' }).click();
+  await page.getByRole('heading', { name: 'Hand-off to a person' }).waitFor();
+});
+
+test('Agent job: goals and fact values are boxes that show the whole text', async () => {
+  await page.goto(`${BASE}/agents/${await riyaId()}?tab=job`);
+  const goal = page.getByLabel('What counts as done').first();
+  await goal.waitFor();
+  assert.equal(await goal.evaluate(e => e.tagName), 'TEXTAREA');
+  assert.equal(await page.getByLabel('Value').first().evaluate(e => e.tagName), 'TEXTAREA');
+  const purposes = await page.getByLabel('Purpose').first().locator('option').allInnerTexts();
+  assert.ok(purposes.every(t => /^[A-Z]/.test(t)), `purposes read as words: ${purposes.join(', ')}`);
+});
+
+test('Calls: on a phone each call says why it ended and what it cost; on desktop the list filters by reason and names the campaign', async () => {
+  const [c, p] = await phonePage();
+  try {
+    await p.goto(`${BASE}/calls`);
+    const row = p.locator('table tbody tr').first();
+    await row.waitFor();
+    await row.locator('td[data-label="Why it ended"]').waitFor({ state: 'visible' });
+    await row.locator('td[data-label="Cost"]').waitFor({ state: 'visible' });
+  } finally { await c.close(); }
+  const calls = (await tool('call.search', {})).result.calls;
+  const reason = calls.find(x => x.reasonLabel)?.reasonLabel;
+  await page.goto(`${BASE}/calls`);
+  await page.locator('table tbody tr').first().waitFor();
+  await page.getByLabel('Why it ended').selectOption(reason);
+  const rows = page.locator('table tbody tr');
+  assert.equal(await rows.count(), calls.filter(x => x.reasonLabel === reason).length, 'only calls with that reason are listed');
+  const camp = (await tool('campaign.list')).result.campaigns.find(x => calls.some(k => k.campaign_id === x.id));
+  if (camp) await rows.first().getByText(camp.name).waitFor();
+});
+
+test('Campaign page: it says which agent and version it calls with and which list it calls, each a link', async () => {
+  const camp = (await pool.query("SELECT cp.id, a.name AS agent, av.number, au.name AS audience FROM campaign cp JOIN agent_version av ON av.id = cp.agent_version_id JOIN agent a ON a.id = av.agent_id JOIN audience au ON au.id = cp.audience_id WHERE cp.workspace_id = $1 LIMIT 1", [ws])).rows[0];
+  await page.goto(`${BASE}/campaigns/${camp.id}`);
+  await page.getByRole('link', { name: `${camp.agent}, version ${camp.number}` }).waitFor({ timeout: 10000 });
+  await page.getByRole('link', { name: camp.audience }).waitFor();
+});
+
+test('Test panel: hearing her comes before the practice callers', async () => {
+  await page.goto(`${BASE}/agents/${await riyaId()}?test=1`);
+  const hear = page.getByRole('heading', { name: 'Hear her yourself' }), sim = page.getByRole('heading', { name: 'Practice callers' });
+  await hear.waitFor(); await sim.waitFor();
+  const [a, b] = [await hear.evaluate(e => e.getBoundingClientRect().top), await sim.evaluate(e => e.getBoundingClientRect().top)];
+  assert.ok(a < b, 'Hear her yourself is first');
+  assert.doesNotMatch(await page.locator('.dock').innerText(), /\bv0\b/, 'an unpublished agent is never "v0"');
+});
+
+test('Approval sheet: an action the person started says they asked for it, not Vyakti', async () => {
+  await page.goto(`${BASE}/settings/billing`);
+  await page.getByLabel('Add money (₹)').fill('500');
+  await page.getByRole('button', { name: /^Ask to add/ }).click();
+  const sheet = page.getByRole('dialog');
+  await sheet.getByText('You asked for this', { exact: false }).waitFor();
+  assert.doesNotMatch(await sheet.innerText(), /Asked by Vyakti/);
+  await sheet.getByRole('button', { name: 'Decline' }).click();
+});
+
+test('Team: roles read as names, not codes', async () => {
+  await page.goto(`${BASE}/settings/team`);
+  await page.locator('.rolehints dt').first().waitFor();
+  const names = await page.locator('.rolehints dt').allInnerTexts();
+  assert.deepEqual(names, ['Owner', 'Builder', 'Operator', 'Compliance', 'Viewer']);
+});
+
+test('Voice stack: "Build your own" is closed until wanted, and the recommended stacks come first', async () => {
+  await page.goto(`${BASE}/agents/${await riyaId()}?tab=voice`);
+  await page.getByRole('heading', { name: 'Build your own' }).waitFor();
+  const custom = (await pool.query("SELECT draft->'voice'->>'stackId' AS s FROM agent WHERE id = $1", [await riyaId()])).rows[0]?.s === 'custom';
+  assert.equal(await page.locator('details.buildown').evaluate(d => d.open), custom, 'open only when the agent already runs its own parts');
+  if (!custom) { await page.getByText('Show the parts').click(); await page.getByRole('button', { name: 'Use these parts' }).waitFor(); }
 });

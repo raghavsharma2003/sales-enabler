@@ -45,6 +45,7 @@ export const TOOL_INFO: Record<string, { label: string; risk: string; blurb: str
   lookup_order: { label: 'Look up an order', risk: 'read', blurb: 'Reads an order from your system.' },
 };
 export const PURPOSES = ['service', 'offer', 'identity', 'logistics'] as const;
+export const PURPOSE_LABEL: Record<string, string> = { service: 'Service', offer: 'Offer', identity: 'Identity', logistics: 'Logistics' };
 export const PURPOSE_HINT: Record<string, string> = { service: 'About their own account', offer: 'A promotion. Dropped from service calls', identity: 'Who she is and who you are', logistics: 'Addresses, times, steps' };
 
 export function prettyId(id: string | undefined): string {

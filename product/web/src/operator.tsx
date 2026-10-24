@@ -89,7 +89,7 @@ export function Dock() {
         <div className="dock-title"><Sparkles size={18} aria-hidden /> <span>Assistant</span> <Chip tone="peacock" title="The assistant is an AI">AI</Chip></div>
         {showTest && <Segmented label="Dock panel" value={testing ? 'test' : 'talk'} onChange={setDockTab} options={[{ value: 'talk' as const, label: 'Assistant' }, { value: 'test' as const, label: 'Test her' }]} />}
         {!testing && <p className="dock-sub">Plans, drafts and tests on its own. Anything that reaches people or spends money waits for your approval.</p>}
-        <span className="seeing"><Eye size={13} aria-hidden /> Seeing: {testing ? `${agentCtx?.name} · v${agentCtx?.version}${agentCtx?.dirty ? ' · unsaved' : ''}` : info.label}</span>
+        <span className="seeing"><Eye size={13} aria-hidden /> Seeing: {testing ? `${agentCtx?.name} · ${agentCtx?.version ? `v${agentCtx.version}` : 'draft'}${agentCtx?.dirty ? ' · unsaved' : ''}` : info.label}</span>
       </div>
       {testing ? <div className="thread"><TestPanel /></div> : <>
         <div className="thread" ref={scroller} role="log" aria-live="polite" aria-label="Conversation with the assistant">
@@ -157,7 +157,7 @@ export function Card({ c }: { c: OperatorCard }) {
   const w = c.risk ? RISK_WORDS[c.risk] : null;
   return (
     <article className={cls} aria-label={`${c.type} card: ${c.title}`}>
-      <div className="ocard-type"><span>{label(c.type)}</span>{c.state && c.state !== 'fresh' && <Chip tone={c.state === 'approved' ? 'leaf' : c.state === 'failed' || c.state === 'rejected' ? 'brick' : 'marigold'}>{STATE_LABEL[c.state]}</Chip>}</div>
+      <div className="ocard-type"><span>{label(c.type)}</span>{c.state && c.state !== 'fresh' && <Chip tone={c.state === 'approved' ? 'leaf' : c.state === 'failed' || c.state === 'rejected' ? 'brick' : 'marigold'}>{c.type === 'receipt' ? RECEIPT_LABEL[c.state] : STATE_LABEL[c.state]}</Chip>}</div>
       <h4>{c.title}</h4>
       {c.body && <p className="small">{c.body}</p>}
       {c.quote && <blockquote className="small" style={{ margin: 0, paddingLeft: 10, borderLeft: '3px solid var(--peacock)' }} lang="hi">“{c.quote}”</blockquote>}
@@ -168,12 +168,7 @@ export function Card({ c }: { c: OperatorCard }) {
       {c.type === 'question' && c.options && (
         <div className="row">{c.options.map(o => <Btn key={o.value} size="sm" kind={o.value === c.defaultValue ? 'primary' : 'secondary'} onClick={() => { setPicked(o.value); toast(`Noted: ${o.label}.`, 'ok'); }}>{o.label}{o.value === c.defaultValue ? ' (default)' : ''}</Btn>)}{picked && <span className="small muted">You picked {picked}.</span>}</div>
       )}
-      {c.type === 'receipt' && (
-        <div className="stack-s">
-          <Chip tone={c.outcome === 'confirmed' ? 'leaf' : c.outcome === 'unknown' ? 'marigold' : 'brick'}>{c.outcome === 'confirmed' ? 'Approved' : c.outcome === 'unknown' ? 'Not known yet' : 'Could not finish'}</Chip>
-          {c.undo && <p className="small muted">{c.undo}</p>}
-        </div>
-      )}
+      {c.type === 'receipt' && c.undo && <p className="small muted">{c.undo}</p>}
       {w && c.type !== 'receipt' && <p className="small muted">{w.label}. {c.costLabel}</p>}
       {needsHold && (st.state === 'idle' || st.state === 'running') && <HoldButton label={c.type === 'launch' ? 'Hold to launch' : 'Hold to approve'} onConfirm={() => void approve()} busy={st.state === 'running'} />}
       {st.state === 'approved' && <p className="donetxt"><Check size={15} aria-hidden /> Done.</p>}
@@ -186,4 +181,7 @@ export function Card({ c }: { c: OperatorCard }) {
 }
 const label = (t: OperatorCard['type']) => ({ plan: 'Plan', diff: 'Change', launch: 'Launch', call: 'Call', chart: 'Chart', approval: 'Approval', issue: 'Issue', receipt: 'Receipt', question: 'Question', progress: 'Progress' })[t];
 
+// A receipt says what happened, once, in its header. Most receipts are drafts and tests that needed no approval, so a
+// finished one reads "Done", not "Approved".
+const RECEIPT_LABEL = { fresh: 'New', waiting: 'Waiting for you', approved: 'Done', rejected: 'Declined', stale: 'Not known yet', expired: 'Expired', failed: 'Could not finish' } as const;
 const STATE_LABEL = { fresh: 'New', waiting: 'Waiting for you', approved: 'Approved', rejected: 'Declined', stale: 'Out of date', expired: 'Expired', failed: 'Could not finish' } as const;

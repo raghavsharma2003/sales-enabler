@@ -6,7 +6,7 @@ import { Link, useNav } from '../router.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Meter, NotMeasured, PageHead, SelectField, Table, TextField, type Col, Sheet } from '../ui.tsx';
 import { Funnel } from '../funnel.tsx';
 import { CATEGORY_INFO } from '../catalog.ts';
-import { agentGet, agentList, audienceList, campaignEstimate, campaignFunnel, campaignGet, campaignList } from '../data.ts';
+import { agentByVersion, agentGet, agentList, audienceList, campaignEstimate, campaignFunnel, campaignGet, campaignList } from '../data.ts';
 import { count, date, inr } from '../format.ts';
 import { voiceStackOf } from '../catalog.ts';
 import { prettyCode } from './contacts.tsx';
@@ -72,8 +72,8 @@ function Create() {
             <div className="jobgrid" role="radiogroup" aria-label="Call category">{Object.entries(CATEGORY_INFO).map(([k, v]) => <button key={k} type="button" role="radio" aria-checked={f.category === k} className={`jobcard${f.category === k ? ' on' : ''}`} onClick={() => setF({ ...f, category: k as typeof f.category })}><strong>{v.label}</strong><span>{v.blurb}</span></button>)}</div>
             {f.category === 'promotional' && <p className="hint hint-bad" style={{ marginTop: 12 }}>Promotional calls only go to people with a recorded consent whose DND status is known. Others are held back and counted.</p>}</Card>
           <Card><CardHead title="2. Who and which agent" />
-            <div className="formgrid"><TextField label="Campaign name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="e.g. Renewals November" />
-              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField label="Agent" value={f.agentId} onChange={e => { const a = published.find(x => x.id === e.target.value); setF({ ...f, agentId: e.target.value, category: (['service', 'transactional', 'promotional'].includes(a?.category ?? '') ? a!.category : f.category) as typeof f.category }); }} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : mismatch ? `This agent is set up for ${mismatch} calls and the campaign is set to ${f.category}. Choose ${mismatch} in step 1, or pick another agent.` : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
+            <div className="formgrid"><TextField className="span2" label="Campaign name" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="e.g. Renewals November" />
+              <Async q={agents} what="Agents" tool="agent.list">{() => <SelectField className="span2" label="Agent" value={f.agentId} onChange={e => { const a = published.find(x => x.id === e.target.value); setF({ ...f, agentId: e.target.value, category: (['service', 'transactional', 'promotional'].includes(a?.category ?? '') ? a!.category : f.category) as typeof f.category }); }} hint={published.length === 0 ? <>No agent is published yet. <Link to="/agents">Publish one</Link>.</> : mismatch ? `This agent is set up for ${mismatch} calls and the campaign is set to ${f.category}. Choose ${mismatch} in step 1, or pick another agent.` : voiceStackOf(published.find(a => a.id === f.agentId))?.status === 'beta' ? 'This agent uses a beta stack. A campaign will refuse it: beta stacks are for test calls only.' : 'Campaigns use a published version, never a draft.'}><option value="">Choose an agent</option>{published.map(a => <option key={a.id} value={a.id}>{a.name} (v{a.latestVersion})</option>)}</SelectField>}</Async>
               <Async q={auds} what="Audiences" tool="audience.list">{d => <SelectField label="Who to call" value={f.audienceId} onChange={e => setF({ ...f, audienceId: e.target.value })} hint={(() => { const a = d.find(x => x.id === f.audienceId); return a ? `${a.callable == null ? '?' : count(a.callable)} callable of ${a.matched == null ? '?' : count(a.matched)}` : <Link to="/contacts/import">Import a list</Link>; })()}><option value="">Choose an audience</option>{d.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</SelectField>}</Async>
               <SelectField label="Retry pattern" value={f.preset} onChange={e => setF({ ...f, preset: e.target.value })} hint="How many days apart and at what hours she tries again.">{PRESETS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</SelectField></div></Card>
           <Card><CardHead title="3. When and how fast" sub="Times are in each contact's local time. The dial gate enforces the legal hours again at every attempt." />
@@ -134,7 +134,7 @@ function Detail({ id }: { id: string }) {
             {live && <Card><CardHead title="Live" /><Meter label="Allowed at once" value={c.counts.filter(x => x.status === 'dialing' || x.status === 'in_progress').reduce((a, b) => a + b.n, 0)} max={c.concurrency ?? 1} tone="peacock" note={`${c.concurrency ?? '?'} allowed`} />
               <ul className="billing" style={{ marginTop: 8 }}>{c.counts.map((k, i) => <li key={i}><span>{prettyCode(k.status)}{k.code ? ` · ${prettyCode(k.code)}` : ''}</span><strong className="tnum">{count(k.n)}</strong></li>)}</ul></Card>}
             <Card><CardHead title="Window and policy" actions={c.state !== 'done' ? <div className="row">{c.state === 'draft' && <Btn size="sm" onClick={() => setCapOpen(true)}>{c.capInrMilli ? 'Change spend cap' : 'Set spend cap'}</Btn>}<Btn size="sm" onClick={() => setEdit(true)}>Change window</Btn></div> : undefined} />
-              <dl className="kv"><div><dt>Version</dt><dd className="tnum">Calling rules, version {c.policyVersion}</dd></div><div><dt>Hours</dt><dd className="tnum">{c.window.ranges.map(r => `${r.start} to ${r.end}`).join(', ') || '—'}</dd></div><div><dt>Days</dt><dd>{dayList(c.window.days) || '—'}</dd></div>
+              <dl className="kv"><WhoRows agentVersionId={c.agentVersionId} audienceId={c.audienceId} /><div><dt>Calling rules</dt><dd className="tnum">Version {c.policyVersion}</dd></div><div><dt>Hours</dt><dd className="tnum">{c.window.ranges.map(r => `${r.start} to ${r.end}`).join(', ') || '—'}</dd></div><div><dt>Days</dt><dd>{dayList(c.window.days) || '—'}</dd></div>
                 <div><dt>At once</dt><dd className="tnum">{c.concurrency ?? '—'}</dd></div><div><dt>Spend cap</dt><dd className="tnum">{c.capInrMilli ? inr(c.capInrMilli) : <NotMeasured>No cap set</NotMeasured>}</dd></div></dl></Card>
             <Card><CardHead title="Calls" /><p className="small muted">Every call with its words, its reason and its cost.</p><Link to={`/calls?campaign=${c.id}`}>Open this campaign's calls</Link></Card>
           </div>
@@ -188,3 +188,13 @@ function WindowEdit({ c, onClose, onDone }: { c: CampaignDoc; onClose: () => voi
 
 // Fixes with no page of their own: one tap hands the sentence to the assistant, which plans the change and asks for approval.
 const SAARTHI_FIX = new Set(['campaign.draft', 'campaign.audience.add']);
+
+/** The campaign says which agent (and the published version it is pinned to) and which list it calls, each a link. */
+function WhoRows({ agentVersionId, audienceId }: { agentVersionId: string | null; audienceId: string | null }) {
+  const ag = useData(['campaign-agent', agentVersionId ?? ''], () => agentVersionId ? agentByVersion(agentVersionId) : Promise.resolve(null));
+  const au = useData(['campaign-audience', audienceId ?? ''], () => audienceId ? audienceList().then(l => l.find(a => a.id === audienceId) ?? null) : Promise.resolve(null));
+  return <>
+    <div><dt>Agent</dt><dd>{ag.data ? <Link to={`/agents/${ag.data.id}`}>{ag.data.name}, version {ag.data.number}</Link> : ag.state === 'loading' ? <span className="muted">Loading…</span> : <span className="muted">Not found</span>}</dd></div>
+    <div><dt>Who to call</dt><dd>{au.data ? <Link to="/audiences">{au.data.name}</Link> : au.state === 'loading' ? <span className="muted">Loading…</span> : <span className="muted">Not found</span>}</dd></div>
+  </>;
+}
