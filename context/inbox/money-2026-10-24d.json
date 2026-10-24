@@ -1,15 +1,44 @@
 {
-  "nodes": [
-    {"id": "decision.2026-10-24.campaign-burst-reading", "type": "decision", "title": "Campaign burst: off by default; an owner's spend approval lets one campaign use up to N lines (above the workspace's steady line limit, at most 3x it) while its money held at once stays under its own ceiling (a campaign-scope in-flight cap the ledger enforces, never above the workspace in-flight limit); other campaigns keep the steady limit; turning it off runs at once", "status": "active", "date": "2026-10-24", "source": "agent",
-     "rationale": "The blueprint names 'burst' as an opt-in (SPINE P9: Retell's burst is on by default; Vyakti's premium paths are opt-in) and charges no burst fee (economics 2.1), but leaves its mechanics open. Competitors' burst means running past plan concurrency, so the reading is 'past the steady line limit'. The money side is bounded twice: the campaign's ceiling and the workspace in-flight limit. No new default changes for campaigns without burst.",
-     "reverse_if": "the owner wants burst to mean a faster start rate rather than more lines, or burst to expire on its own (e.g. at IST midnight), or design partners never use it and it should be removed", "path": "product/server/modules/money/burst.ts"},
-    {"id": "decision.2026-10-24.in-flight-limit-renamed", "type": "decision", "title": "The workspace limit on money held at once by calls in progress (0907, called 'burst') is renamed 'in-flight limit' (budget period in_flight), so 'burst' means only the blueprint's campaign opt-in", "status": "active", "date": "2026-10-24", "source": "agent", "rationale": "two meanings for one word on the same Billing page would mislead a buyer", "reverse_if": "never for the name; the values stay as in decision.2026-10-24.default-daily-cap-and-burst"}
-  ],
-  "edges": [
-    {"from": "decision.2026-10-24.campaign-burst-reading", "to": "component.2026-10-21.money-module", "rel": "part-of"},
-    {"from": "decision.2026-10-24.in-flight-limit-renamed", "to": "decision.2026-10-24.default-daily-cap-and-burst", "rel": "extends"}
-  ],
-  "events": [
-    {"date": "2026-10-24", "what": "Money gap C: the default ₹5,000 daily cap (since e51e304) is tested refusing past the line and releasing at IST midnight; the in-flight limit is renamed from 'burst' (0909); campaign burst built off by default with an owner-approved card naming lines and ceiling, enforced by the ledger (campaign in-flight cap) and the dial gate (G12)."}
-  ]
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.campaign-burst-reading",
+   "type": "decision",
+   "title": "Campaign burst: off by default; an owner's spend approval lets one campaign use up to N lines (above the workspace's steady line limit, at most 3x it) while its money held at once stays under its own ceiling (a campaign-scope in-flight cap the ledger enforces, never above the workspace in-flight limit); other campaigns keep the steady limit; turning it off runs at once",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "The blueprint names 'burst' as an opt-in (SPINE P9: Retell's burst is on by default; Vyakti's premium paths are opt-in) and charges no burst fee (economics 2.1), but leaves its mechanics open. Competitors' burst means running past plan concurrency, so the reading is 'past the steady line limit'. The money side is bounded twice: the campaign's ceiling and the workspace in-flight limit. No new default changes for campaigns without burst.",
+   "reverse_if": "the owner wants burst to mean a faster start rate rather than more lines, or burst to expire on its own (e.g. at IST midnight), or design partners never use it and it should be removed",
+   "path": "product/server/modules/money/burst.ts"
+  },
+  {
+   "id": "decision.2026-10-24.in-flight-limit-renamed",
+   "type": "decision",
+   "title": "The workspace limit on money held at once by calls in progress (0907, called 'burst') is renamed 'in-flight limit' (budget period in_flight), so 'burst' means only the blueprint's campaign opt-in",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "two meanings for one word on the same Billing page would mislead a buyer",
+   "reverse_if": "never for the name; the values stay as in decision.2026-10-24.default-daily-cap-and-burst"
+  }
+ ],
+ "edges": [
+  {
+   "from": "decision.2026-10-24.campaign-burst-reading",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.in-flight-limit-renamed",
+   "to": "decision.2026-10-24.default-daily-cap-and-burst",
+   "relation": "extends"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "money-2026-10-24d-0",
+   "details": "Money gap C: the default ₹5,000 daily cap (since e51e304) is tested refusing past the line and releasing at IST midnight; the in-flight limit is renamed from 'burst' (0909); campaign burst built off by default with an owner-approved card naming lines and ceiling, enforced by the ledger (campaign in-flight cap) and the dial gate (G12)."
+  }
+ ]
 }

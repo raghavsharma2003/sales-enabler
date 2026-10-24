@@ -12,11 +12,12 @@
   },
   {
    "id": "open.2026-10-24.inbound-runtime-and-carrier",
-   "type": "open",
+   "type": "open-question",
    "status": "open",
    "date": "2026-10-24",
    "source": "verified",
-   "title": "Inbound's other halves: the voice runtime answers a sip_inbound ticket on the stream it returns (and honours inbound.noMarketing), and the carrier relay (Plivo answer URL) calls /hooks/telephony/inbound and connects the leg; both wait on voice and the campaigns go. Concurrency: the dial gate already holds back 20% of lines for inbound, but the inbound hook does not yet count live calls against the workspace's line limit."
+   "title": "Inbound's other halves: the voice runtime answers a sip_inbound ticket on the stream it returns (and honours inbound.noMarketing), and the carrier relay (Plivo answer URL) calls /hooks/telephony/inbound and connects the leg; both wait on voice and the campaigns go. Concurrency: the dial gate already holds back 20% of lines for inbound, but the inbound hook does not yet count live calls against the workspace's line limit.",
+   "closes_when": "An inbound call on devsim (fake carrier answer) reaches the runtime through /hooks/telephony/inbound, she answers with the inbound brief and inbound.noMarketing honoured, the leg connects, and live inbound calls count against the workspace line limit, each with a test; the real Plivo answer URL is verified once the campaigns go is given."
   }
  ],
  "edges": [
