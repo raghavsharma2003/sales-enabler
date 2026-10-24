@@ -3725,6 +3725,146 @@
    }
   },
   {
+   "name": "followthrough.rule.disable",
+   "risk": "draft",
+   "summary": "Turn a follow-through rule off: nothing more is sent by it (sent messages stay on the timeline)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "ruleId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "ruleId"
+    ]
+   }
+  },
+  {
+   "name": "followthrough.rule.list",
+   "risk": "read",
+   "summary": "Follow-through rules: what each waits for, its template and status, and what it did in the last 24 hours",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "followthrough.rule.set",
+   "risk": "external",
+   "summary": "After calls: send an approved utility WhatsApp template when a call ends with an outcome, a reason code or a request for WhatsApp, or when a campaign attempt is not answered; only to people who opted in",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     },
+     "templateId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "trigger": {
+      "type": "string",
+      "enum": [
+       "outcome",
+       "reason_code",
+       "asked_whatsapp",
+       "not_answered"
+      ]
+     },
+     "value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "campaignId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "purpose": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     },
+     "dailyLimit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000
+     }
+    },
+    "required": [
+     "name",
+     "templateId",
+     "trigger"
+    ]
+   }
+  },
+  {
+   "name": "followthrough.runs",
+   "risk": "read",
+   "summary": "What follow-through did after recent calls: sent, or why not (each reason in words)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "ruleId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+     }
+    },
+    "required": []
+   }
+  },
+  {
    "name": "handoff.claim",
    "risk": "draft",
    "summary": "Take a hand-off: it is yours to call back or follow up, and nobody else is shown it as free",
@@ -4897,6 +5037,223 @@
         "legal_obligation"
        ]
       }
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "message_template.draft",
+   "risk": "draft",
+   "summary": "Draft (or edit a draft of) a WhatsApp template: its words with {{1}}, {{2}} for values, where each value comes from, and its category (utility or marketing)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "connectionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+     },
+     "language": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6
+     },
+     "category": {
+      "type": "string",
+      "enum": [
+       "utility",
+       "marketing"
+      ]
+     },
+     "body": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+     },
+     "variables": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "source": {
+         "type": "string",
+         "minLength": 3,
+         "maxLength": 70,
+         "description": "where the value comes from: contact.name, contact.first_name, call.callback_time, brand.name, or attr:<field>"
+        },
+        "sample": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 100
+        }
+       },
+       "required": [
+        "source",
+        "sample"
+       ]
+      },
+      "maxItems": 10
+     }
+    },
+    "required": [
+     "name",
+     "category",
+     "body"
+    ]
+   }
+  },
+  {
+   "name": "message_template.get",
+   "risk": "read",
+   "summary": "One WhatsApp template: its words, values and where they come from, review status, and what was sent with it",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "message_template.list",
+   "risk": "read",
+   "summary": "WhatsApp templates with their review status, how long each has waited for Meta, and the price of one message",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "draft",
+       "submitted",
+       "approved",
+       "rejected",
+       "paused",
+       "disabled"
+      ]
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "message_template.send",
+   "risk": "external",
+   "summary": "Send an approved WhatsApp template to one person, its values filled from their record; every channel rule and the wallet are checked first",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "templateId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "contactId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "purpose": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80
+     }
+    },
+    "required": [
+     "templateId",
+     "contactId"
+    ]
+   }
+  },
+  {
+   "name": "message_template.submit",
+   "risk": "external",
+   "summary": "Submit a drafted WhatsApp template to Meta for review; it can be sent once Meta approves it",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "templateId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "templateId"
+    ]
+   }
+  },
+  {
+   "name": "message_template.sync",
+   "risk": "draft",
+   "summary": "Ask Meta for the review status of submitted templates (approved, rejected with its reason, paused)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "connectionId": {
+      "type": "string",
+      "format": "uuid"
      }
     },
     "required": []

@@ -95,6 +95,10 @@ export type ToolName =
   | "fact.forget"
   | "fact.review.decide"
   | "fact.review.list"
+  | "followthrough.rule.disable"
+  | "followthrough.rule.list"
+  | "followthrough.rule.set"
+  | "followthrough.runs"
   | "handoff.claim"
   | "handoff.list"
   | "handoff.resolve"
@@ -133,6 +137,12 @@ export type ToolName =
   | "memory.extract"
   | "memory.policy.get"
   | "memory.policy.set"
+  | "message_template.draft"
+  | "message_template.get"
+  | "message_template.list"
+  | "message_template.send"
+  | "message_template.submit"
+  | "message_template.sync"
   | "message.list"
   | "message.preview"
   | "message.send"
@@ -901,6 +911,29 @@ export interface ToolInput {
     /** proposedAt of the last item seen, for the next page */
     after?: string;
   };
+  /** Turn a follow-through rule off: nothing more is sent by it (sent messages stay on the timeline) (draft) */
+  "followthrough.rule.disable": {
+    ruleId: string;
+  };
+  /** Follow-through rules: what each waits for, its template and status, and what it did in the last 24 hours (read) */
+  "followthrough.rule.list": Record<string, never>;
+  /** After calls: send an approved utility WhatsApp template when a call ends with an outcome, a reason code or a request for WhatsApp, or when a campaign attempt is not answered; only to people who opted in (external, waits for approval) */
+  "followthrough.rule.set": {
+    id?: string;
+    name: string;
+    templateId: string;
+    trigger: "outcome" | "reason_code" | "asked_whatsapp" | "not_answered";
+    value?: string;
+    agentId?: string;
+    campaignId?: string;
+    purpose?: string;
+    dailyLimit?: number;
+  };
+  /** What follow-through did after recent calls: sent, or why not (each reason in words) (read) */
+  "followthrough.runs": {
+    ruleId?: string;
+    limit?: number;
+  };
   /** Take a hand-off: it is yours to call back or follow up, and nobody else is shown it as free (draft) */
   "handoff.claim": {
     handOffId: string;
@@ -1092,6 +1125,42 @@ export interface ToolInput {
     enabled?: boolean;
     undoMinutes?: number;
     allowedCategories?: Record<string, "consent" | "legal_obligation">;
+  };
+  /** Draft (or edit a draft of) a WhatsApp template: its words with {{1}}, {{2}} for values, where each value comes from, and its category (utility or marketing) (draft) */
+  "message_template.draft": {
+    id?: string;
+    connectionId?: string;
+    name: string;
+    language?: string;
+    category: "utility" | "marketing";
+    body: string;
+    variables?: ({
+      /** where the value comes from: contact.name, contact.first_name, call.callback_time, brand.name, or attr:<field> */
+      source: string;
+      sample: string;
+    })[];
+  };
+  /** One WhatsApp template: its words, values and where they come from, review status, and what was sent with it (read) */
+  "message_template.get": {
+    id: string;
+  };
+  /** WhatsApp templates with their review status, how long each has waited for Meta, and the price of one message (read) */
+  "message_template.list": {
+    status?: "draft" | "submitted" | "approved" | "rejected" | "paused" | "disabled";
+  };
+  /** Send an approved WhatsApp template to one person, its values filled from their record; every channel rule and the wallet are checked first (external, waits for approval) */
+  "message_template.send": {
+    templateId: string;
+    contactId: string;
+    purpose?: string;
+  };
+  /** Submit a drafted WhatsApp template to Meta for review; it can be sent once Meta approves it (external, waits for approval) */
+  "message_template.submit": {
+    templateId: string;
+  };
+  /** Ask Meta for the review status of submitted templates (approved, rejected with its reason, paused) (draft) */
+  "message_template.sync": {
+    connectionId?: string;
   };
   /** One WhatsApp conversation: the thread (window, who handles it) and its messages in order (read) */
   "message.list": {
@@ -2062,6 +2131,10 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "fact.forget": { risk: "destructive", needsApproval: true },
   "fact.review.decide": { risk: "draft", needsApproval: false },
   "fact.review.list": { risk: "read", needsApproval: false },
+  "followthrough.rule.disable": { risk: "draft", needsApproval: false },
+  "followthrough.rule.list": { risk: "read", needsApproval: false },
+  "followthrough.rule.set": { risk: "external", needsApproval: true },
+  "followthrough.runs": { risk: "read", needsApproval: false },
   "handoff.claim": { risk: "draft", needsApproval: false },
   "handoff.list": { risk: "read", needsApproval: false },
   "handoff.resolve": { risk: "draft", needsApproval: false },
@@ -2100,6 +2173,12 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "memory.extract": { risk: "draft", needsApproval: false },
   "memory.policy.get": { risk: "read", needsApproval: false },
   "memory.policy.set": { risk: "policy", needsApproval: true },
+  "message_template.draft": { risk: "draft", needsApproval: false },
+  "message_template.get": { risk: "read", needsApproval: false },
+  "message_template.list": { risk: "read", needsApproval: false },
+  "message_template.send": { risk: "external", needsApproval: true },
+  "message_template.submit": { risk: "external", needsApproval: true },
+  "message_template.sync": { risk: "draft", needsApproval: false },
   "message.list": { risk: "read", needsApproval: false },
   "message.preview": { risk: "read", needsApproval: false },
   "message.send": { risk: "external", needsApproval: true },

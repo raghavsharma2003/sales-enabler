@@ -8,14 +8,16 @@ import { many, one, type Queryable } from '../../db.ts';
 
 export type ConsentState = { state: 'granted' | 'withdrawn' | 'none'; purpose: string | null; at: Date | null; source: string | null };
 
-/** The person's latest WhatsApp consent for this purpose (or 'all'). */
-export async function waConsent(q: Queryable, ws: string, contactId: string, purpose: string): Promise<ConsentState> {
+/** The person's latest WhatsApp consent for this purpose (or 'all'; exact: this purpose only, for marketing, which a
+ *  general yes never covers). A withdrawal for 'all' always counts. */
+export async function waConsent(q: Queryable, ws: string, contactId: string, purpose: string, o: { exact?: boolean } = {}): Promise<ConsentState> {
   const r = await one<{ granted: boolean; purpose: string; effective_at: Date; source: string | null }>(q,
     `WITH c AS (SELECT granted, purpose, source, effective_at, created_at, id FROM consent_record
-                 WHERE workspace_id = $1 AND contact_id = $2 AND channel = 'whatsapp' AND purpose IN ($3, 'all'))
+                 WHERE workspace_id = $1 AND contact_id = $2 AND channel = 'whatsapp'
+                   AND (purpose = $3 OR (purpose = 'all' AND (NOT $4::boolean OR NOT granted))))
      SELECT granted, purpose, source, effective_at FROM c
       WHERE effective_at >= (SELECT max(effective_at) FROM c) - interval '1 second'
-      ORDER BY granted ASC, effective_at DESC, created_at DESC, id DESC LIMIT 1`, [ws, contactId, purpose]);
+      ORDER BY granted ASC, effective_at DESC, created_at DESC, id DESC LIMIT 1`, [ws, contactId, purpose, !!o.exact]);
   if (!r) return { state: 'none', purpose: null, at: null, source: null };
   return { state: r.granted ? 'granted' : 'withdrawn', purpose: r.purpose, at: r.effective_at, source: r.source };
 }

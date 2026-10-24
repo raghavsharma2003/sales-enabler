@@ -15,7 +15,7 @@ export const SUBJECT_KEYS: readonly (readonly [string, SubjectType])[] = [
  *  delivery, a one-time reveal, ...). The guard test makes every new *Id argument land in one of the two lists. */
 export const INTERNAL_ID_KEYS: readonly string[] = ['revisionId', 'auditEventId', 'scopeId', 'requestId', 'mergeId', 'suppressionId', 'stashId',
   'sourceMessageId', 'revealId', 'objectId', 'uploadId', 'receiptId', 'endpointId', 'deliveryId', 'fromVersionId', 'exportId', 'handOffId', 'alertId', 'importId', 'integrationId', 'authIntegrationId', 'destinationId', 'deploymentId',
-  'connectionId', 'threadId'];
+  'connectionId', 'threadId', 'templateId', 'ruleId'];
 export type SubjectType = 'call' | 'attempt' | 'agent' | 'campaign' | 'contact' | 'audience' | 'version' | 'experiment' | 'proposal' | 'issue' | 'number'
   | 'outcome' | 'judge' | 'member' | 'offering' | 'source' | 'tool' | 'fact';
 export interface Subject { type: SubjectType; id: string }

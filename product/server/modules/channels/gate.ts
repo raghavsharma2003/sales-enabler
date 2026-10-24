@@ -159,7 +159,7 @@ async function plan(c: Queryable, ws: string, i: SendInput): Promise<Planned | {
       const k = await waConsent(c, ws, contactId, i.purpose);
       if (k.state === 'withdrawn') reasons.push('purpose_withdrawn');
       if (templated && !open && k.state !== 'granted') reasons.push('no_opt_in');
-      if (category === 'marketing' && (await waConsent(c, ws, contactId, 'marketing')).state !== 'granted') reasons.push('marketing_cold');
+      if (category === 'marketing' && (await waConsent(c, ws, contactId, 'marketing', { exact: true })).state !== 'granted') reasons.push('marketing_cold');
     }
   } else {
     // A number not on file may be answered inside the window it opened; nothing business-initiated goes to it.
@@ -172,7 +172,9 @@ async function plan(c: Queryable, ws: string, i: SendInput): Promise<Planned | {
   if (templated && (i.content as { template: ResolvedTemplate }).template.status !== 'approved') reasons.push('template_not_approved');
 
   // 2. what
-  const doorCtx = i.author.kind === 'member' ? await brandDoor(c, ws) : i.author.door ?? await brandDoor(c, ws);
+  const doorCtx0 = i.author.kind === 'member' ? await brandDoor(c, ws) : i.author.door ?? await brandDoor(c, ws);
+  // A marketing template is promotional; anything else is service, so RD7 keeps offers out of utility messages.
+  const doorCtx = category === 'marketing' ? { ...doorCtx0, category: 'promotional' as const } : doorCtx0;
   const d = doorOver(bodyOf(), doorCtx, { only: i.author.kind === 'member' ? MEMBER_RULES : undefined, fixed: templated });
   if (d.blocked) reasons.push('door_blocked');
   const body = templated ? bodyOf() : d.text;
