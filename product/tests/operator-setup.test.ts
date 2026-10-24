@@ -124,10 +124,39 @@ test('"what went wrong on that call?": the call tools are offered, reads run, an
   assert.match(lastTool(seen[2]!, 'brief.edit'), /held: the client asked a question about a call, not for brief\.edit/);
 });
 
+test('diagnose on calls\' real turnCauses: the slow reply at 0:13 reaches the model in plain words', { skip }, async () => {
+  const c = await owner();
+  const transcript = [
+    { speaker: 'agent', text: 'Namaste, main Riya bol rahi hoon, ek AI assistant.', startMs: 0 },
+    { speaker: 'caller', text: 'Kitna premium hai?', startMs: 9000 },
+    { speaker: 'agent', text: 'Main check karke batati hoon.', startMs: 13500 },
+  ];
+  const trace = { schema: 1, stack: { id: 'v2-flashlite', combinationId: 'c' }, components: {}, events: [],
+    turns: [{ i: 0, speaker: 'agent', startMs: 0, door: [], interrupted: false }, { i: 1, speaker: 'caller', startMs: 9000, asrConfidence: 0.95 },
+      { i: 2, speaker: 'agent', startMs: 13500, gapMs: 2600, door: [], interrupted: false }] };
+  const conv = (await one<{ id: string }>(pool, "INSERT INTO conversation (workspace_id, channel, status, transcript, trace) VALUES ($1,'phone','done',$2,$3) RETURNING id",
+    [c.ws, JSON.stringify(transcript), JSON.stringify(trace)]))!.id;
+  const seen = script([
+    () => ({ toolCalls: [call('call_explain', { conversationId: conv })] }),
+    () => ({ text: 'At 0:13 she took 2.6 seconds to answer "Kitna premium hai?". I can suggest a faster stack if you want.' }),
+  ]);
+  const q = 'Why was there such a long pause at 0:13 on that call?';
+  assert.deepEqual(intentsOf(q).map(i => i.key), ['diagnose']);
+  await turn(c.member, { text: q, page: `/calls/${conv}` });
+  assert.match(seen[0]!.messages.find(m => m.role === 'system' && /what went wrong on a call/.test(m.content))!.content, /The client named 0:13 \(13000 ms\)/);
+  const r = lastTool(seen[1]!, 'call.explain');
+  assert.match(r, /turnCauses/);
+  assert.match(r, /reply_gap/);
+  assert.match(r, /Slow reply: 2,600 ms/, 'the cause in plain words reaches the model');
+});
+
 test('diagnose: "1:20" is 80000 ms from the start of the call; clock times are not call times', () => {
   assert.deepEqual(callTimes('Why did she cut me off at 1:20?'), [{ said: '1:20', ms: 80_000 }]);
   assert.deepEqual(callTimes('what happened at 12:05 on that call'), [{ said: '12:05', ms: 725_000 }]);
   assert.deepEqual(callTimes('the call at 10:30 am'), []);
+  for (const t of ['Why was there such a long pause at 0:13 on that call?', 'She was slow to reply', 'why did the bot say that on the call', 'It lagged badly'])
+    assert.deepEqual(intentsOf(t).map(i => i.key), ['diagnose'], t);
+  for (const t of ['Call me to test it', 'Launch the campaign', 'How many calls did we make?']) assert.ok(!intentsOf(t).some(i => i.key === 'diagnose'), t);
 });
 
 test('reset by chat: "start over", "archive" and "restore" offer the reset tools that are registered', () => {
