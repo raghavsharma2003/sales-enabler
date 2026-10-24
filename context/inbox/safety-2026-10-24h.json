@@ -1,0 +1,32 @@
+{
+ "nodes": [
+  {
+   "id": "asset.2026-10-24.judge-prompt-c",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Prompt C for the caller judge (product/shared/safety/prompts/caller_crisis.c.txt, for --prompt-file): B's anchored 0-100 crisis risk scale plus A's opt-out section (exclusion list word for word), in one call, written as shapes. 2,398 characters, 406 words, about 600 tokens, against A's 2,575 / 438 / ~644 and B's 3,067 / 531 / ~767. B's opt-out text was already identical to A's, so B's opt-out loss tracks its length and its timeouts (20/260 against 7/260), not the opt-out wording. C is shorter than A. Both doors parse its output (tests). Proposed rule: research/2026-10-24/judge-prereg10/PREREG-DRAFT.md, for the integrator to fix and sign before any request.",
+   "paths": [
+    "product/shared/safety/prompts/caller_crisis.c.txt",
+    "research/2026-10-24/judge-prereg10/PREREG-DRAFT.md"
+   ],
+   "value": "a candidate that keeps B's crisis gain without B's opt-out loss",
+   "effort": "small"
+  }
+ ],
+ "edges": [
+  {
+   "from": "asset.2026-10-24.judge-prompt-c",
+   "to": "decision.2026-10-24.judge-prompt-a-stays",
+   "relation": "informed-by"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "safety-judge-prompt-c",
+   "details": "Prompt C written (shorter than A), parse parity in both doors, PREREG-10 draft for the integrator. The prompt-B switch is dropped (judge.json keeps A). The brief-review prompt is unchanged until all three blind scores arrive."
+  }
+ ]
+}

@@ -193,3 +193,8 @@ test('judge: an optional 0-100 risk score stands for confidence (the candidate p
   assert.equal(parseVerdict('{"crisis":true,"risk":7.5,"kind":"indirect"}'), null);
   assert.deepEqual(parseVerdict('{"crisis":true,"confidence":0.8,"risk":10,"kind":"direct"}'), { crisis: true, confidence: 0.8, kind: 'direct' }, 'confidence wins when both');
 });
+
+test('judge: prompt C output (risk plus the opt-out pair) parses in this door as in Python', () => {
+  assert.deepEqual(parseVerdict('{"crisis":false,"risk":5,"kind":"none","opt_out":true,"opt_out_confidence":0.9}'),
+    { crisis: false, confidence: 0.05, kind: 'none', optOut: { value: true, confidence: 0.9 } });
+});

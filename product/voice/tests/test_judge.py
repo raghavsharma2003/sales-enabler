@@ -584,3 +584,9 @@ class RiskScore(unittest.TestCase):
         self.assertIsNone(judge.parse_verdict('{"crisis":true,"risk":172,"kind":"indirect"}'))
         self.assertIsNone(judge.parse_verdict('{"crisis":true,"risk":7.5,"kind":"indirect"}'))
         self.assertEqual(judge.parse_verdict('{"crisis":true,"confidence":0.8,"risk":10,"kind":"direct"}')['confidence'], 0.8)
+
+
+class PromptCOutput(unittest.TestCase):
+    def test_risk_with_opt_out_pair(self):
+        self.assertEqual(judge.parse_verdict('{"crisis":false,"risk":5,"kind":"none","opt_out":true,"opt_out_confidence":0.9}'),
+                         {'crisis': False, 'confidence': 0.05, 'kind': 'none', 'optOut': {'value': True, 'confidence': 0.9}})
