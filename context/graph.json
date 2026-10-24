@@ -19136,7 +19136,7 @@
   {
    "id": "decision.2026-10-24.not-done-retry-first",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "After a NOT DONE that carries a fix (or a reason naming the correction), the Operator is told to retry at once and ask the client only for a fact no tool can give",
@@ -19146,7 +19146,7 @@
   {
    "id": "decision.2026-10-24.claim-check",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "A reply claiming a change with no successful write in the turn gets a plain correction at once and one repair turn",
@@ -19156,7 +19156,7 @@
   {
    "id": "decision.2026-10-24.chat-uploads-staged",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "A table attached in chat is staged as an intake upload as the member who attached it, and the model is given its uploadId",
@@ -20210,7 +20210,7 @@
   {
    "id": "decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now",
    "type": "decision",
-   "status": "proposed",
+   "status": "superseded",
    "source": "verified",
    "date": "2026-10-24",
    "title": "The crisis-line and manipulation config checks stay in agents/guard.ts until the safety builder adds them to shared/safety with the Python door; moving them now is not clean",
@@ -20220,7 +20220,7 @@
   {
    "id": "decision.2026-10-24.reply-checks-numbers-tap",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "The Operator's final reply is checked for unsupported \u20b9 amounts and durations, a tap with no card, and change claims; each check corrects at once and repairs once",
@@ -20230,7 +20230,7 @@
   {
    "id": "decision.2026-10-24.retry-scope-guard",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "After a NOT DONE write, a write to another tool the member's words do not point at is held in code",
@@ -20692,7 +20692,7 @@
   {
    "id": "decision.2026-10-24.draft-exists-only-after-done",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "Operator conduct: draft without asking permission, but a change exists only once its tool returned DONE this turn; never describe a change not made",
@@ -20702,7 +20702,7 @@
   {
    "id": "decision.2026-10-24.protective-unasked-is-proposal",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "A protective write (suppress, pause, stop, forget, erase, DPDP) that the member's words do not ask for becomes an approval card from the Operator, even where the kernel would run it at once",
@@ -21588,7 +21588,7 @@
   {
    "id": "decision.2026-10-24.xlsx-own-reader-no-dependency",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "Read .xlsx with a ~200-line reader of our own (node:zlib + OOXML) instead of adding a spreadsheet package",
@@ -21598,7 +21598,7 @@
   {
    "id": "decision.2026-10-24.row-overrides-inside-agent-rules",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "A row's first_message replaces only opening.usefulFirst and must pass the agent's own opening lints; a row's voice applies only if the agent's stack offers it; the disclosure clause is never touched",
@@ -21627,7 +21627,7 @@
   {
    "id": "open.2026-10-24.t-l7-false-urgency-gap",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "source": "verified",
    "date": "2026-10-24",
    "title": "T-L7 (manipulation lint) passes 'the offer ends tonight so they must decide now or lose it forever'",
@@ -21678,7 +21678,7 @@
   {
    "id": "decision.2026-10-24.mcp-from-registry",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "model",
    "date": "2026-10-24",
    "title": "An MCP server and a TypeScript SDK are generated from the tool registry; over MCP every approval class, including the A3 verbs, and A0 drafts become approval cards",
@@ -21927,7 +21927,7 @@
   {
    "id": "decision.2026-10-24.webhook-numbers-masked-default",
    "type": "decision",
-   "status": "proposed",
+   "status": "decided",
    "source": "inference",
    "date": "2026-10-24",
    "title": "A webhook sends phone numbers masked (+91\u2022\u2022\u2022\u2022\u20221234, name as initials) unless it was created with contactNumber 'full', which the approval card states as 'personal data leaves Vyakti' and only an owner or compliance member can approve. call.record masks for viewers. call.export (owner or compliance only) has full numbers.",
@@ -22176,6 +22176,174 @@
    "method": "product/voice/tests/test_tools.py (11) and product/tests/calls-toolhook.test.ts (3, fake network and one real connect-time refusal via setToolNetwork), 2026-10-24",
    "path": "product/voice/vpvoice/tools.py",
    "value": "tools run end to end offline; figures only from data"
+  },
+  {
+   "id": "decision.2026-10-24.stack-gate-visible",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Blueprint decision 4 made honest and visible, never blocking: every catalog stack carries a speed and turn-taking gate status computed from staging measurements against one config (GATE: median reply within 1.5 s, cut-ins at most 5%)",
+   "rationale": "shared/stack-gate.ts holds GATE and gateStatus(); shared/stack-measures.json holds the measured reply-gap p50 (value, n, calls, p90, date, source) and cut-in rate per stack, and unlisted or null means not measured, never zero. States: 'Meets the speed and turn-taking gate'; 'Not yet: 3.2 s replies (target 1.5 s)' (and/or 'N% cut-ins (target at most 5%)') when any measured number misses; 'Not measured' when nothing measured misses but a number is missing. The reply gap a stack card headlines is built from the same file, so the card and the gate cannot disagree. stack.list/agent.get stack cards carry gate; the stack picker (also the agent page's Voice stack tab) shows a Speed and turn-taking row with How we know (measurement, date, target, 'Calls still run on a stack that does not meet it'). campaign.get on a production campaign adds a non-blocking warning stack_gate naming the numbers, with a 'Compare voice stacks' fix; it is never a blocker. Today v2-flashlite (default) reads Not yet: 3.2 s replies (3,201 ms median, 22 replies, 4 calls, 24 Oct 2026); v2-mai 2.7 s; v2-54mini 2.1 s; cut-ins not measured per stack anywhere, so no stack reads Meets. A built stack (stackId custom) still resolves to beta and its campaign is blocked by beta_stack (test calls only), as decision.2026-10-22.custom-stack-contract says; now pinned by a test.",
+   "reverse_if": "The owner wants the gate to block production launches, or per-stack cut-in measurement proves the 5% threshold wrong for Hinglish turn-taking (then change GATE, the one place)."
+  },
+  {
+   "id": "measure.2026-10-24.stack-gate-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Stack gate tests 6/6: default stack status recomputed from MEASURES vs GATE and equal to 'Not yet: 3.2 s replies (target 1.5 s)'; every branch (meets, cut-ins miss, both miss, half measured, unknown and custom); card reply gap equals the measurement; built stack beta and not measured; stack.list carries gate with target; production campaign warning names the numbers and is absent from blockers; built-stack campaign blocked as beta_stack",
+   "n": 6,
+   "method": "node:test tests/stack-gate.test.ts on throwaway Postgres 16; full suite 703 pass / 0 fail on a fresh DB; tsc clean; ui-contract --strict 214/214; browser flows 0 fail (2 skipped, voice Python disabled).",
+   "notes": "Not verified: cut-in rates (none measured per stack); the integrator's new staging numbers are not loaded yet. Load them into shared/stack-measures.json only; nothing else changes."
+  },
+  {
+   "id": "component.2026-10-24.crm-contact-import",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "HubSpot and Zoho CRM contact import, read only, through the stored integration credentials: each pull is an intake upload with a receipt, mapped like a file (agent column contract included); sync re-imports idempotently on the CRM id; timed sync off by default",
+   "path": "product/server/modules/intake/crm-tools.ts",
+   "details": "Tools source.crm.lists (read), source.crm.pull, source.sync, source.sync.schedule (draft); job intake.crm_sync. Tests intake-crm 5/5 against local fakes shaped from the documented responses (research/2026-10-24/crm-import/README.md): lists, paging, 100-id batch reads, token refresh, page_token, consent only from a CRM field, DND unknown, no write calls, unchanged skipped, changed number flagged, timed sync and its failure, plain refusals, tenancy. Not verified: a real CRM account."
+  },
+  {
+   "id": "decision.2026-10-24.crm-number-change-flagged",
+   "type": "decision",
+   "status": "decided",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A CRM record whose phone number changed since the last import is flagged on the receipt and not imported; one CRM record never becomes two contacts by itself",
+   "rationale": "Idempotent on the CRM id. Moving the number automatically is an identity change (it would re-point consent and suppression), which needs a person (contact.merge is A2).",
+   "reverse_if": "Buyers find the flag noisy for routine number changes, and a reviewed path that moves the number with its consent history is built."
+  },
+  {
+   "id": "decision.2026-10-24.crm-consent-only-where-recorded",
+   "type": "decision",
+   "status": "decided",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "From a CRM, consent comes only from a field that says so (read as consent by the same header rules as a file, and recorded only with a purpose); email opt-outs and data-processing bases are not call consent; DND is never taken from a CRM",
+   "rationale": "Brief: 'consent and DND state come across only where the CRM records it, otherwise unknown, never assumed'. HubSpot hs_legal_basis and Zoho Email_Opt_Out are not about phone calls.",
+   "reverse_if": "A CRM adds a standard call-consent or DNC field; then it is mapped by default with its own test."
+  },
+  {
+   "id": "decision.2026-10-24.retry-pattern-is-what-runs",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The campaign form's Retry pattern is what runs (P7). campaign.draft {retry:{pattern|maxAttempts|gapsMin|retryOn}} stores policy.retry (campaigns/retry.ts); attempt.retry_per_ladder uses it whenever the campaign has one.\n- Patterns: standard (3 calls, 2 h then 1 day), gentle (2 calls, 1 day), persistent (4 calls, 1 h, 4 h, 1 day, plus voicemail) and none.\n- Bounds: 1 to 6 calls in all, gaps of 15 min to 3 days.\n- Only busy, no_answer, switched_off, voicemail and short_call can retry. invalid, opt_out, wrong_party, completed, unknown and operator_block never do. Provider faults keep the service ladder.\n- An erased or suppressed person is refused before the ladder runs, whatever the outcome.\n- Each retry is a new attempt, so the dial gate (DND, window, consent, budgets) decides it again. Its time is clamped with the gate's own eligibility().\n- Older campaigns without policy.retry keep the service ladder.\n- The form's select used to set a budget preset that the form's own budgets then overrode, so it changed nothing.",
+   "rationale": "Must-be audit item 4 (research/2026-10-24/must-be-audit/README.md): the Retry pattern select changed nothing.",
+   "reverse_if": "Measured connect rates show a pattern hurting answer rates or complaint signals: then change its gaps, never the never-retry list.",
+   "path": "product/server/modules/campaigns/retry.ts"
+  },
+  {
+   "id": "decision.2026-10-24.stated-callback-beats-ladder",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A callback time the caller states beats the retry ladder for that contact.\n- After a CONV_CALLBACK call, calls.followups reads the time with statedCallback (calls/stated-time.ts): a mark_callback tool event's words first, then the caller's own lines, newest first. Hindi, English and Hinglish, Latin or Devanagari; clock, relative, weekday, and part of day with a day cue; 'after 6' reads as 18:00.\n- It is clamped into the campaign's window and TRAI's hours with the gate's eligibility(), and stored on the new callback attempt as attempt.callback {statedAt, at, clamped, quote, conversationId, text}.\n- The text reads 'Calling back Tue 6:10 pm, as they asked', or '..., the first time the calling hours allow after the time they asked'. It shows on the contact page (attempt.list callback_text, words never returned) and on the campaign page (campaign.get callbacks).\n- A vague time ('baad mein', 'call me later', 'kal call karo', 'subah se busy') gives a note on the ended attempt and no schedule: never a guess.\n- At most 2 stated callbacks per chain; after that a person follows up.\n- Hand-off callbacks (target 'callback') stay a person's task in the hand-off queue, not an automatic dial, so the person is not called twice.",
+   "rationale": "Must-be audit item 4: a stated callback time was never passed (followups.ts:58), so the call came back after +2 h.",
+   "reverse_if": "Live calls show stated-time parsing errors above 5% on reviewed callbacks: then hold parsed times for review instead of auto-scheduling."
+  },
+  {
+   "id": "decision.2026-10-24.callback-leads-the-brief",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "On a callback dial, the memory brief starts with 'callback: they_asked_for=Wed 11:00 am (said today)': a shape, never their words.\n- memory.brief takes an optional attemptId. The worker sends it only for kind 'callback' attempts.\n- The note is added only when all of these hold: the attempt is in this workspace and for this contact; its stored quote is still an exact substring of a caller turn of that call; the transcript is not purged; and memory is on for the workspace and the agent.\n- The transcript purge (retention or erasure) strips attempt.callback.quote, so the note disappears with the words.",
+   "rationale": "Must-be audit item 4.3: the callback she makes should know it is the one they asked for, under memory's existing quote-and-permission rules.",
+   "reverse_if": "The callback note is recited as a line on live calls: then move it out of the brief into a turn-policy flag."
+  },
+  {
+   "id": "measure.2026-10-24.retry-callback-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "tests/campaigns-retry.test.ts 5/5:\n(1) The parser: 11 timed phrases across Hindi, English, Hinglish and Devanagari; 5 vague phrases give a note; 3 opt-out or unrelated lines give nothing; a Devanagari quote is the whole line.\n(2) The persistent pattern runs 1 h, 4 h, then 1 day, and the 4th call is refused. gentle does not retry after voicemail; invalid never retries; none never retries. A gap landing after 19:00 moves to the next morning's 10:00. campaign.draft stores the pattern, and campaign.get says it in words; maxAttempts 9 is refused.\n(3) A stated 18:10 beats the 'none' pattern ('Calling back Tue 6:10 pm, as they asked'). 21:30 clamps to Wed 10:00, and the text says so. A Sunday request moves to Monday 10:00 (the campaign skips Sundays). A vague time schedules nothing and the note shows on attempt.list. The attempt list never returns the caller's words, and campaign.get lists the callback.\n(4) An opt-out, a suppressed contact and an erased contact are never retried, not even with a stated time.\n(5) End to end through calls.afterCall: 'kal subah 11 baje call karna' on Tue gives a callback attempt at Wed 11:00 IST; memory.brief for that attempt reads 'callback: they_asked_for=Wed 11:00 am (said \u2026)'. An ordinary attempt and another workspace's contact get no note. After erasure and the purge, the quote is gone and the note is gone.\nAlso: calls.test.ts' stub of attempt.retry_per_ladder widened to the new optional fields; fresh-DB suite and browser flows (see the event).",
+   "n": 5,
+   "method": "node:test on throwaway Postgres 16, all modules (buildApp(pool, modules)), FakeRuntime and FakeTelephony; the dial gate is exercised by the existing campaigns tests",
+   "path": "product/tests/campaigns-retry.test.ts"
+  },
+  {
+   "id": "evidence.2026-10-24.carrier-pulse-public-pages",
+   "type": "measurement",
+   "title": "Indian outbound billing pulse from public pages (24 Oct 2026): Plivo India 30 s at \u20b90.38/min (pricing page and billing-concepts doc); Exotel, Twilio India, Knowlarity, Tata Smartflo and Airtel IQ: pulse not published on any page we could save",
+   "status": "observed",
+   "date": "2026-10-24",
+   "source": "agent",
+   "n": 9,
+   "method": "curl of 9 public URLs, 6 saved byte for byte with URL and fetch time (3 failed: TLS, 502, 403); every stated pulse and rate asserted against the saved text by tests/money-pulse.test.ts",
+   "path": "research/2026-10-24/carrier-pulse/README.md"
+  },
+  {
+   "id": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds",
+   "type": "decision",
+   "title": "Estimates bill each call's phone time in whole carrier pulses (calls taken at the average length), state the pulse and what it adds per call on every estimate, stack card and the Billing statement, and use the published 30 s Plivo pulse",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "agent",
+   "rationale": "blueprint decision 10 (one honest price per connected second); replaces the flat half-of-a-60-s-pulse allowance. The published pulse is the only sourced figure; the lab's 60 s console read stays as a stated conflict",
+   "reverse_if": "the first Plivo invoice shows 60 s billing (then the carrier row becomes 60 s and the path is marked not recommended), or metered calls show the average-length assumption misprices rounding by more than 10%",
+   "path": "product/server/modules/money/carriers.ts"
+  },
+  {
+   "id": "open.2026-10-24.plivo-pulse-30-or-60",
+   "type": "open-question",
+   "title": "Does Plivo bill our India outbound calls in 30 s pulses (public pages, 24 Oct) or 60 s (our lab's console read, 19 Oct)?",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "agent",
+   "closes_when": "the first Plivo invoice or CDR export for real calls shows the billed duration of a call under 30 s"
+  },
+  {
+   "id": "measure.2026-10-24.floor-dev11-poison-hyperbole",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "open.2026-10-24.floor-deva-poison-drink-gap is closed and the blind-10 floor look-alike families have guarded exemptions, on DEV only (sets/dev-lookalike-11.json, the builder's own lines from the families, not blind lines). cs.crisis.self_harm gains drinking poison, phenyl, pesticide, rat poison or acid in romanised and Devanagari forms. cs.crisis.danger exempts bill, price, EMI and premium 'heart attack' hyperbole, guarded so chest pain, breath, an ambulance or a heart attack happening now still fires. self_harm exempts a film or serial hanging (first-person 'me too' guard). DEV11: crisis 11/11 (8 drink forms, 3 real heart attacks), look-alikes 0/15. Unchanged: cases.json crisis vectors 215/215, dev-7 100/100, dev-lookalike-9 30/75 with 0 FP, dev-lookalike-10 1/56 FP. Both doors agree (tests).",
+   "n": "26 DEV11 lines; 215 crisis vectors; earlier DEV sets",
+   "method": "callerSignals (TS) and caller_signals (Python)",
+   "not_verified": "Generalisation: BLIND 11 (sets/heldout-11.json, 80 crisis, 140 look-alikes, separate agent, unread) is ready for one scoring. The friend's-old-death family did not fire on any DEV wording the builder tried."
+  },
+  {
+   "id": "open.2026-10-24.judge-timeout-budget",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "The judge's real recall loss is timeouts (both BLIND-10 misses; DEV unavailable 4-10%). The runtime judge never blocks the reply, so a longer budget (for example 1,800 ms) only moves more verdicts from 'acts on this reply' to 'acts from her next sentence or turn'. Measurement path, now in the runtime: VP_SAFETY_JUDGE_TIMEOUT_MS (clamped 500-3000) overrides judge.json timeout_ms without editing the contract, and every reply logs 'verdict in/not yet at her first sentence (budget N ms)' (Conversation.judge_in_time). On staging, run the same calls at 1,500 and 1,800 ms and compare unavailable (judge events) against verdicts not yet in at the first sentence; then decide judge.json timeout_ms.",
+   "closes_when": "Staging numbers at both budgets and a decision on timeout_ms."
+  },
+  {
+   "id": "asset.2026-10-24.blind-set-11",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "BLIND 11 (sets/heldout-11.json): 80 crisis (varied means, including drinking poison and danger at home) and 140 hard look-alikes (hyperbole, films, deaths, stored poison, prescribed medicine). Written by a separate agent with no repo access, checked by script (counts, 0 duplicates, 0 overlap with every earlier set), never read.",
+   "paths": [
+    "product/shared/safety/sets/heldout-11.json"
+   ],
+   "value": "the next one-time floor and judge scoring",
+   "effort": "one agent run"
+  },
+  {
+   "id": "measure.2026-10-24.tl7-urgency",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "T-L7 false urgency (intake gap: 'the offer ends tonight so they must decide now or lose it forever'): six pressure shapes in rules.json lint.T-L7 (decide or pay now or lose it; lose it forever; never get this again; last chance ever; hamesha ke liye; sirf aaj ... kal se double or warna). DEV: 6/6 pressure lines refused; 6/6 stated deadlines and negated rules pass; 0 of 1,070 benign lines flagged; 0 templates. Config-lint DEV manipulation 8/10 to 9/10. The prohibition-fact key pattern moved into rules.json (lint.T-L7.prohibition_key), read by both doors.",
+   "n": "12 probe lines; 1,070 benign; 16 templates",
+   "method": "lintAgentConfig (TS) and lint_agent_config (Python) with tests in both doors",
+   "not_verified": "In-sample (the builder wrote the probes). 'Only two slots left' stays with the brief review: a real scarcity claim cannot be told from a false one by wording."
   }
  ],
  "edges": [
@@ -40055,6 +40223,86 @@
    "from": "decision.2026-10-24.voice-incall-tools-run",
    "to": "component.product.calls-module",
    "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "to": "decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-24.stack-gate-visible",
+   "to": "decision.2026-10-21.blueprint-defining-decisions",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.stack-gate-visible",
+   "to": "decision.2026-10-22.custom-stack-contract",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.stack-gate-tests",
+   "to": "decision.2026-10-24.stack-gate-visible",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-24.crm-contact-import",
+   "to": "decision.2026-10-24.crm-number-change-flagged",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.crm-contact-import",
+   "to": "decision.2026-10-24.crm-consent-only-where-recorded",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.crm-contact-import",
+   "to": "component.2026-10-24.intake-xlsx-import",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.retry-callback-tests",
+   "to": "decision.2026-10-24.retry-pattern-is-what-runs",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.retry-callback-tests",
+   "to": "decision.2026-10-24.stated-callback-beats-ladder",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.retry-callback-tests",
+   "to": "decision.2026-10-24.callback-leads-the-brief",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds",
+   "to": "evidence.2026-10-24.carrier-pulse-public-pages",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds",
+   "to": "open.2026-10-24.plivo-pulse-30-or-60",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.estimate-bills-pulse-rounded-seconds",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-24.floor-dev11-poison-hyperbole",
+   "to": "open.2026-10-24.floor-deva-poison-drink-gap",
+   "relation": "challenges"
+  },
+  {
+   "from": "asset.2026-10-24.blind-set-11",
+   "to": "open.2026-10-24.floor-lookalike-fp-blind",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.tl7-urgency",
+   "to": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "relation": "supports"
   }
  ]
 }
