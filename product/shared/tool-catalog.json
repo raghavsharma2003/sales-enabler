@@ -6920,6 +6920,76 @@
    }
   },
   {
+   "name": "source.crm.lists",
+   "risk": "read",
+   "summary": "The contact lists (HubSpot) or views (Zoho CRM) a connected CRM offers for import",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "integrationId"
+    ]
+   }
+  },
+  {
+   "name": "source.crm.pull",
+   "risk": "draft",
+   "summary": "Pull the contacts of one CRM list or view into an import you can check before saving (read only: nothing is written to the CRM)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "listId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "fields": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "pattern": "^[A-Za-z0-9_]{1,80}$",
+       "description": "a CRM field's API name, e.g. hs_whatsapp_consent or Call_Consent"
+      },
+      "maxItems": 30
+     },
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "integrationId",
+     "listId"
+    ],
+    "description": "Pull one CRM list into an upload; then check it with source.map and save it with source.commit. fields adds CRM fields to read (for example a consent field)."
+   }
+  },
+  {
    "name": "source.list",
    "risk": "read",
    "summary": "List the sources people come from, with their authority and last receipt",
@@ -7046,6 +7116,62 @@
     },
     "required": [
      "receiptId"
+    ]
+   }
+  },
+  {
+   "name": "source.sync",
+   "risk": "draft",
+   "summary": "Re-pull a CRM list and import it with the mapping of its last import; unchanged records are skipped (read only on the CRM)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "sourceId"
+    ]
+   }
+  },
+  {
+   "name": "source.sync.schedule",
+   "risk": "draft",
+   "summary": "Sync a CRM list on a timer (every 1, 6 or 24 hours) or turn the timer off; off unless set",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "sourceId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "everyHours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 24
+     },
+     "off": {
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "sourceId"
     ]
    }
   },

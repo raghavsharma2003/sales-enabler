@@ -80,6 +80,14 @@
       "risk": "draft"
     },
     {
+      "id": "source.crm.lists",
+      "risk": "read"
+    },
+    {
+      "id": "source.crm.pull",
+      "risk": "draft"
+    },
+    {
       "id": "source.list",
       "risk": "read"
     },
@@ -90,6 +98,14 @@
     {
       "id": "source.receipt",
       "risk": "read"
+    },
+    {
+      "id": "source.sync",
+      "risk": "draft"
+    },
+    {
+      "id": "source.sync.schedule",
+      "risk": "draft"
     },
     {
       "id": "source.upload",
@@ -106,15 +122,17 @@
     "product/db/migrations/0103_intake_retention.sql",
     "product/db/migrations/0104_intake_suppression_evidence.sql",
     "product/db/migrations/0105_intake_consent_effective.sql",
-    "product/db/migrations/0106_intake_xlsx.sql"
+    "product/db/migrations/0106_intake_xlsx.sql",
+    "product/db/migrations/0107_intake_crm.sql"
   ],
   "tests": {
-    "passed": 28,
-    "total": 28,
+    "passed": 33,
+    "total": 33,
     "files": [
       "product/tests/intake.test.ts (19)",
       "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)",
-      "product/tests/intake-xlsx.test.ts (8)"
+      "product/tests/intake-xlsx.test.ts (8)",
+      "product/tests/intake-crm.test.ts (5)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
   },
@@ -142,7 +160,8 @@
     "Per-row voice and first_message: checked at import (a Vyakti voice; an opening note passing the agent's own lints: recitable-line, T-L1, T-L6, T-L7), refused cells counted on the receipt and not stored. rowOverrides(agent, attrs) exported for the ticket builder; never changes the disclosure clause.",
     "source.map returns up to 3 sample values per column (none for viewers) and, with agentId, the agent's per-contact fact contract (agents/columns.ts).",
     "Web import screen: Excel/CSV/TSV up to 20 MB, \"Which agent will call them?\", the fact-contract card with one-tap \"Use <column>\", per-person voice and opening as column choices. Browser flow and screenshots contacts-import-excel-d/m.",
-    "campaigns buildTicket applies rowOverrides (sanctioned edit); CallTicket.contact.rowOverrides says what was applied or refused (campaigns.test.ts F3b)"
+    "campaigns buildTicket applies rowOverrides (sanctioned edit); CallTicket.contact.rowOverrides says what was applied or refused (campaigns.test.ts F3b)",
+    "CRM contact import, read only: HubSpot lists (lists/search, memberships/join-order, contacts/batch/read at 100) and Zoho CRM views (token refresh, settings/custom_views, Contacts by cvid with page_token). A pull is an upload on a crm source, mapped by source.map (agent contract included) and saved by source.commit; source.sync re-imports with the last mapping; idempotent on the CRM id (intake_crm_record keeps a hash of the number): unchanged records skipped, a changed number flagged and left out. Consent and DND only from CRM fields that say so; otherwise unknown. Docs used: research/2026-10-24/crm-import/README.md."
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -156,7 +175,10 @@
     "Calls and memory honouring recordings_days / transcripts_days from policy.retention.get",
     "A zip-bomb .xlsx (the inflate limits are in code, not exercised by a test)",
     ".xlsx with zip64, encrypted workbooks, or the first sheet being a chart sheet",
-    "The runtime leading with ticket.contact.rowOverrides.usefulFirst (voice module)"
+    "The runtime leading with ticket.contact.rowOverrides.usefulFirst (voice module)",
+    "Real HubSpot or Zoho accounts (fakes only, shaped from the docs; two shapes were inferred where the official page did not show them: HubSpot lists/search response, Zoho v8 custom_views)",
+    "Zoho datacenters other than the fake; HubSpot lists over 100 (paging of lists/search)",
+    "A CRM import screen in the web app (tools only; the Integrations label is workspace's)"
   ],
   "needs_from_others": [
     {
@@ -198,14 +220,20 @@
     {
       "from": "safety",
       "what": "T-L7 misses 'the offer ends tonight so they must decide now or lose it forever' (false urgency); found while testing first_message."
+    },
+    {
+      "from": "workspace",
+      "what": "INTEGRATION_KINDS: set usedBy for hubspot and zoho_crm to 'Imports contacts' (the label now reads 'Stored, not used yet')."
     }
   ],
   "jobs": [
-    "intake.retention (daily 03:10 IST)"
+    "intake.retention (daily 03:10 IST)",
+    "intake.crm_sync (every 15 min; runs timed CRM syncs that are due; off unless a source sets 1, 6 or 24 h)"
   ],
   "cross_module_imports": [
     "forgetContactMemory from ../memory/index.ts and cancelContactAttempts from ../campaigns/index.ts: the sanctioned data functions (integrator, 2026-10-21), so DPDP erasure forgets memory and cancels queued attempts inside its own transaction. Everything else goes through the registry.",
-    "shapeLint from ../agents/lint.ts (pure): a row's first_message passes the same recitable-line lint as the agent's opening.usefulFirst."
+    "shapeLint from ../agents/lint.ts (pure): a row's first_message passes the same recitable-line lint as the agent's opening.usefulFirst.",
+    "integrationSecretsById from ../workspace/integrations.ts (a data function on the caller's Queryable): the stored CRM credentials, decrypted only for the pull."
   ],
   "suppression_sources": {
     "in_call": "contact.suppress_after_opt_out (evidence: conversationId, campaignId, quote)",

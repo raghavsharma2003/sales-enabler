@@ -8,7 +8,7 @@ import type { AgentConfig, Fact } from '../../../shared/agent-config.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import { HttpError, type Req, type Router } from '../../http.ts';
-import { inScope, tool, type Registry } from '../../tools.ts';
+import { inScope, tool, type Registry, type ToolCtx } from '../../tools.ts';
 import type { Deps } from '../../app.ts';
 import { DEFAULT_MAX_AGE_S, type Authority } from './authority.ts';
 import { detectDelimiter, parseDelimited, type Delimiter } from './csv.ts';
@@ -57,15 +57,23 @@ async function getSource(q: Queryable, ws: string, id: string): Promise<SourceRo
 }
 
 /** Receive one part of a file. Parts arrive in order; re-sending the last part is a no-op. */
+/** What a conversion found: an Excel file read on the server, or a list pulled from a CRM. baseOverrides are mappings the
+ *  conversion knows for certain (a CRM id column is never a phone), applied under any the member gives. */
+export type Converted = ({ from: 'xlsx'; sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number; errorCells: number }
+  | { from: 'hubspot' | 'zoho_crm'; integrationId: string; listId: string; listName: string; records: number; unchangedSkipped: number; numberChanged: string[]; truncated: boolean })
+  & { fileBytes: number; fileSha256: string; baseOverrides?: Record<string, Partial<ColumnMap>> };
+const CRM_FROM = new Set(['hubspot', 'zoho_crm']);
+
 export async function receivePart(q: Queryable, ws: string, p: { uploadId?: string; sourceId?: string; filename?: string; text: string; part?: number; final?: boolean;
-  converted?: { from: 'xlsx'; fileBytes: number; fileSha256: string; sheet: string; rows: number; formulaCells: number; formulaWithoutValue: number; errorCells: number } }) {
+  converted?: Converted }) {
   if (Buffer.byteLength(p.text) > (p.converted ? MAX_CONVERTED_BYTES : MAX_FILE_BYTES)) throw new HttpError(413, 'too_large', p.converted ? 'this sheet holds more than Vyakti reads in one file; split it' : 'files are limited to 20 MB');
   if (p.converted && (p.uploadId || !p.final)) throw new HttpError(422, 'whole_file', 'send an Excel file in one request (final=true), not in parts');
   let up: { id: string; parts: number; bytes: number; last_part_sha: string | null; status: string; source_id: string | null } | null;
   if (!p.uploadId) {
     const kind: SourceKind = p.converted ? 'xlsx' : /\.tsv$/i.test(p.filename ?? '') || detectDelimiter(p.text) === '\t' ? 'tsv' : 'csv';
     const src = p.sourceId ? await getSource(q, ws, p.sourceId) : (await createSource(q, ws, { kind, name: p.filename ?? 'upload' })).source;
-    if (!(FILE_KINDS as readonly string[]).includes(src.kind)) throw new HttpError(409, 'wrong_source', 'that source takes webhook events, not files');
+    const crmPull = !!p.converted && CRM_FROM.has(p.converted.from);
+    if (crmPull ? src.kind !== 'crm' : !(FILE_KINDS as readonly string[]).includes(src.kind)) throw new HttpError(409, 'wrong_source', crmPull ? 'a CRM pull goes to a CRM source' : 'that source takes webhook events, not files');
     // bytes counts what was uploaded (the .xlsx itself when converted), which the 20 MB limit applies to.
     up = await one(q, `INSERT INTO intake_upload (workspace_id, source_id, filename, content, bytes, parts, last_part_sha, converted)
       VALUES ($1,$2,$3,$4,$5,1,$6,$7) RETURNING id, parts, bytes, last_part_sha, status, source_id`,
@@ -105,11 +113,12 @@ const overrides = opt(record(override, { maxKeys: 200 })) as Validator<Record<st
 
 interface Table { rows: string[][]; delimiter: Delimiter; mapping: Mapping }
 
-function table(content: string, given?: Record<string, Partial<ColumnMap>>): Table {
+function table(content: string, given?: Record<string, Partial<ColumnMap>>, base?: Record<string, Partial<ColumnMap>>): Table {
   const delimiter = detectDelimiter(content);
   const rows = parseDelimited(content, delimiter);
-  return { rows, delimiter, mapping: inferMapping(rows, given ?? {}) };
+  return { rows, delimiter, mapping: inferMapping(rows, { ...(base ?? {}), ...(given ?? {}) }) };
 }
+const baseOf = (u: { converted: Record<string, unknown> | null }) => (u.converted?.baseOverrides ?? undefined) as Record<string, Partial<ColumnMap>> | undefined;
 
 /** Turn one file row into the write path's shape, plus the cell-level notes the preview shows and the override cells the
  *  agent's rules refused (counted on the receipt; the value is not stored). */
@@ -202,7 +211,7 @@ export function registerSourceTools(reg: Registry): void {
     summary: 'Detect the columns of an uploaded file and preview what each row would do, with a reason for every row that will not be called',
     run: async (ctx, i) => {
       const u = await loadUpload(ctx.q, ctx.workspaceId, i.uploadId);
-      const t = table(u.content, i.overrides);
+      const t = table(u.content, i.overrides, baseOf(u));
       const now = new Date();
       const { rows, notes } = fileRows(t, now);
       const phoneCol = t.mapping.columns.find(c => c.field === 'phone');
@@ -272,11 +281,33 @@ export function registerSourceTools(reg: Registry): void {
   reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, consentPurpose: opt(str({ min: 2, max: 80 })), audienceName: opt(str({ min: 1, max: 120 })) }), {
     name: 'source.commit', risk: 'draft',
     summary: 'Import a mapped file: dedupe on the number, merge by authority and freshness, append consent, keep every suppression and tombstone',
+    run: (ctx, i) => commitUpload(ctx, i),
+  }));
+
+  reg.register(tool(obj({ limit: opt(num({ int: true, min: 1, max: 200 })) }), {
+    name: 'source.list', risk: 'read', summary: 'List the sources people come from, with their authority and last receipt',
+    run: async (ctx, i) => ({ sources: await many(ctx.q, `SELECT s.id, s.kind, s.name, s.authority, s.max_age_s, s.status, s.created_at, (s.hook_secret IS NOT NULL) AS signed_webhook,
+        (SELECT max(r.created_at) FROM intake_upload u JOIN source_receipt r ON r.id = u.receipt_id WHERE u.source_id = s.id) AS last_receipt_at
+      FROM intake_source s WHERE s.workspace_id = $1 ORDER BY s.created_at DESC LIMIT $2`, [ctx.workspaceId, i.limit ?? 50]) }),
+  }));
+
+  reg.register(tool(obj({ receiptId: uuid() }), {
+    name: 'source.receipt', risk: 'read', summary: 'Read an import receipt: counts and the reason for every row not imported or not callable',
     run: async (ctx, i) => {
+      const r = await one(ctx.q, 'SELECT id, kind, filename, rows_total, rows_ok, summary, created_at FROM source_receipt WHERE id = $1 AND workspace_id = $2', [i.receiptId, ctx.workspaceId]);
+      if (!r) throw new Error('no such receipt in this workspace');
+      return r;
+    },
+  }));
+}
+
+/** Import an uploaded file or CRM pull through the one write path. Used by source.commit and by source.sync. */
+export async function commitUpload(ctx: ToolCtx, i: { uploadId: string; overrides?: Record<string, Partial<ColumnMap>>; mapping?: Mapping; consentPurpose?: string; audienceName?: string }) {
       const u = await loadUpload(ctx.q, ctx.workspaceId, i.uploadId, true);
       if (u.status === 'committed') throw new Error('this upload is already imported; its receipt has the result');
-      const t = table(u.content, undefined);
-      if (i.overrides || !u.mapping) t.mapping = inferMapping(t.rows, i.overrides ?? {});
+      const t = table(u.content, undefined, baseOf(u));
+      if (i.mapping) t.mapping = i.mapping;                                        // a sync reuses the last import's mapping
+      else if (i.overrides || !u.mapping) t.mapping = inferMapping(t.rows, { ...(baseOf(u) ?? {}), ...(i.overrides ?? {}) });
       else t.mapping = u.mapping;
       if (!t.mapping.columns.some(c => c.field === 'phone')) throw new Error('no phone column found; map one with overrides');
       const src = await getSource(ctx.q, ctx.workspaceId, u.source_id);
@@ -297,25 +328,27 @@ export function registerSourceTools(reg: Registry): void {
       await ctx.q.query('UPDATE source_receipt SET rows_total = $2, rows_ok = $3, summary = $4 WHERE id = $1 AND workspace_id = $5',
         [u.receipt_id, rows.length, rowsOk, JSON.stringify(summary), ctx.workspaceId]);
       await ctx.q.query("UPDATE intake_upload SET status = 'committed', committed_at = now(), mapping = $2 WHERE id = $1", [u.id, JSON.stringify(t.mapping)]);
+      if (u.converted && CRM_FROM.has(String(u.converted.from))) await rememberCrmRecords(ctx.q, ctx.workspaceId, src.id, t, i.consentPurpose);
       return { receiptId: u.receipt_id, rowsTotal: rows.length, rowsOk, counts: res.counts, issues: res.issues.slice(0, 50), audienceId: audienceId ?? null, ms };
-    },
-  }));
+}
 
-  reg.register(tool(obj({ limit: opt(num({ int: true, min: 1, max: 200 })) }), {
-    name: 'source.list', risk: 'read', summary: 'List the sources people come from, with their authority and last receipt',
-    run: async (ctx, i) => ({ sources: await many(ctx.q, `SELECT s.id, s.kind, s.name, s.authority, s.max_age_s, s.status, s.created_at, (s.hook_secret IS NOT NULL) AS signed_webhook,
-        (SELECT max(r.created_at) FROM intake_upload u JOIN source_receipt r ON r.id = u.receipt_id WHERE u.source_id = s.id) AS last_receipt_at
-      FROM intake_source s WHERE s.workspace_id = $1 ORDER BY s.created_at DESC LIMIT $2`, [ctx.workspaceId, i.limit ?? 50]) }),
-  }));
-
-  reg.register(tool(obj({ receiptId: uuid() }), {
-    name: 'source.receipt', risk: 'read', summary: 'Read an import receipt: counts and the reason for every row not imported or not callable',
-    run: async (ctx, i) => {
-      const r = await one(ctx.q, 'SELECT id, kind, filename, rows_total, rows_ok, summary, created_at FROM source_receipt WHERE id = $1 AND workspace_id = $2', [i.receiptId, ctx.workspaceId]);
-      if (!r) throw new Error('no such receipt in this workspace');
-      return r;
-    },
-  }));
+/** After a CRM pull is imported: one row per CRM record (its number as a hash), so the next sync skips unchanged records
+ *  and flags a record whose number changed. The consent purpose is kept so a sync records consent the same way. */
+async function rememberCrmRecords(q: Queryable, ws: string, sourceId: string, t: Table, consentPurpose?: string) {
+  const salt = await workspaceSalt(q, ws);
+  const head = t.rows[0] ?? [];
+  const phoneCol = t.mapping.columns.find(c => c.field === 'phone')?.column;
+  const updCol = head.indexOf('Updated at');
+  const ids: string[] = [], hashes: (string | null)[] = [], upd: (string | null)[] = [];
+  for (const r of t.rows.slice(1)) {
+    if (!r[0]) continue;
+    const p = phoneCol === undefined ? null : normaliseIndianPhone(r[phoneCol] ?? '');
+    ids.push(r[0]); hashes.push(p && p.ok ? hashWith(salt, p.e164) : null); upd.push(updCol >= 0 ? r[updCol] || null : null);
+  }
+  if (ids.length) await q.query(`INSERT INTO intake_crm_record (source_id, crm_id, workspace_id, e164_hash, crm_updated_at)
+      SELECT $1, t.id, $2, t.h, t.u FROM unnest($3::text[], $4::text[], $5::text[]) AS t(id, h, u)
+      ON CONFLICT (source_id, crm_id) DO UPDATE SET e164_hash = EXCLUDED.e164_hash, crm_updated_at = EXCLUDED.crm_updated_at, seen_at = now()`, [sourceId, ws, ids, hashes, upd]);
+  if (consentPurpose) await q.query("UPDATE intake_source SET crm = crm || jsonb_build_object('consentPurpose', $2::text) WHERE id = $1", [sourceId, consentPurpose]);
 }
 
 // ---- raw routes: file parts and signed webhooks -------------------------------------------------

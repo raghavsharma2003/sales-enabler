@@ -126,7 +126,9 @@ export function inferMapping(rows: string[][], overrides: Partial<Record<string,
     columns.push(m);
   }
   // Exactly one phone column: keep the most confident; any others become attributes.
-  const phones = columns.filter(m => m.field === 'phone').sort((a, b) => b.confidence - a.confidence || a.column - b.column);
+  // A column the member named, or whose header says phone, beats one that only looks like phone numbers ("Other phone").
+  const strength = (m: ColumnMap) => (m.why === 'given' ? 2 : m.why === 'header' ? 1 : 0);
+  const phones = columns.filter(m => m.field === 'phone').sort((a, b) => strength(b) - strength(a) || b.confidence - a.confidence || a.column - b.column);
   for (const p of phones.slice(1)) Object.assign(p, { field: 'attribute', key: attrKey(p.header), type: 'text', confidence: 0.5 });
   return { columns, hasHeader };
 }

@@ -1,0 +1,58 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-24.crm-contact-import",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "HubSpot and Zoho CRM contact import, read only, through the stored integration credentials: each pull is an intake upload with a receipt, mapped like a file (agent column contract included); sync re-imports idempotently on the CRM id; timed sync off by default",
+      "path": "product/server/modules/intake/crm-tools.ts",
+      "details": "Tools source.crm.lists (read), source.crm.pull, source.sync, source.sync.schedule (draft); job intake.crm_sync. Tests intake-crm 5/5 against local fakes shaped from the documented responses (research/2026-10-24/crm-import/README.md): lists, paging, 100-id batch reads, token refresh, page_token, consent only from a CRM field, DND unknown, no write calls, unchanged skipped, changed number flagged, timed sync and its failure, plain refusals, tenancy. Not verified: a real CRM account."
+    },
+    {
+      "id": "decision.2026-10-24.crm-number-change-flagged",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "A CRM record whose phone number changed since the last import is flagged on the receipt and not imported; one CRM record never becomes two contacts by itself",
+      "rationale": "Idempotent on the CRM id. Moving the number automatically is an identity change (it would re-point consent and suppression), which needs a person (contact.merge is A2).",
+      "reverse_if": "Buyers find the flag noisy for routine number changes, and a reviewed path that moves the number with its consent history is built."
+    },
+    {
+      "id": "decision.2026-10-24.crm-consent-only-where-recorded",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "From a CRM, consent comes only from a field that says so (read as consent by the same header rules as a file, and recorded only with a purpose); email opt-outs and data-processing bases are not call consent; DND is never taken from a CRM",
+      "rationale": "Brief: 'consent and DND state come across only where the CRM records it, otherwise unknown, never assumed'. HubSpot hs_legal_basis and Zoho Email_Opt_Out are not about phone calls.",
+      "reverse_if": "A CRM adds a standard call-consent or DNC field; then it is mapped by default with its own test."
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.2026-10-24.crm-contact-import",
+      "to": "decision.2026-10-24.crm-number-change-flagged",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-24.crm-contact-import",
+      "to": "decision.2026-10-24.crm-consent-only-where-recorded",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-24.crm-contact-import",
+      "to": "component.2026-10-24.intake-xlsx-import",
+      "relation": "extends"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "crm-contact-import",
+      "details": "HubSpot and Zoho CRM contact import built in intake (read only; fakes only). Verified: tsc clean; intake-crm 5/5; npm run gen (220 tools); full fresh-DB suite green after ledger labels; web tests 13/13. Not verified: real CRM accounts. Workspace label change requested."
+    }
+  ]
+}

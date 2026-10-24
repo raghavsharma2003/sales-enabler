@@ -179,9 +179,13 @@ export type ToolName =
   | "simcaller.list"
   | "simcaller.save"
   | "source.commit"
+  | "source.crm.lists"
+  | "source.crm.pull"
   | "source.list"
   | "source.map"
   | "source.receipt"
+  | "source.sync"
+  | "source.sync.schedule"
   | "source.upload"
   | "sso.config.get"
   | "sso.config.set"
@@ -1379,6 +1383,17 @@ export interface ToolInput {
     consentPurpose?: string;
     audienceName?: string;
   };
+  /** The contact lists (HubSpot) or views (Zoho CRM) a connected CRM offers for import (read) */
+  "source.crm.lists": {
+    integrationId: string;
+  };
+  /** Pull the contacts of one CRM list or view into an import you can check before saving (read only: nothing is written to the CRM) (draft) */
+  "source.crm.pull": {
+    integrationId: string;
+    listId: string;
+    fields?: string[];
+    sourceId?: string;
+  };
   /** List the sources people come from, with their authority and last receipt (read) */
   "source.list": {
     limit?: number;
@@ -1399,6 +1414,16 @@ export interface ToolInput {
   /** Read an import receipt: counts and the reason for every row not imported or not callable (read) */
   "source.receipt": {
     receiptId: string;
+  };
+  /** Re-pull a CRM list and import it with the mapping of its last import; unchanged records are skipped (read only on the CRM) (draft) */
+  "source.sync": {
+    sourceId: string;
+  };
+  /** Sync a CRM list on a timer (every 1, 6 or 24 hours) or turn the timer off; off unless set (draft) */
+  "source.sync.schedule": {
+    sourceId: string;
+    everyHours?: number;
+    off?: boolean;
   };
   /** Register a source of people: a file (text inline, or parts via POST /v1/uploads/contacts) or a signed webhook for a CRM, form or opt-in (draft) */
   "source.upload": {
@@ -1902,9 +1927,13 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "simcaller.list": { risk: "read", needsApproval: false },
   "simcaller.save": { risk: "draft", needsApproval: false },
   "source.commit": { risk: "draft", needsApproval: false },
+  "source.crm.lists": { risk: "read", needsApproval: false },
+  "source.crm.pull": { risk: "draft", needsApproval: false },
   "source.list": { risk: "read", needsApproval: false },
   "source.map": { risk: "draft", needsApproval: false },
   "source.receipt": { risk: "read", needsApproval: false },
+  "source.sync": { risk: "draft", needsApproval: false },
+  "source.sync.schedule": { risk: "draft", needsApproval: false },
   "source.upload": { risk: "draft", needsApproval: false },
   "sso.config.get": { risk: "read", needsApproval: false },
   "sso.config.set": { risk: "policy", needsApproval: true },
