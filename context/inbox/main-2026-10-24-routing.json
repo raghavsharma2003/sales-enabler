@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-routing-2026-10-24",
+      "details": "Check-in 23:25Z/00:15Z. The campaigns builder holds for a go typed by the owner (it does not accept a relayed one), so its step 1 (staff credit, trial credit default 0, Vyakti copy S3, wallet-aware blockers S6) moved to the money module's owner session; campaigns keeps Plivo KYC, A2P checklist, BYO refusal and series rules for when the owner says go. The web builder ran on Sonnet against the owner's Opus-only model directive, with its context at 778k of 1M; a new Opus session took the web lane: buyer walkthrough round 2 (NBFC collections and a hospital chain, desktop and phone), research/2026-10-24/walkthrough/FRICTION.md, web fixes, server items routed. Calls: signed recording URLs so the call page can play real recordings (ee8aef6 found recordingUri is a file path). Bench r3 (analysis DEV then TEST twice per design, Operator 48 x 2 models) started on cd94b63, cap Rs 250."
+    }
+  ]
+}
