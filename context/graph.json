@@ -23902,6 +23902,66 @@
    "date": "2026-10-24",
    "title": "Payment status is inert until workspace adds the razorpay, cashfree and payu integration kinds (agreed), and campaigns wires paidSinceImport into G4 as 'already_paid' for campaign, api and retry attempts (agreed)",
    "closes_when": "Both land, and the payments e2e flow runs instead of skipping, plus a campaigns test shows G4 refusing a paid person."
+  },
+  {
+   "id": "decision.2026-10-24.learning-from-test-calls",
+   "type": "decision",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "An agent with no live calls learns from its test calls, failed practice runs (what failed, never the transcript) and moments flagged in review; every such proposal is labelled 'a reason to try it, not a measured result', and test calls never count toward power, a baseline or an experiment. learning.power {agentId} plans only from the agent's own live calls with a recorded outcome and below 30 says 'Not enough calls to know', with the count and the test calls not counted. Every proposal stores the calls it cites with their outcome reading (calls' outcome.readings) and the quoted lines.",
+   "rationale": "directive.2026-10-24.calling-first-build-all: the owner's test calls are the first data the loop sees. A test call shows how she sounds, not what callers decide; inventing a lift from them would be false.",
+   "reverse_if": "Test calls gain a recorded outcome that means a real decision (e.g. a staged buyer with a verified result), or the owner asks that test calls count."
+  },
+  {
+   "id": "decision.2026-10-24.learning-adopt-without-test",
+   "type": "decision",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A person may adopt a proposed change on their own judgement, with no live test: proposal.adopt (A2, owner or builder; the card says 'has not been proved on live calls') publishes it through agents' new version.adopt (live version with only the changed fields set; each field must still hold what it was drafted against; guard and model review as a publish; bindings move; running tests stop; the draft follows where unedited). proposal.revert takes it back the same way with before and after swapped. The gates still run, so disclosure, safety, hand-off and facts' values are never changed this way.",
+   "rationale": "With only test calls no experiment can decide, yet the owner must be able to try a change and undo it. The version flow keeps history whole; the label keeps it honest.",
+   "reverse_if": "The owner wants every learned change to pass a live test first, or a minimum of live calls before adopt is offered."
+  },
+  {
+   "id": "decision.2026-10-24.how-she-changed",
+   "type": "decision",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "'How she changed' (Agent > Versions, learning.history): every change learning made or proposed, newest first. Each shows the parts before and after and the compiled brief line by line (the base version's brief against the version it made, else a compile preview); why and what it came from; the evidence (calls with outcome readings, quotes, a flagged moment); who approved each card (approval_token -> member); a test result; Take it back / Adopt while possible. Blocked changes are listed as 'Blocked by its checks; never offered'.",
+   "rationale": "Integrator task 2026-10-24: the owner must see every change, why, the evidence and who approved it, and revert in one click through the version flow.",
+   "reverse_if": "The owner prefers the history on Insights instead of the agent page."
+  },
+  {
+   "id": "decision.2026-10-24.review-flag-turn",
+   "type": "decision",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "review.flag_turn {conversationId, turn, note<=500} (learning owns it and the conversation 'owner_review' flag; calls adds the button on the call page): the turn is quoted from the call's own record (turn table, else transcript), never from the request; it becomes an owner_flag lesson and one drafted change citing flag:<id> through every gate (a request outside learning's parts comes back out_of_scope). Test calls may be flagged. A caller's line from a never-quoted call stays out of the model's view. Migration 0806 (review_flag; lesson statuses owner_flag/adopted/reverted; proposal status reverted; proposal.adopted).",
+   "rationale": "Integrator task 2026-10-24 (lessons from the owner's review); seam agreed with calls (session_01BZFubGAjuSsVUc4S4JhLAL) the same day.",
+   "reverse_if": "Calls wants to own the flag write; then calls writes review_flag and learning reads it."
+  },
+  {
+   "id": "measure.2026-10-24.learning-owner-review-e2e",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 1,
+   "title": "learning-owner-review.test.ts passes on the real modules over HTTP. A flag on a test call gives an owner_flag lesson and a drafted change quoting the turn from the record. Power reads 'Not enough calls to know' with '4 test calls are not counted', and readiness refuses a live test. The adopt card is approved: version 2 has the note in its brief word for word, the draft has it, and the opening is unchanged. The history shows before/after brief lines, the flag and 'Adopt without a live test: approved by Asha Owner'. A disclosure edit is gated out and never offered. The revert card is approved: version 3 has the version 1 notes, and the history shows 'Taken back'.",
+   "method": "Fresh Postgres 16 database (scripts/pg-test.sh), NODE_ENV=test, fake model (a coach answering the flag), synthetic test-call rows. node --import tsx --test tests/learning-owner-review.test.ts.",
+   "not_verified": "A real model drafting from real test calls; the call-page button (calls is adding it); a test call on the unsaved draft (no version on the row); the panel was typechecked but not screenshotted."
+  },
+  {
+   "id": "open.2026-10-24.draft-test-calls-not-tied-to-agent",
+   "type": "open-question",
+   "status": "open",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A test call on the unsaved draft is stored with agent_version_id NULL and run_manifest {test, draftHash}, so neither learning nor review.flag_turn can tell which agent it belongs to. review.flag_turn already reads run_manifest.agentId if calls writes it.",
+   "closes_when": "Calls writes agentId into a draft test call's run_manifest (test.browser_call), and a flag on such a call drafts a change."
   }
  ],
  "edges": [
@@ -42961,6 +43021,41 @@
    "from": "rejected.2026-10-24.test-row-copies-first-person",
    "to": "component.2026-10-24.sample-packs",
    "relation": "challenges"
+  },
+  {
+   "from": "decision.2026-10-24.learning-from-test-calls",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.learning-adopt-without-test",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.how-she-changed",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.review-flag-turn",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.learning-from-test-calls",
+   "to": "decision.2026-10-21.learning-counts-outcome-calls",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.learning-owner-review-e2e",
+   "to": "decision.2026-10-24.learning-adopt-without-test",
+   "relation": "measures"
+  },
+  {
+   "from": "decision.2026-10-24.review-flag-turn",
+   "to": "open.2026-10-24.draft-test-calls-not-tied-to-agent",
+   "relation": "leaves-open"
   }
  ]
 }
