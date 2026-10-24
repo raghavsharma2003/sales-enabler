@@ -617,6 +617,7 @@ export function registerAgentTools(r: Registry): void {
       const parent = await one<{ id: string }>(ctx.q, 'SELECT id FROM agent_version WHERE id = $1 AND agent_id = $2', [i.parentVersionId, a.id]);
       if (!parent) throw new ValidationError('parentVersionId', 'must be a published version of this agent');
       const cfg = validateConfig(i.config);
+      guardDraft(null, cfg);                         // a treatment arm reaches people: the hard safety guard applies here too
       compileOrRefuse({ ...cfg, agentId: a.id });   // refuse with the lint or budget reason before numbering anything
       return createVersion(ctx, a.id, cfg, parent.id, i.note);
     },
@@ -666,6 +667,76 @@ export function registerAgentTools(r: Registry): void {
       await appendAudit(ctx.q, { workspaceId: ctx.workspaceId, actorType: ctx.actor.type, actorId: ctx.actor.id, action: 'deployment.reverted', objectType: 'deployment', objectId: d!.id,
         payload: { agentId: a.id, binding, from: current.id, restored: previous.id, reason: why } });
       return { deploymentId: d!.id, binding, restoredFrom: previous.id, replaced: current.id, split: previous.split, reason: why };
+    },
+  }));
+
+  // ---- version.restore: a one-step rollback that never rewrites history (integrator 2026-10-24) ----
+  type VersionRow = { id: string; number: number; config: { agent: AgentConfig; brief?: { hash: string } } };
+  /** The live version: the one carrying most of the agent's latest campaign deployment, else the latest published one. */
+  const liveVersion = async (ctx: ToolCtx, agentId: string): Promise<VersionRow | null> => {
+    const dep = await one<{ split: { version_id: string; percent: number }[] }>(ctx.q,
+      "SELECT split FROM deployment WHERE agent_id = $1 AND workspace_id = $2 AND binding = 'campaign' ORDER BY created_at DESC, id DESC LIMIT 1", [agentId, ctx.workspaceId]);
+    const top = dep?.split?.slice().sort((a, b) => b.percent - a.percent)[0]?.version_id;
+    return (top ? await one<VersionRow>(ctx.q, 'SELECT id, number, config FROM agent_version WHERE id = $1 AND agent_id = $2', [top, agentId]) : null)
+      ?? await one<VersionRow>(ctx.q, 'SELECT id, number, config FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [agentId]);
+  };
+  const restoreTarget = async (ctx: ToolCtx, agentId: string, versionId: string) => {
+    const v = await one<VersionRow>(ctx.q, `SELECT v.id, v.number, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id
+      WHERE v.id = $1 AND v.agent_id = $2 AND a.workspace_id = $3`, [versionId, agentId, ctx.workspaceId]);
+    if (!v) throw new ValidationError('versionId', 'that is not a published version of this agent');
+    return v;
+  };
+  const restoreIn = obj({ agentId: uuid(), versionId: uuid(), reason: opt(str({ max: 300 })) },
+    'Roll the agent back: publish a new version equal to an earlier published one, and point its deployments at it.');
+  r.register(tool(restoreIn, {
+    name: 'version.restore', risk: 'external', summary: 'Roll an agent back: publish a new version equal to an earlier one and send its calls there',
+    describe: async (i, ctx) => {
+      const name = await label(ctx, 'agent', i.agentId);
+      const target = await one<VersionRow>(ctx.q, `SELECT v.id, v.number, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id
+        WHERE v.id = $1 AND v.agent_id = $2 AND a.workspace_id = $3`, [i.versionId, i.agentId, ctx.workspaceId]);
+      if (!target) return `Roll back ${name} to an earlier version`;
+      const next = ((await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [i.agentId]))?.n) ?? 1;
+      const live = await liveVersion(ctx, i.agentId);
+      const parts = [`Roll back ${name} to version ${target.number} (as version ${next})` + (i.reason ? ` because ${i.reason}` : '') + '.'];
+      const stack = stackOf(target.config.agent.voice);
+      if (stack) parts.push(`Voice: ${stack.label}.`);
+      if (live) {
+        const changes = diff(comparable(live.config.agent), comparable(target.config.agent));
+        parts.push(changes.length ? `Changes from the live version ${live.number}: ` + changes.slice(0, 6).map(c => changePhrase(c, c.to === null ? live.config.agent : target.config.agent)).join('; ') +
+          (changes.length > 6 ? `; and ${changes.length - 6} more` : '') + '.' : `It is the same as the live version ${live.number}.`);
+      }
+      parts.push('Calls move to it; running tests on this agent stop; unpublished draft edits are kept.');
+      return parts.join(' ');
+    },
+    version: async (ctx, i) => (await liveVersion(ctx, i.agentId))?.id ?? 'none',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId, true);
+      const target = await restoreTarget(ctx, a.id, i.versionId);
+      const live = await liveVersion(ctx, a.id);
+      if (live && live.id !== target.id && JSON.stringify(comparable(live.config.agent)) === JSON.stringify(comparable(target.config.agent)))
+        throw new ValidationError('versionId', `version ${target.number} is the same as the live version ${live.number}; nothing to roll back`);
+      if (live?.id === target.id) throw new ValidationError('versionId', `version ${target.number} is already live`);
+      // The hard safety guard holds for restores too: a version published before the guard cannot come back with a breach.
+      guardDraft(null, target.config.agent);
+      const v = await createVersion(ctx, a.id, target.config.agent, live?.id ?? target.id, `rolled back to version ${target.number}` + (i.reason ? `: ${i.reason}` : ''));
+      // Every binding that has a deployment moves wholly to the restored version (new rows; history is never rewritten).
+      const bindings = await many<{ binding: string }>(ctx.q, 'SELECT DISTINCT binding FROM deployment WHERE agent_id = $1 AND workspace_id = $2', [a.id, ctx.workspaceId]);
+      for (const b of bindings) await ctx.q.query('INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,$3,$4)',
+        [ctx.workspaceId, a.id, b.binding, JSON.stringify([{ version_id: v.versionId, percent: 100 }])]);
+      // Running experiments compare against a version that is no longer live: they stop, with the reason (learning's own tool).
+      const stopped: string[] = [];
+      const stopTool = r.get('experiment.stop');
+      const running = await many<{ id: string }>(ctx.q, "SELECT id FROM experiment WHERE agent_id = $1 AND workspace_id = $2 AND state IN ('aa_pending','running')", [a.id, ctx.workspaceId]);
+      for (const e of running) {
+        if (!stopTool) break;
+        await stopTool.run(ctx, stopTool.input({ experimentId: e.id, reason: `the agent was rolled back to version ${target.number}` }));
+        stopped.push(e.id);
+      }
+      const line = `rolled back ${a.name} to version ${target.number} (as version ${v.number})`;
+      await appendAudit(ctx.q, { workspaceId: ctx.workspaceId, actorType: ctx.actor.type, actorId: ctx.actor.id, action: 'version.restored', objectType: 'agent_version', objectId: v.versionId,
+        payload: { line, subject: { type: 'agent', id: a.id }, from: target.number, as: v.number, deployments: bindings.map(b => b.binding), experimentsStopped: stopped.length } });
+      return { ...v, restoredFrom: target.number, line, deployments: bindings.map(b => b.binding), experimentsStopped: stopped.length,
+        experimentsNote: stopTool ? undefined : 'experiments were not checked: the learning module is not loaded', draftUnchanged: true };
     },
   }));
 

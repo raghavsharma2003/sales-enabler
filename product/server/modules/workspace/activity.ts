@@ -20,10 +20,13 @@ const PHRASE: Record<string, [string, string]> = {
   'webhook.create': ['added a webhook', 'add a webhook'], 'webhook.delete': ['deleted a webhook', 'delete a webhook'], 'webhook.replay': ['sent a webhook event again', 'send a webhook event again'],
   'share.link.create': ['made a share link', 'make a share link'], 'share.link.revoke': ['turned off a share link', 'turn off a share link'],
   'action.decline': ['declined a proposed change', 'decline a proposed change'],
+  'version.restore': ['approved a rollback of an agent', 'roll an agent back to an earlier version'],
 };
 
 const words = (a: string) => a.replace(/[._]/g, ' ');
 const happened = (a: string) => PHRASE[a]?.[0] ?? `ran ${words(a)}`;
+// A row may carry its own plain line (e.g. 'rolled back Asha to version 3 (as version 6)'), written by the tool that knew it.
+const lineOf = (r: { action: string; payload: Record<string, unknown> }) => (typeof r.payload?.line === 'string' && r.payload.line.trim() ? r.payload.line : happened(r.action));
 const asked = (a: string) => PHRASE[a]?.[1] ?? `run ${words(a)}`;
 
 type Row = { id: string; actor_type: string; actor_id: string | null; action: string; object_type: string | null; object_id: string | null; payload: Record<string, unknown>; at: string; t: string };
@@ -96,7 +99,7 @@ export function registerActivity(r: Registry) {
         const subject = subjectFor(r);
         const about = subject?.name ? ` (${subject.name})` : '';
         const line = proposed ? `${who(r)} asked to ${asked(proposed)}${about} and is waiting for approval`
-          : `${who(r)} ${happened(r.action)}${about}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
+          : `${who(r)} ${lineOf(r)}${typeof r.payload?.line === 'string' ? '' : about}${r.payload.mode === 'A2' ? ' (approved)' : ''}${r.payload.outcome === 'unknown' ? ' (outcome not confirmed)' : ''}`;
         return { id: r.id, at: r.at, line, action: r.action, ...(proposed ? { tool: proposed } : {}), actor: { type: r.actor_type, id: r.actor_id },
           object: r.object_type ? { type: r.object_type, id: r.object_id } : null, subject };
       });

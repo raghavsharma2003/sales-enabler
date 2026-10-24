@@ -30,6 +30,7 @@ export const TOOL_LABEL: Record<string, { ask: string; done: string }> = {
   'campaign.window.narrow': { ask: 'Narrow the calling window', done: 'Calling window narrowed' },
   'policy.window.set': { ask: 'Change the calling hours', done: 'Calling hours changed' },
   'version.publish': { ask: 'Publish this agent', done: 'Agent published' },
+  'version.restore': { ask: 'Roll this agent back to an earlier version', done: 'Agent rolled back' },
   'brief.edit': { ask: 'Change the agent', done: 'Agent changed' },
   'stack.set': { ask: 'Choose a voice stack', done: 'Voice stack chosen' },
   'agent.create': { ask: 'Create an agent', done: 'Agent created' },
@@ -92,7 +93,7 @@ export function fieldValue(path: string, v: unknown): string | null {
 const FIX_PAGE: Record<string, string> = {
   'number.search': '/numbers', 'number.rent': '/numbers', 'number.a2p.declare': '/numbers', 'member.phone.verify_start': '/numbers',
   'wallet.topup': '/settings/billing', 'cap.raise': '/settings/billing', 'cap.lower': '/settings/billing',
-  'stack.set': '/agents', 'version.publish': '/agents', 'brief.edit': '/agents', 'campaign.audience.add': '/contacts',
+  'stack.set': '/agents', 'version.publish': '/agents', 'version.restore': '/agents', 'brief.edit': '/agents', 'campaign.audience.add': '/contacts',
   'policy.window.set': '/settings/compliance', 'brand.update': '/settings/brand',
 };
 
@@ -183,7 +184,7 @@ export const PAST: Record<string, string> = {
   'stack.list': 'looked at the voice stacks', 'stack.set': 'chose a voice stack for an agent', 'template.list': 'looked at the starter agents',
   'test.browser_call': 'started a test call in the browser', 'test.ring_member_phone': 'rang their own phone for a test', 'test.simulate': 'ran a practice call', 'test.simulate_batch': 'ran a set of practice calls',
   'thread.get': 'opened an assistant conversation', 'thread.list': 'looked at the assistant conversations', 'tool.attach': 'changed what an agent can do on a call', 'usage.get': 'looked at what has been spent',
-  'version.candidate': 'prepared a version to test', 'version.diff': 'compared two versions', 'version.list': 'looked at an agent\'s versions', 'version.publish': 'published an agent', 'voice.set': 'chose a voice for an agent',
+  'version.candidate': 'prepared a version to test', 'version.diff': 'compared two versions', 'version.list': 'looked at an agent\'s versions', 'version.publish': 'published an agent', 'version.restore': 'rolled an agent back to an earlier version', 'voice.set': 'chose a voice for an agent',
   'wallet.credit': 'credited the wallet by hand', 'money.parts': 'looked at what each voice part costs', 'wallet.check': 'checked what the wallet can pay for', 'wallet.get': 'looked at the wallet', 'wallet.topup': 'added money to the wallet',
   'webhook.create': 'added a webhook', 'webhook.delete': 'removed a webhook', 'webhook.deliveries': 'looked at what was sent to webhooks', 'webhook.emit': 'queued a webhook event', 'webhook.list': 'looked at the webhooks', 'webhook.replay': 'sent a webhook event again',
   'workspace.get': 'looked at the workspace',

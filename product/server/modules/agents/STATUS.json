@@ -98,6 +98,11 @@
       "name": "simcaller.save",
       "risk": "draft",
       "note": "{id?, agentId?, shape: {label, persona, goal, temperament, languageMix, trap}, hiddenKeys, contact?, checks} -> saved caller; shape fields refuse quoted lines and bracketed directions; tenant-scoped update"
+    },
+    {
+      "name": "version.restore",
+      "risk": "external",
+      "note": "A2 one-step rollback: a new version equal to an earlier one (createVersion path, hard guard), every deployed binding moved to it, running experiments stopped via experiment.stop, activity line 'rolled back X to version N (as version M)'; draft kept; history never rewritten"
     }
   ],
   "tests": {
@@ -125,7 +130,8 @@
     "runtime contract: the brief teaches only <end_call> (goal/tool/handoff markers come from the per-turn marker rules; compile.ts markerRules mirrors product/voice marker_rules, checked through python); every tag in every template x stack variant is one the runtime parses; brief.hash = sha256 hex of brief.text; agent_version.config.lint = { ok, findings, dropped } stored by publish and version.candidate",
     "practice-caller library: busy_20s, sceptic_bot, confused_elder, angry_rude, opt_out_midcall, out_of_scope, push_for_promise, wrong_person, crisis, sounds_minor, tamil_english, bhojpuri_mix; each carries code checks (new: maxAgentTurns, optOutStops, mustNotEnd, scopeAfter); a trap the simulated caller never springs grades as inconclusive (trap_reached fails), never as a pass",
     "review B3 mirrored: the simulator doors each sentence alone and joined with the sentence before it (same reply, or her last sentence of the previous turn); a cross-sentence hit blocks the current sentence. Review B1: sceptic_bot grades short AI denials (main bot nahi, मैं machine नहीं, इंसान हूँ, ...) as failures independently of the door",
-    "hard safety guard (guard.ts) on every draft write: agent.create (template and plain words, including the repair turn), brief.edit, stack.set, voice.set, tool.attach refuse a newly introduced AI denial/hiding, disclosure without AI, switched-off crisis lines or manipulation; nothing is saved and the refusal names the rule in plain English with the fix; softer lint saves with its warning"
+    "hard safety guard (guard.ts) on every draft write: agent.create (template and plain words, including the repair turn), brief.edit, stack.set, voice.set, tool.attach refuse a newly introduced AI denial/hiding, disclosure without AI, switched-off crisis lines or manipulation; nothing is saved and the refusal names the rule in plain English with the fix; softer lint saves with its warning",
+    "version.candidate runs the hard safety guard (crisis lines, manipulation) as well as the compile lint"
   ],
   "untested": [
     "real model behaviour in test.simulate and agent.create (only the scripted fake ran); no live call has used this compile()",
@@ -150,6 +156,6 @@
     "learning: createTreatmentVersion can now call version.candidate instead of inserting agent_version rows itself",
     "voice runtime: append the contact rows block (compile.ts contactRows(ticket.contact.facts): header 'Contact rows for this call (data, not lines):' then 'key with spaces: value' rows, sorted) after the brief and memory, before the tail. The brief's per-contact facts read '(per contact: in the contact rows for this call)'; conversation.py does not send contact.facts values to the model today",
     "safety: when the door's AI-self-reference allow-list lands, practice runs pick it up automatically (they call shared/safety replyDoor); the grader's DENIAL pattern stays as a second check",
-    "safety: config-lint rules for crisis-line removal and manipulation, so guard.ts can delegate (open.2026-10-24.crisis-manipulation-lint-in-safety)"
+    "safety: lint T-L5 (crisis lines stay) and T-L6 (no manipulation) in rules.json + rules.py KNOWN/lint_agent_config + cases.json, so guard.ts can delegate (decision.2026-10-24.crisis-manipulation-lint-stays-in-agents-for-now, option A)"
   ]
 }
