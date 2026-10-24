@@ -75,7 +75,7 @@ test('MA-02: cards for removing a member, revoking a key, disconnecting and dele
   const key = await owner.run('apikey.create', { name: 'old name' });
   await stale('apikey.revoke', { id: key.result.id }, async () => { await b.pool.query("UPDATE api_key SET name = 'renamed' WHERE id = $1", [key.result.id]); });
 
-  const st = await owner.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.example.test/x' } });
+  const st = await owner.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.slack.com/services/T0SYNTH/B0SYNTH/x' } });
   const integ = await owner.run('integration.connect', { kind: 'slack', name: 'Alerts', stashId: st.result.stashId });
   await stale('integration.disconnect', { id: integ.result.id }, async () => { await b.pool.query("UPDATE integration SET name = 'Alerts 2', updated_at = now() WHERE id = $1", [integ.result.id]); });
 

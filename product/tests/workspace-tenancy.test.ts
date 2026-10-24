@@ -24,7 +24,7 @@ async function seed(c: Client & { email: string }, tag: string) {
   const reveal = await c.run('member.invite', { email: pend, role: 'viewer' });
   assert.equal(reveal.status, 'confirmed', JSON.stringify(reveal));
   const hook = await c.run('webhook.create', { url: 'http://127.0.0.1:9/never' });
-  const st = await c.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: `https://hooks.example.test/${tag}` } });
+  const st = await c.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: `https://hooks.slack.com/services/T0SYNTH/B0SYNTH/${tag}` } });
   const integ = await c.run('integration.connect', { kind: 'slack', name: `${tag} Slack`, stashId: st.result.stashId });
   const reg = new Registry(); workspaceModule.register(reg);
   await reg.execute(b.pool, 'webhook.emit', { event: 'call.ended', data: { tag } }, { workspaceId: ws, actor: { type: 'system' } });
@@ -67,7 +67,7 @@ test('another workspace can neither read nor change what is yours', { skip }, as
   refused(await z.run('share.link.create', { objectType: 'agent', objectId: A.agent.id }));
   refused(await z.tool('share.link.revoke', { id: A.share.id }));
   refused(await z.tool('secret.reveal', { revealId: A.key.revealId }));
-  const staged = await a.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.example.test/stash' } });
+  const staged = await a.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.slack.com/services/T0SYNTH/B0SYNTH/stash' } });
   refused(await z.run('integration.connect', { kind: 'slack', name: 'Stolen', stashId: staged.result.stashId }));
   assert.ok(await one(b.pool, 'SELECT 1 FROM secret_box WHERE id = $1', [staged.result.stashId]), 'the stash is still there for its owner');
   assert.equal((await one<{ name: string }>(b.pool, 'SELECT name FROM offering WHERE id = $1', [A.offering.id]))!.name, 'Alpha demo');

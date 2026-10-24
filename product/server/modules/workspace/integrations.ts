@@ -19,12 +19,21 @@ export const INTEGRATION_KINDS: Record<string, Kind> = {
   google_workspace: { label: 'Google Sheets and Calendar', secrets: ['service_account_json'], config: ['calendar_id', 'sheet_id'] },
   whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token'], config: ['phone_number_id'] },
   exotel: { label: 'Exotel', secrets: ['api_key', 'api_token'], config: ['account_sid', 'subdomain'] },
-  slack: { label: 'Slack', secrets: ['webhook_url'], config: [] },
+  slack: { label: 'Slack', secrets: ['webhook_url'], config: [], usedBy: 'Notifications post alerts to its channel' },
+  // Slack is read by notifications (notifications.ts): its incoming-webhook address must be on hooks.slack.com.
   custom_http: { label: 'Your own HTTP service', secrets: ['bearer_token'], config: ['base_url'],
     usedBy: 'Webhooks on its base address send its bearer token with every event' },
 };
 
 const kind = str({ oneOf: Object.keys(INTEGRATION_KINDS) });
+
+/** Slack incoming webhooks live on hooks.slack.com. VP_SLACK_WEBHOOK_BASE replaces that base (tests, a private proxy). */
+export function slackBase(env: NodeJS.ProcessEnv = process.env): string { return (env.VP_SLACK_WEBHOOK_BASE || 'https://hooks.slack.com/').replace(/\/?$/, '/'); }
+export function slackUrlAllowed(raw: string, env: NodeJS.ProcessEnv = process.env): boolean {
+  let u: URL, b: URL;
+  try { u = new URL(raw); b = new URL(slackBase(env)); } catch { return false; }
+  return u.origin === b.origin && u.pathname.startsWith(b.pathname) && !u.username && !u.password && (u.protocol === 'https:' || !!env.VP_SLACK_WEBHOOK_BASE);
+}
 
 export async function integrationSecrets(q: Queryable, workspaceId: string, name: string): Promise<Record<string, string> | null> {
   const row = await one<{ secret_ciphertext: string | null }>(q, "SELECT secret_ciphertext FROM integration WHERE workspace_id = $1 AND name = $2 AND status = 'connected'", [workspaceId, name]);
@@ -48,6 +57,7 @@ export function registerIntegrations(r: Registry) {
       const k = INTEGRATION_KINDS[i.kind];
       const missing = k.secrets.filter(s => !(s in i.secrets)), extra = Object.keys(i.secrets).filter(s => !k.secrets.includes(s));
       if (missing.length || extra.length) throw new Error(`${k.label} needs exactly: ${k.secrets.join(', ')}${missing.length ? `; missing ${missing.join(', ')}` : ''}${extra.length ? `; not expected: ${extra.join(', ')}` : ''}`);
+      if (i.kind === 'slack' && !slackUrlAllowed(i.secrets.webhook_url)) throw new Error(`a Slack incoming-webhook address starts with ${slackBase()}; alerts are sent nowhere else`);
       await ctx.q.query("DELETE FROM secret_box WHERE workspace_id = $1 AND expires_at < now()", [ctx.workspaceId]);
       const row = await one<{ id: string }>(ctx.q,
         `INSERT INTO secret_box (workspace_id, purpose, ciphertext, meta, expires_at) VALUES ($1,'stash',$2,$3, now() + ($4 || ' milliseconds')::interval) RETURNING id`,

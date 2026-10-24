@@ -38,6 +38,8 @@ export const EVENTS = [
     description: 'They asked on a call, were marked in an imported file, or someone on your team added them.' },
   { event: 'hand_off.created', schema: 'vyakti.hand_off.v1', label: 'A call was handed to a person',
     description: 'The agent transferred the call or queued a callback.' },
+  { event: 'wallet.low', schema: 'vyakti.wallet_state.v1', label: 'The wallet is running low',
+    description: 'The balance went below the low mark, to zero or below.' },
 ] as const;
 export const EVENT_NAMES = EVENTS.map(e => e.event);
 

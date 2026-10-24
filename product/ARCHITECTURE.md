@@ -31,6 +31,9 @@ Layout:
 - **Where:** `server/modules/<name>/` (code), `tests/<name>.test.ts` (tests), `db/migrations/<range>_<name>*.sql`.
   Migration ranges: intake 01xx, agents 02xx, campaigns 03xx, safety 04xx, operator 05xx, calls 06xx, memory 07xx,
   learning 08xx, money 09xx, workspace 10xx. Never edit 0001-0008 or another module's files; ALTER in your own range.
+  Cross-module triggers (owners, note them): workspace's 1020 puts AFTER triggers on `campaign` (state change),
+  `suppression` (insert) and `hand_off` (insert), and 1030 one on `wallet` (state into low, empty or overdrawn). They write
+  `webhook_outbox` for webhooks and notifications. Renaming those tables or columns breaks the triggers; tell workspace.
 - **Shape:** `server/modules/<name>/index.ts` exports `module: Module` (see `server/app.ts`). `register(registry)` adds
   tools with `tool(validator, def)` from `server/tools.ts`. Raw routes only for webhooks, uploads or streams.
 - **Tools are the API.** Tool names come from `research/2026-10-21/blueprint/data/workspace-tool-registry.json` (80 ids)

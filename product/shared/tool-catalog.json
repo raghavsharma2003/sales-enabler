@@ -4400,6 +4400,167 @@
    }
   },
   {
+   "name": "notification.deliveries",
+   "risk": "read",
+   "summary": "Alerts sent to Slack and email, newest first, and whether each arrived",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "destinationId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": []
+   }
+  },
+  {
+   "name": "notification.destination.create",
+   "risk": "policy",
+   "summary": "Send alerts (a caller in distress, hand-offs, a paused campaign, a low wallet) to Slack or email",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "slack",
+       "email"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+     },
+     "events": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "crisis",
+        "hand_off",
+        "campaign.paused",
+        "wallet.low"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 4
+     },
+     "integrationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "recipients": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "maxLength": 254
+      },
+      "maxItems": 20
+     }
+    },
+    "required": [
+     "kind",
+     "name",
+     "events"
+    ]
+   }
+  },
+  {
+   "name": "notification.destination.delete",
+   "risk": "destructive",
+   "summary": "Stop sending alerts to a Slack channel or email destination",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "operator",
+    "compliance"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
+   "name": "notification.destination.list",
+   "risk": "read",
+   "summary": "Where alerts go outside the app (Slack, email), which events each gets, and whether email is set up",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "required": []
+   }
+  },
+  {
+   "name": "notification.test",
+   "risk": "test",
+   "summary": "Send a test alert to a Slack channel or email destination now and see whether it arrived",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "event": {
+      "type": "string",
+      "enum": [
+       "crisis",
+       "hand_off",
+       "campaign.paused",
+       "wallet.low"
+      ]
+     }
+    },
+    "required": [
+     "id"
+    ]
+   }
+  },
+  {
    "name": "number.a2p.declare",
    "risk": "policy",
    "summary": "Record that a line is declared for A2P (AI voice) on DLT, with the operator's reference",
@@ -8549,7 +8710,8 @@
        "call.ended",
        "campaign.state_changed",
        "contact.opted_out",
-       "hand_off.created"
+       "hand_off.created",
+       "wallet.low"
       ]
      }
     },

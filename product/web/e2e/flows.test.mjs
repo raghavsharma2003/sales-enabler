@@ -134,6 +134,17 @@ test('Webhooks: add one (approved), the secret shows once, a test event is tried
   await page.getByRole('table', { name: 'Webhook deliveries' }).getByText('the address could not be found', { exact: false }).first().waitFor();
 });
 
+test('Notifications: with no mail server, the page says "Email not set up" and the server agrees', async () => {
+  await page.goto(BASE + '/settings/notifications');
+  await page.getByRole('note').getByText('Email not set up').waitFor();
+  const list = (await tool('notification.destination.list')).result;
+  assert.equal(list.email.configured, false);
+  assert.match(list.email.note, /^Email not set up/);
+  await page.getByRole('heading', { name: 'Add a destination' }).waitFor();
+  await page.getByRole('radio', { name: 'Email' }).click();
+  await page.getByText('Email is not set up on this server, so these alerts will be recorded as not sent until it is.').waitFor();
+});
+
 test('Learning: propose, simulate, accept shows an approval card, and the screen matches the server', async t => {
   const agent = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
   // The probe needs a saved practice caller for this agent; simcaller.save makes one.

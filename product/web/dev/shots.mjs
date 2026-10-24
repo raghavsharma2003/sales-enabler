@@ -35,6 +35,7 @@ const screens = (id) => [
   // Webhooks: one made through the real tools (approved via POST /v1/actions/:id/decide, as the approval sheet does) to a synthetic address that does
   // not resolve, then a test event sent to it, so the list shows a real failed delivery and its reason.
   ['settings-webhooks', '/settings/webhooks', { before: async (p) => { await makeWebhook(p); } }],
+  ['settings-notifications', '/settings/notifications'],
   ['calls-export', '/calls', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.getByRole('dialog').waitFor(); await p.waitForTimeout(300); } }],
   ['integrations-connect', '/settings/integrations', { after: async (p) => { await p.getByRole('button', { name: 'Connect HubSpot CRM' }).click(); await p.waitForTimeout(500); } }],
   // Security. The empty state comes first on a fresh workspace; the next screens configure single sign-on through the real tools (the secret is staged, the
@@ -127,7 +128,7 @@ for (const [tag, viewport, extra] of SIZES) {
     if (o?.after) await o.after(page, tag);
     const file = `${out}${name}-${tag}.png`;
     if (tag === 'm') await page.addStyleTag({ content: '.bottombar{position:static!important}' });
-    if (tag === 'd' && (name.startsWith('security') || name === 'settings-webhooks')) await page.setViewportSize({ width: 1440, height: Math.min(4200, Math.max(900, await page.evaluate(() => document.documentElement.scrollHeight))) });   // a tall window, not a stitched full page, so the fixed menu and dock draw once
+    if (tag === 'd' && (name.startsWith('security') || name === 'settings-webhooks' || name === 'settings-notifications')) await page.setViewportSize({ width: 1440, height: Math.min(4200, Math.max(900, await page.evaluate(() => document.documentElement.scrollHeight))) });   // a tall window, not a stitched full page, so the fixed menu and dock draw once
     await page.screenshot({ path: file, fullPage: tag === 'm' && name !== 'security-require' });
     if (tag === 'd') await page.setViewportSize(viewport);
     const m = await page.evaluate(() => {

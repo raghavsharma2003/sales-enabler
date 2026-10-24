@@ -212,6 +212,26 @@
     {
       "id": "call.export.list",
       "risk": "read"
+    },
+    {
+      "id": "notification.destination.list",
+      "risk": "read"
+    },
+    {
+      "id": "notification.destination.create",
+      "risk": "policy"
+    },
+    {
+      "id": "notification.destination.delete",
+      "risk": "destructive"
+    },
+    {
+      "id": "notification.test",
+      "risk": "test"
+    },
+    {
+      "id": "notification.deliveries",
+      "risk": "read"
     }
   ],
   "routes": [
@@ -236,7 +256,8 @@
       "workspace-integrations",
       "workspace-tenancy",
       "workspace-identity",
-      "results-out"
+      "results-out",
+      "notifications"
     ],
     "database": "vp_mod_workspace on the throwaway Postgres 16; run twice, files in parallel, both green"
   },
@@ -260,7 +281,8 @@
     "SSO required: password sign-in refused (403 sso_required, only after the password matched) except one break-glass owner, whose sign-ins are audited (auth.break_glass_login, session method break_glass); turning it on ends other password sessions; invites cannot set a password while it is on.",
     "SCIM-lite: vps_ tokens (sha256 stored, scopes members:read / members:write / roles:write, A2 create/rotate/revoke, reveal once); /v1/scim/members list/create/PATCH active+role; owners out of reach; deactivation ends sessions in the same transaction.",
     "Audit export: audit.export (A2 policy, owner/compliance) CSV or JSON lines, date range, actionPrefix, actorId, privilegedOnly; sha256 + HMAC signature (audit.export.verify); file held 24 h, each download audited; CSV formula starters escaped. Retention purges past max(audit_logs_days, 90) nightly with an audit_anchor so verifyAudit still holds.",
-    "Results out (2026-10-24): call.ended through webhook.emit after analysis settles, keyed per call (one delivery per endpoint even if analysed twice); campaign.state_changed, contact.opted_out and hand_off.created through webhook_outbox (triggers in 1020, fanned out by deliverPending; only endpoints that existed when the event happened). Records vyakti.call.v1 / contact_opt_out.v1 / hand_off.v1 built at send time (erasure and retention respected, recording link signed for 1 h), per-endpoint contactNumber masked|full, custom HTTP bearer sign-in on its base address, webhook.test, call.record (masked for viewers), call.export (policy, owner/compliance, streamed at download, formula-escaped, without test, suppressed or erased). Settings > Webhooks tab; Integrations labelled 'Stored, not used yet' except custom HTTP. Schema: product/docs/webhooks.md."
+    "Results out (2026-10-24): call.ended through webhook.emit after analysis settles, keyed per call (one delivery per endpoint even if analysed twice); campaign.state_changed, contact.opted_out and hand_off.created through webhook_outbox (triggers in 1020, fanned out by deliverPending; only endpoints that existed when the event happened). Records vyakti.call.v1 / contact_opt_out.v1 / hand_off.v1 built at send time (erasure and retention respected, recording link signed for 1 h), per-endpoint contactNumber masked|full, custom HTTP bearer sign-in on its base address, webhook.test, call.record (masked for viewers), call.export (policy, owner/compliance, streamed at download, formula-escaped, without test, suppressed or erased). Settings > Webhooks tab; Integrations labelled 'Stored, not used yet' except custom HTTP. Schema: product/docs/webhooks.md.",
+    "Notifications (2026-10-24): Slack (hooks.slack.com only) and email (SMTP env) destinations, each choosing crisis / hand_off / campaign.paused / wallet.low; from the outbox (1030 adds a wallet trigger and pg_notify wake); crisis text carries no caller words; email unset is visible and recorded as skipped. Settings > Notifications. docs/notifications.md."
   ],
   "untested": [
     "The tool registry JSON data/workspace-tool-registry.json was not in the repo (also not at research/2026-10-21/blueprint/data/); tool ids and risk classes come from the brief and are my reading of it. Compare my risk classes with the registry when it lands: webhook.replay=external, apikey.revoke=draft, share.link.revoke=draft, knowledge.span.approve=draft, member.remove / integration.disconnect / webhook.delete=destructive",
@@ -273,7 +295,8 @@
     "Uploads over the 9.5 MB route limit (kernel returns 413; the fetch client resets the connection, so it is not asserted); multipart forms are not parsed (send the file as the body, or JSON). Cookie sessions must still send JSON (kernel CSRF rule), so raw uploads need an API key",
     "SSO against a real Entra ID, Okta or Google Workspace tenant (only the in-process fake IdP was used).",
     "SAML (not built; open.2026-10-24.saml-sso).",
-    "Results out: no real receiver on the internet (tests use a 127.0.0.1 receiver with VP_WEBHOOK_ALLOW_PRIVATE); delivery throughput with many endpoints; a calls export above a few thousand rows (streamed in pages of 500, cap 200,000, not measured); several replicas fanning out at once (SKIP LOCKED by design, not exercised)."
+    "Results out: no real receiver on the internet (tests use a 127.0.0.1 receiver with VP_WEBHOOK_ALLOW_PRIVATE); delivery throughput with many endpoints; a calls export above a few thousand rows (streamed in pages of 500, cap 200,000, not measured); several replicas fanning out at once (SKIP LOCKED by design, not exercised).",
+    "Notifications: real Slack and a real SMTP server with STARTTLS (the upgrade path is not exercised); LISTEN behind a transaction-mode pooler."
   ],
   "needs_from_others": [
     "Kernel owner: Registry.approve() stores args and result in clear in action.args / action.result and GET /v1/actions returns them. Workspace works around it (secret.reveal, integration.stage_secrets); a redaction hook would let other modules hold secrets safely. Logged as risk.2026-10-21.kernel-stores-approval-args-and-results-in-clear in the inbox",

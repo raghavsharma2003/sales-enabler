@@ -18,6 +18,7 @@ Tests: `tests/results-out.test.ts`.
 | `campaign.state_changed` | A campaign moved between `draft`, `scheduled`, `running`, `paused`, `completed`, `cancelled`. | `vyakti.campaign_state.v1` |
 | `contact.opted_out` | A person was suppressed: they asked on a call, were marked in an imported file, or staff added them. | `vyakti.contact_opt_out.v1` |
 | `hand_off.created` | The agent handed the call to a person or queued a callback. | `vyakti.hand_off.v1` |
+| `wallet.low` | The wallet went below its low mark, to zero, or below zero. | `vyakti.wallet_state.v1` |
 
 A webhook listens for a list of events. `campaign.*` matches every campaign event, and `*` matches all of them.
 `webhook.events` lists them.
@@ -184,6 +185,14 @@ The caller's words stay in Vyakti.
 ```
 
 `summary` is left out when the call's words were removed.
+
+## `vyakti.wallet_state.v1` (event `wallet.low`)
+
+```json
+{ "from": "ok", "to": "low", "balanceInrMilli": 300000, "at": "2026-10-24T09:31:02.114Z" }
+```
+
+`to` is `low`, `empty` or `overdrawn`; a move between two of those (low to empty) is a new event.
 
 ## Test events
 

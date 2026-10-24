@@ -21,6 +21,7 @@ import { registerShare, viewShared } from './share.ts';
 import { registerUndo } from './undo.ts';
 import { deliverPending, registerWebhooks } from './webhooks.ts';
 import { registerResults, resultsRoutes } from './results.ts';
+import { registerNotifications, sendNotifications, startNotifier } from './notifications.ts';
 import { tool } from '../../tools.ts';
 
 const accept = obj({ token: str({ min: 20, max: 200 }), name: str({ min: 1, max: 80 }), password: str({ min: 10, max: 200 }) });
@@ -63,6 +64,7 @@ export const module: Module = {
     registerIntegrations(registry);
     registerWebhooks(registry);
     registerResults(registry);
+    registerNotifications(registry);
     registerActivity(registry);
     registerUndo(registry);
     registerSearch(registry);
@@ -126,8 +128,13 @@ export const module: Module = {
     resultsRoutes(router, pool, auth);
 
     // Send queued webhooks every few seconds while the server runs. unref() so it never holds a process open.
+    // Notifications go out at once when an event commits (LISTEN vp_outbox), and on the same timer as a safety net.
     if (process.env.NODE_ENV !== 'test') {
-      setInterval(() => { deliverPending(pool).catch(e => console.error('[vp] webhook delivery', e)); }, 5000).unref();
+      setInterval(() => {
+        deliverPending(pool).catch(e => console.error('[vp] webhook delivery', e));
+        sendNotifications(pool).catch(e => console.error('[vp] notifications', e));
+      }, 5000).unref();
+      startNotifier(pool, () => sendNotifications(pool));
     }
   },
 };

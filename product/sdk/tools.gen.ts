@@ -120,6 +120,11 @@ export type ToolName =
   | "money.reconcile"
   | "monitor.create"
   | "monitor.list"
+  | "notification.deliveries"
+  | "notification.destination.create"
+  | "notification.destination.delete"
+  | "notification.destination.list"
+  | "notification.test"
   | "number.a2p.declare"
   | "number.byo.connect"
   | "number.kyc.submit"
@@ -952,6 +957,29 @@ export interface ToolInput {
   };
   /** List monitors and when each was last read; "not read yet" is never shown as all good (read) */
   "monitor.list": Record<string, never>;
+  /** Alerts sent to Slack and email, newest first, and whether each arrived (read) */
+  "notification.deliveries": {
+    destinationId?: string;
+  };
+  /** Send alerts (a caller in distress, hand-offs, a paused campaign, a low wallet) to Slack or email (policy, waits for approval) */
+  "notification.destination.create": {
+    kind: "slack" | "email";
+    name: string;
+    events: ("crisis" | "hand_off" | "campaign.paused" | "wallet.low")[];
+    integrationId?: string;
+    recipients?: string[];
+  };
+  /** Stop sending alerts to a Slack channel or email destination (destructive, waits for approval) */
+  "notification.destination.delete": {
+    id: string;
+  };
+  /** Where alerts go outside the app (Slack, email), which events each gets, and whether email is set up (read) */
+  "notification.destination.list": Record<string, never>;
+  /** Send a test alert to a Slack channel or email destination now and see whether it arrived (test) */
+  "notification.test": {
+    id: string;
+    event?: "crisis" | "hand_off" | "campaign.paused" | "wallet.low";
+  };
   /** Record that a line is declared for A2P (AI voice) on DLT, with the operator's reference (policy, waits for approval) */
   "number.a2p.declare": {
     numberId: string;
@@ -1663,7 +1691,7 @@ export interface ToolInput {
   /** Send a made-up event to a webhook now and see how the receiver answers (test) */
   "webhook.test": {
     id: string;
-    event?: "call.ended" | "campaign.state_changed" | "contact.opted_out" | "hand_off.created";
+    event?: "call.ended" | "campaign.state_changed" | "contact.opted_out" | "hand_off.created" | "wallet.low";
   };
   /** Read this workspace: its name, plan, brand and who is in it (read) */
   "workspace.get": Record<string, never>;
@@ -1790,6 +1818,11 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "money.reconcile": { risk: "draft", needsApproval: false },
   "monitor.create": { risk: "draft", needsApproval: false },
   "monitor.list": { risk: "read", needsApproval: false },
+  "notification.deliveries": { risk: "read", needsApproval: false },
+  "notification.destination.create": { risk: "policy", needsApproval: true },
+  "notification.destination.delete": { risk: "destructive", needsApproval: true },
+  "notification.destination.list": { risk: "read", needsApproval: false },
+  "notification.test": { risk: "test", needsApproval: false },
   "number.a2p.declare": { risk: "policy", needsApproval: true },
   "number.byo.connect": { risk: "draft", needsApproval: false },
   "number.kyc.submit": { risk: "policy", needsApproval: true },

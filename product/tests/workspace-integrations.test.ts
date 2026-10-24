@@ -35,7 +35,7 @@ test('integration secrets are encrypted at rest and never returned', { skip }, a
   assert.ok(kinds.find((k: any) => k.id === 'zoho_crm'));
 
   assert.match((await owner.tool('integration.stage_secrets', { kind: 'zoho_crm', secrets: { client_id: 'x' } })).reason, /missing client_secret, refresh_token/);
-  assert.match((await owner.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.example.test/x', extra: 'y' } })).reason, /not expected: extra/);
+  assert.match((await owner.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.slack.com/services/T0SYNTH/B0SYNTH/x', extra: 'y' } })).reason, /not expected: extra/);
   const staged = await owner.tool('integration.stage_secrets', { kind: 'zoho_crm', secrets: SECRETS });
   assert.equal(staged.status, 'confirmed');
   assert.deepEqual(staged.result.keys.sort(), Object.keys(SECRETS).sort());
@@ -71,7 +71,7 @@ test('integration secrets are encrypted at rest and never returned', { skip }, a
 
   const reuse = await owner.run('integration.connect', { kind: 'zoho_crm', name: 'Second', stashId: staged.result.stashId });
   assert.match(reuse.reason, /not found or have expired/);
-  const badCfg = await owner.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.example.test/x' } });
+  const badCfg = await owner.tool('integration.stage_secrets', { kind: 'slack', secrets: { webhook_url: 'https://hooks.slack.com/services/T0SYNTH/B0SYNTH/x' } });
   assert.match((await owner.run('integration.connect', { kind: 'slack', name: 'Alerts', config: { nope: '1' }, stashId: badCfg.result.stashId })).reason, /not expected: nope/);
 
   assert.equal((await owner.run('integration.disconnect', { id: done.result.id })).status, 'confirmed');
