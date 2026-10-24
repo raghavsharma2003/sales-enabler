@@ -19,7 +19,8 @@ import { queueAnalysis } from './analysis.ts';
 import { codeReason, NOT_CONNECTED } from './taxonomy.ts';
 import JUDGE_EVENT from '../../../shared/judge-event.json' with { type: 'json' };
 
-const END_REASONS = ['completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'max_duration', 'max_cost',
+const END_REASONS = ['completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'switched_off', 'invalid_number',
+  'max_duration', 'max_cost',
   'silence_timeout', 'handed_off', 'crisis_handoff', 'opt_out', 'error'] as const;
 const RULES = ['RD1', 'RD2', 'RD3', 'RD4', 'RD5', 'RD6', 'RD7', 'RD8', 'RD9', 'RD10', 'RD11'] as const;
 const at = str({ pattern: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/ });

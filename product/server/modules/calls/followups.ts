@@ -31,6 +31,8 @@ export function retryClass(end: EndReason | null, reasonCode: string | null): st
     case 'busy': return 'busy';
     case 'failed': return 'provider_error';
     case 'voicemail': return 'voicemail';
+    case 'switched_off': return 'switched_off';
+    case 'invalid_number': return 'invalid';             // the number does not exist: no automatic retry
     case 'error': return 'dropped_by_vp';
     default: break;
   }

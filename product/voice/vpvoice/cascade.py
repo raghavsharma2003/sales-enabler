@@ -12,7 +12,7 @@
 # speculatively: they are committed first, so the door and the brain see them.
 import asyncio, contextlib, logging, re, time
 import numpy as np
-from . import brief, catalog, recordings, safety
+from . import announce, brief, catalog, recordings, safety
 from .audio import FRAME_BYTES, Recorder, Resampler, make_vad
 from .conversation import ComponentError, Draft
 from .session import Session
@@ -234,6 +234,13 @@ class CascadeSession(Session):
     # if all that was heard is a nod (or nothing: a cough, a noise); any other word, or BARGE_PAUSED_MS of speech with
     # no words yet, and she gives way for good. Words that arrive after she resumed, and are not a nod, stop her then.
     BARGE_AUDIO = True
+    # LISTEN_FIRST (VP_LISTEN_FIRST; default on for outbound phone calls only): her opening waits for the first words,
+    # so an operator announcement or a machine (announce.py) ends the call before she speaks. A short reply opens at
+    # once; nobody speaking for LISTEN_FIRST_S, and she opens anyway; a long run of words that matches nothing opens
+    # after LISTEN_MAX_S. (People in India answer with "hello" first; she answers that.)
+    LISTEN_FIRST = True
+    LISTEN_FIRST_S = 2.5
+    LISTEN_MAX_S = 8.0
     BARGE_AUDIO_MS = 200
     RESUME_MS = 400
     BARGE_PAUSED_MS = 900
@@ -273,6 +280,8 @@ class CascadeSession(Session):
         self.partial_t = None                                           # when the partial's words last changed
         self.barge_nod = flag('VP_BARGE_NOD', self.BARGE_NOD)
         self.barge_audio = flag('VP_BARGE_AUDIO', self.BARGE_AUDIO); self.pauses = 0; self.resumes = 0
+        outbound_phone = (ticket.get('transport') or {}).get('kind') == 'sip' and ticket.get('direction') == 'outbound'
+        self.listening_first = flag('VP_LISTEN_FIRST', self.LISTEN_FIRST and outbound_phone); self.listen_t0 = None
         self.mix = bytearray(); self.member_rs = Resampler(16000, 24000)     # live controls: listener mix, member's voice
 
     def now(self): return self.clock()
@@ -338,8 +347,29 @@ class CascadeSession(Session):
         except Exception as e:
             await self.component_failed(ComponentError('ears', self.c.ears_id, repr(e)[:200])); return
         self.tasks.append(asyncio.ensure_future(self._tick_loop()))
+        if self.listening_first: self.listen_t0 = self.now(); return       # her opening waits for the first words
+        self.open_call()
+
+    def open_call(self):
         self.rid += 1; self.active = Reply(self, self.rid, None, released=True)
         asyncio.ensure_future(self._after(self.active))
+
+    async def _listen_first(self):
+        """Before her opening on an outbound phone call: an operator announcement or a machine ends the call here, with
+        no opening and no caller turn (announce.py); a person's hello, or quiet, opens it."""
+        v = self.vad; text = ' '.join(self.finals + [self.partial]).strip(); waited = self.now() - self.listen_t0
+        cls = announce.classify(text)
+        if cls:
+            self.listening_first = False; self.finals = []; self.partial = ''
+            log.info('call %s: %s announcement before the opening; ending', self.id, cls)
+            await self.end(cls); return
+        settled = bool(text) and not v.speaking and (self.final_seg >= self.seg or v.silence_ms() >= 1200)
+        person = settled and (announce.sounds_human(text) or len(text.split()) <= 6)   # a recording runs long, says more
+        quiet = not text and not v.speaking and waited >= self.LISTEN_FIRST_S          # nobody spoke: she says hello first
+        if not (person or quiet or (waited >= self.LISTEN_MAX_S and not v.speaking)): return
+        self.listening_first = False
+        if text: await self._commit_turn(text)                       # their "hello" is the first caller turn
+        self.open_call()
 
     async def close_media(self):
         for r in (self.pending, self.active):
@@ -555,6 +585,7 @@ class CascadeSession(Session):
             except Exception: log.exception('tick')
 
     async def _tick(self):
+        if self.listening_first: await self._listen_first(); return
         v = self.vad; a = self.active
         if self.taken_over:            # a person holds the call: record the caller's turns, never answer them
             if a is not None and (a.cancelled or (a.done and a.committed and not self.agent_playing())):

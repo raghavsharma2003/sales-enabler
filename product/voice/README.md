@@ -229,6 +229,18 @@ voice) and `barge` (pauses, resumes, stops). With `VP_BARGE_AUDIO=0` the word ru
 `BARGE_WORDS` words, or `VP_BARGE_LONG_MS` (700) of speech; staging's partials trail speech by a median 858 ms, so
 words alone cannot stop her quickly.
 
+## Announcements and machines before her opening
+
+On an outbound phone call she listens first (`VP_LISTEN_FIRST`, default on for outbound SIP only). If the first words
+match an Indian operator announcement or an answering machine (`vpvoice/announce.py`, Hindi and English: switched off,
+not reachable, out of coverage, busy on another call, does not exist, leave a message after the tone), the call ends
+as `switched_off`, `busy`, `invalid_number` or `voicemail`, with no opening, no caller turn and so no analysis model
+run. A short reply ("hello", "haan ji, boliye") opens at once; with nobody speaking she opens after 2.5 s. Plivo dials
+ask for machine detection (`VP_MACHINE_DETECTION=0` turns it off); a machine verdict ends the call as `voicemail`
+unless a person already spoke beyond hello. A carrier hang-up before the call joined maps its cause the same way
+(`transports.hangup_reason`). The control plane gives `switched_off` the ladder class `switched_off` and
+`invalid_number` the class `invalid` (no automatic retry).
+
 ## Voice samples for the stack cards
 
 `python -m vpvoice.samples --out DIR [--stack ID ...]` renders one short clip per curated stack (s2s included)

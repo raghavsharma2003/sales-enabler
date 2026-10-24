@@ -51,7 +51,7 @@ export const reasonFor = (code: string | null | undefined): ReasonCode | undefin
 export const CONVERSATION_CODES = REASON_CODES.filter(r => r.stage === 'conversation').map(r => r.code);
 
 /** End reasons where no person was reached: the call never connected. */
-export const NOT_CONNECTED: ReadonlySet<EndReason> = new Set(['no_answer', 'busy', 'failed']);
+export const NOT_CONNECTED: ReadonlySet<EndReason> = new Set(['no_answer', 'busy', 'failed', 'switched_off', 'invalid_number']);
 
 export const EARLY_HANGUP_S = 10;
 
@@ -62,6 +62,8 @@ export function codeReason(end: EndReason, durationS: number, callerTurns: numbe
     case 'busy': return 'DIAL_BUSY';
     case 'failed': return 'DIAL_FAILED';
     case 'voicemail': return 'CONN_VOICEMAIL';
+    case 'switched_off': return 'DIAL_SWITCHED_OFF';
+    case 'invalid_number': return 'DIAL_OPERATOR_ANNOUNCEMENT';
     case 'silence_timeout': return callerTurns ? 'CONV_INCOMPLETE' : 'CONN_SILENCE';
     case 'error': return 'CONN_ENGINE_ERROR';
     case 'max_duration': return 'CONN_MAX_DURATION';

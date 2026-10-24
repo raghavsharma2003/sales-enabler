@@ -150,13 +150,15 @@ class Runtime:
             stream = ws_base(self.public) + f'/v1/media/sip/stream/{cid}?token={token}'
             join = {'kind': 'sip', 'trunk': tr['trunk'].lower(), 'expiresAtMs': exp,
                     'answerUrl': f'{self.public}/v1/media/sip/answer/{cid}/{self.hook(cid, "answer")}',
-                    'hangupUrl': f'{self.public}/v1/media/sip/hangup/{cid}/{self.hook(cid, "hangup")}'}
+                    'hangupUrl': f'{self.public}/v1/media/sip/hangup/{cid}/{self.hook(cid, "hangup")}',
+                    'machineUrl': f'{self.public}/v1/media/sip/machine/{cid}/{self.hook(cid, "machine")}'}
             if t['direction'] == 'inbound': join['streamUrl'] = stream
         rec = CallRecord(t, bh, comp, sink, token, join)
         self.calls[cid] = rec
         if tr['kind'] == 'sip' and t['direction'] == 'outbound':
             from .transports import plivo_dial
-            ru, e = await plivo_dial(self.http, self.env, tr['to'], tr['from'], join['answerUrl'], join['hangupUrl'], t['limits']['maxDurationS'])
+            ru, e = await plivo_dial(self.http, self.env, tr['to'], tr['from'], join['answerUrl'], join['hangupUrl'], t['limits']['maxDurationS'],
+                                     machine_url=join['machineUrl'] if self.env.get('VP_MACHINE_DETECTION', '1') != '0' else None)
             if e:
                 await self._end_unjoined(rec, 'failed')
                 return self.err(502, 'dial_failed', e)
@@ -394,10 +396,22 @@ class Runtime:
         f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
         cause = (f.get('HangupCauseName') or f.get('HangupCause') or '').lower()
         if rec.session is None or not rec.token_used:
-            reason = 'busy' if 'busy' in cause else 'no_answer' if ('answer' in cause or 'timeout' in cause or 'cancel' in cause) else 'failed'
-            await self._end_unjoined(rec, reason)
+            from .transports import hangup_reason
+            await self._end_unjoined(rec, hangup_reason(cause))
         elif not rec.session.ended:
             await rec.session.end('caller_hung_up')
+        return web.Response(text='ok')
+
+    async def sip_machine(self, req):
+        """Plivo's machine-detection verdict. A machine ends the call as 'voicemail' unless a person already talked with
+        her (a caller turn beyond the first hello)."""
+        rec = self._hooked(req, 'machine')
+        f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
+        if str(f.get('Machine') or f.get('machine') or '').lower() not in ('true', '1', 'yes'): return web.Response(text='ok')
+        s = rec.session
+        if s is None or not rec.token_used: await self._end_unjoined(rec, 'voicemail')
+        elif not s.ended and sum(1 for x in s.conv.transcript if x['speaker'] == 'caller') <= 1: await s.end('voicemail')
+        if rec.call_uuid or rec.request_uuid: asyncio.ensure_future(self.carrier_hangup(rec))
         return web.Response(text='ok')
 
     async def sip_transfer(self, req):
@@ -476,6 +490,7 @@ class Runtime:
         a.router.add_post('/v1/media/sip/answer/{id}/{hook}', self.sip_answer)
         a.router.add_post('/v1/media/sip/hangup/{id}/{hook}', self.sip_hangup)
         a.router.add_post('/v1/media/sip/transfer/{id}/{hook}', self.sip_transfer)
+        a.router.add_post('/v1/media/sip/machine/{id}/{hook}', self.sip_machine)
         a.router.add_get('/v1/media/sip/stream/{id}', self.sip_stream)
         a.on_startup.append(self._startup); a.on_shutdown.append(self._shutdown)
         return a

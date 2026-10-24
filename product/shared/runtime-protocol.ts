@@ -55,6 +55,9 @@ export interface RunManifest {
 
 export type EndReason =
   | 'completed' | 'caller_hung_up' | 'agent_ended' | 'no_answer' | 'busy' | 'failed' | 'voicemail'
+  // the carrier or an operator announcement said the phone is switched off / unreachable, or the number does not exist
+  // (Plivo hang-up cause, or voice/vpvoice/announce.py on the first audio, before her opening)
+  | 'switched_off' | 'invalid_number'
   | 'max_duration' | 'max_cost' | 'silence_timeout' | 'handed_off' | 'crisis_handoff' | 'opt_out' | 'error';
 
 export type SafetyRuleId = 'RD1' | 'RD2' | 'RD3' | 'RD4' | 'RD5' | 'RD6' | 'RD7' | 'RD8' | 'RD9' | 'RD10' | 'RD11';

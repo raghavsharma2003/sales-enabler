@@ -7,8 +7,8 @@ from .cost import CostMeter
 
 log = logging.getLogger('vp.voice.session')
 
-END_REASONS = {'completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'max_duration', 'max_cost',
-               'silence_timeout', 'handed_off', 'crisis_handoff', 'opt_out', 'error'}
+END_REASONS = {'completed', 'caller_hung_up', 'agent_ended', 'no_answer', 'busy', 'failed', 'voicemail', 'switched_off', 'invalid_number',
+               'max_duration', 'max_cost', 'silence_timeout', 'handed_off', 'crisis_handoff', 'opt_out', 'error'}
 CRISIS_CEILING = 2.0           # in a crisis, limits stretch to this multiple before the call is handed off (she never ends it)
 
 

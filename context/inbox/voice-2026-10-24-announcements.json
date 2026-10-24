@@ -1,0 +1,22 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-listen-first-announcements",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Outbound phone calls listen before her opening (VP_LISTEN_FIRST): an Indian operator announcement or answering machine in the first words (vpvoice/announce.py lexicon, Hindi and English, Roman and Devanagari) ends the call as switched_off / busy / invalid_number / voicemail with no opening, no caller turn and so no analysis model run; a short reply opens at once, quiet opens after 2.5 s. Plivo dials ask for machine detection (async verdict to a signed hook; a machine ends the call as voicemail unless a person spoke beyond hello). Carrier hang-up causes before join map to the same reasons. New end reasons switched_off and invalid_number (shared/runtime-protocol.ts, ingest, codeReason DIAL_SWITCHED_OFF / DIAL_OPERATOR_ANNOUNCEMENT, not connected, retry classes switched_off / invalid)",
+   "rationale": "Must-be audit brief 5 (research/2026-10-24/must-be-audit): voicemail was only an end reason nothing produced, switched_off never reached the ladder, and her opening was spoken to recordings.",
+   "reverse_if": "real calls show listen-first delaying openings people notice (then shorten LISTEN_FIRST_S or open on the first voice onset), or announcements the lexicon misses (add them), or Plivo's machine detection mislabels people (then VP_MACHINE_DETECTION=0)"
+  },
+  {
+   "id": "measure.2026-10-24.voice-announcements-offline",
+   "type": "measurement", "status": "measured", "date": "2026-10-24", "source": "verified",
+   "title": "Offline: 11 canned operator announcements and machine prompts (Hindi and English) each end the call with the right end reason before any agent turn, with an empty transcript and no brain or voice call; 8 person replies (including 'मैं अभी busy हूँ' and 'Sorry, I am busy right now') are not announcements, and a hello gets her opening after it. Plivo hang-up causes map as expected for 10 names; a machine verdict ends an unjoined Plivo call as voicemail and a wrong hook is refused. Not verified: real carrier announcements and Plivo's own machine-detection parameter names and verdict field on a live call",
+   "n": 11,
+   "method": "product/voice/tests/test_announce.py (fake ears/brain/voice, real cascade and energy VAD; Plivo REST faked) and product/tests/calls-announcements.test.ts, 2026-10-24",
+   "path": "product/voice/vpvoice/announce.py",
+   "value": "11/11 announcements end before her opening; 0/8 people misread"
+  }
+ ],
+ "edges": [],
+ "events": []
+}

@@ -124,12 +124,29 @@ async def plivo_request(http, env, method, path, data=None):
 def digits(s): return ''.join(ch for ch in str(s or '') if ch.isdigit())
 
 
-async def plivo_dial(http, env, to, frm, answer_url, hangup_url, max_s):
-    st, d = await plivo_request(http, env, 'POST', 'Call/', {'from': digits(frm), 'to': digits(to), 'answer_url': answer_url, 'answer_method': 'POST',
-                                                             'hangup_url': hangup_url, 'hangup_method': 'POST', 'ring_timeout': 45,
-                                                             'time_limit': int(max_s) + 30})
+async def plivo_dial(http, env, to, frm, answer_url, hangup_url, max_s, machine_url=None):
+    body = {'from': digits(frm), 'to': digits(to), 'answer_url': answer_url, 'answer_method': 'POST',
+            'hangup_url': hangup_url, 'hangup_method': 'POST', 'ring_timeout': 45, 'time_limit': int(max_s) + 30}
+    if machine_url:
+        # Plivo's answering-machine detection, asynchronous: the call is answered as usual and the verdict is posted to
+        # machine_url (we end the call as 'voicemail' there, not Plivo's 'hangup' mode, so the end reason is ours)
+        body.update({'machine_detection': 'true', 'machine_detection_time': 5000, 'machine_detection_url': machine_url,
+                     'machine_detection_method': 'POST'})
+    st, d = await plivo_request(http, env, 'POST', 'Call/', body)
     if st in (200, 201) and d.get('request_uuid'): return d['request_uuid'], None
     return None, f'Plivo {st}: ' + str(d.get('error') or d.get('message') or d)[:200]
+
+
+def hangup_reason(cause):
+    """The end reason for a call that never reached her, from the carrier's hang-up cause (Plivo HangupCauseName /
+    HangupCause; matched loosely, as names differ by carrier and are not all documented)."""
+    c = (cause or '').lower()
+    if 'machine' in c: return 'voicemail'
+    if 'busy' in c: return 'busy'
+    if any(k in c for k in ('unallocated', 'invalid', 'not exist', 'no route', 'unknown subscriber', 'incompatible destination')): return 'invalid_number'
+    if any(k in c for k in ('unreachable', 'not reachable', 'absent', 'switched off', 'switch off', 'out of coverage', 'out of service')): return 'switched_off'
+    if any(k in c for k in ('answer', 'timeout', 'cancel', 'no user response')): return 'no_answer'
+    return 'failed'
 
 
 def answer_xml(stream_url, max_s, content_type='audio/x-mulaw;rate=8000'):
