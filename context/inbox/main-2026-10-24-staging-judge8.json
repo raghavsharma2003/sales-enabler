@@ -1,0 +1,347 @@
+{
+ "nodes": [
+  {
+   "id": "measure.2026-10-24.staging-openings-e9fdde3",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 6,
+   "title": "Staging at e9fdde3, 6 openings (3 v2-flashlite, 3 v2-mai): exactly one AI disclosure in 6/6 (f2b27d4 on 23 Oct: 3/6 disclosed twice), RD1 fixed line prefixed 0/6, the contact's name 'आशा जी' 6/6 (0 wrong names, 0 RD11), guidance read aloud 0/6, refused event batches 0. The RD1 whole-opening hold cost 0-122 ms (probe: 5/6 disclosed in the first sentence; mai k1 waited 122 ms for its second). Time to first audio: mai 1.31-1.50 s (e95ebc2 1.52-1.93 s); flashlite 2.73-2.99 s (e95ebc2 1.92-2.69 s), because staging's pacer held the opening brain request 837-998 ms behind the new call-start HEAD, not because of the hold",
+   "method": "Staging on vl-vm-cin (Central India) at e9fdde3 (redeploy 2026-10-24 00:40 UTC, stage_setup.sh verbatim, VERTEX_OFF=0); test.browser_call through the control plane (never dials a phone) with the 23 Oct sim caller (ops/tools/replygap.py: synthetic Hinglish clips P1/P4, six caller turns, real-time 16 kHz into the runtime's browser media socket), one call at a time; every Vertex request paced >= 1.0 s apart (ops/tools/pace.py, request kinds tagged); passive probes (ops/tools/probes.py, results identical with and without them on the 263-test voice suite). Agents 'Verify e9fdde3 <stack>' from the renewal template; contact = the signed-in seed member Asha Rao. Disclosure count: the first agent turn cut by the runtime's brief.Splitter, ellipsis-ended sentences joined as safety.opening_discloses reads them, each group checked with safety.affirms_ai, then read (the same tool finds the 3 known doubles in the e95ebc2 openings). Names: vpvoice.names.addressed / names.repair. RD1/RD11 from call_safety_event; batches from the runtime and control-plane journals since the deploy. Time to first audio: placing the call -> the socket's first 'reply' message (sent with her first audio frame), e95ebc2 recomputed the same way. Hold: probe from the first sentence entering the hold to its release. 2026-10-24 00:42-00:56 UTC, INR 18.84.",
+   "path": "research/2026-10-24/staging/redeploy-e9fdde3.md"
+  },
+  {
+   "id": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 45,
+   "title": "Product runtime reply gap at e9fdde3, v2-flashlite (default), India VM staging with Vertex paced at 1 req/s: shipped latency defaults (VP_SPECULATE_PARTIAL and VP_PREWARM on) p50 3,201 ms (median 95% CI 2,977-3,260), p90 3,277, n=22 replies / 4 calls; with VP_SPECULATE_PARTIAL=0 VP_PREWARM=0, p50 2,301 ms (2,199-2,501), p90 2,810, n=23 / 4; 23 Oct at 46dbbe7 2,464 ms (n=21). The difference sits in the brain stage (median 1,588 vs 798 ms). INR 1.26 / 1.25 per minute; 0 call errors",
+   "method": "Staging on vl-vm-cin (Central India) at e9fdde3 (redeploy 2026-10-24 00:40 UTC, stage_setup.sh verbatim, VERTEX_OFF=0); test.browser_call through the control plane (never dials a phone) with the 23 Oct sim caller (ops/tools/replygap.py: synthetic Hinglish clips P1/P4, six caller turns, real-time 16 kHz into the runtime's browser media socket), one call at a time; every Vertex request paced >= 1.0 s apart (ops/tools/pace.py, request kinds tagged); passive probes (ops/tools/probes.py, results identical with and without them on the 263-test voice suite). Agent 'Reply gap e9fdde3 v2-flashlite'. Gap = the runtime's reply.latencyMs (end of speech by VAD -> first audio frame; equal to turn.latency in all 21 calls). Arms back to back, 00:59-01:17 UTC; arm B by a runtime-only systemd drop-in removed after the run. Median CI: bootstrap 10,000, seed 20261024. Openings excluded.",
+   "path": "research/2026-10-24/staging/reply-gap.md"
+  },
+  {
+   "id": "measure.2026-10-24.product-reply-gap-v2-mai-e9fdde3",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 45,
+   "title": "Product runtime reply gap at e9fdde3, v2-mai, India VM staging (Vertex paced): shipped defaults p50 2,658 ms (95% CI 2,500-2,832), p90 3,987, max 15,894, n=23 / 4 calls; speculation and prewarm off p50 2,054 ms (1,852-2,185), p90 2,413, n=22 / 4; 23 Oct 2,213 ms (n=24). Brain stage 1,624 vs 969 ms. The 15.9 s reply was a 13.7 s Vertex wait for response headers (pacer wait 568 ms). INR 1.69 / 1.65 per minute; 0 call errors",
+   "method": "Staging on vl-vm-cin (Central India) at e9fdde3 (redeploy 2026-10-24 00:40 UTC, stage_setup.sh verbatim, VERTEX_OFF=0); test.browser_call through the control plane (never dials a phone) with the 23 Oct sim caller (ops/tools/replygap.py: synthetic Hinglish clips P1/P4, six caller turns, real-time 16 kHz into the runtime's browser media socket), one call at a time; every Vertex request paced >= 1.0 s apart (ops/tools/pace.py, request kinds tagged); passive probes (ops/tools/probes.py, results identical with and without them on the 263-test voice suite). Agent 'Reply gap e9fdde3 v2-mai'; arms 01:18-01:38 UTC; same gap definition and CI as the v2-flashlite node.",
+   "path": "research/2026-10-24/staging/reply-gap.md"
+  },
+  {
+   "id": "measure.2026-10-24.product-reply-gap-v2-54mini-e9fdde3",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 29,
+   "title": "Product runtime reply gap at e9fdde3, v2-54mini, India VM staging: shipped defaults p50 2,128 ms (95% CI 1,903-2,368), p90 2,543, n=24 / 4 calls, against 3,009 ms (n=23) on 23 Oct (its brain is Azure, never paced; brain stage 886 ms, voice 654 ms). Arm B (speculation and prewarm off) is incomplete: n=5 from 1 call (p50 2,257), the other 3 calls refused by the product's daily test budget. INR 1.56 per minute; 0 call errors",
+   "method": "Staging on vl-vm-cin (Central India) at e9fdde3 (redeploy 2026-10-24 00:40 UTC, stage_setup.sh verbatim, VERTEX_OFF=0); test.browser_call through the control plane (never dials a phone) with the 23 Oct sim caller (ops/tools/replygap.py: synthetic Hinglish clips P1/P4, six caller turns, real-time 16 kHz into the runtime's browser media socket), one call at a time; every Vertex request paced >= 1.0 s apart (ops/tools/pace.py, request kinds tagged); passive probes (ops/tools/probes.py, results identical with and without them on the 263-test voice suite). Agent 'Reply gap e9fdde3 v2-54mini'; arms 01:38-01:51 UTC; same gap definition and CI as the v2-flashlite node.",
+   "path": "research/2026-10-24/staging/reply-gap.md"
+  },
+  {
+   "id": "measure.2026-10-24.staging-reply-stages-e9fdde3",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 119,
+   "title": "Reply-gap stages from the runtime's own timing (GET /v1/calls/{id} -> timing), medians in ms, ears / turn / brain / sentence / voice: flashlite defaults 586/11/1,588/76/961, flags off 600/14/798/88/803; mai 595/16/1,624/111/456 vs 610/12/969/100/386; 54mini 578/20/886/2/654. The turn-taking release (about 1.2 s after statements) comes before the voice's first data in the median reply, so 'hold' is negative. Pacer, defaults arm: flashlite brain-behind-brain 24 waits 12.2 s and brain-behind-warm 14 waits 4.7 s; mai brain-behind-brain 28 waits 14.7 s; flags-off arm: 0 brain-behind-brain. The defaults send 1.5x (flashlite 164 vs 110) to 2.0x (mai 120 vs 61) the Vertex requests",
+   "method": "Staging on vl-vm-cin (Central India) at e9fdde3 (redeploy 2026-10-24 00:40 UTC, stage_setup.sh verbatim, VERTEX_OFF=0); test.browser_call through the control plane (never dials a phone) with the 23 Oct sim caller (ops/tools/replygap.py: synthetic Hinglish clips P1/P4, six caller turns, real-time 16 kHz into the runtime's browser media socket), one call at a time; every Vertex request paced >= 1.0 s apart (ops/tools/pace.py, request kinds tagged); passive probes (ops/tools/probes.py, results identical with and without them on the 263-test voice suite). The runtime's timing read per call on the VM (signed with VP_RUNTIME_SECRET, never printed), joined to each socket reply; pacer contention = each paced request counted against the request just ahead of it, each call's window ending at the next call. ops/analyze.py -> reply-gap.csv (one row per reply) and reply-gap-summary.json.",
+   "path": "research/2026-10-24/staging/reply-gap.csv"
+  },
+  {
+   "id": "measure.2026-10-24.staging-partial-lag",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 464,
+   "title": "partialLagMs on staging (speech onset by VAD -> Azure Speech's first partial, Central India): median 858 ms (p25 722, p75 1,028, p90 1,145, range 99-1,397), n=464 lags over 27 calls; 96.3% above 500 ms, 81.9% above 700 ms. Inference: the bench found VP_BARGE_LONG_MS=500 safe on nods only at about 300 ms lag, so 500 (and even the 700 default) would stop her on most nods on this path; nod false stops were not measured on staging",
+   "method": "Staging on vl-vm-cin (Central India) at e9fdde3 (redeploy 2026-10-24 00:40 UTC, stage_setup.sh verbatim, VERTEX_OFF=0); test.browser_call through the control plane (never dials a phone) with the 23 Oct sim caller (ops/tools/replygap.py: synthetic Hinglish clips P1/P4, six caller turns, real-time 16 kHz into the runtime's browser media socket), one call at a time; every Vertex request paced >= 1.0 s apart (ops/tools/pace.py, request kinds tagged); passive probes (ops/tools/probes.py, results identical with and without them on the 263-test voice suite). Raw lags from the probe (k=lags), all 27 probed calls (6 openings + 21 reply-gap); per-call medians also in the runtime's timing.partialLagMs. The sim caller streams clips from the same VM, so a phone network's extra delay is not in it.",
+   "path": "research/2026-10-24/staging/reply-gap.md"
+  },
+  {
+   "id": "measure.2026-10-24.judge-dev7-flashlite-1500",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 190,
+   "title": "Crisis judge DEV (dev-7), Gemini 3.5 Flash-Lite on Vertex, 1,500 ms contract: at the contract 0.5, judge recall 88/100 (80.2-93.0), FP 8/90 (4.6-16.6); floor in-sample 100/100, 0/90; unavailable 5/190 (all timeouts, all on crisis lines); p50 1,001 / p95 1,212 ms; INR 28.14 per 1,000 turns. Confidences come in steps (0.85, 0.95, 1.0): judge FP <= 5% only at 0.9 (0/90, recall 60/100), so the pre-registered rule chose 0.9",
+   "method": "node product/scripts/judge-eval.mjs --task crisis --source dev-7 --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 30 on vl-vm-cin (Run Command) from a VM-only copy of the staging tree at e9fdde3 (/tmp/je8; files sha256-checked against PREREG.md), token minted on the VM; prices prices.ts x 95; Wilson 95%; 2026-10-24 01:54-01:57 UTC; INR 5.35.",
+   "path": "research/2026-10-24/judge-blind8/dev/flashlite-dev7-crisis/report.json"
+  },
+  {
+   "id": "measure.2026-10-24.judge-optoutdev-flashlite-1500",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 260,
+   "title": "Opt-out judge DEV (optout-dev), Gemini 3.5 Flash-Lite on Vertex, 1,500 ms, opt_out_threshold 0.6: judge recall 144/150 (91.5-98.2), FP 14/110 (7.7-20.2); floor in-sample 150/150, 0/110; unavailable 7/260 (timeouts); p50 966 / p95 1,160 ms; INR 28.24 per 1,000 turns. Sweep: the same from 0.3 to 0.85, FP 9/110 at 0.9 (information only)",
+   "method": "node product/scripts/judge-eval.mjs --task opt_out --source optout-dev --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 30 on vl-vm-cin from /tmp/je8 (contract judge.json); 2026-10-24 01:58-02:03 UTC; INR 7.34.",
+   "path": "research/2026-10-24/judge-blind8/dev/flashlite-optoutdev/report.json"
+  },
+  {
+   "id": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 200,
+   "title": "Crisis judge on BLIND 8 (unread), scored once at the pre-registered threshold 0.9, Gemini 3.5 Flash-Lite on Vertex, 1,500 ms: floor alone recall 26/100 (18.4-35.4), FP 9/100 (4.8-16.2); judge alone recall 73/100 (63.6-80.7), FP 0/100 (0.0-3.7); floor or judge recall 75/100 (65.7-82.5), FP 9/100 (4.8-16.2); unavailable 3/200 (timeouts); p50 1,006 / p95 1,270 ms; INR 29.21 per 1,000 turns. Weakest recall te-en 11/18, gu-en 11/18, mr-en 13/18; floor FP ta-en 3/17. Information-only sweep, not used to choose: at 0.5 judge recall 93/100 with FP 1/100",
+   "method": "PREREG.md (rule at 00:31:38Z before any request; DEV numbers and threshold at 01:58:23Z before BLIND 8). node product/scripts/judge-eval.mjs --task crisis --set product/shared/safety/sets/heldout-8.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 30, once, on vl-vm-cin from /tmp/je8t (= /tmp/je8 with only the crisis threshold set to 0.9, checked). 100 crisis + 100 benign look-alike caller lines, the writer's language tags; the lines were not read; Wilson 95%; 2026-10-24 02:04-02:07 UTC; INR 5.84.",
+   "path": "research/2026-10-24/judge-blind8/README.md"
+  },
+  {
+   "id": "measure.2026-10-24.judge-window-estimate-staging",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "model",
+   "n": 119,
+   "title": "Estimate, not measured on calls: share of judge verdicts in before her first sentence = 49% on v2-flashlite and 58% on v2-mai with speculation and prewarm off, 38% on v2-54mini with the defaults. On the paced defaults it is 84% and 95%, only because her replies are slower there. Inference: on staging the judge's Vertex request would take the pacer slot before the brain's (cascade.py starts it first), costing Gemini-brain replies up to 1 s",
+   "method": "For each of 119 measured replies (judge off), the slack from the final to her first sentence (runtime timing), against the empirical distribution of Flash-Lite judge latency from the VM (the two DEV runs, n=450 requests, p50 976 ms, 12 timeouts counted as never in). Expected share = mean over replies of P(latency <= slack). The planned on-call measurement (ops/judge_shadow.sh, probes k=judge vs k=reply) was blocked by the daily test budget.",
+   "path": "research/2026-10-24/staging/reply-gap.md"
+  },
+  {
+   "id": "rejected.2026-10-24.latency-flags-on-paced-vertex",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The shipped latency defaults (VP_SPECULATE_PARTIAL and VP_PREWARM on) on a Vertex paced at 1 request per second",
+   "tried": "Staging at e9fdde3 on the code defaults (d353282 / 1a67f1a), with every Vertex request held >= 1.0 s apart (appeal commitment), against a same-session arm with both flags off.",
+   "broke": "Replies got slower, not faster: v2-flashlite p50 3,201 vs 2,301 ms, v2-mai 2,658 vs 2,054 ms (n=22-23 each). The pacer queues the confirmed brain request behind discarded speculative requests (24 and 28 waits per 4 calls, 12-15 s in all) and warm HEADs. Speculation kept its reply in only 2 of about 23 replies, and the defaults sent 1.5-2.0x the Vertex requests. Not a verdict on the flags without a pacer, which was not measured here."
+  },
+  {
+   "id": "rejected.2026-10-24.call-start-vertex-head-on-paced-staging",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The call-start HEAD to the Vertex host (d353282 GeminiVoice.warm, called from CascadeSession.start whatever VP_PREWARM says) on a paced Vertex",
+   "tried": "Every v2-flashlite call at e9fdde3 sends a HEAD to aiplatform.googleapis.com as it starts; staging's pacer counts it as a Vertex request.",
+   "broke": "Her opening brain request then waits 837-998 ms for the pacer: v2-flashlite openings 2.73-2.99 s from placing the call to her first audio, against 1.92-2.69 s at e95ebc2 (n=3 each), where the warm did nothing for a Gemini voice. v2-mai (Azure voice) sends no HEAD and did not wait. Whether a HEAD with no model counts against the commitment is an integrator/owner call."
+  },
+  {
+   "id": "rejected.2026-10-24.runtime-judge-static-vertex-token",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Leaving the runtime crisis judge on in shadow on Vertex Flash-Lite through the env alone",
+   "tried": "VP_LLM_SAFETY_JUDGE_URL/KEY/MODEL for the Vertex global OpenAI-compatible endpoint and google/gemini-3.5-flash-lite (judge.json model_recommended), the key being an OAuth token minted on the VM, in a runtime-only systemd drop-in (ops/judge_shadow.sh).",
+   "broke": "The runtime's judge sends a static key, and a Vertex token lasts about an hour, after which every judge call would be judge_unavailable:error. It works only for a bounded batch with a token minted at restart. Left off. The fix is for the voice runtime: mint the judge's token from the service account as GoogleRoute's VertexToken does for brain and voice."
+  },
+  {
+   "id": "rejected.2026-10-24.judge-shadow-batch-test-budget",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Running the judge-in-shadow call batch (12 calls) and 3 more v2-54mini arm-B calls on staging in the same IST day as 23 Oct's evening runs",
+   "tried": "test.browser_call on the seed workspace at 2026-10-24 01:52 UTC.",
+   "broke": "Refused: 'today's test budget is used up; it resets at midnight IST' (server/modules/calls/tools.ts: INR 200 per workspace per IST day, with a INR 50 reservation per call; the DB showed INR 150.18 over 59 test calls since 18:30 UTC on 23 Oct, including 23 Oct's reply-gap runs and the e95ebc2 checks). Not circumvented (no new workspace, DB edit or code change). The verdict-before-first-sentence window was not measured on calls, and v2-54mini arm B has n=5."
+  },
+  {
+   "id": "rejected.2026-10-24.prereg-lowest-threshold-fp5-quantised",
+   "type": "rejection",
+   "status": "rejected",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Choosing the judge threshold as 'the lowest DEV sweep threshold with judge FP <= 5%' for a model whose confidences come in steps",
+   "tried": "PREREG.md for BLIND 8: the lowest threshold on 0.3-0.9 with DEV judge FP <= 5%, else the fewest FP at recall >= 95%, else 0.5.",
+   "broke": "Flash-Lite's DEV confidences are step-quantised (0.85, 0.95, 1.0). 6 of its 8 false positives and 24 true crisis verdicts sit at exactly 0.85, so the only qualifying value was 0.9 (DEV judge recall 88 -> 60/100). On BLIND 8 it gave judge recall 73/100, where the information-only sweep shows 93/100 at 0.5 with 1/100 FP. A next rule should choose by recall under an FP bound with a CI, or handle tied confidence steps explicitly. BLIND 8 is not re-scored."
+  },
+  {
+   "id": "open.2026-10-24.judge-window-on-calls",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "On real test calls: how often the shadow judge's verdict lands before her first sentence, per stack, and what the judge costs the reply under staging's 1 request per second Vertex pacer (the judge's request starts just before the brain's)",
+   "closes_when": "ops/judge_shadow.sh runs after 18:30 UTC (a fresh IST test budget, about 12 calls, about INR 33): at least 20 judged replies per stack, with the probes' k=judge against k=reply and the judge's pacer waits, plus the flags-off arm; and v2-54mini arm B topped up to >= 20 replies"
+  }
+ ],
+ "edges": [
+  {
+   "from": "measure.2026-10-24.staging-openings-e9fdde3",
+   "to": "measure.2026-10-23.staging-voice-fixes-verified-f2b27d4",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.staging-openings-e9fdde3",
+   "to": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3",
+   "to": "measure.2026-10-23.product-reply-gap-v2-flashlite",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.staging-reply-stages-e9fdde3",
+   "to": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.product-reply-gap-v2-mai-e9fdde3",
+   "to": "measure.2026-10-23.product-reply-gap-v2-mai",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.product-reply-gap-v2-mai-e9fdde3",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.staging-reply-stages-e9fdde3",
+   "to": "measure.2026-10-24.product-reply-gap-v2-mai-e9fdde3",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.product-reply-gap-v2-54mini-e9fdde3",
+   "to": "measure.2026-10-23.product-reply-gap-v2-54mini",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.product-reply-gap-v2-54mini-e9fdde3",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.staging-reply-stages-e9fdde3",
+   "to": "measure.2026-10-24.product-reply-gap-v2-54mini-e9fdde3",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.staging-reply-stages-e9fdde3",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.staging-partial-lag",
+   "to": "measure.2026-10-23.voice-barge-nod-dev",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-24.staging-partial-lag",
+   "to": "open.2026-10-23.voice-barge-in-speed",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.staging-partial-lag",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-dev7-flashlite-1500",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-1500",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090",
+   "to": "measure.2026-10-23.judge-blind7-vertex-flashlite-t3000",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090",
+   "to": "decision.2026-10-23.judge-model-shadow",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090",
+   "to": "measure.2026-10-24.judge-dev7-flashlite-1500",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-24.judge-window-estimate-staging",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-window-estimate-staging",
+   "to": "measure.2026-10-24.judge-dev7-flashlite-1500",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-24.judge-window-estimate-staging",
+   "to": "open.2026-10-24.judge-window-on-calls",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-24.latency-flags-on-paced-vertex",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-24.latency-flags-on-paced-vertex",
+   "to": "measure.2026-10-24.product-reply-gap-v2-flashlite-e9fdde3",
+   "relation": "informed-by"
+  },
+  {
+   "from": "rejected.2026-10-24.latency-flags-on-paced-vertex",
+   "to": "measure.2026-10-24.product-reply-gap-v2-mai-e9fdde3",
+   "relation": "informed-by"
+  },
+  {
+   "from": "rejected.2026-10-24.call-start-vertex-head-on-paced-staging",
+   "to": "measure.2026-10-24.staging-openings-e9fdde3",
+   "relation": "informed-by"
+  },
+  {
+   "from": "rejected.2026-10-24.call-start-vertex-head-on-paced-staging",
+   "to": "decision.2026-10-23.voice-latency-flags",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-24.runtime-judge-static-vertex-token",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "challenges"
+  },
+  {
+   "from": "rejected.2026-10-24.judge-shadow-batch-test-budget",
+   "to": "open.2026-10-24.judge-window-on-calls",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "rejected.2026-10-24.prereg-lowest-threshold-fp5-quantised",
+   "to": "measure.2026-10-24.judge-blind8-vertex-flashlite-t090",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.judge-window-on-calls",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  }
+ ],
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "staging-e9fdde3-gaps-judge-blind8",
+   "details": "Staging redeployed to e9fdde3 (migrations 0605, 0803). 6 openings: exactly one disclosure 6/6, 0 RD1 prefix, the contact's name 6/6, 0 guidance, 0 refused batches; RD1 hold 0-122 ms; flashlite openings +0.8-1.0 s from staging's pacer holding the brain request behind the call-start HEAD. Reply gap same-session A/B: shipped latency defaults flashlite 3,201 / mai 2,658 / 54mini 2,128 ms; speculation and prewarm off flashlite 2,301 / mai 2,054 ms (paced Vertex). partialLagMs median 858 ms (n=464). Judge: DEV chose 0.9 by the pre-registered rule; BLIND 8 once: judge recall 73/100, FP 0/100; floor or judge 75/100, FP 9/100 (the floor's). Judge-shadow call batch blocked by the product's daily test budget; staging left with the judge off. INR 98.02 metered of a INR 200 cap. research/2026-10-24/staging, research/2026-10-24/judge-blind8."
+  }
+ ]
+}
