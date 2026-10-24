@@ -25,6 +25,8 @@ import { categoryWord, lineNeeded, windowProblem, type Explained } from './expla
 import { verifyConfirm, verifyStart } from './verify.ts';
 // The one money import: the wallet blocker's words and the per-call hold, shared with the money module's wallet.check.
 import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
+// The agents module's pure fact-to-column matcher, the same rule the dial-time fill uses (walkthrough round 2, R3).
+import { factColumns, missingFactsSentence } from '../agents/columns.ts';
 import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
@@ -105,6 +107,53 @@ export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): 
     ?? Math.ceil(maxS / 60) * DEFAULT_PER_MINUTE_INR_MILLI;
   const wallet = await walletBlocker(q, ws, { purpose: 'launch', needInrMilli: hold });
   if (wallet) out.push({ code: wallet.code, message: wallet.message, why: wallet.why, fix: wallet.fix });
+  // Per-contact facts the list cannot fill (walkthrough round 2, R3): at dial time a fact is filled only from an
+  // attribute with the same key, so an unmatched fact would leave her with nothing to say. Never auto-mapped.
+  if (agent && n?.n) {
+    const keys = await many<{ k: string }>(q, `SELECT DISTINCT x.k FROM (
+        SELECT at.key AS k FROM attribute at JOIN audience_member m ON m.contact_id = at.contact_id JOIN audience au ON au.id = m.audience_id
+          WHERE au.id = $1 AND au.workspace_id = $2
+        UNION SELECT jsonb_object_keys(c.custom) FROM contact c JOIN audience_member m ON m.contact_id = c.id JOIN audience au ON au.id = m.audience_id
+          WHERE au.id = $1 AND au.workspace_id = $2) x`, [c.audience_id, ws]);
+    const missing = factColumns(agent, keys.map(k => ({ key: k.k }))).filter(f => f.status === 'missing');
+    if (missing.length) out.push({ code: 'per_contact_fact_unmapped',
+      message: `Nobody on this list has ${missing.length === 1 ? 'a value' : 'values'} for ${missingFactsSentence(missing)}, which the agent says from each person's record.`,
+      why: 'Match a column to each one when you import the list; Vyakti never guesses which column it is.',
+      fix: { tool: 'source.map', label: 'Match columns', role: 'operator' } });
+  }
+  return out;
+}
+
+const LANG_NAMES: Record<string, string> = { hi: 'Hindi', en: 'English', kn: 'Kannada', bn: 'Bengali', ta: 'Tamil', te: 'Telugu', mr: 'Marathi', gu: 'Gujarati',
+  ml: 'Malayalam', pa: 'Punjabi', or: 'Odia' };
+const LANG_WORDS: Record<string, string> = { hindi: 'hi', english: 'en', kannada: 'kn', bengali: 'bn', bangla: 'bn', tamil: 'ta', telugu: 'te', marathi: 'mr',
+  gujarati: 'gu', malayalam: 'ml', punjabi: 'pa', odia: 'or', oriya: 'or' };
+/** A contact's or agent's language as base codes: 'kn-IN' -> kn, 'Kannada' -> kn, 'hinglish' -> hi and en. */
+function langCodes(v: string | null | undefined): string[] {
+  const t = (v ?? '').trim().toLowerCase();
+  if (!t) return [];
+  if (t === 'hinglish') return ['hi', 'en'];
+  if (LANG_WORDS[t]) return [LANG_WORDS[t]];
+  const m = /^([a-z]{2})(?:[-_][a-z]{2})?$/.exec(t);
+  return m ? [m[1]] : [];
+}
+
+/** Launch warnings: worth knowing before launch, but they do not block it (walkthrough round 2, R2). */
+export async function launchWarnings(q: Queryable, ws: string, c: CampaignRow): Promise<Explained[]> {
+  const out: Explained[] = [];
+  const agent = (await loadVersion(q, ws, c.agent_version_id))?.config?.agent;
+  if (!agent || !c.audience_id) return out;
+  const speaks = new Set((agent.languages?.allowed ?? []).flatMap(l => langCodes(l)));
+  const people = await many<{ language: string | null }>(q, `SELECT ct.language FROM audience_member m JOIN audience au ON au.id = m.audience_id
+    JOIN contact ct ON ct.id = m.contact_id WHERE au.id = $1 AND au.workspace_id = $2`, [c.audience_id, ws]);
+  const unmet = people.map(p => langCodes(p.language)).filter(codes => codes.length && !codes.some(x => speaks.has(x)));
+  if (unmet.length) {
+    const names = [...new Set(unmet.map(codes => LANG_NAMES[codes[0]] ?? codes[0]))].sort();
+    out.push({ code: 'language_mismatch',
+      message: `${unmet.length} of ${people.length} people prefer a language this agent does not speak (${names.join(', ')}).`,
+      why: `The agent speaks ${[...speaks].map(x => LANG_NAMES[x] ?? x).join(', ')}. Add their languages to the agent, or call them with another agent.`,
+      fix: { tool: 'brief.edit', label: "Change the agent's languages", role: 'builder' } });
+  }
   return out;
 }
 
@@ -266,7 +315,7 @@ export function registerCampaignTools(registry: Registry): void {
       await ctx.q.query('UPDATE campaign SET state = $2, budget_id = $3, launched_at = now(), launched_by = $4, policy = $5, deployment_id = coalesce($6, deployment_id), updated_at = now() WHERE id = $1',
         [c.id, state, budget!.id, actorRef(ctx), JSON.stringify(policy), dep?.id ?? null]);
       const queued = await enqueueCampaignAttempts(ctx.q, ctx.workspaceId, c, start);
-      return { id: c.id, state, queued, firstCampaignReviewStop: first ? FIRST_CAMPAIGN_REVIEW_STOP : null };
+      return { id: c.id, state, queued, firstCampaignReviewStop: first ? FIRST_CAMPAIGN_REVIEW_STOP : null, warnings: await launchWarnings(ctx.q, ctx.workspaceId, c) };
     },
   }));
 
@@ -655,7 +704,8 @@ export function registerCampaignTools(registry: Registry): void {
       const c = await getCampaign(ctx.q, ctx.workspaceId, i.id);
       const counts = await many(ctx.q, `SELECT status, blocked_by, count(*)::int AS n FROM attempt WHERE campaign_id = $1 AND workspace_id = $2
         GROUP BY status, blocked_by ORDER BY n DESC`, [c.id, ctx.workspaceId]);
-      return { campaign: c, counts, blockers: c.state === 'draft' ? await launchBlockers(ctx.q, ctx.workspaceId, c) : [], version: await campaignVersion(ctx.q, ctx.workspaceId, c.id) };
+      return { campaign: c, counts, blockers: c.state === 'draft' ? await launchBlockers(ctx.q, ctx.workspaceId, c) : [],
+        warnings: c.state === 'draft' ? await launchWarnings(ctx.q, ctx.workspaceId, c) : [], version: await campaignVersion(ctx.q, ctx.workspaceId, c.id) };
     },
   }));
 

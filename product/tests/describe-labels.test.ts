@@ -68,5 +68,6 @@ test('version.publish says "Publish <agent name>, version N"', { skip }, async (
   const set: any = await registry.execute(pool, 'stack.set', { agentId: a.result.agentId, stackId: 'v2-flashlite' }, as);
   const p: any = await registry.execute(pool, 'version.publish', { agentId: a.result.agentId, draftHash: set.result.draftHash }, as);
   assert.equal(p.status, 'needs_approval');
-  assert.equal(p.summary, 'Publish AC service reminders, version 1');
+  // R8 (walkthrough round 2): the card goes on to say what goes live; it still leads with the name and the version.
+  assert.match(p.summary, /^Publish AC service reminders, version 1\. /);
 });

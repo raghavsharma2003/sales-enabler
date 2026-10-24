@@ -259,6 +259,52 @@ function diff(a: unknown, b: unknown, path = '', out: Change[] = []): Change[] {
 }
 const comparable = (c: AgentConfig) => { const { agentId: _a, version: _v, versionHash: _h, ...rest } = c; return rest; };
 
+/** A field change in plain English for the publish card: names from the config, never ids or hashes. */
+function changePhrase(ch: Change, cfg: AgentConfig): string {
+  const idx = (p: string) => Number(/\[(\d+)\]/.exec(p)?.[1] ?? -1);
+  const short = (v: unknown) => { const t = typeof v === 'string' ? v : JSON.stringify(v); return t.length > 40 ? t.slice(0, 37) + '…' : t; };
+  const [head, ...rest] = ch.path.split('.');
+  let what: string;
+  if (head.startsWith('facts[')) what = `fact "${(cfg.facts[idx(head)]?.key ?? 'a fact').replace(/_/g, ' ')}"`;
+  else if (head.startsWith('goals[')) what = `goal "${(cfg.goals[idx(head)]?.id ?? 'a goal').replace(/_/g, ' ')}"`;
+  else if (head === 'persona' && rest[0]?.startsWith('notes')) what = 'a persona note';
+  else if (head.startsWith('objections[')) what = 'an objection note';
+  else what = [head, ...rest].join(' ').replace(/\[\d+\]/g, '').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().trim() || 'the agent';
+  if (ch.from === null || ch.from === undefined) return `added ${what}`;
+  if (ch.to === null || ch.to === undefined) return `removed ${what}`;
+  if (typeof ch.from === 'object' || typeof ch.to === 'object') return `changed ${what}`;
+  return `${what}: ${short(ch.from)} to ${short(ch.to)}`;
+}
+
+/** What the publish card says goes live: the agent, its voice stack, the last practice result, and what changed since the
+ *  last published version. Plain English; the describe-labels test holds it to no ids or hashes. */
+async function publishSummary(ctx: ToolCtx, agentId: string, note?: string): Promise<string> {
+  const a = await one<{ id: string; draft: AgentConfig }>(ctx.q, 'SELECT id, draft FROM agent WHERE id = $1 AND workspace_id = $2', [agentId, ctx.workspaceId]);
+  const name = await label(ctx, 'agent', agentId);
+  if (!a) return `Publish ${name}`;
+  const prev = await one<{ number: number; config: { agent: AgentConfig } }>(ctx.q, 'SELECT number, config FROM agent_version WHERE agent_id = $1 ORDER BY number DESC LIMIT 1', [a.id]);
+  const parts = [`Publish ${name}, version ${(prev?.number ?? 0) + 1}` + (note ? ` (${note})` : '') + '.'];
+  const stack = stackOf(a.draft.voice);
+  parts.push(stack ? `Voice: ${stack.label}.` : 'No voice stack is chosen yet, so publishing will refuse.');
+  const run = await one<{ passed: boolean; grades: { pass: boolean }[]; sim_caller_key: string | null; shape: { label?: string } | null; created_at: Date; draft_hash: string }>(ctx.q,
+    `SELECT r.passed, r.grades, r.sim_caller_key, s.shape, r.created_at, r.draft_hash FROM agent_test_run r LEFT JOIN sim_caller s ON s.id = r.sim_caller_id
+     WHERE r.agent_id = $1 AND r.workspace_id = $2 ORDER BY r.created_at DESC LIMIT 1`, [a.id, ctx.workspaceId]);
+  if (!run) parts.push('No practice call has been run.');
+  else {
+    const who = (run.sim_caller_key && libraryCaller(run.sim_caller_key)?.label) || run.shape?.label || 'a custom caller';
+    const ok = run.grades.filter(g => g.pass).length;
+    parts.push(`Last practice call (${who}): ${run.passed ? 'passed' : 'failed'}, ${ok} of ${run.grades.length} checks` +
+      (run.draft_hash === draftHash(a.draft) ? '.' : ', on an earlier draft.'));
+  }
+  if (!prev) parts.push('This is the first version.');
+  else {
+    const changes = diff(comparable(prev.config.agent), comparable(a.draft));
+    parts.push(changes.length ? `Changes since version ${prev.number}: ` + changes.slice(0, 6).map(c => changePhrase(c, c.to === null ? prev.config.agent : a.draft)).join('; ') +
+      (changes.length > 6 ? `; and ${changes.length - 6} more` : '') + '.' : `No changes since version ${prev.number}.`);
+  }
+  return parts.join(' ');
+}
+
 // ------------------------------------------------------------------------------------------------ shared paths
 
 type SimCallerRow = { id: string; agent_id: string | null; persona: string; scenario: string; hidden_keys: Record<string, string>; contact: Record<string, string>;
@@ -518,10 +564,7 @@ export function registerAgentTools(r: Registry): void {
 
   r.register(tool(obj({ agentId: uuid(), draftHash: str({ min: 64, max: 64 }), note: opt(str({ max: 300 })) }), {
     name: 'version.publish', risk: 'external', summary: 'Publish the reviewed draft as a new immutable agent version',
-    describe: async (i, ctx) => {
-      const next = (await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(v.number), 0) + 1 AS n FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE v.agent_id = $1 AND a.workspace_id = $2', [i.agentId, ctx.workspaceId]))?.n ?? 1;
-      return `Publish ${await label(ctx, 'agent', i.agentId)}, version ${next}` + (i.note ? `: ${i.note}` : '');
-    },
+    describe: (i, ctx) => publishSummary(ctx, i.agentId, i.note),
     version: async (ctx, i) => {
       const a = await one<{ draft: AgentConfig }>(ctx.q, 'SELECT draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
       return a ? draftHash(a.draft) : null;

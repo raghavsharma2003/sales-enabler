@@ -3,7 +3,8 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { canonicalJson } from '../../../shared/approval.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
-import { any, arr, bool, num, obj, opt, record, str, uuid, type Validator } from '../../../shared/validate.ts';
+import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError, type Validator } from '../../../shared/validate.ts';
+import type { AgentConfig, Fact } from '../../../shared/agent-config.ts';
 import { appendAudit } from '../../audit.ts';
 import { many, one, tx, type Queryable } from '../../db.ts';
 import { HttpError, type Req, type Router } from '../../http.ts';
@@ -13,6 +14,8 @@ import { DEFAULT_MAX_AGE_S, type Authority } from './authority.ts';
 import { detectDelimiter, parseDelimited, type Delimiter } from './csv.ts';
 import { attrKey, inferMapping, normLanguage, normTimezone, parseDate, truthy, typedValue, type ColumnMap, type Mapping } from './mapping.ts';
 import { applyRows, hashWith, workspaceSalt, type InRow, type SourceRef } from './store.ts';
+// The agents module's pure fact-to-column matcher (walkthrough round 2, R3): the same rule the dial-time fill uses.
+import { factColumns, missingFactsSentence, type FactColumn } from '../agents/columns.ts';
 
 export const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const MAX_PART_CHARS = 950_000;                 // inline text in a tool call, under the tool endpoint's 1 MB body limit
@@ -180,7 +183,8 @@ export function registerSourceTools(reg: Registry): void {
     },
   }));
 
-  reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, previewRows: opt(num({ int: true, min: 1, max: 100 })) }), {
+  reg.register(tool(obj({ uploadId: UPLOAD_ID, overrides, previewRows: opt(num({ int: true, min: 1, max: 100 })),
+    agentId: opt(uuid()) }, 'Give agentId to check the columns against the facts that agent says from each person\'s record.'), {
     name: 'source.map', risk: 'draft',
     summary: 'Detect the columns of an uploaded file and preview what each row would do, with a reason for every row that will not be called',
     run: async (ctx, i) => {
@@ -228,12 +232,24 @@ export function registerSourceTools(reg: Registry): void {
       if (!phoneCol) questions.push('Which column has the phone number?');
       if (t.mapping.columns.some(c => c.field === 'consent')) questions.push('What did people consent to (the purpose)? Consent is recorded only with a purpose.');
       if (reasons.NON_INDIAN) questions.push(`${reasons.NON_INDIAN} numbers are outside India; they are kept but never auto-dialled. Is that right?`);
+      // Walkthrough round 2, R3: which of the agent's per-contact facts this file fills. Suggestions only; nothing is mapped
+      // until the member confirms it with an override (field 'attribute', key = the fact's key).
+      let agentFacts: { agent: string; facts: FactColumn[] } | undefined;
+      if (i.agentId) {
+        const ag = await one<{ name: string; draft: { facts?: Fact[]; category?: string } }>(ctx.q, 'SELECT name, draft FROM agent WHERE id = $1 AND workspace_id = $2', [i.agentId, ctx.workspaceId]);
+        if (!ag) throw new ValidationError('agentId', 'no such agent in this workspace');
+        const cols = t.mapping.columns.filter(c => c.field === 'attribute' && c.key).map(c => ({ key: c.key!, header: c.header }));
+        agentFacts = { agent: ag.name, facts: factColumns({ facts: ag.draft.facts ?? [], category: (ag.draft.category ?? 'service') as AgentConfig['category'] }, cols) };
+        const missing = agentFacts.facts.filter(f => f.status === 'missing');
+        if (missing.length) questions.unshift(`${ag.name} says ${missingFactsSentence(missing)} from each person's record, and no column is matched to ${missing.length === 1 ? 'it' : 'them'}. Which column holds ${missing.length === 1 ? 'it' : 'each'}?`);
+      }
       await ctx.q.query('UPDATE intake_upload SET mapping = $2 WHERE id = $1', [u.id, JSON.stringify(t.mapping)]);
       return {
+        ...(agentFacts ? { agentFacts } : {}),
         uploadId: u.id, delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, hasHeader: t.mapping.hasHeader,
         columns: t.mapping.columns, ignoredByDesign: t.mapping.columns.filter(c => c.why === 'pii_by_design').map(c => c.header),
         rowsTotal: rows.length, phones: { ok, duplicatesInFile: dup, rejected: reasons },
-        preview, questions: questions.slice(0, 3),
+        preview, questions: questions.slice(0, agentFacts ? 4 : 3),
       };
     },
   }));
