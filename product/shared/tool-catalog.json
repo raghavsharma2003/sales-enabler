@@ -4750,9 +4750,9 @@
    }
   },
   {
-   "name": "learning.power",
+   "name": "learning.history",
    "risk": "read",
-   "summary": "calls needed to prove a change, before launch, given where its outcomes come from",
+   "summary": "how she changed: every change learning made or proposed for an agent, with the brief before and after, why, the evidence, who approved it and whether it can be taken back",
    "needsApproval": false,
    "roles": [
     "owner",
@@ -4765,6 +4765,36 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "agentId"
+    ]
+   }
+  },
+  {
+   "name": "learning.power",
+   "risk": "read",
+   "summary": "calls needed to prove a change, before launch, given where its outcomes come from; for an agent, from its own calls, or that there are not enough to know",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator",
+    "compliance",
+    "viewer"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
      "baseline": {
       "type": "number",
       "minimum": 0.01,
@@ -4798,10 +4828,7 @@
       "description": "the judge's agreement with true labels, for the rest"
      }
     },
-    "required": [
-     "baseline",
-     "mdeAbs"
-    ]
+    "required": []
    }
   },
   {
@@ -4836,6 +4863,18 @@
       "minLength": 1,
       "maxLength": 120,
       "description": "an insight theme id from the evidence (theme:<insight>:<n>): draft one objection note for it"
+     },
+     "flagId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "source": {
+      "type": "string",
+      "enum": [
+       "live",
+       "test"
+      ],
+      "description": "read live calls, or test calls and practice runs; by default live calls, else test calls when the agent has none yet"
      }
     },
     "required": [
@@ -7401,6 +7440,29 @@
    }
   },
   {
+   "name": "proposal.adopt",
+   "risk": "external",
+   "summary": "publish a proposed change as a new version on a person's judgement, without a live test (for an agent with too few live calls to test it)",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "proposalId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "proposalId"
+    ]
+   }
+  },
+  {
    "name": "proposal.get",
    "risk": "read",
    "summary": "one learning proposal with its diff, gates and simulation",
@@ -7524,6 +7586,29 @@
    }
   },
   {
+   "name": "proposal.revert",
+   "risk": "external",
+   "summary": "take a learned change back out: publish a new version with those parts as they were before",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "proposalId": {
+      "type": "string",
+      "format": "uuid"
+     }
+    },
+    "required": [
+     "proposalId"
+    ]
+   }
+  },
+  {
    "name": "report.create",
    "risk": "draft",
    "summary": "Build and save a report of calls: reasons, outcomes by grade, cost and the funnel; test calls excluded",
@@ -7590,6 +7675,44 @@
     "required": [
      "from",
      "to"
+    ]
+   }
+  },
+  {
+   "name": "review.flag_turn",
+   "risk": "draft",
+   "summary": "flag one turn of a call as wrong, in your words: it becomes a lesson, and learning drafts one change answering it (test calls too)",
+   "needsApproval": false,
+   "roles": [
+    "owner",
+    "builder",
+    "operator"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "conversationId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "turn": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2000,
+      "description": "the turn's index on the call page"
+     },
+     "note": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500,
+      "description": "what was wrong, in your words"
+     }
+    },
+    "required": [
+     "conversationId",
+     "turn",
+     "note"
     ]
    }
   },
@@ -10185,6 +10308,68 @@
     },
     "required": [
      "groupBy"
+    ]
+   }
+  },
+  {
+   "name": "version.adopt",
+   "risk": "external",
+   "summary": "Publish the live version with a few fields changed (a learned change, or its revert) and send its calls there",
+   "needsApproval": true,
+   "roles": [
+    "owner",
+    "builder"
+   ],
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "parentVersionId": {
+      "type": "string",
+      "format": "uuid"
+     },
+     "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+     },
+     "fields": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "additionalProperties": false,
+       "properties": {
+        "path": {
+         "type": "string",
+         "minLength": 1,
+         "maxLength": 120
+        },
+        "from": {
+         "description": "the value it holds now"
+        },
+        "to": {
+         "description": "the value it takes"
+        }
+       },
+       "required": [
+        "path",
+        "from",
+        "to"
+       ]
+      },
+      "minItems": 1,
+      "maxItems": 10
+     }
+    },
+    "required": [
+     "agentId",
+     "parentVersionId",
+     "note",
+     "fields"
     ]
    }
   },

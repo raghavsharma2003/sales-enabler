@@ -127,6 +127,7 @@ export type ToolName =
   | "knowledge.list"
   | "knowledge.propose"
   | "knowledge.span.approve"
+  | "learning.history"
   | "learning.power"
   | "learning.propose"
   | "lesson.list"
@@ -201,12 +202,15 @@ export type ToolName =
   | "policy.retention.set"
   | "policy.window.set"
   | "proposal.accept"
+  | "proposal.adopt"
   | "proposal.get"
   | "proposal.list"
   | "proposal.probe"
   | "proposal.readiness"
+  | "proposal.revert"
   | "report.create"
   | "review.export"
+  | "review.flag_turn"
   | "revision.list"
   | "safety.cases"
   | "safety.check"
@@ -263,6 +267,7 @@ export type ToolName =
   | "tool.list"
   | "tool.test"
   | "usage.get"
+  | "version.adopt"
   | "version.candidate"
   | "version.diff"
   | "version.language_variant"
@@ -1087,10 +1092,15 @@ export interface ToolInput {
     spanIds: string[];
     decision?: "approved" | "rejected";
   };
-  /** calls needed to prove a change, before launch, given where its outcomes come from (read) */
+  /** how she changed: every change learning made or proposed for an agent, with the brief before and after, why, the evidence, who approved it and whether it can be taken back (read) */
+  "learning.history": {
+    agentId: string;
+  };
+  /** calls needed to prove a change, before launch, given where its outcomes come from; for an agent, from its own calls, or that there are not enough to know (read) */
   "learning.power": {
-    baseline: number;
-    mdeAbs: number;
+    agentId?: string;
+    baseline?: number;
+    mdeAbs?: number;
     alpha?: number;
     power?: number;
     /** share of outcomes that are verified or labelled by a person (default 1) */
@@ -1105,6 +1115,9 @@ export interface ToolInput {
     issueId?: string;
     /** an insight theme id from the evidence (theme:<insight>:<n>): draft one objection note for it */
     themeId?: string;
+    flagId?: string;
+    /** read live calls, or test calls and practice runs; by default live calls, else test calls when the agent has none yet */
+    source?: "live" | "test";
   };
   /** what this workspace has learned, with evidence (read) */
   "lesson.list": {
@@ -1527,6 +1540,10 @@ export interface ToolInput {
     hazardCodes?: string[];
     binding?: "campaign" | "inbound" | "web";
   };
+  /** publish a proposed change as a new version on a person's judgement, without a live test (for an agent with too few live calls to test it) (external, waits for approval) */
+  "proposal.adopt": {
+    proposalId: string;
+  };
   /** one learning proposal with its diff, gates and simulation (read) */
   "proposal.get": {
     id: string;
@@ -1546,6 +1563,10 @@ export interface ToolInput {
   "proposal.readiness": {
     proposalId: string;
   };
+  /** take a learned change back out: publish a new version with those parts as they were before (external, waits for approval) */
+  "proposal.revert": {
+    proposalId: string;
+  };
   /** Build and save a report of calls: reasons, outcomes by grade, cost and the funnel; test calls excluded (draft) */
   "report.create": {
     title: string;
@@ -1559,6 +1580,14 @@ export interface ToolInput {
     to: string;
     includeTest?: boolean;
     limit?: number;
+  };
+  /** flag one turn of a call as wrong, in your words: it becomes a lesson, and learning drafts one change answering it (test calls too) (draft) */
+  "review.flag_turn": {
+    conversationId: string;
+    /** the turn's index on the call page */
+    turn: number;
+    /** what was wrong, in your words */
+    note: string;
   };
   /** List recent changes that can be undone (read) */
   "revision.list": {
@@ -2000,6 +2029,19 @@ export interface ToolInput {
     /** IST date, YYYY-MM-DD */
     to?: string;
   };
+  /** Publish the live version with a few fields changed (a learned change, or its revert) and send its calls there (external, waits for approval) */
+  "version.adopt": {
+    agentId: string;
+    parentVersionId: string;
+    note: string;
+    fields: ({
+      path: string;
+      /** the value it holds now */
+      from: unknown;
+      /** the value it takes */
+      to: unknown;
+    })[];
+  };
   /** Create an immutable, undeployed candidate version (e.g. an experiment arm) without touching the draft (draft) */
   "version.candidate": {
     agentId: string;
@@ -2241,6 +2283,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "knowledge.list": { risk: "read", needsApproval: false },
   "knowledge.propose": { risk: "draft", needsApproval: false },
   "knowledge.span.approve": { risk: "draft", needsApproval: false },
+  "learning.history": { risk: "read", needsApproval: false },
   "learning.power": { risk: "read", needsApproval: false },
   "learning.propose": { risk: "draft", needsApproval: false },
   "lesson.list": { risk: "read", needsApproval: false },
@@ -2315,12 +2358,15 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "policy.retention.set": { risk: "policy", needsApproval: true },
   "policy.window.set": { risk: "policy", needsApproval: true },
   "proposal.accept": { risk: "external", needsApproval: true },
+  "proposal.adopt": { risk: "external", needsApproval: true },
   "proposal.get": { risk: "read", needsApproval: false },
   "proposal.list": { risk: "read", needsApproval: false },
   "proposal.probe": { risk: "test", needsApproval: false },
   "proposal.readiness": { risk: "read", needsApproval: false },
+  "proposal.revert": { risk: "external", needsApproval: true },
   "report.create": { risk: "draft", needsApproval: false },
   "review.export": { risk: "read", needsApproval: false },
+  "review.flag_turn": { risk: "draft", needsApproval: false },
   "revision.list": { risk: "read", needsApproval: false },
   "safety.cases": { risk: "read", needsApproval: false },
   "safety.check": { risk: "read", needsApproval: false },
@@ -2377,6 +2423,7 @@ export const TOOLS: Record<ToolName, { risk: string; needsApproval: boolean }> =
   "tool.list": { risk: "read", needsApproval: false },
   "tool.test": { risk: "test", needsApproval: false },
   "usage.get": { risk: "read", needsApproval: false },
+  "version.adopt": { risk: "external", needsApproval: true },
   "version.candidate": { risk: "draft", needsApproval: false },
   "version.diff": { risk: "read", needsApproval: false },
   "version.language_variant": { risk: "external", needsApproval: true },

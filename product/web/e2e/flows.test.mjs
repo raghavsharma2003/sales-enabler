@@ -1930,6 +1930,11 @@ test('Versions: an earlier version can be gone back to, through an approval that
     const by = (await pool.query("SELECT m.name FROM agent_version v JOIN member m ON m.id::text = v.author_id WHERE v.agent_id = $1 AND v.author_type = 'member' LIMIT 1", [id])).rows[0]?.name;
     if (by) await page.locator('.versions').getByText(by, { exact: false }).first().waitFor({ timeout: 10000 });
   }
+  // How she changed: learning's history loads under the versions, and says plainly whether a live test could tell yet.
+  await page.getByRole('heading', { name: 'Published versions' }).waitFor({ timeout: 10000 });
+  await page.getByRole('heading', { name: 'How she changed' }).waitFor({ timeout: 10000 });
+  const power = (await tool('learning.power', { agentId: id })).result;
+  if (!power.enough) await page.getByText(power.reason, { exact: false }).first().waitFor({ timeout: 10000 });
   await back.click();
   const sheet = page.getByRole('dialog');
   await sheet.getByRole('list', { name: 'What this does' }).getByText(/^Roll back .* to version \d+/).waitFor({ timeout: 10000 });

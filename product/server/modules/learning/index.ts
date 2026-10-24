@@ -24,6 +24,7 @@ import type { AgentConfig } from '../../../shared/agent-config.ts';
 import { arr, num, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { applyOps, changedStrings, describeChange, parseOps, PROPOSAL_KINDS, runGates, type ChangeOp } from './gates.ts';
 import { answeredBy, appendOnly, copiedQuote, isRecurringObjection } from './objections.ts';
+import { briefDiff, fieldsFor, reverseFields } from './history.ts';
 import { harmMoments, harmWindow, HARM_WINDOW, THROTTLE_FACTOR, type AnalysedCall } from './harm.ts';
 import { compareProbe, type SimRun } from './probe.ts';
 import { armFor, decide, harmSprt, labelAdjustedPlan, powerPlan, sequentialGuard, shadowAA, type Arm } from './stats.ts';
@@ -152,36 +153,58 @@ const NEVER_QUOTED = `(c.reason_code IN ('END_CRISIS', 'END_OPTED_OUT') OR coale
 /** What learning reads: the triggering issue and the agent's open issues; what analysis wrote on the live version's calls
  *  (moments counted by kind, with up to four caller lines per quotable kind; reason codes; outcomes, including none);
  *  the agent's latest cross-call insight themes (objections, drop-offs, unanswered questions); recent calls; lessons. */
-async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: VersionRow, issueId?: string) {
+async function gatherEvidence(q: Queryable, ws: string, agentId: string, base: VersionRow, issueId?: string, source: EvidenceSource = 'live') {
   const versions = (await many<{ id: string }>(q, `SELECT v.id FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE a.workspace_id = $1 AND a.id = $2`, [ws, agentId])).map(r => r.id);
   // The issue that triggered this run (a monitor's), first; then the agent's own open issues.
   const issues = await many<{ id: string; category: string; severity: string; detail: unknown }>(q,
     `SELECT id, category, severity, detail FROM issue WHERE workspace_id = $1 AND status <> 'resolved'
        AND (id = $4 OR subject_id = $2 OR subject_id = ANY($3::uuid[]) OR detail->>'agentId' = $2::text)
      ORDER BY (id = $4) DESC NULLS LAST, created_at DESC LIMIT 20`, [ws, agentId, versions, issueId ?? null]);
-  const recent = `c.workspace_id = $1 AND c.agent_version_id = $2 AND ${LIVE} AND c.ended_at > now() - interval '30 days'`;
+  // Live calls on the live version; or, for an agent with none yet, test calls on any of its versions.
+  const which = source === 'live' ? LIVE : TEST;
+  const scope = source === 'live' ? [base.id] : versions;
+  const recent = `c.workspace_id = $1 AND c.agent_version_id = ANY($2::uuid[]) AND ${which} AND c.ended_at > now() - interval '30 days'`;
   const counts = await many<{ kind: string; n: number }>(q, `SELECT m.kind, count(*)::int AS n FROM call_moment m JOIN conversation c ON c.id = m.conversation_id AND c.workspace_id = m.workspace_id
-     WHERE ${recent} AND m.source = 'analysis' GROUP BY m.kind`, [ws, base.id]);
+     WHERE ${recent} AND m.source = 'analysis' GROUP BY m.kind`, [ws, scope]);
   const quoted = await many<{ id: string; kind: string; quote: string; call_id: string }>(q, `SELECT id, kind, quote, call_id FROM (
        SELECT m.id, m.kind, m.quote, c.id AS call_id, row_number() OVER (PARTITION BY m.kind ORDER BY c.ended_at DESC) AS k
        FROM call_moment m JOIN conversation c ON c.id = m.conversation_id AND c.workspace_id = m.workspace_id
        WHERE ${recent} AND m.source = 'analysis' AND m.kind = ANY($3::text[]) AND m.quote IS NOT NULL AND NOT ${NEVER_QUOTED}) x
-     WHERE k <= 4 ORDER BY kind, k`, [ws, base.id, QUOTABLE_MOMENTS]);
+     WHERE k <= 4 ORDER BY kind, k`, [ws, scope, QUOTABLE_MOMENTS]);
   const moments = { counts: Object.fromEntries(counts.map(r => [r.kind, r.n])), quotes: quoted.map(r => ({ id: r.id, kind: r.kind, quote: r.quote, callId: r.call_id })) };
   const reasons = Object.fromEntries((await many<{ code: string; n: number }>(q,
-    `SELECT coalesce(c.reason_code, 'none') AS code, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, base.id])).map(r => [r.code, r.n]));
+    `SELECT coalesce(c.reason_code, 'none') AS code, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, scope])).map(r => [r.code, r.n]));
   const outcomes = Object.fromEntries((await many<{ v: string; n: number }>(q,
-    `SELECT coalesce(c.outcome, 'none') AS v, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, base.id])).map(r => [r.v, r.n]));
-  const themes = await latestThemes(q, ws, agentId);
+    `SELECT coalesce(c.outcome, 'none') AS v, count(*)::int AS n FROM conversation c WHERE ${recent} GROUP BY 1`, [ws, scope])).map(r => [r.v, r.n]));
+  const themes = source === 'live' ? await latestThemes(q, ws, agentId) : [];
   const calls = await many<{ id: string; outcome: string | null; reason_code: string | null; judge: unknown }>(q,
     // The AI's outcome read keeps its value and calibration; its quote is dropped for calls whose words are never shown.
     `SELECT c.id, c.outcome, c.reason_code, CASE WHEN ${NEVER_QUOTED} AND jsonb_typeof(c.analysis->'judge') = 'object' THEN (c.analysis->'judge') - 'quote' ELSE c.analysis->'judge' END AS judge FROM conversation c
-       WHERE c.workspace_id = $1 AND c.agent_version_id = ANY($2::uuid[]) AND ${LIVE}
+       WHERE c.workspace_id = $1 AND c.agent_version_id = ANY($2::uuid[]) AND ${which}
        ORDER BY c.started_at DESC LIMIT 40`, [ws, versions]);
   const lessons = await many<{ text: string; status: string; change_hash: string | null }>(q,
     `SELECT text, status, change_hash FROM lesson WHERE workspace_id = $1 AND (agent_id = $2 OR agent_id IS NULL) ORDER BY created_at DESC LIMIT 20`, [ws, agentId]);
-  return { issues, moments, reasons, outcomes, themes, calls, lessons };
+  // What a person marked wrong on this agent's calls (review.flag_turn), test calls included: the owner's own review.
+  // A caller's line from a call whose words are never shown stays out; the person's note always goes in.
+  const flags = (await many<{ id: string; speaker: string; quote: string; note: string; call_id: string; hidden: boolean }>(q,
+    `SELECT f.id, f.speaker, f.quote, f.note, f.conversation_id AS call_id, ${NEVER_QUOTED} AS hidden FROM review_flag f JOIN conversation c ON c.id = f.conversation_id AND c.workspace_id = f.workspace_id
+      WHERE f.workspace_id = $1 AND f.agent_id = $2 ORDER BY f.created_at DESC LIMIT 20`, [ws, agentId]))
+    .map(f => ({ id: `flag:${f.id}`, said: f.speaker === 'agent' ? 'agent' : 'caller', quote: f.speaker === 'caller' && f.hidden ? null : f.quote, note: f.note, callId: f.call_id }));
+  // Practice runs (simulated callers and practice chats) that failed a check: what failed, never the transcript.
+  const practice = source === 'live' ? [] : (await many<{ id: string; kind: string; grades: { check?: string; pass?: boolean; detail?: string }[] }>(q,
+    `SELECT id, kind, grades FROM agent_test_run WHERE workspace_id = $1 AND agent_id = $2 AND passed = false AND created_at > now() - interval '30 days' ORDER BY created_at DESC LIMIT 10`, [ws, agentId]))
+    .map(r => ({ id: `run:${r.id}`, kind: r.kind, failed: (Array.isArray(r.grades) ? r.grades : []).filter(g => g?.pass === false).map(g => `${g.check ?? 'check'}: ${g.detail ?? ''}`.slice(0, 200)) }))
+    .filter(r => r.failed.length);
+  return { source, issues, moments, reasons, outcomes, themes, calls, lessons, flags, practice };
 }
+
+/** Test calls: the test channel or a manifest marked test. They are evidence for a draft change, never a measurement. */
+const TEST = `(c.channel = 'test' OR coalesce(c.run_manifest->>'test', 'false') = 'true') AND c.status IN ('ended','processing','done')`;
+type EvidenceSource = 'live' | 'test';
+const SOURCE_LABEL: Record<EvidenceSource, string> = {
+  live: 'from live calls',
+  test: "from test calls, practice runs and the owner's review: a reason to try it, not a measured result",
+};
 
 export interface LearnedTheme { id: string; kind: string; title: string; count: number; quotedCalls: number; of: number; quotes: { text: string; callId: string }[] }
 
@@ -210,27 +233,41 @@ async function ownEvidence(q: Queryable, ws: string, known: Set<string>, ids: un
 }
 
 const proposeIn = obj({ agentId: uuid(), max: opt(num({ int: true, min: 1, max: 3 })), issueId: opt(uuid()),
-  themeId: opt(str({ min: 1, max: 120, desc: 'an insight theme id from the evidence (theme:<insight>:<n>): draft one objection note for it' })) });
+  themeId: opt(str({ min: 1, max: 120, desc: 'an insight theme id from the evidence (theme:<insight>:<n>): draft one objection note for it' })),
+  flagId: opt(uuid()), source: opt(str({ oneOf: ['live', 'test'], desc: "read live calls, or test calls and practice runs; by default live calls, else test calls when the agent has none yet" })) });
 
-async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId?: string; themeId?: string }) {
+/** Added when one moment a person flagged is the focus (review.flag_turn). */
+const FLAG_FOCUS = `This run answers ONE moment a person reviewing a call marked as wrong, given as "focus.flag": what was said, by whom,
+and the reviewer's note on what was wrong. Propose exactly one change that makes her handle that moment the way the note asks,
+in the part of the agent it belongs to. Write what she does, as a short English note about behaviour; never copy the quoted
+line. If the note asks for something you may not change (the disclosure, safety, hand-off, facts' values), reply
+{"outOfScope": "<which part, in a few words>", "proposals": []}. Cite the flag id.`;
+
+async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId?: string; themeId?: string; flagId?: string; source?: string }) {
   const ws = ctx.workspaceId;
   const base = await liveVersion(ctx.q, ws, i.agentId);
   if (!base) throw new Error('this agent has no published version yet; learning starts from what has run');
   if (i.issueId && !(await one(ctx.q, 'SELECT 1 FROM issue WHERE id = $1 AND workspace_id = $2', [i.issueId, ws]))) throw new Error('no such issue');
-  const ev = await gatherEvidence(ctx.q, ws, i.agentId, base, i.issueId);
-  if (!ev.issues.length && !ev.moments.quotes.length && !ev.themes.length && !ev.calls.length) return { status: 'no_evidence', proposals: [] };
+  // An agent with no live calls yet learns from its test calls: proposals say so, and nothing about them is a measurement.
+  let ev = await gatherEvidence(ctx.q, ws, i.agentId, base, i.issueId, i.source === 'test' ? 'test' : 'live');
+  if (!i.source && !ev.calls.length) ev = await gatherEvidence(ctx.q, ws, i.agentId, base, i.issueId, 'test');
+  const flag = i.flagId ? ev.flags.find(f => f.id === `flag:${i.flagId}`) : undefined;
+  if (i.flagId && !flag) throw new Error('no such flagged moment on this agent');
+  if (!ev.issues.length && !ev.moments.quotes.length && !ev.themes.length && !ev.calls.length && !ev.flags.length && !ev.practice.length) return { status: 'no_evidence', proposals: [] };
   const cfg = agentOf(base);
-  const known = new Set([...ev.issues.map(x => x.id), ...ev.moments.quotes.map(x => x.id), ...ev.themes.map(x => x.id), ...ev.calls.map(x => x.id)]);
+  const known = new Set([...ev.issues.map(x => x.id), ...ev.moments.quotes.map(x => x.id), ...ev.themes.map(x => x.id), ...ev.calls.map(x => x.id), ...ev.flags.map(x => x.id), ...ev.practice.map(x => x.id)]);
   const theme = i.themeId ? ev.themes.find(t => t.id === i.themeId) : undefined;
   if (i.themeId && !theme) throw new Error('no such theme on this agent\'s latest insight');
-  const focus = theme ? { objection: { id: theme.id, title: theme.title, heardOn: `${theme.count} of ${theme.of} calls`, quotes: theme.quotes.map(q => q.text) } } : undefined;
-  const callerWords = [...ev.themes.flatMap(t => t.quotes.map(q => q.text)), ...ev.moments.quotes.map(m => m.quote)];
+  const focus = theme ? { objection: { id: theme.id, title: theme.title, heardOn: `${theme.count} of ${theme.of} calls`, quotes: theme.quotes.map(q => q.text) } }
+    : flag ? { flag: { id: flag.id, said: flag.said, quote: flag.quote, note: flag.note } } : undefined;
+  const callerWords = [...ev.themes.flatMap(t => t.quotes.map(q => q.text)), ...ev.moments.quotes.map(m => m.quote), ...ev.flags.filter(f => f.said === 'caller' && f.quote).map(f => f.quote!)];
   const tried = new Set(ev.lessons.filter(l => l.change_hash && l.status !== 'won' && l.status !== 'active').map(l => l.change_hash!));
+  const one_ = !!(theme || flag);
 
   let reply;
   try {
     reply = await complete({ purpose: 'learning', json: true, temperature: 0.3, maxTokens: 2000, messages: [
-      { role: 'system', content: PROPOSE_SYSTEM.replace('N', String(theme ? 1 : i.max ?? 3)) + (theme ? '\n' + OBJECTION_FOCUS : '') },
+      { role: 'system', content: PROPOSE_SYSTEM.replace('N', String(one_ ? 1 : i.max ?? 3)) + (theme ? '\n' + OBJECTION_FOCUS : flag ? '\n' + FLAG_FOCUS : '') },
       { role: 'user', content: JSON.stringify({ agent: { opening: cfg.opening, objections: cfg.objections, goals: cfg.goals, persona: { notes: cfg.persona?.notes },
         facts: cfg.facts.map(f => ({ key: f.key, value: f.value })), tools: cfg.tools, limits: cfg.limits }, ...(focus ? { focus } : {}), evidence: ev }) },
     ] });
@@ -242,7 +279,12 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
   try { parsed = JSON.parse(reply.text); } catch { return { status: 'llm_bad_reply', proposals: [] }; }
   if (theme && Number.isInteger(parsed?.covered) && parsed.covered >= 0 && parsed.covered < cfg.objections.length)
     return { status: 'already_answered', covered: parsed.covered, note: cfg.objections[parsed.covered], proposals: [] };
-  const raw: any[] = Array.isArray(parsed?.proposals) ? parsed.proposals.slice(0, theme ? 1 : i.max ?? 3) : [];
+  if (flag && typeof parsed?.outOfScope === 'string' && !(parsed.proposals ?? []).length)
+    return { status: 'out_of_scope', reason: `learning may not change ${parsed.outOfScope.slice(0, 120)}; a person edits that part`, proposals: [] };
+  const raw: any[] = Array.isArray(parsed?.proposals) ? parsed.proposals.slice(0, one_ ? 1 : i.max ?? 3) : [];
+  // The outcome reading behind each call it could cite, through calls' shared reading (never its tables).
+  const readings = await cross<Reading[]>(ctx.q, ws, 'outcome.readings', { conversationIds: ev.calls.map(c => c.id) });
+  const readingOf = new Map(readings.status === 'confirmed' ? readings.result.map(r => [r.conversationId, r]) : []);
 
   const out = [];
   for (const p of raw) {
@@ -250,6 +292,7 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
     let ops: ChangeOp[] | null = null, parseError: string | null = null;
     try { ops = parseOps(p?.change); } catch (e) { parseError = e instanceof Error ? e.message : String(e); }
     const cited = await ownEvidence(ctx.q, ws, known, Array.isArray(p?.evidenceIds) ? p.evidenceIds : []);
+    if (flag && !cited.includes(flag.id)) cited.unshift(flag.id);          // the run answers that moment, cited or not
     const hash = ops ? changeHash(ops) : null;
     if (hash && tried.has(hash)) { out.push({ status: 'skipped', reason: 'this workspace already tested or rejected this change' }); continue; }
 
@@ -281,7 +324,11 @@ async function propose(ctx: ToolCtx, i: { agentId: string; max?: number; issueId
     const status = failures.length ? 'gated_out' : 'drafted';
     const row = await one<{ id: string }>(ctx.q, `INSERT INTO proposal (workspace_id, agent_id, base_version_id, kind, change, evidence, gates, status, change_hash, rationale)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
-      [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage, ...(i.issueId ? { issueId: i.issueId } : {}), ...(theme ? { themeId: theme.id, theme: { title: theme.title, count: theme.count, of: theme.of } } : {}) }),
+      [ws, i.agentId, base.id, kind ?? 'unknown', JSON.stringify(ops ?? p?.change ?? null), JSON.stringify({ cited, usage: reply.usage, source: ev.source, sourceLabel: SOURCE_LABEL[ev.source],
+         calls: cited.filter(id => readingOf.has(id) || ev.calls.some(c => c.id === id)).map(id => { const r = readingOf.get(id); return { id, outcome: r?.counted ?? null, grade: r?.grade ?? null, aiRead: r?.aiRead ?? null }; }),
+         quotes: ev.moments.quotes.filter(m => cited.includes(m.id)).map(m => ({ kind: m.kind, quote: m.quote, callId: m.callId })),
+         ...(flag ? { flagId: i.flagId, flag: { said: flag.said, quote: flag.quote, note: flag.note, callId: flag.callId } } : {}),
+         ...(i.issueId ? { issueId: i.issueId } : {}), ...(theme ? { themeId: theme.id, theme: { title: theme.title, count: theme.count, of: theme.of } } : {}) }),
        JSON.stringify({ passed: !failures.length, failures, checked: gates.checked, ...(shapeNote ? { notes: [shapeNote] } : {}) }), status, hash, typeof p?.rationale === 'string' ? p.rationale.slice(0, 1000) : null]);
     out.push({ id: row!.id, status, kind, failures, cited });
   }
@@ -923,6 +970,207 @@ async function pacingRestore(ctx: ToolCtx, i: { versionId: string }) {
   return { restored: true, throttleId: t.id };
 }
 
+// ---------- the owner's review: a flagged moment becomes a lesson and a proposal ----------
+
+const flagIn = obj({ conversationId: uuid(), turn: num({ int: true, min: 0, max: 2000, desc: "the turn's index on the call page" }),
+  note: str({ min: 3, max: 500, desc: 'what was wrong, in your words' }) });
+
+/** review.flag_turn: the turn is quoted from the call's own record (the turn table, else its transcript), never from the
+ *  request. A lesson records it at once; learning.propose then drafts one change answering it, through every gate. */
+async function flagTurn(ctx: ToolCtx, i: { conversationId: string; turn: number; note: string }) {
+  const ws = ctx.workspaceId;
+  const c = await one<{ id: string; version_id: string | null; agent_id: string | null; test: boolean; transcript: any[] }>(ctx.q,
+    `SELECT c.id, c.agent_version_id AS version_id, coalesce(v.agent_id, a.id) AS agent_id, (${TEST.replace(/ AND c\.status.*$/, '')}) AS test, c.transcript
+       FROM conversation c LEFT JOIN agent_version v ON v.id = c.agent_version_id
+       LEFT JOIN agent a ON a.workspace_id = c.workspace_id AND a.id::text = c.run_manifest->>'agentId'
+      WHERE c.id = $1 AND c.workspace_id = $2`, [i.conversationId, ws]);
+  if (!c) throw new Error('no such call');
+  if (!c.agent_id) throw new Error('this call is not tied to an agent version, so it cannot teach one');
+  const t = await one<{ speaker: 'agent' | 'caller'; text: string }>(ctx.q, 'SELECT speaker, text FROM turn WHERE conversation_id = $1 AND idx = $2', [c.id, i.turn])
+    ?? (() => { const x = Array.isArray(c.transcript) ? c.transcript[i.turn] : null; const who = x?.speaker ?? x?.who;
+      return x && typeof x.text === 'string' && (who === 'agent' || who === 'caller') ? { speaker: who, text: x.text } : null; })();
+  if (!t || !t.text.trim()) throw new Error('this call has no such turn');
+  const by = `${ctx.actor.type}:${ctx.actor.id ?? ''}`;
+  const prior = await one<{ id: string; lesson_id: string | null; proposal_id: string | null }>(ctx.q,
+    'SELECT id, lesson_id, proposal_id FROM review_flag WHERE conversation_id = $1 AND turn = $2 AND flagged_by = $3', [c.id, i.turn, by]);
+  if (prior) return { flagId: prior.id, lessonId: prior.lesson_id, proposalId: prior.proposal_id, status: 'already_flagged', note: 'you flagged this moment before; its lesson and proposal are unchanged' };
+  const flag = (await one<{ id: string }>(ctx.q, `INSERT INTO review_flag (workspace_id, agent_id, conversation_id, agent_version_id, turn, speaker, quote, note, flagged_by)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`, [ws, c.agent_id, c.id, c.version_id, i.turn, t.speaker, t.text, i.note, by]))!.id;
+  const who = t.speaker === 'agent' ? 'she said' : 'the caller said';
+  const lesson = (await one<{ id: string }>(ctx.q, `INSERT INTO lesson (workspace_id, agent_id, text, status, evidence) VALUES ($1,$2,$3,'owner_flag',$4) RETURNING id`,
+    [ws, c.agent_id, `Flagged on a ${c.test ? 'test ' : ''}call, where ${who} "${t.text}": ${i.note}`, JSON.stringify({ flagId: flag, conversationId: c.id, turn: i.turn, speaker: t.speaker })]))!.id;
+  await ctx.q.query(`UPDATE conversation SET flagged = true, flags = ARRAY(SELECT DISTINCT unnest(flags || '{owner_review}'::text[]) ORDER BY 1) WHERE id = $1 AND workspace_id = $2`, [c.id, ws]);
+  const live = await liveVersion(ctx.q, ws, c.agent_id);
+  let proposal: { id?: string; status: string; reason?: string; failures?: unknown } = { status: 'not_drafted', reason: 'this agent has no published version yet; the lesson waits for one' };
+  if (live) {
+    const r = await propose(ctx, { agentId: c.agent_id, flagId: flag, max: 1, source: c.test ? 'test' : undefined });
+    const p = (r.proposals as any[]).find(x => x?.id);
+    proposal = p ? { id: p.id, status: p.status, ...(p.failures?.length ? { failures: p.failures } : {}) }
+      : { status: r.status, reason: 'reason' in r ? String(r.reason) : r.status === 'llm_unavailable' ? 'the model was not reachable; flag again later' : 'no change was drafted' };
+  }
+  await ctx.q.query('UPDATE review_flag SET lesson_id = $2, proposal_id = $3, detail = $4 WHERE id = $1', [flag, lesson, proposal.id ?? null, JSON.stringify({ proposal })]);
+  await ctx.q.query('UPDATE lesson SET proposal_id = $2 WHERE id = $1', [lesson, proposal.id ?? null]);
+  return { flagId: flag, lessonId: lesson, quote: t.text, speaker: t.speaker, proposalId: proposal.id ?? null, proposalStatus: proposal.status,
+    ...(proposal.reason ? { reason: proposal.reason } : {}), ...(proposal.failures ? { failures: proposal.failures } : {}) };
+}
+
+// ---------- adopt without a live test, revert, and the history ----------
+
+const ADOPTABLE = ['drafted', 'awaiting_approval'];
+
+/** What adopting (or reverting) a proposal would write, or why it cannot: the live version must still be the one it was
+ *  drafted on, and its gates must still pass there. */
+async function adoptPlan(ctx: ToolCtx, proposalId: string) {
+  const ws = ctx.workspaceId;
+  const p = await proposalFor(ctx.q, ws, proposalId);
+  if (!ADOPTABLE.includes(p.status)) throw new NotReady(`This change is ${p.status.replace(/_/g, ' ')}, so it cannot be adopted.`);
+  const live = await liveVersion(ctx.q, ws, p.agent_id);
+  if (!live || live.id !== p.base_version_id) throw new NotReady('The agent has been published since this change was drafted; look for improvements again on the new version.');
+  const ops = parseOps(p.change);
+  const gates = runGates(agentOf(live), ops);
+  if (!gates.passed) throw new NotReady(`It no longer passes its checks: ${gates.failures.map(f => f.detail).join('; ')}`);
+  return { p, live, ops, fields: fieldsFor(agentOf(live), ops), parts: describeChange(agentOf(live), ops) };
+}
+
+const partsLine = (parts: { part: string; before: string | null; after: string }[]) =>
+  parts.map(c => `${c.part}: ${c.before === null ? `add "${c.after}"` : `"${c.before}" becomes "${c.after}"`}`).join('; ');
+
+/** proposal.adopt (A2): a person decides on their own judgement, with no live test: honest when an agent has only test
+ *  calls. The change is published as a new version through the agents module (version.adopt, run under this approval). */
+async function adopt(ctx: ToolCtx, i: { proposalId: string }) {
+  const ws = ctx.workspaceId;
+  let plan;
+  try { plan = await adoptPlan(ctx, i.proposalId); } catch (e) { throw e instanceof NotReady ? new Error(e.message) : e; }
+  const { p, live, fields, parts } = plan;
+  const t = (bound?.registry ?? reg)?.get('version.adopt');
+  if (!t) throw new Error('the agents module is not loaded, so no version can be published');
+  const v = await t.run(ctx, t.input({ agentId: p.agent_id, parentVersionId: live.id, fields, note: `learned change (${p.kind}), adopted without a live test` })) as { versionId: string; number: number; draft: string };
+  const adopted = { versionId: v.versionId, number: v.number, from: live.number, by: ctx.actor.id ?? ctx.actor.type, at: new Date().toISOString(), tested: false };
+  await ctx.q.query(`UPDATE proposal SET status = 'promoted', adopted = $2 WHERE id = $1`, [p.id, JSON.stringify(adopted)]);
+  await addLesson(ctx.q, ws, p.agent_id, `Adopted by a person without a live test, as version ${v.number}: ${parts.map(x => x.part).join('; ')}. It is not proved on live calls.`,
+    'adopted', p.id, p.change_hash, { versionId: v.versionId, fields: fields.map(f => f.path) });
+  return { versionId: v.versionId, number: v.number, draft: v.draft, tested: false };
+}
+
+/** The change a proposal made, if it can be taken back now: adopted by a person or after a test, not yet reverted, and the
+ *  live version still holds what it wrote. */
+async function revertPlan(ctx: ToolCtx, proposalId: string) {
+  const ws = ctx.workspaceId;
+  const p = await proposalFor(ctx.q, ws, proposalId);
+  if (p.status === 'reverted') throw new NotReady('This change was already taken back.');
+  if (p.status !== 'promoted') throw new NotReady('Only a change that is in use can be taken back.');
+  const base = p.base_version_id ? await versionById(ctx.q, ws, p.base_version_id) : null;
+  const live = await liveVersion(ctx.q, ws, p.agent_id);
+  if (!base || !live) throw new NotReady('The versions this change was made between are gone.');
+  const fields = reverseFields(fieldsFor(agentOf(base), parseOps(p.change)));
+  const at = (path: string): unknown => path.split('.').reduce<any>((n, k) => (n == null ? undefined : n[k]), agentOf(live));
+  const moved = fields.filter(f => JSON.stringify(at(f.path) ?? null) !== JSON.stringify(f.from ?? null)).map(f => f.path);
+  if (moved.length) throw new NotReady(`Version ${live.number} no longer has this change as it was made (${moved.join(', ')} changed since); roll back to an earlier version instead.`);
+  return { p, live, fields: fields.map(f => ({ ...f, to: f.to ?? null })), parts: describeChange(agentOf(base), parseOps(p.change)) };
+}
+
+async function revert(ctx: ToolCtx, i: { proposalId: string }) {
+  const ws = ctx.workspaceId;
+  let plan;
+  try { plan = await revertPlan(ctx, i.proposalId); } catch (e) { throw e instanceof NotReady ? new Error(e.message) : e; }
+  const { p, live, fields, parts } = plan;
+  const t = (bound?.registry ?? reg)?.get('version.adopt');
+  if (!t) throw new Error('the agents module is not loaded, so no version can be published');
+  const v = await t.run(ctx, t.input({ agentId: p.agent_id, parentVersionId: live.id, fields, note: `took back a learned change (${p.kind})` })) as { versionId: string; number: number; draft: string };
+  const prior = (await one<{ adopted: any }>(ctx.q, 'SELECT adopted FROM proposal WHERE id = $1', [p.id]))?.adopted ?? {};
+  await ctx.q.query(`UPDATE proposal SET status = 'reverted', adopted = $2 WHERE id = $1`,
+    [p.id, JSON.stringify({ ...prior, reverted: { versionId: v.versionId, number: v.number, by: ctx.actor.id ?? ctx.actor.type, at: new Date().toISOString() } })]);
+  await addLesson(ctx.q, ws, p.agent_id, `Taken back by a person in version ${v.number}: ${parts.map(x => x.part).join('; ')}.`, 'reverted', p.id, p.change_hash, { versionId: v.versionId });
+  return { versionId: v.versionId, number: v.number, draft: v.draft };
+}
+
+const STATE_WORDS: Record<string, string> = {
+  drafted: 'Proposed; not simulated yet', gated_out: 'Blocked by its checks; never offered', awaiting_approval: 'Simulated; waiting for a person',
+  testing: 'Being tested on live calls', promoted: 'In use', rejected: 'Not adopted', expired: 'Expired', reverted: 'Taken back',
+};
+
+/** learning.history: every change learning made or proposed for one agent, newest first, each with its words before and
+ *  after (the brief, line by line), why, the evidence, who approved what, and whether it can be taken back now. */
+async function history(ctx: ToolCtx, i: { agentId: string }) {
+  const ws = ctx.workspaceId;
+  const rows = await many<ProposalRow & { evidence: any; gates: any; adopted: any; created_at: Date; base_number: number | null; base_config: any }>(ctx.q,
+    `SELECT p.id, p.agent_id, p.base_version_id, p.kind, p.change, p.status, p.simulation, p.calls_to_prove, p.change_hash, p.rationale, p.evidence, p.gates, p.adopted, p.created_at,
+            v.number AS base_number, v.config AS base_config
+       FROM proposal p LEFT JOIN agent_version v ON v.id = p.base_version_id WHERE p.workspace_id = $1 AND p.agent_id = $2 ORDER BY p.created_at DESC LIMIT 50`, [ws, i.agentId]);
+  const ids = rows.map(r => r.id);
+  // Who approved what: each executed card on these proposals, with the member who approved it.
+  const cards = ids.length ? await many<{ proposal_id: string; tool: string; status: string; at: Date; approver: string | null }>(ctx.q,
+    `SELECT x.args->>'proposalId' AS proposal_id, x.tool, x.status, coalesce(t.created_at, x.created_at) AS at, coalesce(m.name, m.email) AS approver
+       FROM action x LEFT JOIN approval_token t ON t.action_id = x.id LEFT JOIN member m ON m.id = t.approver_id
+      WHERE x.workspace_id = $1 AND x.tool IN ('proposal.accept','proposal.adopt','proposal.revert') AND x.args->>'proposalId' = ANY($2::text[])
+      ORDER BY x.created_at`, [ws, ids]) : [];
+  const experiments = ids.length ? await many<{ proposal_id: string; state: string; verdict: string | null; label: string | null; publish_action: string | null }>(ctx.q,
+    `SELECT proposal_id, state, result->'decision'->>'verdict' AS verdict, result->'decision'->>'label' AS label, result->'publish'->>'actionId' AS publish_action
+       FROM experiment WHERE workspace_id = $1 AND proposal_id = ANY($2::uuid[])`, [ws, ids]) : [];
+  const versions = new Map((await many<{ id: string; number: number; config: any }>(ctx.q,
+    `SELECT v.id, v.number, v.config FROM agent_version v JOIN agent a ON a.id = v.agent_id WHERE a.workspace_id = $1 AND a.id = $2`, [ws, i.agentId])).map(v => [v.id, v]));
+  const out = [];
+  for (const r of rows) {
+    const base = r.base_config ? agentOf({ config: r.base_config } as VersionRow) : null;
+    let ops: ChangeOp[] = [];
+    try { ops = parseOps(r.change); } catch { /* a gated-out shape: shown as blocked, without a diff */ }
+    const changes = ops.length ? describeChange(base, ops) : [];
+    // The brief, word for word: before is the base version's compiled brief; after is the version the change made, else
+    // the brief compiled now from the base with the change applied (a preview: nothing is published by reading it).
+    let brief: { before: number | null; after: string; lines: ReturnType<typeof briefDiff> } | null = null;
+    if (base && ops.length && r.base_config?.brief?.text) {
+      const made = r.adopted?.versionId ? versions.get(r.adopted.versionId) : null;
+      let afterText: string | null = made?.config?.brief?.text ?? null;
+      if (!afterText) {
+        try { const c = await cross<{ text: string }>(ctx.q, ws, 'brief.compile', { config: applyOps(base, ops) }); if (c.status === 'confirmed') afterText = c.result.text; } catch { /* not compilable: no diff */ }
+      }
+      if (afterText) brief = { before: r.base_number, after: made ? `version ${made.number}` : 'with this change', lines: briefDiff(r.base_config.brief.text, afterText) };
+    }
+    const e = experiments.find(x => x.proposal_id === r.id);
+    const ev = r.evidence ?? {};
+    let canRevert: { ok: boolean; reason?: string } = { ok: false };
+    if (r.status === 'promoted') { try { await revertPlan(ctx, r.id); canRevert = { ok: true }; } catch (err) { canRevert = { ok: false, reason: err instanceof Error ? err.message : String(err) }; } }
+    let canAdopt: { ok: boolean; reason?: string } = { ok: false };
+    if (ADOPTABLE.includes(r.status)) { try { await adoptPlan(ctx, r.id); canAdopt = { ok: true }; } catch (err) { canAdopt = { ok: false, reason: err instanceof Error ? err.message : String(err) }; } }
+    out.push({
+      id: r.id, kind: r.kind, status: r.status, state: STATE_WORDS[r.status] ?? r.status, createdAt: r.created_at, baseVersion: r.base_number,
+      why: r.rationale, from: ev.flag ? 'flag' : ev.issueId ? 'issue' : ev.themeId ? 'theme' : 'calls', source: ev.source ?? 'live', sourceLabel: ev.sourceLabel ?? SOURCE_LABEL.live,
+      changes, brief,
+      evidence: { cited: ev.cited ?? [], calls: ev.calls ?? [], quotes: ev.quotes ?? [], flag: ev.flag ?? null, theme: ev.theme ?? null, issueId: ev.issueId ?? null },
+      blocked: r.status === 'gated_out' ? (r.gates?.failures ?? []).map((f: any) => f.detail) : [],
+      simulated: r.simulation?.verdict?.verdict ?? null,
+      approvals: cards.filter(c => c.proposal_id === r.id).map(c => ({ what: c.tool === 'proposal.accept' ? 'Test on live calls' : c.tool === 'proposal.adopt' ? 'Adopt without a live test' : 'Take back',
+        status: c.status, by: c.approver, at: c.at })),
+      test: e ? { state: e.state, verdict: e.verdict, label: e.label } : null,
+      version: r.adopted?.number ?? null, tested: r.adopted ? !!r.adopted.tested : e?.verdict === 'win', reverted: r.adopted?.reverted ?? null,
+      canRevert, canAdopt,
+    });
+  }
+  return { agentId: i.agentId, changes: out };
+}
+
+/** learning.power for one agent: from its own live calls with a recorded outcome, or an honest "not enough to know". */
+async function powerFor(ctx: ToolCtx, i: { agentId: string; mdeAbs?: number }) {
+  const ws = ctx.workspaceId;
+  const live = await liveVersion(ctx.q, ws, i.agentId);
+  const tests = (await one<{ n: number }>(ctx.q, `SELECT count(*)::int AS n FROM conversation c JOIN agent_version v ON v.id = c.agent_version_id
+      WHERE c.workspace_id = $1 AND v.agent_id = $2 AND ${TEST}`, [ws, i.agentId]))!.n;
+  const notTests = tests ? ` ${tests} test call${tests === 1 ? ' is' : 's are'} not counted: they show how she sounds, not what the people she calls decide.` : '';
+  if (!live) return { enough: false, liveWithOutcome: 0, testCalls: tests, reason: `Not enough calls to know: this agent has not been published, so it has no live calls.${notTests}` };
+  let goal;
+  try { goal = await goalValues(ctx.q, ws, i.agentId, agentOf(live)); }
+  catch { return { enough: false, liveWithOutcome: 0, testCalls: tests, reason: `Not enough to know: this agent's outcome has no success values yet, so no result can be counted.${notTests}` }; }
+  const hist = (await units(ctx.q, ws, [live.id], new Date(Date.now() - 90 * 86_400_000), goal.values, DEFAULT_HAZARD_CODES)).filter(u => u.has_outcome);
+  if (hist.length < 30) return { enough: false, liveWithOutcome: hist.length, needed: 30, testCalls: tests,
+    reason: `Not enough calls to know: a test is planned from this agent's own live calls with a recorded outcome, and it has ${hist.length} of the 30 needed.${notTests}` };
+  const baseline = Math.min(0.95, Math.max(0.02, hist.filter(u => u.success).length / hist.length));
+  const mde = i.mdeAbs ?? Math.max(0.02, Math.round(baseline * 0.2 * 1000) / 1000);
+  if (baseline + mde >= 1) return { enough: false, liveWithOutcome: hist.length, testCalls: tests, reason: 'This agent already reaches its goal on nearly every call; there is no room to prove a gain.' };
+  const mix = await rewardsOf(ctx.q, ws, hist);
+  const plan = labelAdjustedPlan(powerPlan(baseline, mde), { trueShare: mix?.trueShare ?? 1, aiAgreement: mix?.aiAgreement ?? null });
+  return { enough: true, liveWithOutcome: hist.length, testCalls: tests, ...plan, baseline, mdeAbs: mde, line: planLine({ plan, baseline, mde }) };
+}
+
 // ---------- the module ----------
 
 export const module: Module = {
@@ -1006,12 +1254,40 @@ export const module: Module = {
       run: (ctx, i) => many(ctx.q, `SELECT id, agent_id, text, status, evidence, created_at FROM lesson WHERE workspace_id = $1 AND ($2::uuid IS NULL OR agent_id = $2)
         ORDER BY created_at DESC LIMIT 200`, [ctx.workspaceId, i.agentId ?? null]) }));
 
-    r.register(tool(obj({ baseline: num({ min: 0.01, max: 0.99 }), mdeAbs: num({ min: 0.005, max: 0.5 }), alpha: opt(num({ min: 0.001, max: 0.2 })), power: opt(num({ min: 0.5, max: 0.99 })),
+    r.register(tool(obj({ agentId: opt(uuid()),
+        baseline: opt(num({ min: 0.01, max: 0.99 })), mdeAbs: opt(num({ min: 0.005, max: 0.5 })), alpha: opt(num({ min: 0.001, max: 0.2 })), power: opt(num({ min: 0.5, max: 0.99 })),
         trueShare: opt(num({ min: 0, max: 1, desc: 'share of outcomes that are verified or labelled by a person (default 1)' })),
         aiAgreement: opt(num({ min: 0.5, max: 1, desc: "the judge's agreement with true labels, for the rest" })) }),
-      { name: 'learning.power', risk: 'read', summary: 'calls needed to prove a change, before launch, given where its outcomes come from',
-        run: async (_ctx, i) => { if (i.baseline + i.mdeAbs >= 1) throw new Error('the target rate must stay below 100%');
+      { name: 'learning.power', risk: 'read', summary: "calls needed to prove a change, before launch, given where its outcomes come from; for an agent, from its own calls, or that there are not enough to know",
+        run: async (ctx, i) => {
+          if (i.agentId && i.baseline === undefined) return powerFor(ctx, { agentId: i.agentId, mdeAbs: i.mdeAbs });
+          if (i.baseline === undefined || i.mdeAbs === undefined) throw new Error('give an agentId, or a baseline and mdeAbs');
+          if (i.baseline + i.mdeAbs >= 1) throw new Error('the target rate must stay below 100%');
           return labelAdjustedPlan(powerPlan(i.baseline, i.mdeAbs, i.alpha, i.power), { trueShare: i.trueShare ?? 1, aiAgreement: i.aiAgreement ?? null }); } }));
+
+    r.register(tool(flagIn, { name: 'review.flag_turn', risk: 'draft', summary: "flag one turn of a call as wrong, in your words: it becomes a lesson, and learning drafts one change answering it (test calls too)",
+      describe: async (i, ctx) => `Flag a moment on ${await label(ctx, 'call', i.conversationId)}`, run: flagTurn }));
+    r.register(tool(obj({ agentId: uuid() }), { name: 'learning.history', risk: 'read', summary: 'how she changed: every change learning made or proposed for an agent, with the brief before and after, why, the evidence, who approved it and whether it can be taken back',
+      run: history }));
+    const proposalVersion = async (ctx: ToolCtx, i: { proposalId: string }) => (await one<{ v: string }>(ctx.q,
+      `SELECT p.status || ':' || coalesce((SELECT v.id::text FROM agent_version v WHERE v.agent_id = p.agent_id AND v.kind = 'published' ORDER BY v.number DESC LIMIT 1), 'none') AS v
+         FROM proposal p WHERE p.id = $1 AND p.workspace_id = $2`, [i.proposalId, ctx.workspaceId]))?.v ?? null;
+    r.register(tool(obj({ proposalId: uuid() }), { name: 'proposal.adopt', risk: 'external', roles: ['owner', 'builder'],
+      summary: "publish a proposed change as a new version on a person's judgement, without a live test (for an agent with too few live calls to test it)",
+      describe: async (i, ctx) => {
+        const what = `Publish ${await label(ctx, 'proposal', i.proposalId)} as a new version without a live test`;
+        try { const pl = await adoptPlan(ctx, i.proposalId); return `${what}. ${partsLine(pl.parts)}. It has not been proved on live calls; you can take it back in one step.`; }
+        catch (e) { return e instanceof NotReady ? `${what}. It cannot be adopted: ${e.message}` : what; }
+      },
+      version: proposalVersion, run: adopt }));
+    r.register(tool(obj({ proposalId: uuid() }), { name: 'proposal.revert', risk: 'external', roles: ['owner', 'builder'],
+      summary: 'take a learned change back out: publish a new version with those parts as they were before',
+      describe: async (i, ctx) => {
+        const what = `Take back ${await label(ctx, 'proposal', i.proposalId)}`;
+        try { const pl = await revertPlan(ctx, i.proposalId); return `${what}: publish version ${pl.live.number + 1} with ${pl.parts.map(c => c.part.toLowerCase()).join('; ')} as before.`; }
+        catch (e) { return e instanceof NotReady ? `${what}. It cannot be taken back: ${e.message}` : what; }
+      },
+      version: proposalVersion, run: revert }));
   },
   routes(_router, deps) { bound = { pool: deps.pool, registry: deps.registry }; },
   jobs(deps) {

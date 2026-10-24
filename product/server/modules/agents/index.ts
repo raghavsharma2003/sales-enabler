@@ -959,6 +959,51 @@ export function registerAgentTools(r: Registry): void {
     },
   }));
 
+  // A learned change, published on its own: the live version with only the changed fields set, as a new version, and every
+  // binding moved to it (as a restore does). Each field must still hold `from` in the live version, so a change written
+  // against an older version never overwrites a newer edit; reverting is the same call with from and to swapped. The draft
+  // takes each field too where it still holds `from` (else it is left alone and said), so the next publish keeps it.
+  const adoptV = obj({ agentId: uuid(), parentVersionId: uuid(), note: str({ min: 1, max: 300 }),
+    fields: arr(obj({ path: str({ min: 1, max: 120 }), from: any('the value it holds now'), to: any('the value it takes') }), { min: 1, max: 10 }) });
+  r.register(tool(adoptV, {
+    name: 'version.adopt', risk: 'external', roles: ['owner', 'builder'], summary: 'Publish the live version with a few fields changed (a learned change, or its revert) and send its calls there',
+    describe: async (i, ctx) => `Publish ${await label(ctx, 'agent', i.agentId)} with ${i.fields.length === 1 ? 'one change' : `${i.fields.length} changes`}: ${i.note}`,
+    version: async (ctx, i) => (await one<{ id: string }>(ctx.q, LIVE_VERSION_SQL, [i.agentId]))?.id ?? 'none',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId, true);
+      const live = await one<VersionRow>(ctx.q, "SELECT id, number, config FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1", [a.id]);
+      if (!live || live.id !== i.parentVersionId) throw new ValidationError('parentVersionId', `the agent has been published since${live ? ` (version ${live.number} is live)` : ''}; look at the change again`);
+      const same = (x: unknown, y: unknown) => JSON.stringify(x ?? null) === JSON.stringify(y ?? null);
+      for (const [k, f] of i.fields.entries()) {
+        const { keys } = parsePath(f.path);
+        if (!same(getIn(live.config.agent, keys), f.from)) throw new ValidationError(`fields[${k}].from`, `${f.path} has changed in version ${live.number} since; nothing was published`);
+      }
+      const next = validateConfig(applyPatch(live.config.agent, i.fields.map(f => ({ op: 'set', path: f.path, value: f.to }))));
+      guardDraft(live.config.agent, next);
+      const review = await assertPublishable(next);
+      const v = await createVersion(ctx, a.id, next, live.id, i.note, 'published', 'keep');
+      const bindings = await many<{ binding: string }>(ctx.q, 'SELECT DISTINCT binding FROM deployment WHERE agent_id = $1 AND workspace_id = $2', [a.id, ctx.workspaceId]);
+      for (const b of bindings) await ctx.q.query('INSERT INTO deployment (workspace_id, agent_id, binding, split) VALUES ($1,$2,$3,$4)',
+        [ctx.workspaceId, a.id, b.binding, JSON.stringify([{ version_id: v.versionId, percent: 100 }])]);
+      // The draft follows field by field, only where nobody has edited that field since.
+      const kept = i.fields.filter(f => same(getIn(a.draft, parsePath(f.path).keys), f.from));
+      const skipped = i.fields.filter(f => !kept.includes(f)).map(f => f.path);
+      if (kept.length) await saveDraft(ctx, a.id, validateConfig(applyPatch(a.draft, kept.map(f => ({ op: 'set', path: f.path, value: f.to })))), a.draft);
+      const stopped: string[] = [];
+      const stopTool = r.get('experiment.stop');
+      const running = await many<{ id: string }>(ctx.q, "SELECT id FROM experiment WHERE agent_id = $1 AND workspace_id = $2 AND state IN ('aa_pending','running')", [a.id, ctx.workspaceId]);
+      for (const e of running) {
+        if (!stopTool) break;
+        await stopTool.run(ctx, stopTool.input({ experimentId: e.id, reason: `version ${v.number} was published with a change` }));
+        stopped.push(e.id);
+      }
+      await appendAudit(ctx.q, { workspaceId: ctx.workspaceId, actorType: ctx.actor.type, actorId: ctx.actor.id, action: 'version.adopted', objectType: 'agent_version', objectId: v.versionId,
+        payload: { line: `published ${a.name} as version ${v.number}: ${i.note}`, subject: { type: 'agent', id: a.id }, from: live.number, as: v.number, paths: i.fields.map(f => f.path) } });
+      return { ...v, from: live.number, deployments: bindings.map(b => b.binding), experimentsStopped: stopped.length, review: reviewSummary(review),
+        draft: skipped.length ? `kept as it was at ${skipped.join(', ')}: edited since` : 'updated' };
+    },
+  }));
+
   r.register(tool(obj({ agentId: uuid() }), {
     name: 'version.list', risk: 'read', summary: "List an agent's published versions",
     run: async (ctx, i) => {

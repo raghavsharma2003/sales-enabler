@@ -15,6 +15,7 @@ import type { AgentConfigDraft, AgentDoc } from '../types.ts';
 // The Company information tab loads when opened, so the agent page's chunk stays within its budget.
 const AgentCompany = lazy(() => import('./agent-company.tsx'));
 
+const AgentChanges = lazy(() => import('./agent-changes.tsx'));
 type TabId = 'basics' | 'persona' | 'job' | 'company' | 'rules' | 'tools' | 'voice' | 'versions';
 const TABS: { id: TabId; label: string }[] = [{ id: 'basics', label: 'Basics' }, { id: 'persona', label: 'Persona' }, { id: 'job', label: 'Job and facts' }, { id: 'company', label: 'Company information' }, { id: 'rules', label: 'Objections, hand-off' }, { id: 'tools', label: 'Tools' }, { id: 'voice', label: 'Voice stack' }, { id: 'versions', label: 'Versions' }];
 
@@ -100,7 +101,7 @@ function Builder({ doc, reload }: { doc: AgentDoc; reload: () => void }) {
       {tab === 'voice' && <Card><StackPicker agentId={doc.id} stackId={cfg.voice.stackId} components={cfg.voice.components} voiceId={cfg.voice.voiceId ?? null} onChanged={onVoiceChanged} />
         <hr className="rule" /><div className="formgrid"><Toggle checked={cfg.recording.enabled} onChange={v => set(c => { c.recording.enabled = v; if (!v) c.recording.announce = false; })} label="Record calls" hint="Recordings stay in India. Retention is set in Settings, Privacy." />
             <Toggle checked={cfg.recording.announce} onChange={v => set(c => { c.recording.announce = v; })} label="Say that the call is recorded" hint={cfg.recording.enabled ? undefined : 'Turn recording on first.'} /></div></Card>}
-      {tab === 'versions' && <Versions doc={doc} dirty={dirty} reload={reload} />}
+      {tab === 'versions' && <><Versions doc={doc} dirty={dirty} reload={reload} /><Suspense fallback={null}><AgentChanges agentId={doc.id} onChanged={reload} /></Suspense></>}
     </>
   );
 }
@@ -268,7 +269,7 @@ function Versions({ doc, dirty, reload }: { doc: AgentDoc; dirty: boolean; reloa
   };
   const canRestore = can(['owner', 'builder']);
   return (
-    <Card><CardHead title="How she changed" sub="Each published version is fixed. Campaigns pick a published version, never a draft. Going back to an earlier one publishes it again as a new version, so the history stays whole." />
+    <Card><CardHead title="Published versions" sub="Each published version is fixed. Campaigns pick a published version, never a draft. Going back to an earlier one publishes it again as a new version, so the history stays whole." />
       {dirty && <p className="hint hint-bad">You have changes that are not saved, so they are not in this list yet.</p>}
       {doc.versions.length === 0 ? <p className="muted">Nothing is published yet. Save the draft, choose a voice stack, then publish.</p> :
         <ol className="versions">{doc.versions.map(v => (

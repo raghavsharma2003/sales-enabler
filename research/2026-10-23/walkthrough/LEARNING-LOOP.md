@@ -165,3 +165,59 @@ Two things look like gaps but are designed states:
   e2e test passes `minDays: 0`, which is a real input.
 - **AI guesses never count as outcomes** until the outcome's judge is calibrated. Outcomes come from a system of record
   (`outcome.record_verified`, integrations only) or a manager's label (`outcome.label`).
+
+## Learning on the owner's test calls (2026-10-24, directive.2026-10-24.calling-first-build-all)
+
+The owner will run many test calls on staging before any campaign. That is the first data the loop sees, and a test call
+says how she sounds, not what the people she calls decide. So:
+
+- **Proposals from test calls, said so.**
+  - An agent with no live calls yet draws its evidence from its test calls, its failed practice runs (what failed, never
+    the transcript) and the moments flagged in review.
+  - Each such proposal is labelled "from test calls, practice runs and the owner's review: a reason to try it, not a
+    measured result".
+  - Every proposal now stores the calls it cites, with each call's outcome reading (verified, a person's label, an AI
+    read, or none) from calls' `outcome.readings`, and the quoted lines it rests on.
+- **Power, honestly.**
+  - `learning.power {agentId}` plans from the agent's own live calls with a recorded outcome.
+  - Below 30 it says "Not enough calls to know", gives the count, and says how many test calls were not counted. No plan
+    is invented.
+- **Adopt on judgement, with no test.**
+  - `proposal.adopt` (A2, owner or builder) publishes the change as a new version. Its card says it "has not been proved
+    on live calls".
+  - It goes through the agents module's new `version.adopt`:
+    - the live version with only the changed fields set;
+    - each field must still hold what the change was drafted against;
+    - the same guard and model review as a publish;
+    - every binding moves to the new version, and a running test stops;
+    - the draft follows field by field where nobody edited it since.
+  - The gates still run, so the disclosure, safety, hand-off and facts' values can never be changed this way.
+- **Take it back in one step.**
+  - `proposal.revert` (A2) is the same flow with before and after swapped.
+  - It refuses if the live version has since changed those fields, and points to an ordinary rollback instead.
+- **"How she changed"** (Agent > Versions; `learning.history`): every change learning made or proposed, newest first. Each
+  one shows:
+  - the parts before and after, and the compiled brief line by line;
+  - why, and what it came from;
+  - the evidence;
+  - who approved each card;
+  - a test result, if it had one;
+  - a Take it back or Adopt button while that is possible.
+  - Blocked changes are shown as "Blocked by its checks; never offered".
+- **Flag this moment** (`review.flag_turn`, seam agreed with calls; calls adds the button on the call page):
+  - The turn is quoted from the call's own record (the turn table, else the transcript), never from the request.
+  - It becomes an `owner_flag` lesson and one drafted change that cites `flag:<id>`. The call is marked `owner_review`.
+  - A caller's line from a call whose words are never shown stays out of the model's view.
+  - A flag asking for something learning may not change comes back as `out_of_scope`, or is blocked by the gates.
+
+Test: `product/tests/learning-owner-review.test.ts` runs on the real modules over HTTP:
+1. A flag on a test call gives a lesson and a drafted change.
+2. Power says "Not enough", with "4 test calls are not counted".
+3. Readiness refuses a live test.
+4. The adopt card is approved: version 2 carries the note word for word in its brief, and the draft too.
+5. The history shows the change.
+6. A disclosure edit is blocked and is never offered.
+7. The revert card is approved: version 3 equals version 1 in that field.
+
+**Gap:** a test call placed on the unsaved draft is stored without a version. It can be flagged only once calls writes
+the agent id into its run manifest (asked of calls).
