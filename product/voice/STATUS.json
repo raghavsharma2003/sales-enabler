@@ -70,7 +70,11 @@
     "Per-stage reply timing in GET /v1/calls/{id} 'timing' (ears, turn, brain, sentence, voice, hold, out) plus partialLagMs",
     "Speculation on the caller's partial (VP_SPECULATE_PARTIAL, on): turn bench TEST end-of-turn after questions 998 -> 750 ms (n=53), cut-ins and talk-over unchanged at 2/55 (fakes)",
     "Nod-aware barge-in (VP_BARGE_NOD, on): turn bench TEST false stops on 500/700 ms nods 44/55 and 48/55 -> 0/55 and 0/55; barge-in time unchanged (~740 ms)",
-    "Contact-name guard: wrong names repaired to the contact's, RD11 'replaced' logged, no model call"
+    "Contact-name guard: wrong names repaired to the contact's, RD11 'replaced' logged, no model call",
+    "Provider-aware latency flags: no speculative or warm requests to a paced provider (VP_PACED_PROVIDERS, default vertex); the call-start warm obeys VP_PREWARM; speculation off by default (bench: no gain with trailing partials)",
+    "Barge-in from audio (VP_BARGE_AUDIO): turn bench TEST stop 735 -> 256 ms, false stops on nods 34/165 -> 0/165, pause-and-resume after a nod (~0.64 s)",
+    "Brand in her script: brief row and a respelling guard (brand.spokenNameDevanagari optional)",
+    "Voice samples: Opus + MP3 renditions, Live transcription read after turnComplete"
   ],
   "untested": [
     "Azure Speech ears against the real service from this package (fake SDK only; the lab measured the same SDK path); the Docker image with the Speech SDK (libssl3, libasound2) not built",
@@ -90,7 +94,8 @@
     "Every real non-Google provider adapter (Azure OpenAI, OpenRouter text, Azure Speech REST, Sarvam ears/brain/voice): ported from the lab, never run from this package",
     "Pre-warm (VP_PREWARM) gain on real hosts: no network from the sandbox; staging timing will show it",
     "Speculation's discard rate and extra brain/voice requests on real recognisers (and their effect on the Vertex pacer)",
-    "Barge-in under 300 ms: not reached; needs staging partialLagMs before trying VP_BARGE_LONG_MS=500"
+    "Barge-in under 300 ms: not reached; needs staging partialLagMs before trying VP_BARGE_LONG_MS=500",
+    "Barge-in from audio on real calls: echo of her own voice into the caller's mic could pause her (VAD strict mode only); the pause-and-resume on nods is not listened to yet"
   ],
   "contractGaps": [
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",

@@ -1,0 +1,49 @@
+{
+ "nodes": [
+  {
+   "id": "decision.2026-10-24.voice-speculation-off-by-default",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "VP_SPECULATE_PARTIAL is off by default on every provider, paced or not (provider-aware pre-warm stays: on where unpaced). Speculation, when turned on, waits for a settled partial (unchanged SPECULATE_STABLE_MS = 400, or ending at a clause boundary), is never started on a paced brain unless asked, and its outcomes are in the call timing summary (started, kept, discarded, withdrawn, keepRate)",
+   "rationale": "Turn bench DEV (n=47 clips): with partials trailing speech (300 or 850 ms, staging measured 858) speculation saved nothing at end of turn (986 vs 991 ms; 1,324-1,328 vs 1,328 ms) and kept 5-16% of its replies whatever the settle time; staging kept 2 of ~23. The 2026-10-23 gain (998 -> 750 ms) needed partials that carry every word at once. The Azure brain-stage gain on staging (886 vs 1,096 ms, n=24 vs 5) is better explained by the warm connection, which pre-warm keeps.",
+   "reverse_if": "a recogniser whose partials keep up with speech (partialLagMs under ~300 ms) shows a keep rate of at least 50% and an end-of-turn gain of at least 150 ms on the bench or staging",
+   "supersedes_note": "refines decision.2026-10-24.latency-flags-provider-aware (speculation on for unpaced brains) on bench evidence"
+  },
+  {
+   "id": "decision.2026-10-24.voice-barge-from-audio",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "Barge-in from the audio (VP_BARGE_AUDIO, default on): she yields on 200 ms of caller speech (VAD, strict while she plays), keeping her place; after 400 ms of quiet she resumes if all that was heard is a nod or nothing; any other word, or 900 ms of speech with no words yet, and she gives way; words that arrive after she resumed and are not a nod stop her then. Heard text, takeover cuts and the transcript follow the playback position across pauses",
+   "rationale": "Staging partialLagMs median 858 ms: a word rule cannot stop her quickly (735 ms on the bench) and a lower length threshold stops her on nods. Bench TEST below: stop 256 ms, 0/165 false stops on nods.",
+   "reverse_if": "staging or a listening check finds the pause-and-resume on nods unnatural (it pauses on 84% of nods for ~0.64 s), or real calls show resumes over real interruptions well above the bench's 5/55"
+  },
+  {
+   "id": "measure.2026-10-24.voice-barge-audio-test",
+   "type": "measurement", "status": "measured", "date": "2026-10-24", "source": "verified",
+   "title": "Turn bench TEST (n=55 clips, 165 nods of 300/500/700 ms, staging-like recogniser: partials 850 ms behind, final 590 ms): barge-in from audio stops her at a median 256 ms [250, 268] after caller onset vs 735 ms [728, 750] for the word rule; false stops on nods 0/165 vs 34/165 (700 ms nods 0/55 vs 31/55); noise 0/55 both; missed barge-ins 5/55 vs 4/55 (audio: in each she resumed in a mid-sentence pause before any word arrived, then stopped again on the late words). Cost: she pauses on 138/165 nods and carries on after a median 644 ms",
+   "n": 55,
+   "method": "bench/turn_bench.py --split test --only barge backchannel --partial-ms 850 --final-ms 590, VP_BARGE_AUDIO=0 vs defaults (BARGE_AUDIO_MS 200, RESUME_MS 400, BARGE_PAUSED_MS 900), after tuning on DEV only (bench/results/turn-2026-10-24-dev-barge-audio.md), 2026-10-24; fakes, real Silero VAD and turn logic",
+   "path": "product/voice/bench/results/turn-2026-10-24-test-barge-audio.md",
+   "value": "stop 735 -> 256 ms; false stops on nods 34/165 -> 0/165"
+  },
+  {
+   "id": "measure.2026-10-24.voice-speculation-dev",
+   "type": "measurement", "status": "measured", "date": "2026-10-24", "source": "verified",
+   "title": "Turn bench DEV (n=47): speculation with partials 850 ms behind / final 590 ms: end of turn after questions 1,324-1,328 ms with it vs 1,328 ms without; kept 4/77 (settle 0), 4/77 (400), 4/41 (800). With partials 300 ms / final 250 ms: 986 vs 991 ms, kept 16/126 (0) and 18/116 (400). Cut-ins and talk-over 1/47 in every arm",
+   "n": 47,
+   "method": "bench/turn_bench.py --split dev --only turn statement --env VP_SPECULATE_PARTIAL=1 --env VP_SPECULATE_STABLE_MS=..., 2026-10-24",
+   "path": "product/voice/bench/results/turn-2026-10-24-dev-speculation.md",
+   "value": "no end-of-turn gain; keep 5-16%"
+  },
+  {
+   "id": "decision.2026-10-24.voice-brand-script-guard",
+   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "title": "The brand in her script: the brief says how to write the brand (the workspace's brand.spokenNameDevanagari when set, else keep the spoken name in its Latin letters), and every sentence is checked: a word one or two letters off a brand word with different consonants (so not an inflection) is repaired to the stored form (the Devanagari form when set, else the Latin word, never an unsure transliteration). String matching, no model call. agent-config gains optional brand.spokenNameDevanagari (Devanagari only)",
+   "rationale": "Staging 2026-10-24: the brain wrote 'सांच सर्विसेज' for 'सांझ' (Saanjh Services) in 2 of 3 flashlite openings. The rule-based transliteration can be off ('Gharana' -> 'घरना'), so it is used only for matching.",
+   "reverse_if": "the guard repairs a correct word on real calls, or the workspace form becomes required by the agents module"
+  }
+ ],
+ "edges": [
+  {"from": "decision.2026-10-24.voice-speculation-off-by-default", "to": "decision.2026-10-24.latency-flags-provider-aware", "relation": "extends"},
+  {"from": "decision.2026-10-24.voice-barge-from-audio", "to": "open.2026-10-23.voice-barge-long-ms-on-staging", "relation": "implements"}
+ ],
+ "events": []
+}
