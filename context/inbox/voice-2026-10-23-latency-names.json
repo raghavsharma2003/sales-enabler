@@ -43,6 +43,39 @@
    "method": "tests/test_latency.py BargeIn.talk_over, 20 ms frames fed through CascadeSession.on_mic, 2026-10-23",
    "path": "product/voice/tests/test_latency.py",
    "value": "340 ms onset -> flush on words"
+  },
+  {
+   "id": "measure.2026-10-23.voice-speculation-turn-bench-test",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Turn bench TEST (n=55 clips, Silero VAD, fixed fakes: final 250 ms after end of speech, brain 300 ms, voice 150 ms): with speculation on the partial, end-of-turn latency after a question fell from 998 ms [989, 1079] to 750 ms [740, 813] (n=53); after a statement 1314 -> 1308 ms (the 1200 ms hold dominates); premature cut-ins 2/55 and talk-over 2/55, both unchanged; no-reply 0/55",
+   "n": 55,
+   "method": "bench/turn_bench.py --split test (all scenarios, partial-ms 0) on the latency head vs bench/results/turn-2026-10-23-test-after (0e9b9ee, same fakes), 2026-10-23. Fakes, not providers: the real gain depends on the recogniser's final delay on staging.",
+   "path": "product/voice/bench/results/turn-2026-10-23-test-latency.md",
+   "value": "-248 ms after questions, cut-ins unchanged"
+  },
+  {
+   "id": "measure.2026-10-23.voice-barge-nod-test",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Turn bench TEST (n=55, partials 300 ms behind speech): nods counted as words stop her on 44/55 500 ms 'haan ji' and 48/55 700 ms 'achha haan ji'; nod-aware 0/55 and 0/55. Barge-in median 735 vs 748 ms, missed 4/55 both, 300 ms 'haan' and noise 0/55 both",
+   "n": 55,
+   "method": "bench/turn_bench.py --split test --only barge backchannel --partial-ms 300, --set BARGE_NOD=0 vs defaults, 2026-10-23 (after tuning on DEV only)",
+   "path": "product/voice/bench/results/turn-2026-10-23-test-barge-nod.md",
+   "value": "false barge on nods 80%/87% -> 0%/0%"
+  },
+  {
+   "id": "open.2026-10-23.voice-barge-long-ms-on-staging",
+   "type": "open",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Barge-in stays ~730 ms (over the 300 ms target): words reach the recogniser too late to beat BARGE_LONG_MS 700. 500 ms (VP_BARGE_LONG_MS=500) gives ~535 ms on the DEV bench with no false stops at a 300 ms partial lag but stops her on most nods at 500 ms lag. Needs the runtime's partialLagMs (call timing) from staging before lowering; 300 ms looks unreachable without false stops unless the recogniser's partials arrive within ~250 ms",
+   "path": "product/voice/bench/results/turn-2026-10-23-dev-barge-sweep.md"
   }
  ],
  "edges": [],

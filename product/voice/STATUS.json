@@ -1,6 +1,6 @@
 {
   "module": "product/voice",
-  "date": "2026-10-21",
+  "date": "2026-10-24",
   "runtimeVersion": "vp-voice/0.1.0",
   "tests": {
     "command": "cd product/voice && python -m unittest discover -v",
@@ -41,7 +41,9 @@
       "test_turn_bench.py": "the turn-taking bench scoring (cut-in, talk-over, end-of-turn, barge-in, backchannel), its labels (pauses, punctuation snapping, statement cut) and Wilson CIs on synthetic timelines; the hold rule by how the caller ends (question, statement, unfinished)",
       "test_disclosure.py": "staging bugs 2026-10-23: the shared affirm vectors (Devanagari, Tamil, Bengali first-person disclosures; mentions and denials refused); the staging opening passes with no prefix; an opening with no disclosure gets the fixed line from shared/safety/disclosure.json in her script, never the disclosureClause guidance; no name means a phrasing that needs none, and a name reaches her",
       "test_event_limits.py": "staging bug 2026-10-23: a 79-character tone round-trips (trimmed to ingest's 50, and the batch passes calls' validateRuntimeBatch); every limited field is trimmed"
-    }
+    },
+    "test_latency.py": "reply gap per stage (row and summary), speculation kept on a matching final and discarded unheard on a different one, none on digits or when off, pre-warm per caller turn and throttled, first clause cut but never the opening, barge-in: words stop her at BARGE_MS, nods do not, long nods eventually do, partial lag and the per-call VP_BARGE_LONG_MS",
+    "test_names.py": "the contact's name in both scripts in the brief; a wrong name she addresses them by is repaired (or dropped with no name) and logged RD11 without names; identity on a Devanagari question"
   },
   "works": [
     "Curated cascade stacks listen with Azure Speech ears (hi-IN, Central India, through the VAD gate); Vertex has no Gemini transcription model (decision.2026-10-22.ears-azure-not-gemini). Per-component health on GET /v1/health. Every brain carries a route per directive.2026-10-22.provider-routing",
@@ -64,7 +66,11 @@
     "Cost meter in integer milli-rupees at 95 INR/USD (ears/brain/voice/telephony; second/token/char), deltas that sum to the total; hard limits end the call; crisis stretches limits to 2x then hands off",
     "Test calls: fallbacksUsed is always []; a failed component ends the call as error with the reason in GET /v1/calls/{id}",
     "Dockerfile for Azure Container Apps (python:3.12-slim, non-root, healthcheck; copies the lab's Silero model and rules.json)",
-    "python -m vpvoice.devsim (VP_DEVSIM=1): the real HTTP surface and live controls on fake providers, no keys, for cross-process control-plane tests"
+    "python -m vpvoice.devsim (VP_DEVSIM=1): the real HTTP surface and live controls on fake providers, no keys, for cross-process control-plane tests",
+    "Per-stage reply timing in GET /v1/calls/{id} 'timing' (ears, turn, brain, sentence, voice, hold, out) plus partialLagMs",
+    "Speculation on the caller's partial (VP_SPECULATE_PARTIAL, on): turn bench TEST end-of-turn after questions 998 -> 750 ms (n=53), cut-ins and talk-over unchanged at 2/55 (fakes)",
+    "Nod-aware barge-in (VP_BARGE_NOD, on): turn bench TEST false stops on 500/700 ms nods 44/55 and 48/55 -> 0/55 and 0/55; barge-in time unchanged (~740 ms)",
+    "Contact-name guard: wrong names repaired to the contact's, RD11 'replaced' logged, no model call"
   ],
   "untested": [
     "Azure Speech ears against the real service from this package (fake SDK only; the lab measured the same SDK path); the Docker image with the Speech SDK (libssl3, libasound2) not built",
@@ -81,7 +87,10 @@
     "nginx (or the Container Apps ingress) routing /w/<i>/ to workers: config generated and unit-checked, never run (no nginx in the sandbox); the Dockerfile still starts one process",
     "Multi-process capacity on the deploy host and with real providers",
     "Live controls on a real line or browser (fake lines only) and on v2-live (refused 409 in v1); listen on a real audio call. Calls live.* tools against the real routes are verified by calls in product/tests/calls-live.test.ts (1187448, against python -m vpvoice.devsim, 4 runs green)",
-    "Every real non-Google provider adapter (Azure OpenAI, OpenRouter text, Azure Speech REST, Sarvam ears/brain/voice): ported from the lab, never run from this package"
+    "Every real non-Google provider adapter (Azure OpenAI, OpenRouter text, Azure Speech REST, Sarvam ears/brain/voice): ported from the lab, never run from this package",
+    "Pre-warm (VP_PREWARM) gain on real hosts: no network from the sandbox; staging timing will show it",
+    "Speculation's discard rate and extra brain/voice requests on real recognisers (and their effect on the Vertex pacer)",
+    "Barge-in under 300 ms: not reached; needs staging partialLagMs before trying VP_BARGE_LONG_MS=500"
   ],
   "contractGaps": [
     "call.ended has no field for the failure reason when endReason = error; it is logged and in GET /v1/calls/{id} only",
