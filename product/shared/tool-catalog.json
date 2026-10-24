@@ -5908,11 +5908,16 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 100
+     },
+     "agentId": {
+      "type": "string",
+      "format": "uuid"
      }
     },
     "required": [
      "uploadId"
-    ]
+    ],
+    "description": "Give agentId to check the columns against the facts that agent says from each person's record."
    }
   },
   {
