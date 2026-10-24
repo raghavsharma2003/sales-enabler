@@ -38,7 +38,7 @@ test('text colour pairs reach 5:1 in light and dark', () => {
   const themes = { light: css.split('@media')[0], dark: css.split('[data-theme="dark"] {')[1] };
   const pairs: [string, string][] = [['ink', 'paper'], ['ink-2', 'paper'], ['ink-3', 'paper'], ['ink-2', 'sunk'], ['ink-3', 'sunk'], ['ink', 'surface'], ['terra-ink', 'paper'], ['terra-ink', 'surface'], ['on-terra', 'terra'],
     ['leaf', 'leaf-bg'], ['brick', 'brick-bg'], ['marigold-ink', 'marigold-bg'], ['peacock', 'peacock-bg'], ['terra-ink', 'terra-bg'], ['leaf', 'paper'], ['brick', 'paper'], ['marigold-ink', 'paper'], ['peacock', 'paper'],
-    ['nav-ink', 'forest'], ['nav-ink-dim', 'forest'], ['nav-ink-dim', 'forest-2'], ['nav-ink', 'forest-2'], ['on-forest', 'forest-2'], ['on-forest', 'terra'], ['ink-2', 'terra-bg'], ['ink-2', 'leaf-bg']];
+    ['nav-ink', 'forest'], ['nav-ink-dim', 'forest'], ['nav-ink-dim', 'forest-2'], ['nav-ink', 'forest-2'], ['on-forest', 'forest-2'], ['on-forest', 'terra'], ['ink-2', 'terra-bg'], ['ink-2', 'leaf-bg'], ['ink-3', 'surface']];   // ink-3 on surface: every disabled button
   for (const [name, block] of Object.entries(themes)) {
     const v = Object.fromEntries([...block.matchAll(/--([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})/g)].map(m => [m[1], m[2]]));
     for (const [fg, bg] of pairs) {
