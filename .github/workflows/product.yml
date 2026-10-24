@@ -25,6 +25,9 @@ jobs:
       - run: npm ci
       - name: typecheck
         run: npx tsc -p product/tsconfig.json
+      # The product tsconfig does not cover web/src (3d2b7a9 found a web type error that every gate had passed).
+      - name: typecheck (web)
+        run: npx tsc --noEmit -p product/web
       - name: migrate (twice, to prove idempotence)
         run: node product/scripts/migrate.mjs && node product/scripts/migrate.mjs
       - name: tests
