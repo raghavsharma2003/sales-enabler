@@ -20524,6 +20524,36 @@
    "title": "The Operator default stays gpt-4.1 on this tree, but it is re-chosen after the conduct-line fix by a symmetric rule: the model with fewer safety-relevant failures (claimed writes with no DONE tool result, writes nobody asked for, unsafe brief saves) over two runs each wins; at equal safety, more strict passes; within 2/48, the cheaper model",
    "rationale": "Op5 (two runs per model on 08b5916): mini 41 and 41, gpt-4.1 32 and 33, with gpt-4.1 making 21 claimed writes after zero tool calls against mini's 2. The old rule (decision.2026-10-24.operator-default-gpt41) only examined mini's safety, so it could not see gpt-4.1's regression. An ablation without the conduct line operator/loop.ts:112 restored gpt-4.1 to 6/6 tool calls and 5/6 passes (n=6, one run): the regression is a prompt line that the integrator's own instruction ('drafts are free; do them and say so') produced, not the model.",
    "reverse_if": "After the conduct fix, two runs per model show the same safety-failure count and the strict-pass gap is under 2/48; then cost decides (mini at Rs 0.56 per task against Rs 2.05)."
+  },
+  {
+   "id": "measure.2026-10-24.stack-voice-samples-rendered",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Stack voice samples rendered on staging 69597eb through the product's own adapters (python -m vpvoice.samples): 6 of 7 curated stacks from 3 clips, all passing QA and shipped in product/web/public/samples. gemini-lite~Despina 5.90 s, 36.0 KB, -16.8 LUFS (v2-flashlite, v2-54mini, v2-38flash, v2-luna); gemini-3.8-live~Despina 5.53 s, 33.5 KB, -15.9 LUFS (v2-live); azure-mai~Kavya 8.45 s, 49.2 KB, -16.5 LUFS (v2-mai). Ogg/Opus mono 48 kHz. Azure Speech hi-IN heard the line in 3/3: word errors 0, 0 and 2 of 17 (one spacing variant), CER 0 with AI=\u090f\u0906\u0908; the disclosure 3/3 (safety.affirms_ai) and '\u0906\u0936\u093e' 3/3 (0 name repairs). sarvam-india not rendered (no Sarvam key on staging). Web's parseSamples accepts 6/6 and every URL resolves in dist. About Rs 1.0 (list prices)",
+   "n": 3,
+   "method": "2026-10-24 04:04 UTC, VM vl-vm-cin, staging redeployed to 69597eb first (vps5-deploy-69597eb: deploy_pre + stage_setup verbatim + deploy_post; 3 new migrations). ffmpeg was absent on the VM and was installed from the Ubuntu archive (only the renderer, its tests and benches use it); the offline renderer tests then passed with ffmpeg (0 skipped) before any request. Render as vpstage from the staging tree with staging's env minus NODE_ENV (the renderer refuses production; this one process only) and staging's Vertex pacer loaded first: 2 Vertex request starts (Live, TTS) 8.69 s apart, 0 from the staging runtime in the window, 0 active calls. The launcher's naive .env read logged 'VERTEX_MODEL_MAP ignored' (the VM line is single-quoted); an offline comparison with the running runtime's /proc environ showed identical resolved model maps and Vertex locations, so the clips came from the models staging calls use. QA per clip on the VM: ffprobe, size, ffmpeg ebur128 (integrated LUFS, true peak) and volumedetect, and one Azure Speech REST short-audio hi-IN request on the shipped file decoded to 16 kHz WAV; word/character error and the product's affirms_ai and names.repair on the transcripts offline (ops/asr_wer.py). Machine QA only: no human listened, no browser played the files",
+   "path": "research/2026-10-24/samples/README.md",
+   "value": "6/7 stacks, 3 clips, 3/3 pass"
+  },
+  {
+   "id": "open.2026-10-24.sarvam-india-sample",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "sarvam-india still shows 'No sample recorded yet': the renderer refused it on staging ('Sarvam isn't set up on this server'), because staging carries no Sarvam key by design. Whether to use a Sarvam key for one sample (Sarvam may train on call data unless opted out) is the integrator's or owner's call",
+   "closes_when": "A Sarvam key is approved for this, python -m vpvoice.samples --stack sarvam-india renders on the VM, and the clip passes the same QA (duration, loudness, format and size, Azure Speech round-trip with the disclosure and the name heard)"
+  },
+  {
+   "id": "open.2026-10-24.live-sample-spoken-text-empty",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "The renderer wrote spokenText '' for v2-live, although the audio is the whole line (Azure Speech word error 0/17). speak_live stops reading at turnComplete and breaks on any non-text frame, where the runtime's s2s read loop continues; inference, not diagnosed: Live's outputTranscription arrives after the renderer stops reading. An empty spokenText reads as 'said nothing', and decision.2026-10-24.voice-stack-sample-renderer's reverse_if keys on spokenText. Web ignores spokenText, so the card is right",
+   "closes_when": "speak_live collects Live's outputTranscription (reads on past turnComplete for it, continues past non-text frames) or omits spokenText when it is empty, and a re-render of v2-live on the VM shows Live's own transcript"
   }
  ],
  "edges": [
@@ -36848,6 +36878,36 @@
    "from": "decision.2026-10-24.operator-default-symmetric-rule",
    "to": "open.2026-10-24.operator-default-after-conduct-fix",
    "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.stack-voice-samples-rendered",
+   "to": "open.2026-10-24.stack-voice-samples",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.stack-voice-samples-rendered",
+   "to": "decision.2026-10-24.voice-stack-sample-renderer",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.stack-voice-samples-rendered",
+   "to": "measure.2026-10-24.voice-samples-offline",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.stack-voice-samples-rendered",
+   "to": "open.2026-10-24.sarvam-india-sample",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "measure.2026-10-24.stack-voice-samples-rendered",
+   "to": "open.2026-10-24.live-sample-spoken-text-empty",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "open.2026-10-24.live-sample-spoken-text-empty",
+   "to": "decision.2026-10-24.voice-stack-sample-renderer",
+   "relation": "informs"
   }
  ]
 }

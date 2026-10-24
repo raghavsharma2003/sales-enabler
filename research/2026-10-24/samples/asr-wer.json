@@ -1,0 +1,48 @@
+{
+ "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+ "ref_words": 17,
+ "clips": {
+  "azure-mai-hi-IN-Kavya_MAI-Voice-2.1-Flash.ogg": {
+   "asr_display": "नमस्ते आशा जी।मैं एक एआई असिस्टेंट हूँ।क्या अभी आप से 2 मिनट बात हो सकती है?",
+   "asr_lexical": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आप से दो मिनट बात हो सकती है",
+   "asr_confidence": 0.79749745,
+   "word_errors_raw": 3,
+   "wer_raw": 0.176,
+   "word_errors_ai_translit": 2,
+   "wer_ai_translit": 0.118,
+   "cer_nospace_ai_translit": 0.0,
+   "disclosure_heard_affirms_ai": true,
+   "asha_heard": true,
+   "name_repairs_vs_asha": [],
+   "sha256": "667c48210d9d59241443f3c7fa72c2b25770025bba3691910d5f8657e3e5a02e"
+  },
+  "gemini-3.8-live-Despina.ogg": {
+   "asr_display": "नमस्ते आशा जी, मैं एक एआई असिस्टेंट हूँ। क्या अभी आपसे 2 मिनट बात हो सकती है?",
+   "asr_lexical": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आपसे दो मिनट बात हो सकती है",
+   "asr_confidence": 0.85944724,
+   "word_errors_raw": 1,
+   "wer_raw": 0.059,
+   "word_errors_ai_translit": 0,
+   "wer_ai_translit": 0.0,
+   "cer_nospace_ai_translit": 0.0,
+   "disclosure_heard_affirms_ai": true,
+   "asha_heard": true,
+   "name_repairs_vs_asha": [],
+   "sha256": "90c6844e8d25bcd94721a10ad2ffb599632624429b9d8867eae250ce813c1b8a"
+  },
+  "gemini-lite-Despina.ogg": {
+   "asr_display": "नमस्ते आशा जी, मैं एक एआई असिस्टेंट हूँ। क्या अभी आपसे 2 मिनट बात हो सकती है?",
+   "asr_lexical": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आपसे दो मिनट बात हो सकती है",
+   "asr_confidence": 0.81039757,
+   "word_errors_raw": 1,
+   "wer_raw": 0.059,
+   "word_errors_ai_translit": 0,
+   "wer_ai_translit": 0.0,
+   "cer_nospace_ai_translit": 0.0,
+   "disclosure_heard_affirms_ai": true,
+   "asha_heard": true,
+   "name_repairs_vs_asha": [],
+   "sha256": "50cc98d031bd65064ca8cb7f105213ce566f20f02d1fab89f7b176b2e04e8051"
+  }
+ }
+}

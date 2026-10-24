@@ -1,0 +1,164 @@
+{
+ "manifest": {
+  "v2-38flash": {
+   "combinationId": "v2|azure+gemini-3.8-flash+gemini-lite~Despina",
+   "durationS": 5.9,
+   "file": "gemini-lite-Despina.ogg",
+   "recordedAt": "2026-10-24T04:04:26Z",
+   "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+   "tts": "gemini-lite",
+   "voice": "Despina"
+  },
+  "v2-54mini": {
+   "combinationId": "v2|azure+gpt-5.4-mini+gemini-lite~Despina",
+   "durationS": 5.9,
+   "file": "gemini-lite-Despina.ogg",
+   "recordedAt": "2026-10-24T04:04:26Z",
+   "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+   "tts": "gemini-lite",
+   "voice": "Despina"
+  },
+  "v2-flashlite": {
+   "combinationId": "v2|azure+gemini-3.5-flash-lite+gemini-lite~Despina",
+   "durationS": 5.9,
+   "file": "gemini-lite-Despina.ogg",
+   "recordedAt": "2026-10-24T04:04:26Z",
+   "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+   "tts": "gemini-lite",
+   "voice": "Despina"
+  },
+  "v2-live": {
+   "combinationId": "v2|gemini-3.8-live~Despina",
+   "durationS": 5.53,
+   "file": "gemini-3.8-live-Despina.ogg",
+   "recordedAt": "2026-10-24T04:04:26Z",
+   "spokenText": "",
+   "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+   "tts": "gemini-3.8-live",
+   "voice": "Despina"
+  },
+  "v2-luna": {
+   "combinationId": "v2|azure+gpt-6-luna@or+gemini-lite~Despina",
+   "durationS": 5.9,
+   "file": "gemini-lite-Despina.ogg",
+   "recordedAt": "2026-10-24T04:04:26Z",
+   "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+   "tts": "gemini-lite",
+   "voice": "Despina"
+  },
+  "v2-mai": {
+   "combinationId": "v2|azure+gemini-3.5-flash-lite+azure-mai~hi-IN-Kavya:MAI-Voice-2.1-Flash",
+   "durationS": 8.45,
+   "file": "azure-mai-hi-IN-Kavya_MAI-Voice-2.1-Flash.ogg",
+   "recordedAt": "2026-10-24T04:04:26Z",
+   "text": "नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ। क्या अभी आपसे दो मिनट बात हो सकती है?",
+   "tts": "azure-mai",
+   "voice": "hi-IN-Kavya:MAI-Voice-2.1-Flash"
+  }
+ },
+ "clips": {
+  "azure-mai-hi-IN-Kavya_MAI-Voice-2.1-Flash.ogg": {
+   "bytes": 49170,
+   "probe": {
+    "programs": [],
+    "streams": [
+     {
+      "codec_name": "opus",
+      "sample_rate": "48000",
+      "channels": 1
+     }
+    ],
+    "format": {
+     "format_name": "ogg",
+     "duration": "8.506500",
+     "bit_rate": "46242"
+    }
+   },
+   "lufs_i": -16.5,
+   "lra": 1.8,
+   "true_peak_dbfs": -1.2,
+   "rms_dbfs": -17.6,
+   "max_dbfs": -1.2,
+   "asr_http": 200,
+   "asr_ms": 2136,
+   "asr_audio_s": 8.45,
+   "asr": {
+    "status": "Success",
+    "display": "नमस्ते आशा जी।मैं एक एआई असिस्टेंट हूँ।क्या अभी आप से 2 मिनट बात हो सकती है?",
+    "lexical": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आप से दो मिनट बात हो सकती है",
+    "itn": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आप से 2 मिनट बात हो सकती है",
+    "confidence": 0.79749745,
+    "n_best": 1
+   }
+  },
+  "gemini-3.8-live-Despina.ogg": {
+   "bytes": 33524,
+   "probe": {
+    "programs": [],
+    "streams": [
+     {
+      "codec_name": "opus",
+      "sample_rate": "48000",
+      "channels": 1
+     }
+    ],
+    "format": {
+     "format_name": "ogg",
+     "duration": "5.606500",
+     "bit_rate": "47835"
+    }
+   },
+   "lufs_i": -15.9,
+   "lra": 1.2,
+   "true_peak_dbfs": -4.0,
+   "rms_dbfs": -15.6,
+   "max_dbfs": -4.0,
+   "asr_http": 200,
+   "asr_ms": 1134,
+   "asr_audio_s": 5.53,
+   "asr": {
+    "status": "Success",
+    "display": "नमस्ते आशा जी, मैं एक एआई असिस्टेंट हूँ। क्या अभी आपसे 2 मिनट बात हो सकती है?",
+    "lexical": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आपसे दो मिनट बात हो सकती है",
+    "itn": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आपसे 2 मिनट बात हो सकती है",
+    "confidence": 0.85944724,
+    "n_best": 1
+   }
+  },
+  "gemini-lite-Despina.ogg": {
+   "bytes": 36005,
+   "probe": {
+    "programs": [],
+    "streams": [
+     {
+      "codec_name": "opus",
+      "sample_rate": "48000",
+      "channels": 1
+     }
+    ],
+    "format": {
+     "format_name": "ogg",
+     "duration": "5.906500",
+     "bit_rate": "48766"
+    }
+   },
+   "lufs_i": -16.8,
+   "lra": 1.9,
+   "true_peak_dbfs": -3.3,
+   "rms_dbfs": -17.3,
+   "max_dbfs": -3.4,
+   "asr_http": 200,
+   "asr_ms": 1304,
+   "asr_audio_s": 5.9,
+   "asr": {
+    "status": "Success",
+    "display": "नमस्ते आशा जी, मैं एक एआई असिस्टेंट हूँ। क्या अभी आपसे 2 मिनट बात हो सकती है?",
+    "lexical": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आपसे दो मिनट बात हो सकती है",
+    "itn": "नमस्ते आशा जी मैं एक एआई असिस्टेंट हूँ क्या अभी आपसे 2 मिनट बात हो सकती है",
+    "confidence": 0.81039757,
+    "n_best": 1
+   }
+  }
+ },
+ "asr_region": "centralindia"
+}
