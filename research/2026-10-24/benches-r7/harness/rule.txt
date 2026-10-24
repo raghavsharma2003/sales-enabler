@@ -1,0 +1,52 @@
+Pre-registered 2026-10-24 (the file's mtime is the time), before any round 7 model request: the r7 ledger
+(bench-tools-r7/ledger.jsonl) does not exist yet. Tree 6d69a85febaf9f605ccf8178ab99ad245ec1b03f
+(origin/claude/serene-franklin-9w7f1v), a detached worktree at /dev/shm/wt-bench7. It contains 6245d4e (the shipped
+outcome-first contract and its byte-identity gate).
+
+GATE, NO MODEL (done before this file was written)
+  node --import tsx product/scripts/analysis-variant-probe.ts -> ok true, exit 0: the shipped 'current' prompt on the
+  bench's outcome definition is byte-identical to product/scripts/analysis-bench/contracts/r6-outcome-first.bench.txt
+  (2,817 characters, sha256 ba7656b7...642fbb on both sides). analysis-bench.ts, analysis-bench/cases.ts and llm.ts are
+  unchanged since r6's tree 839292d; the DEV/TEST split map is byte-identical to r6's (cmp). The one later change to
+  calls/analysis.ts (0e2d692, typed fields) adds prompt lines only when an outcome definition has fields; the bench's
+  definition has none (column default '[]'), so the bench prompt is the gated one.
+
+WHAT RUNS (TEST split, 42 calls; 10 objection moments, 36 moments, 10 commitments; 39 reach the model)
+  Prompt variant current (the shipped contract) on every run; the product bench, unchanged (no harness copy).
+    mini   = gpt-4.1-mini single: --model <gpt-4.1-mini deployment>
+    tiered = gpt-4.1-mini first, gpt-4.1 on escalation: --model <mini> --escalate-model <gpt-4.1> --threshold 0.6
+  Two passes per arm, each pass its own process on its own freshly migrated database. Order, interleaved as round 5:
+    mini p1, tiered p1, mini p2, tiered p2.
+  Strictly sequential (one bench at a time; at most 1 request a second: the guard's gap is 1.5 s), crisis judge off
+  (the bench default). Caps: global Rs 40 (guard), per run Rs 9.4 mini and Rs 18.8 tiered, each lowered to what remains
+  of Rs 40 if less. Caps are never raised.
+  A run that aborts, or has any analysis that fails for a transport reason (HTTP error, network error, cap refusal), is
+  re-run once in its slot under the label suffix -rerun, and both are reported; the rerun is the one scored. If the
+  rerun fails too, stop and report. A run is never repeated because of its scores.
+
+THE RULE (the integrator's, 2026-10-24)
+  Mini single MATCHES tiered in round 7 only if all of these hold:
+    (1) outcome: on BOTH passes, mini's outcome count >= tiered's outcome count on the same pass minus 1
+        (mini p1 >= tiered p1 - 1 AND mini p2 >= tiered p2 - 1);
+    (2) objections, moments and commitments: on BOTH passes, mini's count is >= tiered's on the same pass
+        (objection recall k, moments found k of 36, commitments found k of 10);
+    (3) crisis: zero crisis-field errors on both mini passes (crisis 42/42 in each).
+  If it MATCHES (round 6 matched, so this is the second consecutive round): recommend switching the per-call analysis
+  default to gpt-4.1-mini single, the cheaper option, with tiered (and gpt-4.1) staying selectable. That recommendation
+  is written as a decision node superseding decision.2026-10-24.analysis-default-tiered.
+  OTHERWISE tiered stays the default, and the report says which clause failed.
+
+ALSO READ (reported; does not change the verdict)
+  - The decision's own reverse_if: mini within 1/42 of tiered on the mean of two TEST passes with no moment or
+    objection loss, in two consecutive rounds; or tiered's cost > Rs 0.17 per 3-minute call. Clause (1) above implies
+    the mean clause (mean(mini) >= mean(tiered) - 1), so the rule is the stricter reading. Any disagreement between the
+    two readings is reported.
+  - Per pass: outcome, objections, moments, commitments, every moment found, crisis, grounded quotes, the complaint and
+    wrong_person templates, escalation count and reasons (tiered), pass-to-pass disagreement within each arm, Rs per
+    model-analysed call (tiered priced per model), run spend from the ledger.
+  - Exact two-sided McNemar on outcome (and per-call objection, every-moment, commitments), mini against tiered on the
+    same 42 ids: same pass (p1-p1, p2-p2), crossed (p1-p2, p2-p1), and pooled (pass, call) pairs [exploratory: pairs
+    share call ids]. Also r7 against r6 on the same prompt (mini r6 p1/p2, tiered r6 p1) as a reproducibility read.
+  - Every miss (outcome, objection, moment, commitment, crisis) is read from that run's own database (misses.py), as
+    r6 did: the stored outcome, outcomeUnclear, outcomeConfidence, the model's reason code, the stored moment kinds and
+    the tier record.

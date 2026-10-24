@@ -1,0 +1,172 @@
+{
+ "gpt-4.1-mini.current-p1": {
+  "db": "checked (name withheld)",
+  "misses": [],
+  "momentOrCrisisMisses": [],
+  "allMappedAndMatched": true,
+  "storedStatus": {
+   "done": 39,
+   "skipped": 3
+  },
+  "outcomeConfidence": {
+   "callsWithOutcome": 30,
+   "withConfidence": 30,
+   "min": 0.9,
+   "below0.6": 0,
+   "below0.9": 0,
+   "lowest3": [
+    [
+     0.9,
+     "agreed.healthcare.bengali-english"
+    ],
+    [
+     0.9,
+     "agreed.realestate.hinglish"
+    ],
+    [
+     0.9,
+     "callback.ecommerce.hinglish"
+    ]
+   ],
+   "histogram": {
+    "0.9": 10,
+    "0.95": 2,
+    "1": 18
+   }
+  },
+  "tierRecords": null
+ },
+ "tiered.current-p1": {
+  "db": "checked (name withheld)",
+  "misses": [],
+  "momentOrCrisisMisses": [],
+  "allMappedAndMatched": true,
+  "storedStatus": {
+   "done": 39,
+   "skipped": 3
+  },
+  "outcomeConfidence": {
+   "callsWithOutcome": 30,
+   "withConfidence": 30,
+   "min": 0.9,
+   "below0.6": 0,
+   "below0.9": 0,
+   "lowest3": [
+    [
+     0.9,
+     "agreed.education.hinglish"
+    ],
+    [
+     0.9,
+     "objection_resolved.ecommerce.hinglish"
+    ],
+    [
+     0.9,
+     "objection_resolved.education.hinglish"
+    ]
+   ],
+   "histogram": {
+    "0.9": 6,
+    "0.95": 2,
+    "1": 22
+   }
+  },
+  "tierRecords": {
+   "n": 39,
+   "escalated": 0,
+   "why": {
+    "None": 25,
+    "the engine decided this call's reason; it is never escalated": 11,
+    "the first pass found a reason on which no outcome is recorded; it is never escalated": 3
+   },
+   "secondModels": [
+    "None"
+   ]
+  }
+ },
+ "gpt-4.1-mini.current-p2": {
+  "db": "checked (name withheld)",
+  "misses": [],
+  "momentOrCrisisMisses": [],
+  "allMappedAndMatched": true,
+  "storedStatus": {
+   "done": 39,
+   "skipped": 3
+  },
+  "outcomeConfidence": {
+   "callsWithOutcome": 30,
+   "withConfidence": 30,
+   "min": 0.9,
+   "below0.6": 0,
+   "below0.9": 0,
+   "lowest3": [
+    [
+     0.9,
+     "agreed.healthcare.bengali-english"
+    ],
+    [
+     0.9,
+     "agreed.realestate.hinglish"
+    ],
+    [
+     0.9,
+     "callback.ecommerce.hinglish"
+    ]
+   ],
+   "histogram": {
+    "0.9": 10,
+    "0.95": 1,
+    "1": 19
+   }
+  },
+  "tierRecords": null
+ },
+ "tiered.current-p2": {
+  "db": "checked (name withheld)",
+  "misses": [],
+  "momentOrCrisisMisses": [],
+  "allMappedAndMatched": true,
+  "storedStatus": {
+   "done": 39,
+   "skipped": 3
+  },
+  "outcomeConfidence": {
+   "callsWithOutcome": 30,
+   "withConfidence": 30,
+   "min": 0.9,
+   "below0.6": 0,
+   "below0.9": 0,
+   "lowest3": [
+    [
+     0.9,
+     "agreed.healthcare.bengali-english"
+    ],
+    [
+     0.9,
+     "agreed.realestate.hinglish"
+    ],
+    [
+     0.9,
+     "callback.lending.tamil-english"
+    ]
+   ],
+   "histogram": {
+    "0.9": 9,
+    "0.95": 1,
+    "1": 20
+   }
+  },
+  "tierRecords": {
+   "n": 39,
+   "escalated": 0,
+   "why": {
+    "None": 25,
+    "the engine decided this call's reason; it is never escalated": 11,
+    "the first pass found a reason on which no outcome is recorded; it is never escalated": 3
+   },
+   "secondModels": [
+    "None"
+   ]
+  }
+ }
+}
