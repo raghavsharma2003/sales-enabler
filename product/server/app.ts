@@ -23,6 +23,9 @@ export interface Module {
   routes?(router: Router, deps: Deps): void;
   /** Background work (dispatch loops, nightly rollups, analysis queues). See server/jobs.ts. */
   jobs?(deps: Deps): Job[];
+  /** Release what routes() started (timers, listening connections). Called once by the app's stop(), which also runs
+   *  when the server closes; it must leave nothing that keeps the process alive or the pool from ending. */
+  stop?(): void | Promise<void>;
 }
 
 const signup = obj({ workspace: str({ min: 2, max: 80 }), name: str({ min: 1, max: 80 }), email: str({ pattern: /^[^@\s]+@[^@\s]+\.[^@\s]+$/, max: 200 }), password: str({ min: 10, max: 200 }) });
@@ -91,7 +94,7 @@ async function serveStatic(req: IncomingMessage, res: ServerResponse, file: stri
   createReadStream(file).pipe(res);
 }
 
-export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server; deps: Deps; jobs: Job[] } {
+export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: string } = {}): { router: Router; registry: Registry; server: Server; deps: Deps; jobs: Job[]; stop: () => Promise<void> } {
   const registry = new Registry();
   for (const m of modules) m.register(registry);
   const router = new Router();
@@ -208,5 +211,10 @@ export function buildApp(pool: pg.Pool, modules: Module[], opts: { webRoot?: str
     await router.handle(req, res);
   });
   const jobs = modules.flatMap(m => m.jobs?.(deps) ?? []);
-  return { router, registry, server, deps, jobs };
+  // One stop for everything the modules started: the server's close runs it too, so a caller that only closes the server
+  // (a script, a test, a graceful shutdown) still ends with nothing left open.
+  let stopped: Promise<void> | null = null;
+  const stop = () => (stopped ??= (async () => { for (const m of modules) await m.stop?.(); })());
+  server.on('close', () => { void stop(); });
+  return { router, registry, server, deps, jobs, stop };
 }

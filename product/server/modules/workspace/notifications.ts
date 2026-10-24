@@ -8,7 +8,8 @@
 // The message text is made when it is sent, from ids and codes, so no caller words are ever stored or sent. The in-app
 // alerts and queues stay as they are: email that is not set up is recorded as "skipped" with the reason, never silent.
 // Speed: the outbox trigger NOTIFYs vp_outbox on commit and startNotifier() sends at once; a crisis is out in about a second.
-import type pg from 'pg';
+import pg from 'pg';
+const PgClient = pg.Client;
 import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 import { many, one, tx, type Queryable } from '../../db.ts';
@@ -128,31 +129,46 @@ export async function sendNotifications(pool: pg.Pool, o: { workspaceId?: string
   return { sent, failed, skipped };
 }
 
-/** Listen for vp_outbox and run `pump` at once (coalesced), reconnecting after an error. Returns a stop function. */
-export function startNotifier(pool: pg.Pool, pump: () => Promise<unknown>): () => void {
-  let stopped = false, running = false, again = false, client: pg.PoolClient | null = null;
+/** Listen for vp_outbox and run `pump` at once (coalesced), reconnecting after an error. Returns stop(), which ends the
+ *  connection, clears every timer and never reconnects. The listener is its own connection, not one borrowed from the
+ *  pool (so pool.end() never waits on it), and its socket is unref'd: it can never be what keeps a process alive. */
+export function startNotifier(pool: pg.Pool, pump: () => Promise<unknown>): () => Promise<void> {
+  let stopped = false, running = false, again = false, client: pg.Client | null = null;
+  const timers = new Set<NodeJS.Timeout>();
+  const later = (fn: () => void, ms: number) => { const t = setTimeout(() => { timers.delete(t); fn(); }, ms); t.unref(); timers.add(t); };
   const run = async () => {
     if (running) { again = true; return; }
     running = true;
     try { do { again = false; await pump(); } while (again && !stopped); }
-    catch (e) { console.error('[vp] notifications', e instanceof Error ? e.message : e); }
+    catch (e) { if (!stopped) console.error('[vp] notifications', e instanceof Error ? e.message : e); }
     finally { running = false; }
   };
+  const drop = () => { const c = client; client = null; c?.end().catch(() => {}); };
   const listen = async () => {
     if (stopped) return;
+    const c = new PgClient(pool.options);
+    client = c;
+    c.on('notification', () => { if (!stopped) void run(); });
+    c.on('error', () => { if (client === c) drop(); if (!stopped) later(listen, 5000); });
     try {
-      client = await pool.connect();
-      client.on('notification', () => { void run(); });
-      client.on('error', () => { client?.release(true); client = null; if (!stopped) setTimeout(listen, 5000).unref(); });
-      await client.query('LISTEN vp_outbox');
+      await c.connect();
+      (c as unknown as { connection?: { stream?: { unref?: () => void } } }).connection?.stream?.unref?.();
+      if (stopped) { await c.end().catch(() => {}); return; }
+      await c.query('LISTEN vp_outbox');
     } catch (e) {
-      console.error('[vp] notifications listen', e instanceof Error ? e.message : e);
-      client?.release(true); client = null;
-      if (!stopped) setTimeout(listen, 5000).unref();
+      if (!stopped) console.error('[vp] notifications listen', e instanceof Error ? e.message : e);
+      if (client === c) drop();
+      if (!stopped) later(listen, 5000);
     }
   };
-  setTimeout(() => { void listen(); }, 1000).unref();      // after start-up; a script that only builds the app exits first
-  return () => { stopped = true; if (client) { client.query('UNLISTEN vp_outbox').catch(() => {}).finally(() => client?.release()); } };
+  later(() => { void listen(); }, 1000);      // after start-up; a script that only builds the app exits first
+  return async () => {
+    stopped = true;
+    for (const t of timers) clearTimeout(t);
+    timers.clear();
+    const c = client; client = null;
+    if (c) await c.end().catch(() => {});
+  };
 }
 
 export function registerNotifications(r: Registry) {

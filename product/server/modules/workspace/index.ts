@@ -38,8 +38,13 @@ function fail(key: string) {
   failures.set(key, a && a.until > now ? { n: a.n + 1, until: a.until } : { n: 1, until: now + WINDOW_MS });
 }
 
+// What routes() started, stopped by module.stop (the app's stop(), which also runs when the server closes).
+const stops: (() => void | Promise<void>)[] = [];
+
 export const module: Module = {
   name: 'workspace',
+
+  async stop() { for (const s of stops.splice(0)) await s(); },
 
   register(registry) {
     registry.register(tool(obj({}), {
@@ -132,11 +137,14 @@ export const module: Module = {
     // Send queued webhooks every few seconds while the server runs. unref() so it never holds a process open.
     // Notifications go out at once when an event commits (LISTEN vp_outbox), and on the same timer as a safety net.
     if (process.env.NODE_ENV !== 'test') {
-      setInterval(() => {
+      const timer = setInterval(() => {
+        if ((pool as unknown as { ending?: boolean }).ending) { clearInterval(timer); return; }   // a script ended the pool without stopping the app
         deliverPending(pool).catch(e => console.error('[vp] webhook delivery', e));
         sendNotifications(pool).catch(e => console.error('[vp] notifications', e));
-      }, 5000).unref();
-      startNotifier(pool, () => sendNotifications(pool));
+      }, 5000);
+      timer.unref();
+      const stopNotifier = startNotifier(pool, () => sendNotifications(pool));
+      stops.push(() => clearInterval(timer), stopNotifier);
     }
   },
 };
