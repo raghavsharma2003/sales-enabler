@@ -9,7 +9,7 @@ import { buildApp } from '../server/app.ts';
 import { createPool, one } from '../server/db.ts';
 import { setFakeLlm, type LlmReply, type LlmRequest } from '../server/llm.ts';
 import { modules } from '../server/modules/index.ts';
-import { setupNote } from '../server/modules/operator/loop.ts';
+import { callTimes, setupNote } from '../server/modules/operator/loop.ts';
 import { intentsOf } from '../server/modules/operator/toolset.ts';
 import type { Registry } from '../server/tools.ts';
 import { TASKS, type SeedCtx } from '../scripts/operator-bench-tasks.ts';
@@ -116,9 +116,18 @@ test('"what went wrong on that call?": the call tools are offered, reads run, an
   await turn(c.member, { text: q, page: `/calls/${conv}` });
   const offered = new Set(seen[0]!.tools!.map(t => t.name));
   assert.ok(offered.has('call_explain') && offered.has('call_get'));
-  assert.match(seen[0]!.messages.find(m => m.role === 'system' && /what went wrong on a call/.test(m.content))!.content, /Change nothing until the client asks for the fix/);
+  const note = seen[0]!.messages.find(m => m.role === 'system' && /what went wrong on a call/.test(m.content))!.content;
+  assert.match(note, /Change nothing until the client asks for the fix/);
+  assert.match(note, /turnCauses/);
+  assert.match(note, /The client named 1:20 \(80000 ms\)/, 'the time is given on the trace\'s clock');
   assert.doesNotMatch(lastTool(seen[1]!, 'call.explain'), /held/);
   assert.match(lastTool(seen[2]!, 'brief.edit'), /held: the client asked a question about a call, not for brief\.edit/);
+});
+
+test('diagnose: "1:20" is 80000 ms from the start of the call; clock times are not call times', () => {
+  assert.deepEqual(callTimes('Why did she cut me off at 1:20?'), [{ said: '1:20', ms: 80_000 }]);
+  assert.deepEqual(callTimes('what happened at 12:05 on that call'), [{ said: '12:05', ms: 725_000 }]);
+  assert.deepEqual(callTimes('the call at 10:30 am'), []);
 });
 
 test('reset by chat: "start over", "archive" and "restore" offer the reset tools that are registered', () => {

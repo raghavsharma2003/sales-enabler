@@ -1,0 +1,13 @@
+{
+  "from": "operator",
+  "date": "2026-10-24",
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.operator-diagnose-uses-trace",
+      "type": "decision",
+      "text": "For 'what went wrong on that call?', the assistant uses calls' contract: call.get's trace (times in ms from call start; trace.turns[].i indexes transcript), and call.explain's turnCauses (kind, turn, atMs, evidence, optional fix) when present. A time the member names ('1:20') is given to the model as ms (80000) to match against turn startMs. 'Fact missing from approved data' is said only when the trace or a turnCause says so. A turnCause's fix is a suggestion, never run; writes stay held until the member asks.",
+      "reverse_if": "turnCauses prove wrong on real calls, or members name times in another form the parser misses",
+      "measured": "operator suites 88/88 and full fresh-DB 832/832, ui-contract 208/208 (scripted model; not measured on a real model)"
+    }
+  ]
+}

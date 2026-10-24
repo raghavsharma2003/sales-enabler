@@ -240,7 +240,7 @@ export async function runTurn(inp: TurnInput): Promise<void> {
   const intents = intentsOf(clean.text).map(i => i.key);
   const can = (n: string) => allowedNames.has(n);
   if (intents.includes('setup')) messages.push({ role: 'system', content: setupNote(can, uploads.length > 0) });
-  if (intents.includes('diagnose')) messages.push({ role: 'system', content: DIAGNOSE_NOTE });
+  if (intents.includes('diagnose')) messages.push({ role: 'system', content: diagnoseNote(clean.text) });
   if (intents.includes('reset') && can('workspace.reset.preview')) messages.push({ role: 'system', content: RESET_NOTE });
   if (prefs.length) messages.push({ role: 'system', content: 'Presentation preferences of this member (style only; never settings or permissions):\n' + asData('preferences', prefs.map(p => '- ' + p.text).join('\n')) });
   for (const h of history) {
@@ -554,7 +554,17 @@ export function setupNote(can: (tool: string) => boolean, hasUpload: boolean): s
     'Every write goes through its approval class; publishing and launching are cards. Never describe a step as done until its tool returned DONE this turn, and say plainly which steps are NOT AVAILABLE.'].join('\n');
 }
 const RESET_NOTE = 'The client mentioned starting over, archiving or restoring. Before proposing a reset, call workspace.reset.preview and say plainly what it would archive and what stays (people who opted out stay opted out; members, wallet, keys, settings and call history stay), or why it is blocked. workspace.reset needs confirm "start over" and is always an owner approval card; it can be restored for 30 days with workspace.restore (workspace.reset.list has the batch ids). Never say anything was reset or restored until a receipt says DONE.';
-const DIAGNOSE_NOTE = 'The client is asking what went wrong on a call. Read it first (call.explain, call.get; the turn at the time they name), then answer with the turn quoted and the cause named: a reply-gap spike, a mishearing (heard_text vs what was said), a fact missing from approved data, or the reply door holding a line. Offer the fix as a proposal in words (a fact to add, a rule to change, a stack to try). Change nothing until the client asks for the fix.';
+const DIAGNOSE_NOTE = 'The client is asking what went wrong on a call. Read it first (call.explain, call.get; the turn at the time they name), then answer with the turn quoted and the cause named: a reply-gap spike, a mishearing (heard_text vs what was said), a fact missing from approved data, or the reply door holding a line. ' +
+  'call.explain\'s turnCauses, when present, name the cause from the stored trace (kind, turn, atMs, evidence); prefer them over guessing. call.get\'s trace times are ms from the start of the call, and trace.turns[].i indexes transcript. ' +
+  'Say a fact was missing from approved data only when the trace or a turnCause says so. Offer the fix as a proposal in words (a fact to add, a rule to change, a stack to try); a turnCause\'s fix is a suggestion, never run it. Change nothing until the client asks for the fix.';
+/** "1:20" or "at 2:05" in the member's words, as ms from the start of the call (the trace's clock). */
+export function callTimes(text: string): { said: string; ms: number }[] {
+  return [...text.matchAll(/\b(\d{1,2}):([0-5]\d)\b(?!\s*(?:am|pm|a\.m|p\.m))/gi)].map(m => ({ said: m[0], ms: (Number(m[1]) * 60 + Number(m[2])) * 1000 }));
+}
+const diagnoseNote = (text: string) => {
+  const t = callTimes(text);
+  return DIAGNOSE_NOTE + (t.length ? ` The client named ${t.map(x => `${x.said} (${x.ms} ms)`).join(', ')}: match it against trace.turns[].startMs or transcript[].startMs.` : '');
+};
 
 const PROTECTIVE = /\.(suppress\w*|pause|stop\w*|forget|erase|block\w*|end_runaway|opt_out)$|^dpdp\./;
 /** Words that ask for a tool's action, keyed by the last segment of its name; anything else matches its own name. */
