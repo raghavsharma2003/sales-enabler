@@ -64,7 +64,7 @@ test('typed calls run with the key\'s rights; an approval-class call returns a c
   assert.equal(refused.status, 'not_executed');
 
   // cap.raise: a spend-class approval whose run needs no payment gateway (wallet.topup's does), so it can complete here.
-  const card = await vy.call('cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: 200_000 });
+  const card = await vy.call('cap.raise', { scope: 'workspace', period: 'daily', capInrMilli: 20_000_000 });   // above the ₹5,000 default (e51e304)
   assert.equal(card.status, 'needs_approval');
   if (card.status !== 'needs_approval') return;
   assert.equal((await vy.approval(card.actionId)).status, 'proposed');

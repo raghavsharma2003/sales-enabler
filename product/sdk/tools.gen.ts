@@ -565,14 +565,14 @@ export interface ToolInput {
   "cap.lower": {
     scope: "workspace" | "campaign" | "api_key";
     scopeId?: string;
-    period: "total" | "daily" | "monthly";
+    period: "total" | "daily" | "monthly" | "burst";
     capInrMilli: number;
   };
   /** raise (or set) a spend cap (spend, waits for approval) */
   "cap.raise": {
     scope: "workspace" | "campaign" | "api_key";
     scopeId?: string;
-    period: "total" | "daily" | "monthly";
+    period: "total" | "daily" | "monthly" | "burst";
     capInrMilli: number;
   };
   /** Append a consent grant or withdrawal for a purpose, with its evidence; nothing edits or deletes consent (policy, waits for approval) */
