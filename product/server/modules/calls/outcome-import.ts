@@ -181,7 +181,7 @@ export function registerOutcomeImport(r: Registry): void {
     summary: 'Record the matched rows of a previewed file as verified outcomes',
     describe: async (i, ctx) => {
       const imp = await loadImport(ctx, i.importId).catch(() => null);
-      if (!imp) return `Record verified outcomes from import ${i.importId.slice(0, 8)}`;
+      if (!imp) return 'Record verified outcomes from an uploaded file that is no longer available';
       const c = imp.counts;
       return `Record ${c.matched} verified outcomes from ${imp.file_name} (${c.unmatched + c.ambiguous + c.invalid} rows not written; the AI's reading disagrees on ${c.disagreements})`;
     },
