@@ -14,7 +14,7 @@ const web = fileURLToPath(new URL('../web/', import.meta.url));
 // bloat (a library pulled in, code duplicated across chunks); raise it only with the measured cause in the graph.
 const FIRST_LOAD_GZIP_KB = 100;   // all that loads before anything renders: entry JS, CSS and the chunks the entry imports statically
 const CHUNK_GZIP_KB = 30;         // any one lazy chunk: the most a page adds on top of the first load
-const ALL_CHUNKS_GZIP_KB = 240;   // every chunk together (was 200, then 205; 205.6 on 2026-10-24 with the CRM import screen pending)
+const ALL_CHUNKS_GZIP_KB = 260;   // every chunk together (was 200, 205, 240; 242.0 at afccbb4 from six feature commits, no new library: decision.2026-10-24.web-total-260)
 
 test('the app builds, dist is complete and the bundle stays under its stated size', () => {
   execFileSync(process.execPath, [web + 'build.mjs'], { stdio: 'pipe' });

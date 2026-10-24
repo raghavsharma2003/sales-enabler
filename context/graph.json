@@ -23973,6 +23973,38 @@
    "title": "Staging redeployed to ead1bc8 with stage_setup_v2.sh (10:46 UTC; 9 new migrations, 68 recorded; units restarted, lab untouched; the 13 config names in both processes; no telephony or WhatsApp env): all checks pass. A new workspace's money.test_budget reads INR 2,000 a day and INR 50 a call from VP_TEST_BUDGET_DEFAULT_INR (row created on first read); a browser test call (97 s, INR 2.02) has its transcript, call.get's new trace (schema 1, gapMs on every agent turn after the opening, equal to the socket's reply gaps) and a recording that answers 200 audio/wav through :8443; the typed chat answers. The owner's workspace has no test-budget row yet, so its first use gets INR 2,000. Spend INR 2.39",
    "method": "The 9b34ff7 recipe at ead1bc8 (git archive bundle; deploy_pre.sh + stage_setup_v2.sh + deploy_post.sh + deploy_post7.sh + deploy_post9.sh + deploy_post10.sh in one Run Command; deploy_post10 stopped on set -e after the deploy and was re-run alone, read-only); :8443 page and assets with curl; research/2026-10-24/staging/ops/verify10.py on the VM through the product's own API (the call via replygap.one_call, synthetic clips P1, never a phone); test-budget rows and the owner's workspace by read-only SQL; spend from the DB and Azure Monitor at op7's rates",
    "path": "research/2026-10-24/staging/testbuild-ead1bc8.md"
+  },
+  {
+   "id": "measure.2026-10-24.web-bundle-growth-afccbb4",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 6,
+   "title": "Web bundle gzip by commit, 2026-10-24: 5b34b88 total 234.8 KB / first load 99.2; 44e3f32 238.3 / 99.2 (test-call outcome, first-run states); 8114f0c 240.5 / 99.3 (learning's How she changed); afccbb4 242.0 / 99.5 (stack selection finished, agents duplicate/archive). No new dependency in package.json; the only new non-relative imports are lucide-react icons and react. The first load was 87.7 KB when the per-chunk budget was decided the same day",
+   "method": "node web/build.mjs at each commit in a detached worktree, read dist/build.json (gzipBytes, firstLoadGzipBytes, entryGzipBytes); git diff 5b34b88..afccbb4 of package.json files (no change) and of product/web/src for new bare-module imports",
+   "value": "total 242.0 KB, first load 99.5 KB at afccbb4",
+   "path": "product/tests/web.test.ts"
+  },
+  {
+   "id": "decision.2026-10-24.web-total-260",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "integrator",
+   "title": "The all-chunks bloat tripwire goes from 240 to 260 KB gzip: the 240.6 KB CI failure on 7dbca0a is feature growth in lazy screens across six commits, no library and no duplication. The first-load gate (100 KB) stays and is the real risk at 99.5 KB",
+   "rationale": "decision.2026-10-24.web-budget-per-chunk made the total a tripwire for a library pulled in or code duplicated across chunks (tens of KB at once), raised only with the measured cause. The cause is measured (measure.2026-10-24.web-bundle-growth-afccbb4): +7.2 KB in one day over six feature commits, each a few KB, with no new dependency. 260 still trips on a library-sized jump.",
+   "reverse_if": "A single commit adds 10 KB or more to the total, or a new dependency appears in the bundle; then find and remove the cause instead of raising the line. Also reverse if a measured cold lazy-route transition on a mid-range Android over throttled 4G exceeds 1 s.",
+   "path": "product/tests/web.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.web-first-load-at-cap",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "integrator",
+   "title": "The first load is 99.5 KB gzip against its 100 KB gate (it was 87.7 KB earlier on 2026-10-24): the next statically imported feature fails CI. Move statically imported code out of the entry into lazy chunks",
+   "closes_when": "firstLoadGzipBytes is at most 90 KB at head with the browser flows green"
   }
  ],
  "edges": [
@@ -43072,6 +43104,21 @@
    "from": "measure.2026-10-24.staging-redeploy-ead1bc8",
    "to": "measure.2026-10-24.staging-config-fix-verify",
    "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.web-total-260",
+   "to": "decision.2026-10-24.web-budget-per-chunk",
+   "relation": "refines"
+  },
+  {
+   "from": "measure.2026-10-24.web-bundle-growth-afccbb4",
+   "to": "decision.2026-10-24.web-total-260",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-24.web-first-load-at-cap",
+   "to": "measure.2026-10-24.web-bundle-growth-afccbb4",
+   "relation": "derived-from"
   }
  ]
 }
