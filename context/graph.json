@@ -23062,6 +23062,186 @@
    "title": "Catastrophic-line lane on synthetic calls (n: 1 planted stream of 30 calls, 1 benign stream of 45, the bench's 84 cases; method: catastrophicLine over every prefix in windows of 15, and script.line_check on the real modules with calls written one by one). Planted line trips by call 15 (asserted <= 15); benign stream and bench: 0 trips. Not measured: real traffic, real per-line reaction rates (p0 0.15 for mid-call lines is assumed), and how often it trips before the 50-call early-hang-up monitor would.",
    "method": "node --test tests/calls-line-watch.test.ts, fresh DB",
    "n": "159 synthetic calls: 1 planted stream of 30, 1 benign stream of 45, 84 bench cases"
+  },
+  {
+   "id": "component.2026-10-24.salesforce-contact-import",
+   "type": "component",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Salesforce contact import: Contact and Lead list views, read only, on the same CrmClient seam as HubSpot and Zoho. The same preview, receipt, CRM-id idempotency, number-change flag and timed sync, plus a per-org API budget, field-level security reported as unreadable, and DoNotCall read as an opt-out.",
+   "path": "product/server/modules/intake/crm.ts",
+   "details": "Client salesforce() in crm.ts. Tools in crm-tools.ts:\n- source.crm.lists, source.crm.pull, source.sync (the CRM is read in prepare, outside the transaction);\n- source.crm.budget (read) and source.crm.budget.set (draft, 10 to 100,000 calls a day);\n- migration 0108_intake_crm_budget.sql.\nWeb: a From Salesforce tab and an API budget card (lazy import-crm chunk), and the preview now counts valid-but-not-callable numbers. Tests: intake-salesforce 6/6 against a local fake; e2e 75/75 including the Salesforce flow and its axe screen at both sizes. Not verified: a real Salesforce org; see open.2026-10-24.salesforce-shapes-secondary."
+  },
+  {
+   "id": "decision.2026-10-24.salesforce-donotcall-opt-out",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Salesforce's standard DoNotCall field is read by default and matched as an opt-out (a workspace suppression, never cleared). The registry's DND status is still never taken from a CRM.",
+   "rationale": "decision.2026-10-24.crm-consent-only-where-recorded set reverse_if: 'A CRM adds a standard call-consent or DNC field; then it is mapped by default with its own test.' Salesforce has one (Contact and Lead). An explicit do-not-call recorded by the business is the person's wish, and honouring it is the safe direction.",
+   "reverse_if": "DoNotCall proves to be used by orgs for something other than the person's wish not to be called (for example a sales-team pause), and buyers ask for it to be a reviewable column instead."
+  },
+  {
+   "id": "decision.2026-10-24.crm-api-budget",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Salesforce pulls keep to a per-org budget: 1,000 calls per rolling 24 hours unless changed, and never past 90% of the org's own limit as Sforce-Limit-Info reports it. A pull counts first and re-checks before every page, and stops before it would pass either, with nothing imported. The calls a stopped pull spent still count.",
+   "rationale": "The org's API limit is shared with the customer's other tools; exhausting it breaks them. A 50,000-record list view is about 29 calls at 2,000 per page, so 1,000 is generous for imports and small against Enterprise orgs' limits. Stopping before a page (not mid-import) keeps a pull all-or-nothing.",
+   "reverse_if": "Real orgs show the default is routinely too low (syncs blocked) or that 90% leaves too little for their other tools; then change the default or make the reserve per-org."
+  },
+  {
+   "id": "decision.2026-10-24.crm-reads-in-prepare",
+   "type": "decision",
+   "status": "decided",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "CRM HTTP reads run in the kernel's prepare step (and, for the timed sync, before its transaction), and API usage is recorded on the pool, outside any transaction. Storing the upload stays in run().",
+   "rationale": "Measured: with reads inside run(), a refused pull's usage rows rolled back with the transaction, so the budget undercounted (the intake-salesforce budget test failed). It also held a transaction open across up to ~30 HTTP requests for HubSpot and Zoho, which tools.ts says prepare exists to avoid.",
+   "reverse_if": "The kernel gains a way to commit side records from a failing run(), and prepare's cost (a second integration lookup) matters."
+  },
+  {
+   "id": "decision.2026-10-24.crm-unreadable-never-empty",
+   "type": "decision",
+   "status": "decided",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A CRM field the connected user may not read (field-level security) gets no column in the pull and is named on the screen and the receipt as unreadable. It is never imported as an empty value. With neither phone field readable, the pull is refused in plain words.",
+   "rationale": "An empty 'Do not call' reads as 'may call' and an empty consent as 'no consent': neither was said. Detection works two ways because no official page could be read: a field missing from the describe, or an INVALID_FIELD from SOQL (dropped once and named).",
+   "reverse_if": "Salesforce documents a reliable per-field readability flag that is cheaper than describe; use it instead."
+  },
+  {
+   "id": "rejected.2026-10-24.fixed-page-budget-estimate",
+   "type": "rejection",
+   "status": "rejected",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Estimating a pull's API calls once, from Salesforce's default 2,000 records per page",
+   "tried": "Count the view, estimate ceil(n / 2000) pages, and check the budget once before the first page.",
+   "broke": "Salesforce can send smaller pages (wide records). With pages of 2 in the fake, a pull passed the one-time check and then hit the budget mid-read: still nothing imported, but it failed halfway, which the brief rules out. Replaced by a re-estimate before every page from the pages actually received (the intake-salesforce timed-sync test stops before page 2)."
+  },
+  {
+   "id": "measure.2026-10-24.salesforce-import-tests",
+   "type": "measurement",
+   "status": "active",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Salesforce import against a local fake: 6/6 server tests (list views, paging, DoNotCall opt-out, receipt budget, FLS unreadable two ways, budget and org-reserve stops, REQUEST_LIMIT_EXCEEDED, timed-sync back-off, tenancy) and the browser flow plus axe at 1440 and 390. No write call reached the fake.",
+   "n": "6 server tests; intake files 30/30; e2e 75/75",
+   "method": "node:test on a fresh Postgres with a local HTTP fake shaped from the README's sources; Playwright 1.56.1 via e2e/run.sh with dev/fake-crm.mjs",
+   "not_verified": "A real Salesforce org; whether failed requests count toward the daily limit; the official REST pages (403 to automated access)."
+  },
+  {
+   "id": "open.2026-10-24.salesforce-shapes-secondary",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "The Salesforce response shapes come from search-quoted official text and the jsforce 3.6.3 source, not from official pages read directly: developer.salesforce.com returns 403 to automated access, and the API PDF failed TLS through the proxy. Unconfirmed: that describe omits FLS-hidden fields, the REQUEST_LIMIT_EXCEEDED code, DoNotCall on every org, and whether failed calls count.",
+   "closes_when": "One read-only run against a Salesforce Developer Edition org (synthetic data) confirms each shape, or the official pages are read in a browser and the README cites them."
+  },
+  {
+   "id": "open.2026-10-24.salesforce-integration-used-label",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Settings > Integrations still shows Salesforce as 'Stored, not used yet' until workspace sets usedBy 'Imports contacts' and the Import link (requested of workspace)",
+   "closes_when": "integrations.ts lists salesforce with usedBy and integrations.tsx links it to /contacts/import?from=salesforce."
+  },
+  {
+   "id": "decision.2026-10-24.operator-whole-flow-intents",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "The Operator recognises three whole-flow intents (set up from one conversation, what went wrong on a call, reset) and offers each one's tool chain ahead of the page's tools; set-up steps whose tools are not registered are named to the model as NOT AVAILABLE",
+   "rationale": "Owner directive 2026-10-24 (calling first, then the whole product end to end through the assistant). Naming the missing steps keeps the model from improvising a capability (reading a website) or claiming a step it cannot do.",
+   "reverse_if": "The op8 bench shows the intent note crowding out page tools the turn needed, or the intent words firing on requests that are not a whole flow"
+  },
+  {
+   "id": "decision.2026-10-24.question-turn-holds-writes",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A turn asking what went wrong on a call holds writes the member did not ask for: the assistant explains with the turn quoted and offers the fix as a proposal",
+   "rationale": "The directive says the diagnosis is read-only until the member approves a fix.",
+   "reverse_if": "Members routinely ask for the fix in the same message in words the action match misses"
+  },
+  {
+   "id": "decision.2026-10-24.passage-approval-is-member-tap",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "knowledge.span.approve and fact.approve from the Operator are always approval cards: the member's tap approves what the agent may state",
+   "rationale": "The knowledge tool already refuses any actor but a signed-in person; a card is the only path that can succeed, and it keeps fact approval the member's act.",
+   "reverse_if": "never: approving what the agent states as fact stays a person's act"
+  },
+  {
+   "id": "decision.2026-10-24.telephony-one-dial-path",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The voice runtime is the one caller of Plivo's Call API for every agent call (test ring, single, API, campaign, retry, callback); the control plane's PlivoTelephony never places an agent call and calls Plivo only for account work (numbers, the inbound application, CDRs) and the fixed verification announcement (systemCall)",
+   "rationale": "The runtime owns the answer, hang-up, stream, transfer and machine endpoints and already needs the credentials for transfer, keys and hang-up; the lab rang real phones exactly this way (voicelab/server/phone.py). Moving the dial to the control plane would split the call's carrier state across two processes. Shapes checked 2026-10-24 against plivo.com/docs/voice/api/call/make-a-call and docs.plivo.com/docs/account/api/application.",
+   "reverse_if": "a second runtime trunk (Exotel outbound) or a carrier needs a dial the runtime cannot make, or the control plane must place calls while no runtime is up (then one CarrierDialer used by both, still behind the allowlist)"
+  },
+  {
+   "id": "decision.2026-10-24.telephony-allowlist",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "VP_TELEPHONY_ALLOWED_TO is checked on every number that can reach the carrier: the dial gate's G2 (person dialled on every attempt kind, and the agent's hand-off number), inbound answering (hand-off number), phone verification, and PlivoTelephony.systemCall as the last wall. A server that can reach a carrier (VP_TELEPHONY_LIVE=1 or VP_RUNTIME_URL set) with no list refuses every number; VP_TELEPHONY_ALLOWLIST=off is the only open switch, never on staging",
+   "rationale": "Owner directive 2026-10-24: live calls on private staging to the owner's own phone. A wrong number rung by a test build is the worst first-call failure; failing closed costs nothing.",
+   "reverse_if": "production launch with the owner's go: set VP_TELEPHONY_ALLOWLIST=off on production only"
+  },
+  {
+   "id": "measure.2026-10-24.telephony-allowlist-tests",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "tests/telephony-allowlist.test.ts 6/6 on a fresh Postgres 16: 6 attempt kinds x (unlisted refused, never handed to the runtime, no hold; listed dialled with exactly that number), closed-without-list and 'off', 6 kinds x unlisted hand-off number refused, verification refused before counting, the Plivo adapter refuses with zero requests at a fake Plivo",
+   "n": 6,
+   "method": "node:test against a throwaway Postgres 16 and a local fake Plivo HTTP server; FakeRuntime records tickets",
+   "path": "product/tests/telephony-allowlist.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.telephony-runtime-asks",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Runtime half of the live phone path, asked of the voice builder: VP_PLIVO_API_BASE (loopback only) for a cross-process fake-Plivo test; the same allowlist in plivo_dial and transfer; X-Plivo-Signature-V3 with nonce on answer/hangup/transfer/machine/inbound; a short-lived stream token; call.ended.carrier (CallUUID, Duration, BillDuration, HangupCause*, answeredBy, dial error); recording both legs on s2s phone calls",
+   "closes_when": "the voice builder lands each ask with tests, or says why not"
+  },
+  {
+   "id": "decision.2026-10-24.voice-call-trace",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Per-call trace for the owner's review: the runtime sends trace (schema 1, shared/runtime-protocol.ts CallTrace, voice/vpvoice/trace.py) on call.ended; calls stores it in conversation.trace (migration 0609) and call.get returns it. Turn rows: caller {i, startMs, endMs, asrConfidence, partialLagMs}; agent {i, rid, startMs, callerEndMs, firstAudioMs, gapMs, stages, speculative, tts {provider, voice, style}, state, door [{rule, action}], interrupted}. Events: barge_pause, barge_resume, barge_stop, backchannel, judge (shadow verdicts), error, fallback, tool, keypad. Stack and model ids from the manifest. It holds no words: rows point at the transcript by index i",
+   "rationale": "Integrator ask 3 under directive.2026-10-24.calling-first-build-all: the owner reviews long real calls turn by turn. Keeping words out means transcript retention and erasure already cover the text; the trace never outlives it. Bounded (400 turns, 600 events, 400 KB at the hook) so a runaway call cannot bloat a row.",
+   "reverse_if": "the owner's review needs words in the trace (then join on transcript index in the reader, never copy them), or a turn-level table is needed for analytics across calls (then explode conversation.trace into a table)"
+  },
+  {
+   "id": "open.2026-10-24.voice-humanness-round",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Humanness round plan (voice runtime), in build order, each measured before and after on the turn bench (TEST split) and devsim, staging when the owner calls: (1) duplex backchannels: one short haan/hmm/achha per long caller turn (>= 4 s), fired only in a caller pause of 300-600 ms that is not end of turn (VAD silence below the end hold, no final), never over speech, never in crisis, never in the first 6 s; measure backchannel overlap with caller speech (target 0) and cut-in rate (must not rise); (2) resume after barge-in: when she yields and the caller's words were a nod or 'ek minute', she resumes with a short re-entry shape ('haan, aap bolo' family) not a replay; (3) caller state per turn (rushed, confused, upset, warm, neutral) from words and timing (turn length, gap, overlap, repeats), logged as trace state, driving reply shape (shorter, slower, warmer) and the providers' real controls (Azure DragonHD style and rate, Gemini TTS style prompt) as a LAST row shape, never a line; (4) natural speech: Indian number and date speaking (lakh, crore, 2 November, saadhe teen) in the TTS text normaliser, brand respelling already in names.py; (5) relational: a returning caller's memory brief used at most once, never a sensitive fact, with memory (session_01Rb2NUArHRfYEi2ncQqz79S)",
+   "rationale": "Laws in force: write shapes, never lines; position is mechanism (rules that must fire go last); the brief budget throws on truncation; safety stays a predicate. Backchannels are first because duplex feel is where every torn-down platform falls short and the bench can measure overlap exactly.",
+   "reverse_if": "staging numbers after the 18:36 UTC re-measure show the reply gap is the larger humanness loss (then latency round 3 goes first)",
+   "closes_when": "each humanness item has before-and-after numbers on the turn bench and devsim, and the owner's staging calls confirm or reject them"
   }
  ],
  "edges": [
@@ -41721,6 +41901,96 @@
    "from": "decision.2026-10-24.catastrophic-line-detector",
    "to": "decision.2026-10-24.harm-fast-lane",
    "relation": "extends"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "component.2026-10-24.crm-contact-import",
+   "relation": "extends"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "decision.2026-10-24.salesforce-donotcall-opt-out",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "decision.2026-10-24.crm-api-budget",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "decision.2026-10-24.crm-reads-in-prepare",
+   "relation": "implements"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "decision.2026-10-24.crm-unreadable-never-empty",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.salesforce-donotcall-opt-out",
+   "to": "decision.2026-10-24.crm-consent-only-where-recorded",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.crm-api-budget",
+   "to": "rejected.2026-10-24.fixed-page-budget-estimate",
+   "relation": "informed-by"
+  },
+  {
+   "from": "measure.2026-10-24.salesforce-import-tests",
+   "to": "component.2026-10-24.salesforce-contact-import",
+   "relation": "tests"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "open.2026-10-24.salesforce-shapes-secondary",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "component.2026-10-24.salesforce-contact-import",
+   "to": "open.2026-10-24.salesforce-integration-used-label",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.operator-whole-flow-intents",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.question-turn-holds-writes",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.passage-approval-is-member-tap",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.telephony-one-dial-path",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.telephony-allowlist",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-24.telephony-allowlist-tests",
+   "to": "decision.2026-10-24.telephony-allowlist",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.voice-call-trace",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "open.2026-10-24.voice-humanness-round",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
   }
  ]
 }

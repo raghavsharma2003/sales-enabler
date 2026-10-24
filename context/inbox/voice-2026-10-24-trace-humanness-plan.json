@@ -2,22 +2,43 @@
  "nodes": [
   {
    "id": "decision.2026-10-24.voice-call-trace",
-   "type": "decision", "status": "active", "date": "2026-10-24", "source": "model",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
    "title": "Per-call trace for the owner's review: the runtime sends trace (schema 1, shared/runtime-protocol.ts CallTrace, voice/vpvoice/trace.py) on call.ended; calls stores it in conversation.trace (migration 0609) and call.get returns it. Turn rows: caller {i, startMs, endMs, asrConfidence, partialLagMs}; agent {i, rid, startMs, callerEndMs, firstAudioMs, gapMs, stages, speculative, tts {provider, voice, style}, state, door [{rule, action}], interrupted}. Events: barge_pause, barge_resume, barge_stop, backchannel, judge (shadow verdicts), error, fallback, tool, keypad. Stack and model ids from the manifest. It holds no words: rows point at the transcript by index i",
    "rationale": "Integrator ask 3 under directive.2026-10-24.calling-first-build-all: the owner reviews long real calls turn by turn. Keeping words out means transcript retention and erasure already cover the text; the trace never outlives it. Bounded (400 turns, 600 events, 400 KB at the hook) so a runaway call cannot bloat a row.",
    "reverse_if": "the owner's review needs words in the trace (then join on transcript index in the reader, never copy them), or a turn-level table is needed for analytics across calls (then explode conversation.trace into a table)"
   },
   {
    "id": "open.2026-10-24.voice-humanness-round",
-   "type": "open_question", "status": "open", "date": "2026-10-24", "source": "model",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "model",
    "title": "Humanness round plan (voice runtime), in build order, each measured before and after on the turn bench (TEST split) and devsim, staging when the owner calls: (1) duplex backchannels: one short haan/hmm/achha per long caller turn (>= 4 s), fired only in a caller pause of 300-600 ms that is not end of turn (VAD silence below the end hold, no final), never over speech, never in crisis, never in the first 6 s; measure backchannel overlap with caller speech (target 0) and cut-in rate (must not rise); (2) resume after barge-in: when she yields and the caller's words were a nod or 'ek minute', she resumes with a short re-entry shape ('haan, aap bolo' family) not a replay; (3) caller state per turn (rushed, confused, upset, warm, neutral) from words and timing (turn length, gap, overlap, repeats), logged as trace state, driving reply shape (shorter, slower, warmer) and the providers' real controls (Azure DragonHD style and rate, Gemini TTS style prompt) as a LAST row shape, never a line; (4) natural speech: Indian number and date speaking (lakh, crore, 2 November, saadhe teen) in the TTS text normaliser, brand respelling already in names.py; (5) relational: a returning caller's memory brief used at most once, never a sensitive fact, with memory (session_01Rb2NUArHRfYEi2ncQqz79S)",
    "rationale": "Laws in force: write shapes, never lines; position is mechanism (rules that must fire go last); the brief budget throws on truncation; safety stays a predicate. Backchannels are first because duplex feel is where every torn-down platform falls short and the bench can measure overlap exactly.",
-   "reverse_if": "staging numbers after the 18:36 UTC re-measure show the reply gap is the larger humanness loss (then latency round 3 goes first)"
+   "reverse_if": "staging numbers after the 18:36 UTC re-measure show the reply gap is the larger humanness loss (then latency round 3 goes first)",
+   "closes_when": "each humanness item has before-and-after numbers on the turn bench and devsim, and the owner's staging calls confirm or reject them"
   }
  ],
  "edges": [
-  {"from": "decision.2026-10-24.voice-call-trace", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements"},
-  {"from": "open.2026-10-24.voice-humanness-round", "to": "directive.2026-10-24.calling-first-build-all", "relation": "implements"}
+  {
+   "from": "decision.2026-10-24.voice-call-trace",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  },
+  {
+   "from": "open.2026-10-24.voice-humanness-round",
+   "to": "directive.2026-10-24.calling-first-build-all",
+   "relation": "implements"
+  }
  ],
- "events": [{"date": "2026-10-24", "event": "voice-call-trace", "details": "Per-call trace lands: conversation.trace (schema 1), returned by call.get; runtime fixture regenerated; humanness round plan filed."}]
+ "events": [
+  {
+   "date": "2026-10-24",
+   "event": "voice-call-trace",
+   "details": "Per-call trace lands: conversation.trace (schema 1), returned by call.get; runtime fixture regenerated; humanness round plan filed."
+  }
+ ]
 }
