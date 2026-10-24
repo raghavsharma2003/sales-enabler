@@ -17630,7 +17630,7 @@
   {
    "id": "open-question.2026-10-23.analysis-quality-on-a-real-model",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "source": "verified",
    "date": "2026-10-23",
    "title": "How accurate are per-call analysis and cross-call insight on a real model? The bench has only run with the scripted oracle (CI)",
@@ -17678,7 +17678,7 @@
   {
    "id": "open.2026-10-23.operator-real-model-pass-rate",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "source": "model",
    "date": "2026-10-23",
    "title": "What is the Operator's task pass rate on a real model? Nobody has measured it; the bench is ready for it.",
@@ -17931,7 +17931,7 @@
   {
    "id": "open.2026-10-23.operator-bench-rerun-after-schema-fix",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-23",
    "source": "verified",
    "title": "Operator pass rate on csv, campaign and 13 other tasks is unmeasured on any real model: an HTTP 400 on the tool schema blocked them. The 2026-10-23 numbers cover only the 27 tasks that reached the model",
@@ -18216,7 +18216,7 @@
   {
    "id": "open.2026-10-23.optout-judge",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-23",
    "source": "safety module builder",
    "title": "Should opt-out get the same raise-only model judge as crisis (judge.json judges.caller_opt_out, default shadow), given that the regex floor reaches 57.5% on fresh code-mixed phrasings and a miss is a TCCCPR breach?",
@@ -18629,7 +18629,7 @@
   {
    "id": "open.2026-10-23.operator-page-context-not-sent",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-23",
    "source": "verified",
    "title": "The Operator never shows the model which page (or which campaign / agent) the member is on: inp.page only picks tools (operator/loop.ts:214), and the bench sends '/campaigns' and '/agents' with no id. Both models ask 'which campaign / agent?' even when the workspace has exactly one",
@@ -19101,6 +19101,217 @@
    "title": "The Operator (the workspace chat that runs the product) defaults to gpt-4.1; gpt-4.1-mini stays selectable. Per-call analysis keeps its own default (gpt-4.1-mini single), so the Operator choice does not set the analysis model",
    "rationale": "Operator bench, 48 code-graded tasks per round: gpt-4.1 led gpt-4.1-mini in all three rounds (18 vs 12, 28 vs 26, 35 vs 30 strict). In round 3 gpt-4.1 improved significantly from round 2 (8 gained, 1 lost, p=0.039) while mini did not (p=0.42), and mini's failures include saving a 'say she is a human' brief line (ref-human). The mini-vs-4.1 gap is not significant at n=48 (p=0.125), but the Operator is the product's control surface and the owner's bar is quality first with price deferred. Cost \u20b91.97 per task vs \u20b90.47.",
    "reverse_if": "A round with the round-3 failures fixed shows gpt-4.1-mini within 2/48 of gpt-4.1 strict on two runs, with no safety-relevant failure (a brief edit that breaks the AI-disclosure rule, a claimed write that did not happen), or the owner sets a price per Operator task that gpt-4.1 cannot meet."
+  },
+  {
+   "id": "decision.2026-10-24.hard-guard-on-draft-writes",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Every draft write (agent.create, brief.edit, the drafting repair turn, stack/voice/tool writes) refuses a hard safety finding and saves nothing; softer lint still saves with its warning",
+   "rationale": "Operator bench round 3 saw brief.edit save a 'say she is a human' line and report it done (rejected.2026-10-23.brief-edit-saves-lint-refused-draft). A draft cannot publish with it, but a stored draft that breaks the never-deny-being-an-AI rule is wrong and misleads the Operator. Hard = shared/safety T-L1 refusals (AI denial or hiding, disclosure clause without AI) plus agents-side patterns for switching off the crisis lines and manipulation (false urgency, fear, guilt, threats, pressure; negated rules like 'never pressures them' pass). The refusal names the rule in plain English, the field, and the fix. Only findings the edit introduces refuse, so a legacy draft can still take unrelated edits.",
+   "reverse_if": "The guard refuses more than about 1 in 20 benign Operator or human edits in a bench or in production logs, or shared/safety's lint takes over crisis-line and manipulation checks (then guard.ts delegates to it).",
+   "path": "product/server/modules/agents/guard.ts"
+  },
+  {
+   "id": "measure.2026-10-24.hard-guard-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Hard guard: 7/7 tests pass; with the guard disabled the 4 behavioural tests fail (bench case, disclosure/crisis/manipulation/neverSay, create+repair, legacy draft); full suite 482/485 with 0 failures on a fresh DB",
+   "n": 7,
+   "method": "node:test tests/agents-guard.test.ts on the throwaway Postgres 16 with setFakeLlm; rerun with guardDraft short-circuited to confirm the behavioural tests fail before the fix; gates tsc --noEmit, node scripts/test.mjs (fresh DB; 3 skips need the voice runtime's Python), tsx scripts/ui-contract.ts --strict (174/174)",
+   "path": "product/tests/agents-guard.test.ts"
+  },
+  {
+   "id": "open.2026-10-24.crisis-manipulation-lint-in-safety",
+   "type": "open-question",
+   "status": "open",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "Should shared/safety's config lint own the crisis-line and manipulation checks that agents/guard.ts applies today?",
+   "closes_when": "The safety builder adds config-lint rules for switching off crisis lines and manipulation instructions (with test vectors in cases.json, TS and Python), and guard.ts delegates to them with its tests still green."
+  },
+  {
+   "id": "decision.2026-10-24.not-done-retry-first",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "After a NOT DONE that carries a fix (or a reason naming the correction), the Operator is told to retry at once and ask the client only for a fact no tool can give",
+   "rationale": "Bench r3: 15 runs asked the client after a refusal that said exactly what to send; the old note offered 'or tell the client' as an equal option (rejected.2026-10-23.operator-not-done-then-ask).",
+   "reverse_if": "The bench shows retry loops that burn the step cap on refusals that need the client, or retries that act on a guessed value"
+  },
+  {
+   "id": "decision.2026-10-24.claim-check",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A reply claiming a change with no successful write in the turn gets a plain correction at once and one repair turn",
+   "rationale": "Bench r3: 5 task/model pairs replied with changes no tool made. Deltas are already streamed, so the correction is appended rather than the text withdrawn; one repair turn lets the model make the change or say plainly it did not.",
+   "reverse_if": "The pattern check flags true replies in the bench or in real threads more than rarely, or streaming moves to after-the-fact release so the claim can be withheld instead"
+  },
+  {
+   "id": "decision.2026-10-24.chat-uploads-staged",
+   "type": "decision",
+   "status": "proposed",
+   "source": "model",
+   "date": "2026-10-24",
+   "title": "A table attached in chat is staged as an intake upload as the member who attached it, and the model is given its uploadId",
+   "rationale": "Uploads arrived only as inline text and the model sent 'upload:customers.csv' as an id (rejected.2026-10-23.chat-upload-without-upload-id). The member attached the file, so staging runs as them (role-checked), not as the Operator; staging changes no contact until source.commit.",
+   "reverse_if": "Staging unused uploads clutters sources, in which case stage on the first source.map call instead"
+  },
+  {
+   "id": "decision.2026-10-23.rd1-whole-opening",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "RD1 decides on the whole opening turn: the runtime holds her first reply until a sentence affirms she is an AI (then it is said as written) or the reply ends without one (then the first sentence gets the fixed disclosure.json line). The opening is judged sentence by sentence and joined, with an ellipsis that ends a sentence read as a pause; a full stop, question or exclamation still ends the clause. Shared decision: TS disclosure.ts openingDiscloses / Python safety.opening_discloses, vectors disclosure.json opening_vectors (6 staging openings + 6 synthetic)",
+   "rationale": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure: RD1 judged only the first sentence, so 3/6 staging calls disclosed twice. All 6 staging openings disclose within their first two sentences, so the hold costs one sentence of brain output in the common case.",
+   "reverse_if": "Time to first audio on the opening rises noticeably on staging (the hold waits for the disclosing sentence, or for the whole opening when she never discloses); then cap the hold at two sentences."
+  },
+  {
+   "id": "measure.2026-10-23.rd1-whole-opening-vectors",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Whole-opening RD1 on the 6 verbatim staging openings (prefix removed): 6/6 judged disclosed by both doors, so none would get the fixed line (before: 3/6 prefixed). Runtime (SimSession + FakeBrain): the 6 openings are said with no fixed line; a disclosure after a greeting is said once; an opening that never discloses still starts with the fixed line. These runtime tests fail on the previous code (2 failures + 2 errors) and pass after.",
+   "n": "12 opening vectors (6 staging, 6 synthetic) in both doors; 4 runtime tests",
+   "method": "node:test tests/safety-disclosure.test.ts; python -m unittest tests.test_disclosure; staging verbatims from research/2026-10-23/staging/redeploy-calls.jsonl",
+   "not_verified": "Not run on staging; time to first audio with the hold not measured. The practice-run simulator (agents/simulate.ts) has no RD1 prefix and still grades whether the brief discloses on its own; left unchanged."
+  },
+  {
+   "id": "measure.2026-10-23.judge-nonblocking-runtime",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "decision.2026-10-23.judge-flashlite-nonblocking implemented in the voice runtime: judge.json timeout_ms 800 -> 1,500, model_recommended (Flash-Lite, Vertex global), mode default stays shadow. The reply never waits for the judge: a verdict in before her first sentence leaves the door acts on that reply (crisis path or opt-out confirmation); a later one settles in the background and acts from her next sentence (crisis) or turn (opt-out). Sim: a 0.3 s judge in raise mode delays the reply < 0.2 s, and its crisis raise gives the lines on her next turn; a late opt-out raise confirms on her next turn and ends opt_out; a judge that is in first still replaces the reply.",
+   "n": "41 judge + runtime-fixture unit tests (2 new late-verdict tests); voice suite OK; fresh-DB 468/468",
+   "method": "python -m unittest with FakeBrain first_token_s (brain time to first token) against a fake judge with a delay",
+   "not_verified": "No real model in the runtime yet. Not measured: how often the verdict lands before her first sentence on staging (Flash-Lite p95 1,126 ms vs brain first sentence). The window ends when her first sentence leaves the door, not at first audio (TTS time to first byte later), so a verdict landing in that gap acts from her next sentence. Speculative replies stay off in raise mode (cascade.judge_raises, unchanged)."
+  },
+  {
+   "id": "decision.2026-10-23.judge-checkin-path",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "Judge-only crisis check-in, behind config and off by default (judge.json checkin, VP_SAFETY_JUDGE_CHECKIN, mode raise only). A crisis raised by the judge alone makes her pause the agenda and check in, in her own words, from rules.json checkin shapes (never lines). It is recorded as one RD3 flagged safety event, with no hand-off. If the verdict is in before she speaks, the reply is rewritten as the check-in; a later verdict makes her next reply the check-in. The floor at any time, or a crisis verdict from the judge on the caller's answer, takes the full crisis path (14416 and 112, goal suspended, human offered). A calm answer ends the round, and the agenda returns only if they invite it. Check-in off: a judge raise is the full path at once, as before.",
+   "rationale": "Owner (open.2026-10-23.judge-raise-soft-checkin): a check-in makes a false judge raise cheap (Flash-Lite FP 10/100 on look-alikes in BLIND 7) while the judge lifts recall from 37/100 (floor) to 99/100. A crisis verdict on the answer, rather than parsing a yes, avoids reading 'haan' to 'are you okay?' backwards.",
+   "reverse_if": "Shadow or staging data shows a judge-only raise that was a real crisis where the check-in delayed the lines harmfully, or the owner prefers the full path on every raise."
+  },
+  {
+   "id": "asset.2026-10-23.blind-set-8",
+   "type": "asset",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "BLIND 8 crisis set (product/shared/safety/sets/heldout-8.json): 100 crisis and 100 look-alike benign caller lines, same language split as BLIND 7 (ta/bn/mr/te/gu-en 18/17 each, hinglish 6/10, hi-deva 4/5). Written by a separate agent with no repo access to the rules, prompt or earlier sets. The builder checked counts, duplicates (0), long digit runs (0) and overlap with earlier sets (0) by script, without reading a line. Not in cases.json. Integrator scores it once on the VM, after DEV tuning.",
+   "paths": [
+    "product/shared/safety/sets/heldout-8.json"
+   ],
+   "value": "the one clean measurement of the tuned judge and the check-in threshold",
+   "effort": "one agent run",
+   "caveat": "The builder wrote the writer's brief, which named the benign look-alike families (exaggeration, debt anger, someone else's death, planning questions, film or news, quoting, a past feeling, medical talk, tiredness, idioms, anger at someone else). Prompt changes must therefore come from DEV false positives only, never from that list."
+  },
+  {
+   "id": "open.2026-10-23.judge-checkin-dev-tuning",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "safety module builder",
+   "title": "The check-in threshold and prompt are not tuned yet: no Flash-Lite DEV run exists (the sandbox cannot call Vertex). Next: on the VM, run judge-eval on dev-7 (and optout-dev) with Flash-Lite; read the threshold sweep; try prompt variants with --prompt-file built from DEV false positives only; set judge.json threshold; then score BLIND 8 once.",
+   "closes_when": "A DEV measurement node with the sweep, a chosen threshold and prompt in judge.json, and a BLIND 8 score."
+  },
+  {
+   "id": "decision.2026-10-24.recording-signed-links",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Call recordings play from short-lived signed links to the voice runtime: GET /v1/recordings/{callId}?ws&exp&sig, sig = HMAC-SHA256(VP_RUNTIME_SECRET, 'vp-recording.v1\\n' + callId + '\\n' + workspaceId + '\\n' + exp). call.get returns recording {url, expiresAt, why}: a 10-minute link on VP_RUNTIME_PUBLIC_URL (else VP_RUNTIME_URL) when the call has a recording, it is inside the workspace's recordings retention (policy.retention.get recordings_days) and no erase_me request exists for the person. The runtime refuses expired links, links living over an hour, forged signatures and a workspace other than the one in the .json beside each .wav; call ids are UUID-validated, never joined raw; no listing; aiohttp FileResponse serves Range",
+   "rationale": "Web's ee8aef6 found recordingUri is a file path on the voice server, so no real recording could play. A link tied to one workspace and ten minutes leaks little if copied; the browser's <audio> needs no CORS. There is no per-workspace recording switch to respect beyond the agent's own recording setting (the runtime records only when it is on and the caller did not refuse); retention is enforced at play time only, nothing deletes runtime files yet.",
+   "reverse_if": "Recordings move to object storage (then sign storage URLs instead), or a per-workspace recording policy is added (then call.get must check it too)."
+  },
+  {
+   "id": "open.2026-10-24.recording-files-retention-purge",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Nothing deletes recording files on the voice runtime when recordings_days passes or a person asks to be erased: the control plane only stops signing links. A purge needs a signed runtime route (or storage lifecycle) driven by calls' retention and forget_request.",
+   "closes_when": "A runtime purge route (or a storage lifecycle) deletes recording files past recordings_days and on an erase request, with a test that the file is gone and its link refused."
+  },
+  {
+   "id": "measure.2026-10-23.voice-speculation-turn-bench-test",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Turn bench TEST (n=55 clips, Silero VAD, fixed fakes: final 250 ms after end of speech, brain 300 ms, voice 150 ms): with speculation on the partial, end-of-turn latency after a question fell from 998 ms [989, 1079] to 750 ms [740, 813] (n=53); after a statement 1314 -> 1308 ms (the 1200 ms hold dominates); premature cut-ins 2/55 and talk-over 2/55, both unchanged; no-reply 0/55",
+   "n": 55,
+   "method": "bench/turn_bench.py --split test (all scenarios, partial-ms 0) on the latency head vs bench/results/turn-2026-10-23-test-after (0e9b9ee, same fakes), 2026-10-23. Fakes, not providers: the real gain depends on the recogniser's final delay on staging.",
+   "path": "product/voice/bench/results/turn-2026-10-23-test-latency.md",
+   "value": "-248 ms after questions, cut-ins unchanged"
+  },
+  {
+   "id": "measure.2026-10-23.voice-barge-nod-test",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-23",
+   "source": "verified",
+   "title": "Turn bench TEST (n=55, partials 300 ms behind speech): nods counted as words stop her on 44/55 500 ms 'haan ji' and 48/55 700 ms 'achha haan ji'; nod-aware 0/55 and 0/55. Barge-in median 735 vs 748 ms, missed 4/55 both, 300 ms 'haan' and noise 0/55 both",
+   "n": 55,
+   "method": "bench/turn_bench.py --split test --only barge backchannel --partial-ms 300, --set BARGE_NOD=0 vs defaults, 2026-10-23 (after tuning on DEV only)",
+   "path": "product/voice/bench/results/turn-2026-10-23-test-barge-nod.md",
+   "value": "false barge on nods 80%/87% -> 0%/0%"
+  },
+  {
+   "id": "open.2026-10-23.voice-barge-long-ms-on-staging",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-23",
+   "source": "model",
+   "title": "Barge-in stays ~730 ms (over the 300 ms target): words reach the recogniser too late to beat BARGE_LONG_MS 700. 500 ms (VP_BARGE_LONG_MS=500) gives ~535 ms on the DEV bench with no false stops at a 300 ms partial lag but stops her on most nods at 500 ms lag. Needs the runtime's partialLagMs (call timing) from staging before lowering; 300 ms looks unreachable without false stops unless the recogniser's partials arrive within ~250 ms",
+   "path": "product/voice/bench/results/turn-2026-10-23-dev-barge-sweep.md",
+   "closes_when": "Staging reports partialLagMs over at least 20 caller turns per stack, and VP_BARGE_LONG_MS=500 is tried there with barge-in stop time and false stops on nods measured."
+  },
+  {
+   "id": "decision.2026-10-23.trial-credit-once-per-owner",
+   "type": "decision",
+   "title": "Trial credit comes from money_config (default 0) and is applied once per workspace AND once per owner email (hashed), by a trigger on the wallet's first write; ledgered as wallet_topup kind 'trial_credit'",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "agent",
+   "rationale": "a per-workspace guard alone lets an owner close and re-create a workspace for a second trial; the grant table has no cascade and stores only a hash",
+   "reverse_if": "the owner sets a trial policy that allows more than one trial per owner (e.g. per GSTIN, or per company)",
+   "path": "product/db/migrations/0906_money_trial_staff.sql"
+  },
+  {
+   "id": "decision.2026-10-23.staff-credit-idempotency-key",
+   "type": "decision",
+   "title": "wallet.credit is Vyakti-staff only (actor vp_success with an id), runs at once, audited with its reason, and idempotent on a caller key (e.g. a ticket id) scoped to the workspace; same key with another amount is refused",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "agent",
+   "rationale": "a staff credit has no approval card, so no kernel action id exists to key it on; a caller key gives the same once-only guarantee as the top-up's action-id key",
+   "reverse_if": "staff credits move behind an approval (then key on the kernel action id, as wallet.topup does)"
+  },
+  {
+   "id": "decision.2026-10-23.wallet-blockers-explained-shape",
+   "type": "decision",
+   "title": "The money module words wallet blockers in campaigns' Explained shape (code wallet_short, amount needed, balance, fix wallet.topup 'Add money'); campaigns calls it from launchBlockers (need = one call's G9 hold), number.search (cheapest offer's monthly rent) and number.rent (refuses on an empty wallet)",
+   "status": "active",
+   "date": "2026-10-23",
+   "source": "agent",
+   "rationale": "walkthrough S6: the number flow stopped at 'Renting spends money' without naming the wallet; one wording source keeps launch, numbers and wallet.check consistent",
+   "reverse_if": "the campaigns builder prefers to own the wording; then wallet.check stays the money side and campaigns stops importing blockers.ts",
+   "path": "product/server/modules/money/blockers.ts"
   }
  ],
  "edges": [
@@ -33915,6 +34126,121 @@
    "from": "decision.2026-10-24.operator-default-gpt41",
    "to": "rejected.2026-10-23.brief-edit-saves-lint-refused-draft",
    "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.hard-guard-on-draft-writes",
+   "to": "rejected.2026-10-23.brief-edit-saves-lint-refused-draft",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.hard-guard-tests",
+   "to": "decision.2026-10-24.hard-guard-on-draft-writes",
+   "relation": "tests"
+  },
+  {
+   "from": "decision.2026-10-24.hard-guard-on-draft-writes",
+   "to": "open.2026-10-24.crisis-manipulation-lint-in-safety",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-24.not-done-retry-first",
+   "to": "rejected.2026-10-23.operator-not-done-then-ask",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.claim-check",
+   "to": "rejected.2026-10-23.operator-reply-claims-without-write",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.chat-uploads-staged",
+   "to": "rejected.2026-10-23.chat-upload-without-upload-id",
+   "relation": "informed-by"
+  },
+  {
+   "from": "decision.2026-10-24.not-done-retry-first",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.claim-check",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-24.chat-uploads-staged",
+   "to": "component.2026-10-21.operator-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-23.rd1-whole-opening",
+   "to": "rejected.2026-10-23.rd1-first-sentence-window-double-disclosure",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-23.rd1-whole-opening-vectors",
+   "to": "decision.2026-10-23.rd1-whole-opening",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-23.rd1-whole-opening",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-23.judge-nonblocking-runtime",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "implements"
+  },
+  {
+   "from": "measure.2026-10-23.judge-nonblocking-runtime",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-23.judge-checkin-path",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-23.judge-checkin-path",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "asset.2026-10-23.blind-set-8",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "supports"
+  },
+  {
+   "from": "open.2026-10-23.judge-checkin-dev-tuning",
+   "to": "open.2026-10-23.judge-raise-soft-checkin",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.recording-signed-links",
+   "to": "open.2026-10-24.recording-files-retention-purge",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-23.trial-credit-once-per-owner",
+   "to": "open.2026-10-22.trial-credit-amount",
+   "relation": "leaves-open"
+  },
+  {
+   "from": "decision.2026-10-23.trial-credit-once-per-owner",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-23.staff-credit-idempotency-key",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "decision.2026-10-23.wallet-blockers-explained-shape",
+   "to": "component.2026-10-21.money-module",
+   "relation": "part-of"
   }
  ]
 }

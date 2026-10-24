@@ -1,0 +1,11 @@
+{
+  "nodes": [],
+  "edges": [],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "integrator-gates-b56b188",
+      "details": "Integrator gates on b56b188 (agents hard guard e9fdde3, money d69f3ff, Operator bench-r3 fixes 5727ae6, signed recording links b56b188; on top of safety RD1 whole-opening 639168b, judge non-blocking 0f8f965, check-in path 47dd324, voice latency d353282/d784a9c/1a67f1a, learning loop e2e): tsc clean; fresh Postgres scripts/test.mjs 503/503, 0 skip; browser flows without a runtime 38 pass, 2 skip; voice unittest OK; CI green on each. Merged new inbox nodes from agents-24, calls-24, money-23, operator-24, safety-23e/f/g and voice latency-names; normalised three that the merge refused (type 'open' -> 'open-question' with closes_when; edge 'rel' -> 'relation'). Closed five answered open questions: operator-real-model-pass-rate and operator-bench-rerun-after-schema-fix (benches r2/r3), operator-page-context-not-sent (561deff, 5727ae6), optout-judge (2afd7b6), analysis-quality-on-a-real-model (benches r2/r3)."
+    }
+  ]
+}

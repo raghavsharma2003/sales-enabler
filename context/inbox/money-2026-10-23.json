@@ -1,16 +1,64 @@
 {
   "nodes": [
-    {"id": "decision.2026-10-23.trial-credit-once-per-owner", "type": "decision", "title": "Trial credit comes from money_config (default 0) and is applied once per workspace AND once per owner email (hashed), by a trigger on the wallet's first write; ledgered as wallet_topup kind 'trial_credit'", "status": "active", "date": "2026-10-23", "source": "agent", "rationale": "a per-workspace guard alone lets an owner close and re-create a workspace for a second trial; the grant table has no cascade and stores only a hash", "reverse_if": "the owner sets a trial policy that allows more than one trial per owner (e.g. per GSTIN, or per company)", "path": "product/db/migrations/0906_money_trial_staff.sql"},
-    {"id": "decision.2026-10-23.staff-credit-idempotency-key", "type": "decision", "title": "wallet.credit is Vyakti-staff only (actor vp_success with an id), runs at once, audited with its reason, and idempotent on a caller key (e.g. a ticket id) scoped to the workspace; same key with another amount is refused", "status": "active", "date": "2026-10-23", "source": "agent", "rationale": "a staff credit has no approval card, so no kernel action id exists to key it on; a caller key gives the same once-only guarantee as the top-up's action-id key", "reverse_if": "staff credits move behind an approval (then key on the kernel action id, as wallet.topup does)"},
-    {"id": "decision.2026-10-23.wallet-blockers-explained-shape", "type": "decision", "title": "The money module words wallet blockers in campaigns' Explained shape (code wallet_short, amount needed, balance, fix wallet.topup 'Add money'); campaigns calls it from launchBlockers (need = one call's G9 hold), number.search (cheapest offer's monthly rent) and number.rent (refuses on an empty wallet)", "status": "active", "date": "2026-10-23", "source": "agent", "rationale": "walkthrough S6: the number flow stopped at 'Renting spends money' without naming the wallet; one wording source keeps launch, numbers and wallet.check consistent", "reverse_if": "the campaigns builder prefers to own the wording; then wallet.check stays the money side and campaigns stops importing blockers.ts", "path": "product/server/modules/money/blockers.ts"}
+    {
+      "id": "decision.2026-10-23.trial-credit-once-per-owner",
+      "type": "decision",
+      "title": "Trial credit comes from money_config (default 0) and is applied once per workspace AND once per owner email (hashed), by a trigger on the wallet's first write; ledgered as wallet_topup kind 'trial_credit'",
+      "status": "active",
+      "date": "2026-10-23",
+      "source": "agent",
+      "rationale": "a per-workspace guard alone lets an owner close and re-create a workspace for a second trial; the grant table has no cascade and stores only a hash",
+      "reverse_if": "the owner sets a trial policy that allows more than one trial per owner (e.g. per GSTIN, or per company)",
+      "path": "product/db/migrations/0906_money_trial_staff.sql"
+    },
+    {
+      "id": "decision.2026-10-23.staff-credit-idempotency-key",
+      "type": "decision",
+      "title": "wallet.credit is Vyakti-staff only (actor vp_success with an id), runs at once, audited with its reason, and idempotent on a caller key (e.g. a ticket id) scoped to the workspace; same key with another amount is refused",
+      "status": "active",
+      "date": "2026-10-23",
+      "source": "agent",
+      "rationale": "a staff credit has no approval card, so no kernel action id exists to key it on; a caller key gives the same once-only guarantee as the top-up's action-id key",
+      "reverse_if": "staff credits move behind an approval (then key on the kernel action id, as wallet.topup does)"
+    },
+    {
+      "id": "decision.2026-10-23.wallet-blockers-explained-shape",
+      "type": "decision",
+      "title": "The money module words wallet blockers in campaigns' Explained shape (code wallet_short, amount needed, balance, fix wallet.topup 'Add money'); campaigns calls it from launchBlockers (need = one call's G9 hold), number.search (cheapest offer's monthly rent) and number.rent (refuses on an empty wallet)",
+      "status": "active",
+      "date": "2026-10-23",
+      "source": "agent",
+      "rationale": "walkthrough S6: the number flow stopped at 'Renting spends money' without naming the wallet; one wording source keeps launch, numbers and wallet.check consistent",
+      "reverse_if": "the campaigns builder prefers to own the wording; then wallet.check stays the money side and campaigns stops importing blockers.ts",
+      "path": "product/server/modules/money/blockers.ts"
+    }
   ],
   "edges": [
-    {"from": "decision.2026-10-23.trial-credit-once-per-owner", "to": "open.2026-10-22.trial-credit-amount", "rel": "leaves-open"},
-    {"from": "decision.2026-10-23.trial-credit-once-per-owner", "to": "component.2026-10-21.money-module", "rel": "part-of"},
-    {"from": "decision.2026-10-23.staff-credit-idempotency-key", "to": "component.2026-10-21.money-module", "rel": "part-of"},
-    {"from": "decision.2026-10-23.wallet-blockers-explained-shape", "to": "component.2026-10-21.money-module", "rel": "part-of"}
+    {
+      "from": "decision.2026-10-23.trial-credit-once-per-owner",
+      "to": "open.2026-10-22.trial-credit-amount",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-23.trial-credit-once-per-owner",
+      "to": "component.2026-10-21.money-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-23.staff-credit-idempotency-key",
+      "to": "component.2026-10-21.money-module",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-23.wallet-blockers-explained-shape",
+      "to": "component.2026-10-21.money-module",
+      "relation": "part-of"
+    }
   ],
   "events": [
-    {"date": "2026-10-23", "what": "Money: staff credit path (idempotent, audited), trial credit at workspace creation (config default 0, once per owner), user-facing copy says Vyakti (walkthrough S3), wallet-aware launch and number blockers (S6). 8 new tests, each failing before the change."}
+    {
+      "date": "2026-10-23",
+      "what": "Money: staff credit path (idempotent, audited), trial credit at workspace creation (config default 0, once per owner), user-facing copy says Vyakti (walkthrough S3), wallet-aware launch and number blockers (S6). 8 new tests, each failing before the change."
+    }
   ]
 }
