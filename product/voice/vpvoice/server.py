@@ -398,10 +398,10 @@ class Runtime:
     async def sip_hangup(self, req):
         rec = self._hooked(req, 'hangup')
         f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
-        cause = (f.get('HangupCauseName') or f.get('HangupCause') or '').lower()
+        cause = f.get('HangupCauseName') or f.get('HangupCause') or ''
         if rec.session is None or not rec.token_used:
             from .transports import hangup_reason
-            await self._end_unjoined(rec, hangup_reason(cause))
+            await self._end_unjoined(rec, hangup_reason(cause, f.get('HangupCauseCode')))
         elif not rec.session.ended:
             await rec.session.end('caller_hung_up')
         return web.Response(text='ok')
@@ -411,7 +411,7 @@ class Runtime:
         her (a caller turn beyond the first hello)."""
         rec = self._hooked(req, 'machine')
         f = await req.post() if req.content_type.startswith('application/x-www-form') else {}
-        if str(f.get('Machine') or f.get('machine') or '').lower() not in ('true', '1', 'yes'): return web.Response(text='ok')
+        if str(f.get('Machine') or '').lower() != 'true' or f.get('Event', 'MachineDetection') != 'MachineDetection': return web.Response(text='ok')
         s = rec.session
         if s is None or not rec.token_used: await self._end_unjoined(rec, 'voicemail')
         elif not s.ended and sum(1 for x in s.conv.transcript if x['speaker'] == 'caller') <= 1: await s.end('voicemail')
@@ -451,8 +451,9 @@ class Runtime:
         """Press keys on the call (an automated menu she reached), through Plivo's send-digits API. False when it can't."""
         if rec.t['transport'].get('kind') != 'sip' or rec.t['transport']['trunk'].lower() != 'plivo' or not rec.call_uuid: return False
         from .transports import plivo_request
-        st, _ = await plivo_request(self.http, self.env, 'POST', f'Call/{rec.call_uuid}/DTMF/', {'digits': keys, 'legs': 'aleg'})
-        return st in (200, 202)
+        # Plivo Send DTMF: POST Call/{call_uuid}/DTMF/ with digits and leg (aleg, the party we dialled; docs 2026-10-24)
+        st, _ = await plivo_request(self.http, self.env, 'POST', f'Call/{rec.call_uuid}/DTMF/', {'digits': keys, 'leg': 'aleg'})
+        return 200 <= st < 300
 
     async def carrier_hangup(self, rec):
         if rec.t['transport'].get('kind') != 'sip' or rec.t['transport']['trunk'].lower() != 'plivo': return

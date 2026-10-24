@@ -139,12 +139,22 @@ async def plivo_dial(http, env, to, frm, answer_url, hangup_url, max_s, machine_
     return None, f'Plivo {st}: ' + str(d.get('error') or d.get('message') or d)[:200]
 
 
-def hangup_reason(cause):
-    """The end reason for a call that never reached her, from the carrier's hang-up cause (Plivo HangupCauseName /
-    HangupCause; matched loosely, as names differ by carrier and are not all documented)."""
-    c = (cause or '').lower()
+# Plivo hang-up cause codes (https://www.plivo.com/docs/voice/troubleshooting/hangup-causes, fetched 2026-10-24;
+# research/2026-10-24/plivo-amd): the code is the most precise of the three vocabularies Plivo uses
+PLIVO_CODES = {3010: 'busy', 3100: 'busy', 3020: 'busy', 3110: 'busy', 3000: 'no_answer', 6010: 'no_answer', 1000: 'no_answer',
+               2000: 'invalid_number', 3050: 'invalid_number', 3120: 'invalid_number', 2010: 'switched_off', 9100: 'voicemail'}
+
+
+def hangup_reason(cause, code=None):
+    """The end reason for a call that never reached her, from the carrier's hang-up cause: Plivo's numeric code
+    (HangupCauseCode / hangup_cause_code), its name ("Busy Line", "Unallocated number"), or the standard telephony
+    cause (HangupCause: USER_BUSY, NO_ANSWER, CALL_REJECTED, UNALLOCATED_NUMBER, SUBSCRIBER_ABSENT)."""
+    try: n = int(code) if code not in (None, '') else None
+    except (TypeError, ValueError): n = None
+    if n in PLIVO_CODES: return PLIVO_CODES[n]
+    c = (cause or '').lower().replace('_', ' ')
     if 'machine' in c: return 'voicemail'
-    if 'busy' in c: return 'busy'
+    if any(k in c for k in ('busy', 'rejected', 'declined')): return 'busy'
     if any(k in c for k in ('unallocated', 'invalid', 'not exist', 'no route', 'unknown subscriber', 'incompatible destination')): return 'invalid_number'
     if any(k in c for k in ('unreachable', 'not reachable', 'absent', 'switched off', 'switch off', 'out of coverage', 'out of service')): return 'switched_off'
     if any(k in c for k in ('answer', 'timeout', 'cancel', 'no user response')): return 'no_answer'

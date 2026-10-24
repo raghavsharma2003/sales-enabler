@@ -111,7 +111,7 @@ class PlivoSend(unittest.IsolatedAsyncioTestCase):
             t = ticket(transport={'kind': 'sip', 'trunk': 'plivo', 'to': '+919000000011', 'from': '+919000000012'})
             rec = CallRecord(t, 'h', None, None, 'tok', {}); rec.call_uuid = 'uuid-2'
             self.assertTrue(await rt.send_dtmf(rec, '1'))
-            self.assertEqual(sent, [('POST', 'Call/uuid-2/DTMF/', {'digits': '1', 'legs': 'aleg'})])
+            self.assertEqual(sent, [('POST', 'Call/uuid-2/DTMF/', {'digits': '1', 'leg': 'aleg'})])
             rec2 = CallRecord(ticket(), 'h', None, None, 'tok', {})
             self.assertFalse(await rt.send_dtmf(rec2, '1'), 'not a Plivo call')
         finally:

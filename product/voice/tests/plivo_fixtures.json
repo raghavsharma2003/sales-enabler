@@ -1,0 +1,36 @@
+{
+ "about": "Payload shapes from Plivo's public docs, fetched 2026-10-24 (research/2026-10-24/plivo-amd/README.md). Values are synthetic (90000000xx numbers, made-up UUIDs). Not captured from a live call.",
+ "machine_detection_callback": {
+  "source": "https://www.plivo.com/docs/voice/concepts/machine-detection",
+  "form": {"From": "919000000012", "To": "919000000011", "Machine": "true", "CallUUID": "eba53b9e-8fbd-45c1-9444-696d2172fbc8", "Event": "MachineDetection", "CallStatus": "in-progress"}
+ },
+ "hangup_callbacks": {
+  "source": "https://www.plivo.com/docs/voice/api/calls (hangup_url parameters) with HangupCause from https://www.plivo.com/docs/voice/xml/overview and name/code pairs from https://www.plivo.com/docs/voice/troubleshooting/hangup-causes",
+  "base": {"From": "919000000012", "To": "919000000011", "RequestUUID": "11111111-2222-4333-8444-555555555555", "CallUUID": "eba53b9e-8fbd-45c1-9444-696d2172fbc8", "Direction": "outbound", "Event": "Hangup", "CallStatus": "completed"},
+  "cases": [
+   {"HangupCause": "USER_BUSY", "HangupCauseName": "Busy Line", "HangupCauseCode": "3010", "want": "busy"},
+   {"HangupCause": "NO_ANSWER", "HangupCauseName": "No Answer", "HangupCauseCode": "3000", "want": "no_answer"},
+   {"HangupCause": "CALL_REJECTED", "HangupCauseName": "Rejected", "HangupCauseCode": "3020", "want": "busy"},
+   {"HangupCause": "UNALLOCATED_NUMBER", "HangupCauseName": "Unallocated number", "HangupCauseCode": "3050", "want": "invalid_number"},
+   {"HangupCauseName": "Invalid Destination Address", "HangupCauseCode": "2000", "want": "invalid_number"},
+   {"HangupCauseName": "User does not exist anywhere", "HangupCauseCode": "3120", "want": "invalid_number"},
+   {"HangupCauseName": "Destination Out Of Service", "HangupCauseCode": "2010", "want": "switched_off"},
+   {"HangupCauseName": "Ring Timeout Reached", "HangupCauseCode": "6010", "want": "no_answer"},
+   {"HangupCauseName": "Busy everywhere", "HangupCauseCode": "3100", "want": "busy"},
+   {"HangupCauseName": "Declined", "HangupCauseCode": "3110", "want": "busy"},
+   {"HangupCauseName": "Machine Detected", "HangupCauseCode": "9100", "want": "voicemail"},
+   {"HangupCauseName": "Network Error", "HangupCauseCode": "5000", "want": "failed"},
+   {"HangupCause": "SUBSCRIBER_ABSENT", "want": "switched_off"},
+   {"HangupCause": "NETWORK_OUT_OF_ORDER", "want": "failed"},
+   {"HangupCause": "USER_BUSY", "want": "busy"}
+  ]
+ },
+ "stream_dtmf_event": {
+  "source": "https://plivo.com/docs/voice-agents/audio-streaming/concepts/audio-streaming-reference",
+  "event": {"event": "dtmf", "sequenceNumber": 42, "streamId": "87654321-4321-4321-4321-cba987654321", "dtmf": {"track": "inbound", "digit": "5", "timestamp": 1761289200000}, "extra_headers": "{}"}
+ },
+ "send_dtmf": {
+  "source": "https://www.plivo.com/docs/voice/api/calls (Send DTMF)",
+  "path": "Call/{call_uuid}/DTMF/", "body": {"digits": "1", "leg": "aleg"}, "response": {"message": "digits sent", "api_id": "07abfd94-58c0-11e1-86da-adf28403fe48"}
+ }
+}
