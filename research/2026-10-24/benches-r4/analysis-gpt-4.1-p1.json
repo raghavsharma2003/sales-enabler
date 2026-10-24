@@ -1,0 +1,1811 @@
+{
+ "generatedAt": "2026-10-24T00:48:52.428Z",
+ "mode": "real",
+ "model": "gpt-4.1 (gpt-4.1-2025-04-14)",
+ "split": "test",
+ "judge": false,
+ "truncated": false,
+ "analysisSetting": null,
+ "tier": null,
+ "cases": {
+  "run": 42,
+  "planned": 42,
+  "templates": 12,
+  "languages": [
+   "hinglish",
+   "tamil-english",
+   "bengali-english",
+   "marathi-english"
+  ]
+ },
+ "fields": {
+  "outcome": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "reasonCode": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "reasonCodeModelRefined": {
+   "k": 28,
+   "n": 28,
+   "rate": 1,
+   "ci95": [
+    0.8793566935605294,
+    1
+   ]
+  },
+  "reasonCodeCodeDecided": {
+   "k": 14,
+   "n": 14,
+   "rate": 1,
+   "ci95": [
+    0.7846891945970195,
+    0.9999999999999998
+   ]
+  },
+  "momentRecall": {
+   "k": 36,
+   "n": 36,
+   "rate": 1,
+   "ci95": [
+    0.9035813700311206,
+    1
+   ]
+  },
+  "allMomentsFound": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "crisis": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "crisisRecall": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "optOutByAnalysis": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "optOutRecallByAnalysis": {
+   "k": 5,
+   "n": 5,
+   "rate": 1,
+   "ci95": [
+    0.5655175313406071,
+    1
+   ]
+  },
+  "optOutRecallByFloor": {
+   "k": 5,
+   "n": 5,
+   "rate": 1,
+   "ci95": [
+    0.5655175313406071,
+    1
+   ]
+  },
+  "followUps": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  }
+ },
+ "grounding": {
+  "k": 136,
+  "n": 136,
+  "rate": 1,
+  "ci95": [
+   0.9725298998449606,
+   0.9999999999999998
+  ]
+ },
+ "cost": {
+  "modelCalls": 39,
+  "inputTokens": 27868,
+  "outputTokens": 6817,
+  "tokensPerCall": 889.3589743589744,
+  "inrPerCall": 0.26861128205128204,
+  "priced": true
+ },
+ "cross": {
+  "calls": 16,
+  "callsSampled": 16,
+  "themesReturned": 3,
+  "themeRecall": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "recalled": [
+   "price",
+   "already_have",
+   "trust"
+  ],
+  "pureThemes": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "quotesVerbatim": {
+   "k": 9,
+   "n": 9,
+   "rate": 1,
+   "ci95": [
+    0.700854948272956,
+    1
+   ]
+  },
+  "themesDropped": 0,
+  "usage": {
+   "inputTokens": 2208,
+   "outputTokens": 321
+  },
+  "funnel": {
+   "agentVersionId": null,
+   "dialled": 16,
+   "connected": 16,
+   "talked": 16,
+   "goalReached": 4,
+   "goalByGrade": {
+    "verified": 0,
+    "manager": 0,
+    "ai_guess": 4
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "agreed.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "agreed",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "agreed",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "agreed",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "callback",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "callback",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "callback",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "wrong_person",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "wrong_person",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "wrong_person",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "complaint",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "complaint",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "complaint",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "question_then_agreed",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "question_then_agreed",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "question_then_agreed",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 6,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "language_mismatch",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "language_mismatch",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "language_mismatch",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "crisis",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "objection"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "crisis",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "objection"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "crisis",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "objection"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "early_hangup",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "early_hangup",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "early_hangup",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "objection_resolved",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "objection_resolved",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "objection_resolved",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.lending.tamil-english",
+   "split": "test",
+   "tier": null,
+   "template": "callback",
+   "industry": "lending",
+   "language": "tamil-english",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.lending.tamil-english",
+   "split": "test",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "lending",
+   "language": "tamil-english",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.healthcare.bengali-english",
+   "split": "test",
+   "tier": null,
+   "template": "agreed",
+   "industry": "healthcare",
+   "language": "bengali-english",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.healthcare.bengali-english",
+   "split": "test",
+   "tier": null,
+   "template": "not_interested",
+   "industry": "healthcare",
+   "language": "bengali-english",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.telecom.marathi-english",
+   "split": "test",
+   "tier": null,
+   "template": "callback",
+   "industry": "telecom",
+   "language": "marathi-english",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.telecom.marathi-english",
+   "split": "test",
+   "tier": null,
+   "template": "opt_out",
+   "industry": "telecom",
+   "language": "marathi-english",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  }
+ ],
+ "endpoint": "Azure OpenAI, GlobalStandard",
+ "harness": {
+  "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+  "requests": 40,
+  "inputTokens": 30076,
+  "outputTokens": 7138,
+  "inr": 11.139,
+  "byModel": {
+   "gpt-4.1": {
+    "requests": 40,
+    "inputTokens": 30076,
+    "outputTokens": 7138,
+    "inr": 11.139
+   }
+  },
+  "retries429": 0,
+  "httpErrors": 0,
+  "httpErrorDetails": [],
+  "networkErrors": 0,
+  "refusedByCap": 0,
+  "servedModels": [
+   "gpt-4.1-2025-04-14"
+  ]
+ }
+}

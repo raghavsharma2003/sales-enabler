@@ -1,0 +1,20 @@
+stage dev start 2026-10-24T00:42:28Z spent=₹0
+analysis-dev-mini exit=0 spent=₹2.12 00:44:34
+stage dev done 2026-10-24T00:44:34Z
+stage test start 2026-10-24T00:44:56Z spent=₹2.12
+analysis-mini-p1 exit=0 spent=₹4.11 00:47:01
+analysis-41-p1 exit=0 spent=₹15.25 00:48:52
+analysis-tiered-p1 exit=0 spent=₹17.26 00:50:57
+analysis-mini-p2 exit=0 spent=₹19.27 00:53:02
+analysis-41-p2 exit=0 spent=₹30.58 00:54:58
+analysis-tiered-p2 exit=0 spent=₹32.92 00:57:06
+stage test done 2026-10-24T00:57:06Z
+stage operator start 2026-10-24T00:57:46Z spent=₹32.92
+operator-41 cap=₹187.1
+operator-41 exit=0 spent=₹142.28 01:02:14
+operator-mini cap=₹43.8
+operator-mini exit=0 spent=₹167.22 01:25:54
+stage operator done 2026-10-24T01:25:54Z
+diag start 01:28:08 spent=₹167.22
+diag-41 exit=0 spent=₹180.69 01:28:45
+diag-mini exit=0 spent=₹184.92 01:31:54
