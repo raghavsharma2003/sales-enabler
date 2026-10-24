@@ -107,7 +107,9 @@ export function registerSso(r: Registry) {
     // host), the client, the domains, the email-verification rule, and what each was before.
     describe: async (i, ctx) => {
       const cur = await loadConfig(ctx.q as pg.PoolClient, ctx.workspaceId);
-      const was = (now: string, before: string | undefined) => (cur && before !== undefined && before !== now ? `${now} (was ${before})` : now);
+      // Entra tenant and client ids are GUIDs; a card never prints a long id, so they read as "…<last 4>", which still shows a change.
+      const short = (v: string) => v.replace(/[0-9a-f][0-9a-f-]{7,}/gi, m => '…' + m.slice(-4));
+      const was = (now: string, before: string | undefined) => (cur && before !== undefined && before !== now ? `${short(now)} (was ${short(before)})` : short(now));
       const ev = i.emailVerified ?? cur?.email_verified ?? 'required';
       return `Single sign-on with issuer ${was(i.issuer, cur?.issuer)}, client ${was(i.clientId, cur?.client_id)}, for ${was(i.allowedDomains.join(', '), cur?.allowed_domains.join(', '))}; `
         + `new people join as ${was(i.defaultRole, cur?.default_role)}; email must be verified by the IdP: ${was(ev === 'required' ? 'yes' : 'no', cur ? (cur.email_verified === 'required' ? 'yes' : 'no') : undefined)}`
