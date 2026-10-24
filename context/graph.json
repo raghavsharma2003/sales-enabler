@@ -19127,7 +19127,7 @@
   {
    "id": "open.2026-10-24.crisis-manipulation-lint-in-safety",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "source": "model",
    "date": "2026-10-24",
    "title": "Should shared/safety's config lint own the crisis-line and manipulation checks that agents/guard.ts applies today?",
@@ -19241,7 +19241,7 @@
   {
    "id": "open.2026-10-24.recording-files-retention-purge",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "verified",
    "title": "Nothing deletes recording files on the voice runtime when recordings_days passes or a person asks to be erased: the control plane only stops signing links. A purge needs a signed runtime route (or storage lifecycle) driven by calls' retention and forget_request.",
@@ -20086,7 +20086,7 @@
   {
    "id": "open.2026-10-24.transcript-retention-erasure",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "verified",
    "title": "Transcripts (conversation.transcript and turn rows) are not yet purged at transcripts_days nor on an erase_me request; only recordings are. Same shape as calls.recording_purge, inside the database.",
@@ -20325,7 +20325,7 @@
   {
    "id": "open.2026-10-24.static-cache-for-samples",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "verified",
    "title": "server/app.ts serves every static file with cache-control immutable for a year and without Range: the samples manifest and clips work around it (a fresh query on the manifest, ?v=<recordedAt> on each clip). The web commit added audio/ogg for .ogg/.opus to the MIME map, because the voice renderer writes Ogg/Opus.",
@@ -20765,7 +20765,7 @@
   {
    "id": "open.2026-10-24.judge-prompt-b-optout-unmeasured",
    "type": "open-question",
-   "status": "open",
+   "status": "closed",
    "date": "2026-10-24",
    "source": "verified",
    "title": "PREREG-9 chose prompt B (risk 0-100) at 0.4 for the crisis label, so B's text is to become judge.json system_prompt. judge.json is one call with two labels, and the opt-out label under B has not been measured. B's opt-out rule text is word-for-word A's (checked by diff); only the crisis scoring rule and the reply format change. A's opt-out on optout-dev at 0.6: judge 144/150, FP 14/110.",
@@ -20774,7 +20774,7 @@
   {
    "id": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev",
    "type": "decision",
-   "status": "decided",
+   "status": "superseded",
    "date": "2026-10-24",
    "source": "integrator",
    "title": "The crisis judge moves to PREREG-9's mechanical choice, prompt B (risk 0-100) at threshold 0.4, still in shadow, once one opt-out DEV run under B (optout-dev, Flash-Lite on Vertex, 1,500 ms) is no worse than A's: recall at least 141/150 (A 144/150) and FP at most 17/110 (A 14/110)",
@@ -20789,6 +20789,259 @@
    "source": "integrator",
    "title": "The crisis floor (regex) flags 6/100 blind look-alikes (BLIND 9: te-en 2, bn-en 1 and others), against 0/150 on the DEV look-alike set it was tuned on. These false alarms exist today, with or without the judge: the floor already gives the crisis line. How do we cut them without weakening the floor's recall?",
    "closes_when": "The safety builder cuts floor false positives on te-en and bn-en look-alikes without losing a DEV crisis vector (TS and Python), and a fresh blind look-alike set (BLIND 10, written by a separate agent) scores the floor at FP at most 2/100, scored once."
+  },
+  {
+   "id": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 260,
+   "title": "Opt-out judge DEV (optout-dev) under prompt B (risk 0-100), Gemini 3.5 Flash-Lite on Vertex, 1,500 ms, opt_out_threshold 0.6: judge recall 138/150 (92.0%, 86.5-95.4), FP 18/110 (16.4%, 10.6-24.4). Outside BOTH bounds fixed beforehand (recall >= 141/150, FP <= 17/110; A 144/150, 14/110). Floor in-sample 150/150, 0/110. Unavailable 20/260 (7.7%, all timeouts; A 7/260); p50 978 / p95 1,304 ms (max 1,419); INR 30.65 per 1,000 turns (A 28.24); 740 input tokens per turn (A 641). Line by line against A: 11 of B's 12 recall misses are timeouts, and on the 135 opt-out lines both answered both flag 134; the FP rise is the model's, with 18 vs 13 on the 99 look-alikes both answered (8 B-only false alarms, 3 in ml-en). Sweep (information only): recall 138 at every threshold 0.3-0.95, FP 18/110 at 0.35-0.9 and 9/110 at 0.95.",
+   "method": "Bounds written to research/2026-10-24/judge-optout-b/RULE.md at 2026-10-24T05:00:11Z, before any request. One run: node product/scripts/judge-eval.mjs --task opt_out --source optout-dev --prompt-file product/shared/safety/prompts/caller_crisis.risk100.txt --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 15 --max-requests 270, on vl-vm-cin, from a VM-only copy (/tmp/je10) of origin head 7c17724 (staging not redeployed), 13 file hashes checked; prompt B trimmed sha256_16 ed63058d5526890a; judge.json contract otherwise (timeout 1,500 ms, max_tokens 80, temperature 0). The 260 lines are those of sets/optout-dev.json (150 opt-out, 110 look-alikes), as A's run used. Wilson 95%. 2026-10-24 05:03:30-05:08:16 UTC. INR 7.97 metered. A/B split by research/2026-10-24/judge-optout-b/ops/compare_ab.py on both runs' results.json (DEV).",
+   "path": "research/2026-10-24/judge-optout-b/README.md",
+   "not_verified": "One run per prompt, about three hours apart: B's higher timeout rate (20/260 vs 7/260) cannot be separated from Vertex load at the time; only 1 line timed out under both prompts. The Python runtime door was not exercised (TS door through judge-eval). DEV set, on which the floor and A's prompt shapes were tuned; not a blind score."
+  },
+  {
+   "id": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "n": 160,
+   "title": "Brief review on the BLIND set (sets/heldout-brief-review.json, unread before scoring), scored once, Gemini 3.5 Flash-Lite on Vertex, shipped threshold 0.5, 20 s window. Recall on 80 flags: regex floor 12/80 (15.0%, 8.8-24.4), model 80/80 (100%, 95.4-100), combined 80/80. By category, model and combined: human 30/30, hide_ai 20/20, crisis 10/10, manipulation 20/20 (floor 3/30, 4/20, 4/10, 1/20). By language: en 40/40, hinglish 28/28, hi-deva 12/12 (floor 7/40, 5/28, 0/12). FP on 80 passes: floor 0/80, model 7/80 (8.8%, 4.3-17.0), combined 7/80: en 4/40, hinglish 3/28, hi-deva 0/12. 6 of the 7 are 'human' findings at 0.9-1.0 on a persona name, a natural-voice description or an opening that itself says 'AI assistant' written in a note; 1 is 'manipulation' 0.85 on a gentle EMI reminder. Unavailable 0/160; p50 992 / p95 1,603 ms (max 7,913); 873 in / 37.7 out tokens; INR 33.84 per 1,000 reviews. Model kind = writer's category on 75/80 caught flags (4 hide_ai reported as human, same rule; 1 crisis reported as manipulation). Exploratory sweep: FP 7/80 at 0.3-0.85, 6/80 at 0.9, 4/80 at 0.95, recall 80/80 throughout.",
+   "method": "One run: node product/scripts/judge-eval.mjs --task brief-review --set product/shared/safety/sets/heldout-brief-review.json --rps 1 --concurrency 1 --price-in 28.5 --price-out 237.5 --max-cost-inr 15 --max-requests 170, on vl-vm-cin from /tmp/je10 (origin head 7c17724, contains 3515b53; brief-review.json sha256_16 242800cdee0bde81, review.ts 11e6178bc8a42b3a, set 6b2a5721e3029acb). Env VP_LLM_BRIEF_REVIEW_URL (Vertex global OpenAI-compatible endpoint) / _KEY (token minted on the VM) / _MODEL=google/gemini-3.5-flash-lite, no _KEY_HEADER, VP_LLM_DEFAULT_* unset. Category and language slices, misses and FPs from the run's results.json and the set by research/2026-10-24/brief-review-blind/flashlite/ops/br_slices.py, after scoring. Wilson 95%. 2026-10-24 05:09:39-05:12:46 UTC. INR 5.41.",
+   "path": "research/2026-10-24/brief-review-blind/flashlite/README.md",
+   "not_verified": "The harness counts model findings on the snippet's persona.notes fields only; in the product a finding on any field of the template (appliance-service-followup) would also block a publish, and that rate was not measured. One template, rows without a persona object. Publish and save routes not exercised. One run; category slices have 10-30 lines."
+  },
+  {
+   "id": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Prompt B is outside the opt-out bounds on DEV (138/150 recall, 18/110 FP against >= 141/150 and <= 17/110), which is the reverse_if of decision.2026-10-24.judge-prompt-b-ships-after-optout-dev. B won the crisis label on BLIND 9 (judge 97/100, FP 2/100). judge.json is one call with two labels, so judge.json cannot take B's text as is without the opt-out loss. The recall loss is timeouts (11 of 12); the FP rise is the model's (+5 on lines both prompts answered).",
+   "closes_when": "The integrator or the owner chooses, and the choice is measured where it needs to be: keep A in judge.json; or give the opt-out label its own prompt or call (measured on optout-dev against A's 144/150 and 14/110); or a B variant whose opt-out run on optout-dev is within the bounds, with its crisis DEV re-checked."
+  },
+  {
+   "id": "open.2026-10-24.brief-review-notes-persona-fp",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "On the blind brief-review set, Flash-Lite flags 7/80 honest briefs (8.8%, 4.3-17.0), each of which would block a publish at 0.5. 6 are 'human' at 0.9-1.0 on a persona name, a natural-voice description, or an opening that discloses being an AI, written in a note: decision.2026-10-24.brief-review-persona-settings keeps settings out of the review, but notes are judged in full. Recall is 80/80 against the regex's 12/80.",
+   "closes_when": "The integrator picks the brief-review model and contract with the blind scores of Flash-Lite, gpt-4.1 and mini side by side, and either accepts this FP rate or changes the prompt and measures the change on DEV and a fresh blind set."
+  },
+  {
+   "id": "measure.2026-10-24.vendor-language-lists",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Vendor docs language check, 21 parts, 22 pages saved: 7 parts list all 11 VP locales (Azure and Sarvam ears, the three Gemini brains, Sarvam-105B, and Azure TTS), Gemini voices and Live on Vertex list only en/hi/mr/ta/te as available (Kannada, Malayalam, Gujarati, Punjabi, Odia preview; Bengali only bn-BD), Bulbul v4 lacks Malayalam and Odia, OpenAI and Kimi publish no per-language list",
+   "n": 21,
+   "method": "WebFetch and WebSearch of public vendor pages on 2026-10-24 by a research subagent; each page saved with URL, date and verbatim excerpt under research/2026-10-24/language-lists/ (lists.json); two excerpts spot-checked by the main loop. Caveat: the fetch tool passes pages through a small model and several long pages were read in chunks, so excerpts are as the tool returned them.",
+   "path": "research/2026-10-24/language-lists/lists.json"
+  },
+  {
+   "id": "decision.2026-10-24.language-matrix-follows-docs",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "components.ts language lists now follow the saved vendor docs; Bengali, Kannada, Gujarati, Malayalam and Odia are not claimed for Gemini voices or Live on Vertex, so the default stack serves Hindi, English, Hinglish, Tamil, Telugu and Marathi only",
+   "rationale": "matrix.json records what VP adopts per part and why it deviates from the docs: Vertex is VP's route, so the Vertex pages win over the Gemini API pages; preview languages and bn-BD-only Bengali are not claimed; the Azure voice part keeps Hindi and English because VP offers only those voices; Azure HD keeps English only (the OmniIndic Hindi voices VP lists were not found); Bulbul v4 drops Malayalam and Odia. One judgement call: OpenAI publishes no language list, so English and Hindi are claimed (English on every model page, Hindi named in its MMMLU evaluation) and no other Indian language; gpt-oss and Kimi claim English only. tests/languages-docs.test.ts holds components.ts equal to matrix.json and matrix.json to the docs plus explained deviations. Consequence: a Bengali agent now needs the Sarvam stack, which is beta, so Bengali contacts on a campaign fall back to the primary language until a non-beta stack serves Bengali.",
+   "reverse_if": "A vendor moves a preview language to generally available or lists bn-IN (update lists.json and matrix.json, then components.ts), OpenAI publishes a language list, or a test call in a language contradicts its entry.",
+   "path": "research/2026-10-24/language-lists/matrix.json"
+  },
+  {
+   "id": "decision.2026-10-24.static-files-revalidate",
+   "type": "decision",
+   "status": "built",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Static files: only hashed build assets are immutable; everything else (index, samples manifest, sample clips) is no-cache with an ETag, and audio answers byte ranges",
+   "rationale": "server/app.ts sent every static file as immutable for a year with no Range support, so a re-recorded sample or new manifest needed query-string workarounds in the web, and audio could not seek. Now 304 on a matching ETag, 206 for one byte range, 416 for an impossible one, HEAD supported; the web's '?t=' and '?v=' are removed (commit 8d2fc69).",
+   "reverse_if": "Sample traffic grows enough that revalidation costs matter (then content-hashed sample names and immutable caching)."
+  },
+  {
+   "id": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "The product's analysis contract (single, and tiered's first pass) is r6's r5-outcome-first: the OUTCOME block before KIND, with the workspace's client outcome rule inside it (directly after the block, as it always followed it). PROMPT_VARIANTS 'current' is that contract; 'r5-outcome-first' names the same; 'r5-kinds-first' is the contract current named before r6, kept for A/B. The default setting is unchanged (tiered)",
+   "rationale": "Bench r6 (research/2026-10-24/benches-r6, a9c58df), gpt-4.1-mini single: r5-outcome-first DEV 42/42 twice, TEST 42/42 twice, objections 52/52, complaint and wrong-person false nulls 0 of 12; the kinds-first contract DEV 41/40, TEST (r5) 38/39. Ship gate: scripts/analysis-variant-probe.ts (no model) and tests/calls-analysis-contract.test.ts require the shipped prompt on the bench's outcome definition to be byte-identical to scripts/analysis-bench/contracts/r6-outcome-first.bench.txt, which was written from the tree r6 ran (calls/analysis.ts unchanged since 839292d; 2,817 characters, r6's recorded length; sha256 ba7656b7...642fbb).",
+   "reverse_if": "Round 7's two TEST passes each of mini single and tiered on the shipped contract fall below r6's, or a contract change is measured better (then ship it with a new measured file)."
+  },
+  {
+   "id": "decision.2026-10-24.transcript-redact-not-delete",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Transcript retention and erasure redact the words in place and keep the metrics (job memory.transcript_purge, every 10 minutes). Calls are purged when the person was erased (forget_request scope erase_me, or a contact intake erased in place), whatever the call's age, or when the call ended longer ago than the workspace's transcripts_days. turn.text is set to '' and heard_text to NULL, and the timing, latency and cut-ins stay. conversation.transcript becomes []. analysis loses every free-text key (summary, points, quotes, quote, text, note, claim, reason, message, body, why) and keeps its codes, counts and verdicts. call_moment quote and note are nulled; outcome.evidence loses quote; hand_off.brief loses summary; this call's quotes leave each call_insight theme. The row records transcript_purged_at and transcript_purge_reason. call.get returns transcriptRemoved, and the call page shows it ('Transcript removed: this workspace keeps transcripts for N days.' or 'Transcript removed on the person's erasure request.').",
+   "rationale": "Deleting conversation rows would cascade-delete cost_line, breaking billing and settlement, and would orphan the audit's object ids, outcomes and learning's per-call metrics. Deleting turn rows would lose the reply-gap timing the reports read. Redacting removes every place the caller's words or a model's paraphrase of them live, and keeps what is not personal.",
+   "reverse_if": "Counsel requires the conversation row itself to go at erasure, in which case cost lines are first moved to a non-cascading settlement record. Or another table starts storing caller text keyed by conversation, in which case add it to purgeOne.",
+   "path": "product/server/modules/memory/transcript-purge.ts"
+  },
+  {
+   "id": "decision.2026-10-24.erasure-pending-visible",
+   "type": "decision",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "A recording delete that the voice runtime has not confirmed is a visible pending erasure. calls.recording_purge writes recording_purge_tries, recording_purge_tried_at and recording_purge_error on each failure and clears the error on success. call.get's recording reason adds 'Deleting it is pending: the voice runtime has not confirmed after N tries; it is retried every 10 minutes.' The new read tool erasure.pending lists those calls, plus erased people's calls that still hold audio or words.",
+   "rationale": "open.2026-10-24.recording-files-retention-purge: a failed delete is retried and is never silent. Before this it was a console.warn only.",
+   "reverse_if": "Erasure becomes synchronous with the request (then the pending state lives on the forget_request receipt instead)."
+  },
+  {
+   "id": "rejected.2026-10-24.intake-erasure-without-scope",
+   "type": "rejection",
+   "status": "confirmed",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Intake's dpdp.request.execute wrote its forget_request without a scope, so an erase_me request was stored as forget_memory, the column default. calls.recording_purge acts only on scope = 'erase_me', so an erasure done through the product never deleted the recordings. The existing purge test missed it because it wrote scope = 'erase_me' itself.",
+   "tried": "Erasure through intake, followed by calls.recording_purge.",
+   "broke": "The audio of an erased person was never purged. Fixed: intake stores i.scope. Both purges also treat contact.erased_at as an erasure, so a request row with the wrong scope can no longer hide one. tests/memory-retention.test.ts goes through intake; with the one-line fix reverted, it fails at 'intake stores the scope the purges act on'."
+  },
+  {
+   "id": "measure.2026-10-24.transcript-retention-erasure-tests",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Retention and erasure: tests/memory-retention.test.ts 4/4. (1) Analysis redaction keeps codes and verdicts and drops all free text. (2) A call 31 days old in a 30-day workspace: the text is gone from turn, transcript, analysis, moment, outcome evidence, hand-off brief and insight quotes; the turn rows, latency 640 ms, cost line 2400 milli and outcome are kept; call.get says why and its JSON holds no caller word. A 5-day-old call keeps its words. A run scoped to one workspace touches no other; a second run purges 0. (3) An erase_me request through intake: the forget_request stores scope erase_me, the recording link is refused at once, the transcript is purged with reason erased, and the runtime is asked to purge only that call; another person's call is untouched. (4) The runtime is unreachable twice: erasure.pending shows 2 tries with the error, and call.get says the deletion is pending; once the runtime is back, it is purged and nothing is pending. Fresh-DB suite 590 pass, 0 fail, 0 skipped, including browser flows. Voice unittest 290 OK, which includes test_signed_purge_deletes_the_audio_once_and_the_link_stops_working.",
+   "n": 4,
+   "method": "node:test on throwaway Postgres 16 with FakeRuntime; scripts/test.mjs on a fresh database (vp_mem_fresh); python3 -m unittest discover in product/voice; tsc for the server and the web",
+   "path": "product/tests/memory-retention.test.ts"
+  },
+  {
+   "id": "measure.2026-10-24.recording-purge-runtime-test-checked",
+   "type": "measurement",
+   "status": "measured",
+   "source": "verified",
+   "date": "2026-10-24",
+   "title": "Checked that commit 22956aa closes open.2026-10-24.recording-files-retention-purge. In product/voice/tests/test_recordings.py, test_signed_purge_deletes_the_audio_once_and_the_link_stops_working shows that a signed purge returns {ok:true, deleted:true}, leaves no .wav and no .json in the folder, and that a link signed before the purge then returns 404; a repeat purge returns deleted:false (idempotent). test_refusals_leave_the_file shows another workspace's purge refused (403), a missing or wrong signature refused (401), and a body naming another call refused (400), each with the file left in place. product/tests/calls-recording-purge.test.ts covers the control-plane job. Gap found and fixed in 08584cf: erasures done through intake stored the wrong scope, so the job never purged their audio (rejected.2026-10-24.intake-erasure-without-scope). Re-run on 08584cf: voice unittest 290 OK; fresh-DB suite 596/596.",
+   "n": 2,
+   "method": "read the runtime tests and re-ran python3 -m unittest discover in product/voice; scripts/test.mjs on a fresh database",
+   "path": "product/voice/tests/test_recordings.py"
+  },
+  {
+   "id": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Crisis-line and manipulation checks on agent config live in shared/safety's lint, read by both doors: rules.json lint.T-L6 (crisis lines, plus a neverSay entry that would hide them) and lint.T-L7 (manipulation, with negated_prefix tested on the text before each match). agents/guard.ts delegates (T-L1 to ai_honesty or disclosure, T-L6 to crisis_lines, T-L7 to manipulation); its local regexes are gone. One source of truth. lintAgentConfig now refuses these everywhere it runs (compile, campaign gate, learning gates), not only on draft writes.",
+   "rationale": "open.2026-10-24.crisis-manipulation-lint-in-safety.",
+   "reverse_if": "Never: weakening the regex door is not allowed; tighten it with DEV evidence instead."
+  },
+  {
+   "id": "measure.2026-10-24.crisis-manipulation-lint-dev",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Config lint for crisis lines and manipulation, same sets before and after. Guard before: crisis 3/8, manipulation 0/10, benign flagged 0/1,064, templates 0/16. Faithful port into rules.json: identical (3/8, 0/10, 0/1,064). After DEV tuning: crisis 8/8, manipulation 8/10, benign flagged 0/1,064, templates 0/16. TS and Python agree on all 147 DEV lines checked line by line.",
+   "n": "8 crisis and 10 manipulation DEV lines (sets/dev-brief-review.json); 1,064 benign (DEV pass 53, DEV lint allow 32, cases.json replyDoor benign agent lines); 16 templates; 17 new cases.json lint vectors",
+   "method": "hardFindings (guard) and lintAgentConfig on each line as a persona note; Python lint_agent_config on the same lines",
+   "not_verified": "Recall after tuning is in-sample. Still missed: 'only two slots left ... to get them to book' and 'sirf aaj ke liye discount ... kal se double', left to the brief review because a real deadline stated as fact is allowed. Not scored on any blind set."
+  },
+  {
+   "id": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "Disclosure lines for kn-IN, te-IN, ml-IN, mr-IN, gu-IN, pa-IN and or-IN in shared/safety/disclosure.json, each affirming through new per-script lexicon.ai_affirm entries (tested in both doors). Crisis terms (cs.crisis.indic_more: Kannada, Malayalam, Punjabi, Odia romanised and native; native-script Marathi, Telugu, Gujarati) and opt-out terms (cs.opt_out.indic_more: Punjabi, Odia; native-script Kannada, Telugu, Malayalam, Marathi, Gujarati) as terms, not lines. All marked 'not native-reviewed' (disclosure.json review map; rule about). A language with no line, such as as-IN, still falls back to Hinglish. version.language_variant still refuses an unreviewed language: shared/safety/disclosure.ts disclosureChecked() requires a line that is not in the review map ('A draft line is waiting for a native speaker to review it'). The voice runtime may say the draft line to a caller in that language instead of the Hinglish fallback.",
+   "rationale": "Safety half of open.2026-10-24.languages-runtime-and-disclosure: the runtime may speak these languages, so the disclosure must exist in them, and the floor must hear crisis and opt-out in them.",
+   "reverse_if": "A native speaker's review rejects a line or a term: replace it, do not delete the language."
+  },
+  {
+   "id": "open.2026-10-24.indic-native-review",
+   "type": "open-question",
+   "status": "open",
+   "date": "2026-10-24",
+   "source": "safety module builder",
+   "title": "OWNER ITEM: a native speaker must review the AI-disclosure line and the crisis and opt-out terms for each of Kannada, Telugu, Malayalam, Marathi, Gujarati, Punjabi and Odia (shared/safety/disclosure.json lines and review map; rules.json cs.crisis.indic_more and cs.opt_out.indic_more). They were written by the safety builder from general knowledge. Until then each stays marked 'not native-reviewed', and no measurement exists for these languages beyond the authored vectors.",
+   "closes_when": "Each language has a named native reviewer's sign-off (or corrections merged) and its review entry is removed from disclosure.json."
+  },
+  {
+   "id": "measure.2026-10-24.indic-lexicons-fp",
+   "type": "measurement",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "After adding the seven-language disclosure lines and crisis and opt-out terms: every disclosure line in both doors passes ai_affirm and renders identically; 26 new authored callerSignals vectors pass in both doors (11 crisis, 9 opt-out, 6 look-alike or benign); existing vectors all pass (hi, en, Hinglish included); 0 of 674 benign caller vectors flagged; dev-lookalike-9 FP 0/150 and recall 30/75 (unchanged); dev-7 FP 0/90 and recall 100/100.",
+   "n": "26 new vectors; 674 benign caller vectors; 150 + 90 DEV look-alikes",
+   "method": "TS safety.test.ts and safety-disclosure.test.ts; Python test_safety_cases and test_disclosure; Python rules.caller_signals on the DEV sets",
+   "not_verified": "No native-speaker review, and no realistic eval set in these languages: the new terms are measured only on authored vectors. No blind set was touched."
+  },
+  {
+   "id": "decision.2026-10-24.voice-speculation-off-by-default",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "VP_SPECULATE_PARTIAL is off by default on every provider, paced or not (provider-aware pre-warm stays: on where unpaced). Speculation, when turned on, waits for a settled partial (unchanged SPECULATE_STABLE_MS = 400, or ending at a clause boundary), is never started on a paced brain unless asked, and its outcomes are in the call timing summary (started, kept, discarded, withdrawn, keepRate)",
+   "rationale": "Turn bench DEV (n=47 clips): with partials trailing speech (300 or 850 ms, staging measured 858) speculation saved nothing at end of turn (986 vs 991 ms; 1,324-1,328 vs 1,328 ms) and kept 5-16% of its replies whatever the settle time; staging kept 2 of ~23. The 2026-10-23 gain (998 -> 750 ms) needed partials that carry every word at once. The Azure brain-stage gain on staging (886 vs 1,096 ms, n=24 vs 5) is better explained by the warm connection, which pre-warm keeps.",
+   "reverse_if": "a recogniser whose partials keep up with speech (partialLagMs under ~300 ms) shows a keep rate of at least 50% and an end-of-turn gain of at least 150 ms on the bench or staging",
+   "supersedes_note": "refines decision.2026-10-24.latency-flags-provider-aware (speculation on for unpaced brains) on bench evidence"
+  },
+  {
+   "id": "decision.2026-10-24.voice-barge-from-audio",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "Barge-in from the audio (VP_BARGE_AUDIO, default on): she yields on 200 ms of caller speech (VAD, strict while she plays), keeping her place; after 400 ms of quiet she resumes if all that was heard is a nod or nothing; any other word, or 900 ms of speech with no words yet, and she gives way; words that arrive after she resumed and are not a nod stop her then. Heard text, takeover cuts and the transcript follow the playback position across pauses",
+   "rationale": "Staging partialLagMs median 858 ms: a word rule cannot stop her quickly (735 ms on the bench) and a lower length threshold stops her on nods. Bench TEST below: stop 256 ms, 0/165 false stops on nods.",
+   "reverse_if": "staging or a listening check finds the pause-and-resume on nods unnatural (it pauses on 84% of nods for ~0.64 s), or real calls show resumes over real interruptions well above the bench's 5/55"
+  },
+  {
+   "id": "measure.2026-10-24.voice-barge-audio-test",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Turn bench TEST (n=55 clips, 165 nods of 300/500/700 ms, staging-like recogniser: partials 850 ms behind, final 590 ms): barge-in from audio stops her at a median 256 ms [250, 268] after caller onset vs 735 ms [728, 750] for the word rule; false stops on nods 0/165 vs 34/165 (700 ms nods 0/55 vs 31/55); noise 0/55 both; missed barge-ins 5/55 vs 4/55 (audio: in each she resumed in a mid-sentence pause before any word arrived, then stopped again on the late words). Cost: she pauses on 138/165 nods and carries on after a median 644 ms",
+   "n": 55,
+   "method": "bench/turn_bench.py --split test --only barge backchannel --partial-ms 850 --final-ms 590, VP_BARGE_AUDIO=0 vs defaults (BARGE_AUDIO_MS 200, RESUME_MS 400, BARGE_PAUSED_MS 900), after tuning on DEV only (bench/results/turn-2026-10-24-dev-barge-audio.md), 2026-10-24; fakes, real Silero VAD and turn logic",
+   "path": "product/voice/bench/results/turn-2026-10-24-test-barge-audio.md",
+   "value": "stop 735 -> 256 ms; false stops on nods 34/165 -> 0/165"
+  },
+  {
+   "id": "measure.2026-10-24.voice-speculation-dev",
+   "type": "measurement",
+   "status": "measured",
+   "date": "2026-10-24",
+   "source": "verified",
+   "title": "Turn bench DEV (n=47): speculation with partials 850 ms behind / final 590 ms: end of turn after questions 1,324-1,328 ms with it vs 1,328 ms without; kept 4/77 (settle 0), 4/77 (400), 4/41 (800). With partials 300 ms / final 250 ms: 986 vs 991 ms, kept 16/126 (0) and 18/116 (400). Cut-ins and talk-over 1/47 in every arm",
+   "n": 47,
+   "method": "bench/turn_bench.py --split dev --only turn statement --env VP_SPECULATE_PARTIAL=1 --env VP_SPECULATE_STABLE_MS=..., 2026-10-24",
+   "path": "product/voice/bench/results/turn-2026-10-24-dev-speculation.md",
+   "value": "no end-of-turn gain; keep 5-16%"
+  },
+  {
+   "id": "decision.2026-10-24.voice-brand-script-guard",
+   "type": "decision",
+   "status": "active",
+   "date": "2026-10-24",
+   "source": "model",
+   "title": "The brand in her script: the brief says how to write the brand (the workspace's brand.spokenNameDevanagari when set, else keep the spoken name in its Latin letters), and every sentence is checked: a word one or two letters off a brand word with different consonants (so not an inflection) is repaired to the stored form (the Devanagari form when set, else the Latin word, never an unsure transliteration). String matching, no model call. agent-config gains optional brand.spokenNameDevanagari (Devanagari only)",
+   "rationale": "Staging 2026-10-24: the brain wrote '\u0938\u093e\u0902\u091a \u0938\u0930\u094d\u0935\u093f\u0938\u0947\u091c' for '\u0938\u093e\u0902\u091d' (Saanjh Services) in 2 of 3 flashlite openings. The rule-based transliteration can be off ('Gharana' -> '\u0918\u0930\u0928\u093e'), so it is used only for matching.",
+   "reverse_if": "the guard repairs a correct word on real calls, or the workspace form becomes required by the agents module"
+  },
+  {
+   "id": "decision.2026-10-24.judge-prompt-a-stays",
+   "type": "decision",
+   "status": "decided",
+   "date": "2026-10-24",
+   "source": "integrator",
+   "title": "judge.json keeps prompt A. Prompt B (risk 0-100), PREREG-9's choice for the crisis label, does not ship as the shared two-label prompt, because the opt-out DEV run under B fell outside both pre-set bounds (138/150 against at least 141, FP 18/110 against at most 17).",
+   "rationale": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev fixed the bounds before the run (research/2026-10-24/judge-optout-b/RULE.md), and the run triggered its reverse_if. On the lines both prompts answered, opt-out recall is the same (134/135); B's misses are mostly timeouts (20/260 against A's 7/260), and its extra false positives are the model's own (18 against 13 on the 99 look-alikes both answered). B's crisis advantage stands on BLIND 9 (judge alone 97/100, FP 2/100). So the next step is a prompt that keeps B's crisis section and A's opt-out section, measured on both DEV sets and then on a fresh blind set.",
+   "reverse_if": "A combined prompt (B's crisis part, A's opt-out part) or separate crisis and opt-out calls meets both the crisis bar and the opt-out bounds on DEV, and its timeout rate is no worse than A's by more than 2 points; then it replaces A after one blind scoring."
   }
  ],
  "edges": [
@@ -37483,6 +37736,236 @@
    "from": "open.2026-10-24.floor-lookalike-fp-blind",
    "to": "open.2026-10-23.judge-raise-soft-checkin",
    "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-1500",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "open.2026-10-24.judge-prompt-b-optout-unmeasured",
+   "relation": "closes"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "decision.2026-10-24.prereg9",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040",
+   "relation": "extends"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "decision.2026-10-23.judge-flashlite-nonblocking",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "to": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "to": "open.2026-10-24.judge-prompt-b-optout-unmeasured",
+   "relation": "supersedes"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "to": "decision.2026-10-24.brief-review-model",
+   "relation": "tests"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "to": "asset.2026-10-24.brief-review-sets",
+   "relation": "derived-from"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "to": "rejected.2026-10-24.brief-review-flags-persona-names",
+   "relation": "supports"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "to": "decision.2026-10-24.brief-review-persona-settings",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "to": "open.2026-10-24.tl1-model-check",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "tests"
+  },
+  {
+   "from": "open.2026-10-24.brief-review-notes-persona-fp",
+   "to": "measure.2026-10-24.brief-review-blind-vertex-flashlite",
+   "relation": "informed-by"
+  },
+  {
+   "from": "open.2026-10-24.brief-review-notes-persona-fp",
+   "to": "decision.2026-10-24.brief-review-model",
+   "relation": "challenges"
+  },
+  {
+   "from": "open.2026-10-24.brief-review-notes-persona-fp",
+   "to": "decision.2026-10-24.brief-review-persona-settings",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.language-matrix-follows-docs",
+   "to": "measure.2026-10-24.vendor-language-lists",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.language-matrix-follows-docs",
+   "to": "decision.2026-10-24.language-capability-matrix",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.language-matrix-follows-docs",
+   "to": "open.2026-10-24.languages-runtime-and-disclosure",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.static-files-revalidate",
+   "to": "open.2026-10-24.static-cache-for-samples",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "decision.2026-10-24.objection-always-a-moment",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-mini",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "measure.2026-10-24.analysis-bench-r6-dev-arms",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "measure.2026-10-24.analysis-bench-r6-outcome-first-tiered",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.analysis-contract-outcome-first-shipped",
+   "to": "open.2026-10-24.analysis-outcome-first-second-round",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.transcript-redact-not-delete",
+   "to": "open.2026-10-24.transcript-retention-erasure",
+   "relation": "resolves"
+  },
+  {
+   "from": "rejected.2026-10-24.intake-erasure-without-scope",
+   "to": "decision.2026-10-24.recording-purge-on-runtime",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.transcript-retention-erasure-tests",
+   "to": "decision.2026-10-24.transcript-redact-not-delete",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.transcript-retention-erasure-tests",
+   "to": "decision.2026-10-24.erasure-pending-visible",
+   "relation": "informs"
+  },
+  {
+   "from": "measure.2026-10-24.recording-purge-runtime-test-checked",
+   "to": "open.2026-10-24.recording-files-retention-purge",
+   "relation": "resolves"
+  },
+  {
+   "from": "decision.2026-10-24.erasure-pending-visible",
+   "to": "decision.2026-10-24.recording-purge-on-runtime",
+   "relation": "extends"
+  },
+  {
+   "from": "rejected.2026-10-24.intake-erasure-without-scope",
+   "to": "open.2026-10-24.recording-files-retention-purge",
+   "relation": "informs"
+  },
+  {
+   "from": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "to": "component.2026-10-21.safety-module",
+   "relation": "part-of"
+  },
+  {
+   "from": "measure.2026-10-24.crisis-manipulation-lint-dev",
+   "to": "decision.2026-10-24.crisis-manipulation-lint-in-safety",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "to": "open.2026-10-24.languages-runtime-and-disclosure",
+   "relation": "implements"
+  },
+  {
+   "from": "open.2026-10-24.indic-native-review",
+   "to": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "relation": "challenges"
+  },
+  {
+   "from": "measure.2026-10-24.indic-lexicons-fp",
+   "to": "decision.2026-10-24.indic-disclosure-and-lexicons",
+   "relation": "supports"
+  },
+  {
+   "from": "decision.2026-10-24.voice-speculation-off-by-default",
+   "to": "decision.2026-10-24.latency-flags-provider-aware",
+   "relation": "extends"
+  },
+  {
+   "from": "decision.2026-10-24.voice-barge-from-audio",
+   "to": "open.2026-10-23.voice-barge-long-ms-on-staging",
+   "relation": "implements"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-stays",
+   "to": "decision.2026-10-24.judge-prompt-b-ships-after-optout-dev",
+   "relation": "supersedes"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-stays",
+   "to": "measure.2026-10-24.judge-optoutdev-flashlite-b-1500",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-stays",
+   "to": "measure.2026-10-24.judge-blind9-vertex-flashlite-b-t040",
+   "relation": "derived-from"
+  },
+  {
+   "from": "decision.2026-10-24.judge-prompt-a-stays",
+   "to": "open.2026-10-24.judge-prompt-b-optout-outside-bounds",
+   "relation": "leaves-open"
   }
  ]
 }
