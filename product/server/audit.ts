@@ -28,7 +28,9 @@ function rowHash(prev: string | null, a: AuditInput): string {
 export async function appendAudit(q: Queryable, a: AuditInput): Promise<string> {
   await q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['audit:' + a.workspaceId]);
   const last = await q.query('SELECT hash FROM audit_event WHERE workspace_id = $1 ORDER BY created_at DESC, id DESC LIMIT 1', [a.workspaceId]);
-  const prev: string | null = last.rows[0]?.hash ?? null;
+  // When retention purged every row, the chain continues from the anchor (the last purged hash), as verifyAudit expects.
+  const prev: string | null = last.rows[0]?.hash
+    ?? (await q.query('SELECT last_hash FROM audit_anchor WHERE workspace_id = $1', [a.workspaceId])).rows[0]?.last_hash ?? null;
   const hash = rowHash(prev, a);
   await q.query(
     `INSERT INTO audit_event (workspace_id, actor_type, actor_id, action, object_type, object_id, args_hash, payload, prev_hash, hash, created_at)

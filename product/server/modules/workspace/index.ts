@@ -117,7 +117,7 @@ export const module: Module = {
       return { body: v, headers: { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' } };
     });
 
-    ssoRoutes(router, pool);
+    ssoRoutes(router, pool, auth);
     scimRoutes(router, pool);
     auditExportRoutes(router, pool, auth);
 

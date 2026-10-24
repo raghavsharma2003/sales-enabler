@@ -63,16 +63,21 @@ const ip = () => ({ 'x-forwarded-for': randomUUID() });
 const cookiesOf = (h: Headers) => h.getSetCookie().map(c => c.split(';')[0]);
 
 /** Drive one SSO sign-in through the real routes and the fake IdP. Returns where the server sent the browser. */
-async function ssoLogin(workspaceId: string, o: { swapStateCookie?: boolean; replay?: boolean } = {}) {
-  const start = await fetch(`${b.base}/v1/sso/start?workspace=${workspaceId}`, { redirect: 'manual', headers: ip() });
-  assert.equal(start.status, 302);
+async function ssoLogin(workspaceId: string, o: { swapStateCookie?: boolean; replay?: boolean; session?: string; callbackWorkspace?: string; iss?: string } = {}) {
+  const start = await fetch(`${b.base}/v1/sso/start`, { method: 'POST', headers: { ...ip(), 'content-type': 'application/json', ...(o.session ? { cookie: o.session } : {}) },
+    body: JSON.stringify({ workspaceId }) });
+  assert.equal(start.status, 200, await start.clone().text());
+  const url = (await start.json() as { url: string }).url;
   const stateCookie = cookiesOf(start.headers).find(c => c.startsWith('vp_sso_state='))!;
-  const authz = await fetch(start.headers.get('location')!, { redirect: 'manual' });
+  const authz = await fetch(url, { redirect: 'manual' });
   assert.equal(authz.status, 302, 'the fake IdP accepted the authorization request');
-  const callback = authz.headers.get('location')!;
+  const cb = new URL(authz.headers.get('location')!);
+  if (o.callbackWorkspace) cb.pathname = `/v1/sso/callback/${o.callbackWorkspace}`;
+  if (o.iss) cb.searchParams.set('iss', o.iss);
+  const callback = cb.toString();
   const cookie = o.swapStateCookie ? 'vp_sso_state=' + 'x'.repeat(stateCookie.length - 13) : stateCookie;
   const res = await fetch(callback, { redirect: 'manual', headers: { cookie, ...ip() } });
-  const out = { status: res.status, location: res.headers.get('location') ?? '', session: cookiesOf(res.headers).find(c => c.startsWith('vp_session=') && c.length > 12), authorizeUrl: new URL(start.headers.get('location')!), callback, cookie };
+  const out = { status: res.status, location: res.headers.get('location') ?? '', session: cookiesOf(res.headers).find(c => c.startsWith('vp_session=') && c.length > 12), authorizeUrl: new URL(url), callback, cookie };
   let replay: { status: number; location: string } | undefined;
   if (o.replay) {
     const again = await fetch(callback, { redirect: 'manual', headers: { cookie, ...ip() } });
@@ -214,7 +219,7 @@ test('SSO: a domain claimed by one workspace cannot be claimed by another', { sk
   assert.equal(r.status, 'not_executed');
   assert.match(r.reason, /already used for sign-in by another workspace/);
   const d = await a.fetch('POST', '/v1/sso/discover', { email: `someone@${cfg.allowedDomains[0]}` });
-  assert.deepEqual([d.body.sso, d.body.startUrl], [true, `/v1/sso/start?workspace=${a.workspaceId}`]);
+  assert.deepEqual([d.body.sso, d.body.workspaceId], [true, a.workspaceId]);
   assert.equal((await a.fetch('POST', '/v1/sso/discover', { email: 'x@unclaimed.example' })).body.sso, false);
 });
 
@@ -239,11 +244,12 @@ test('SSO required: password sign-in is off except one break-glass owner, whose 
   assert.equal((await builder.fetch('GET', '/v1/me')).status, 401, 'the builder is signed out at once');
   assert.equal((await owner.fetch('GET', '/v1/me')).status, 200, 'the break-glass owner keeps their session');
 
+  assert.ok(on.result.passwordsCleared >= 1);
   const pw = await builder.fetch('POST', '/v1/login', { email: builder.email, password: 'another long password' });
-  assert.equal(pw.status, 403);
-  assert.equal(pw.body.error.code, 'sso_required');
   const wrong = await builder.fetch('POST', '/v1/login', { email: builder.email, password: 'not the password at all' });
-  assert.equal(wrong.status, 401, 'a wrong password still reads as a wrong password, revealing nothing more');
+  assert.deepEqual([pw.status, wrong.status], [401, 401], 'the right and a wrong password read the same: the login is no password oracle');
+  const hash = await one<{ h: string | null }>(b.pool, 'SELECT password_hash AS h FROM member WHERE id = $1', [builder.memberId]);
+  assert.equal(hash!.h, null, 'everyone but the break-glass owner lost their password');
 
   const bg = await owner.fetch('POST', '/v1/login', { email: owner.email, password: 'correct horse battery' });
   assert.equal(bg.status, 200);
@@ -256,7 +262,8 @@ test('SSO required: password sign-in is off except one break-glass owner, whose 
 
   // A break-glass owner who stops being an owner loses the exemption, even before anyone edits the SSO settings.
   await b.pool.query("UPDATE member SET role = 'compliance' WHERE id = $1", [owner.memberId]);
-  assert.equal((await owner.fetch('POST', '/v1/login', { email: owner.email, password: 'correct horse battery' })).status, 403);
+  const demoted = await owner.fetch('POST', '/v1/login', { email: owner.email, password: 'correct horse battery' });
+  assert.deepEqual([demoted.status, demoted.body.error?.code], [403, 'sso_required']);
   await b.pool.query("UPDATE member SET role = 'owner' WHERE id = $1", [owner.memberId]);
 
   const acc = await owner.fetch('POST', '/v1/invites/accept', { token: invToken, name: 'Late', password: 'a long password!' });
@@ -267,8 +274,79 @@ test('SSO required: password sign-in is off except one break-glass owner, whose 
   assert.match(disable.reason, /turn off "SSO required"/);
   const off = await owner.run('sso.required.set', { required: false });
   assert.equal(off.result.ssoRequired, false);
-  assert.equal((await builder.fetch('POST', '/v1/login', { email: builder.email, password: 'another long password' })).status, 200);
+  assert.equal((await builder.fetch('POST', '/v1/login', { email: builder.email, password: 'another long password' })).status, 401, 'a cleared password is not restored');
   assert.equal(await verifyAudit(b.pool, owner.workspaceId!), null);
+});
+
+test('review fixes: a code is redeemable only at its own workspace\'s return address; an iss naming another IdP is refused; a GET or cross-site start is refused', { skip }, async () => {
+  const victim = await signup(b, 'Victim Co'), attacker = await signup(b, 'Attacker Co');
+  const cfg = await configureSso(victim);
+  idp.person = { sub: 'mixup', email: `m@${cfg.allowedDomains[0]}`, name: 'M' };
+  assert.equal((await ssoLogin(victim.workspaceId!, { callbackWorkspace: attacker.workspaceId })).location, '/signin?sso_error=state_mismatch');
+  assert.equal((await ssoLogin(victim.workspaceId!, { iss: 'https://attacker-idp.example' })).location, '/signin?sso_error=wrong_iss');
+  const ok = await ssoLogin(victim.workspaceId!, { iss: idp.issuer });
+  assert.equal(ok.location, '/');
+  assert.match(ok.authorizeUrl.searchParams.get('redirect_uri')!, new RegExp(`/v1/sso/callback/${victim.workspaceId}$`));
+  assert.equal((await fetch(`${b.base}/v1/sso/start?workspace=${victim.workspaceId}`, { redirect: 'manual', headers: ip() })).status, 404, 'no GET start: no open redirect, no link-triggered sign-in');
+  const form = await fetch(`${b.base}/v1/sso/start`, { method: 'POST', headers: { ...ip(), 'content-type': 'text/plain' }, body: JSON.stringify({ workspaceId: victim.workspaceId }) });
+  assert.equal(form.status, 415, 'a cross-site form cannot start a sign-in');
+  const xs = await fetch(`${b.base}/v1/sso/start`, { method: 'POST', headers: { ...ip(), 'content-type': 'application/json', 'sec-fetch-site': 'cross-site' }, body: JSON.stringify({ workspaceId: victim.workspaceId }) });
+  assert.equal(xs.status, 403);
+});
+
+test('review fixes: an existing account links only on a verified email, an owner only from their own session, and Google needs a managed domain', { skip }, async () => {
+  const owner = await signup(b, 'Link Co');
+  const cfg = await configureSso(owner, { emailVerified: 'not_required' });
+  const dom = cfg.allowedDomains[0];
+  const ownerEmail = `boss@${dom}`;
+  await b.pool.query('UPDATE member SET email = $2 WHERE id = $1', [owner.memberId, ownerEmail]);
+  const op = await addMember(b, owner, 'operator');
+  const opEmail = `ops@${dom}`;
+  await b.pool.query('UPDATE member SET email = $2 WHERE id = $1', [op.memberId, opEmail]);
+
+  idp.person = { sub: 'nooauth', email: opEmail, name: 'X' };
+  idp.next = { drop: ['email_verified'] };
+  assert.equal((await ssoLogin(owner.workspaceId!)).location, '/signin?sso_error=link_unverified', 'not_required admits new people, never takes over an account');
+  idp.next = {};
+  assert.equal((await ssoLogin(owner.workspaceId!)).location, '/', 'a verified email links the operator');
+
+  idp.person = { sub: 'boss-sub', email: ownerEmail, name: 'Boss' };
+  assert.equal((await ssoLogin(owner.workspaceId!)).location, '/signin?sso_error=link_required', 'an owner is not linked by email alone');
+  const linked = await ssoLogin(owner.workspaceId!, { session: owner.auth.cookie });
+  assert.equal(linked.location, '/');
+  const me = await new Client(b.base, { cookie: linked.session }).fetch('GET', '/v1/me');
+  assert.equal(me.body.member.id, owner.memberId, 'linked from inside the owner\'s own session');
+
+  idp.person = { sub: 'new-unverified', email: `fresh@${dom}`, name: 'F' };
+  idp.next = { drop: ['email_verified'] };
+  assert.equal((await ssoLogin(owner.workspaceId!)).location, '/', 'not_required still admits a brand-new person');
+  idp.next = {};
+
+  const { admit } = await import('../server/modules/workspace/sso.ts');
+  const g = { workspace_id: owner.workspaceId!, issuer: 'https://accounts.google.com', allowed_domains: [dom], email_verified: 'required', default_role: 'viewer' } as any;
+  await tx(b.pool, async c => {
+    await assert.rejects(admit(c, g, { iss: g.issuer, sub: 'g1', aud: 'x', exp: 0, email: `consumer@${dom}`, email_verified: true }), (e: any) => e.code === 'domain_mismatch', 'a consumer Google account with a company address');
+    await assert.rejects(admit(c, g, { iss: g.issuer, sub: 'g2', aud: 'x', exp: 0, email: `w@${dom}`, email_verified: true, hd: 'elsewhere.example' }), (e: any) => e.code === 'domain_mismatch');
+    const okG = await admit(c, g, { iss: g.issuer, sub: 'g3', aud: 'x', exp: 0, email: `w@${dom}`, email_verified: true, hd: dom });
+    assert.equal(okG.jit, true);
+    await c.query('ROLLBACK'); await c.query('BEGIN');
+  });
+});
+
+test('review fixes: the approval card shows the full issuer, client and email rule with what they were; a purge of every row keeps the chain', { skip }, async () => {
+  const owner = await signup(b, 'Card Co');
+  const cfg = await configureSso(owner);
+  const p = await owner.tool('sso.config.set', { issuer: idp.issuer + '/tenant-b', clientId: 'other-client', allowedDomains: cfg.allowedDomains, defaultRole: 'viewer', emailVerified: 'not_required' });
+  assert.equal(p.status, 'needs_approval');
+  assert.ok(p.summary.includes(`${idp.issuer}/tenant-b (was ${idp.issuer})`), p.summary);
+  assert.ok(p.summary.includes(`other-client (was ${idp.clientId})`), p.summary);
+  assert.ok(p.summary.includes('verified by the IdP: no (was yes)'), p.summary);
+
+  const quiet = await signup(b, 'Quiet Co');
+  await b.pool.query("UPDATE audit_event SET created_at = created_at - interval '400 days' WHERE workspace_id = $1", [quiet.workspaceId]);
+  assert.ok((await tx(b.pool, c => applyAuditRetention(c, quiet.workspaceId!))).purged >= 1);
+  await tx(b.pool, c => appendAudit(c, { workspaceId: quiet.workspaceId!, actorType: 'system', action: 'after.purge' }));
+  assert.equal(await verifyAudit(b.pool, quiet.workspaceId!), null, 'a workspace with nothing left after the purge still verifies');
 });
 
 // ---- SCIM-lite -----------------------------------------------------------------------------------------------------
@@ -332,6 +410,12 @@ test('SCIM: deactivation ends the person\'s sessions at once; rotation kills the
   assert.equal((await op.fetch('GET', '/v1/me')).status, 401, 'the very next request is refused');
   assert.equal((await op.fetch('POST', '/v1/login', { email: op.email, password: 'another long password' })).status, 401, 'and they cannot sign back in');
   assert.equal((await scim(t.token, 'PATCH', `/v1/scim/members/${op.memberId}`, { active: true })).body.member.status, 'active');
+  const removed = await addMember(b, owner, 'viewer', 'Removed Person');
+  await owner.run('member.remove', { memberId: removed.memberId });
+  assert.equal((await scim(t.token, 'PATCH', `/v1/scim/members/${removed.memberId}`, { active: true })).status, 403, 'someone an owner removed stays removed');
+  const comp = await addMember(b, owner, 'compliance');
+  assert.equal((await scim(t.token, 'PATCH', `/v1/scim/members/${comp.memberId}`, { active: false })).status, 403, 'compliance members are out of reach');
+  assert.equal((await scim(t.token, 'PATCH', `/v1/scim/members/${op.memberId}`, { role: 'compliance' })).status, 422, 'a token cannot grant compliance');
 
   const rot = await owner.run('scim.token.rotate', { id: t.id });
   assert.equal(rot.status, 'confirmed');

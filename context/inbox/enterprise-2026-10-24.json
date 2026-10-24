@@ -25,7 +25,7 @@
       "status": "active",
       "date": "2026-10-24",
       "source": "model",
-      "title": "An SSO person is (issuer, sub), never the email. The email must be in an allowed domain on every sign-in; it links an existing member of the same workspace only when email_verified is true (or the admin set email-verified to not required for an IdP that never sends it); a linked member cannot be re-linked to another sub; an email already in another workspace is refused; JIT members get the admin's default role, which can never be owner; deactivated members stay out.",
+      "title": "An SSO person is (issuer, sub), never the email. The email must be in an allowed domain on every sign-in (and for Google's shared issuer the hd claim too); it links an existing member of the same workspace only when the IdP says email_verified is true (the admin's 'not required' admits new people only, never links); an owner links only from inside their own signed-in session; a linked member cannot be re-linked to another sub; an email already in another workspace is refused (one advisory lock per email across workspaces); JIT members get the admin default role, never owner; deactivated members stay out.",
       "rationale": "Linking by an unverified email claim is the nOAuth account-takeover pattern; the sub is stable per IdP.",
       "reverse_if": "Buyers' IdPs commonly rotate sub for the same person (e.g. tenant migrations) so people lose their membership; then add an admin-run re-link, never automatic email matching."
     },
@@ -35,7 +35,7 @@
       "status": "active",
       "date": "2026-10-24",
       "source": "model",
-      "title": "SSO required (A2 policy, owner) needs exactly one active owner with a password as break glass. The kernel /v1/login refuses everyone else with 403 sso_required, checked only after the password matched (no account enumeration) and re-checking the break-glass member is still an owner; break-glass sign-ins are audited (auth.break_glass_login) with session method break_glass. Turning it on ends every other password session; invites cannot set a password while it is on; SSO cannot be switched off while it is required.",
+      "title": "SSO required (A2 policy, owner) needs exactly one active owner with a password as break glass. Turning it on clears every other member's password and ends their password and break-glass sessions, so /v1/login answers 401 the same for a right or wrong password (no oracle); the kernel still refuses with 403 sso_required anyone not the current owner-role break-glass member. Break-glass sign-ins are audited (auth.break_glass_login, session method break_glass); invites cannot set a password while it is on; SSO cannot be switched off while required; cleared passwords are not restored.",
       "rationale": "An IdP outage must not lock an enterprise out, and the one way around SSO must be visible in the ledger.",
       "reverse_if": "Buyers' security teams ask for two break-glass owners or a time-boxed break-glass (common in SOC 2 reviews); then allow a small list with per-use alerts."
     },
@@ -55,7 +55,7 @@
       "status": "active",
       "date": "2026-10-24",
       "source": "model",
-      "title": "SCIM-lite is plain JSON on /v1/scim/members (list, create, PATCH active/role) with vps_ tokens separate from API keys (neither can do the other's job). Scopes members:read, members:write, roles:write. Create/rotate/revoke are A2 owner actions with reveal-once; rotation replaces the secret in place and the old one stops at once. Owners are out of reach of provisioning. Deactivation sets disabled, clears password and pending reveals, and deletes sessions in one transaction.",
+      "title": "SCIM-lite is plain JSON on /v1/scim/members (list, create, PATCH active/role) with vps_ tokens separate from API keys (neither can do the other's job). Scopes members:read, members:write, roles:write. Create/rotate/revoke are A2 owner actions with reveal-once; rotation replaces the secret in place and the old one stops at once. Owners are out of reach of provisioning. Deactivation sets disabled, clears password and pending reveals, and deletes sessions in one transaction. Provisioning cannot grant or change compliance (it approves policy and downloads exports), and cannot reactivate someone an owner removed (only people provisioning deactivated).",
       "rationale": "Covers what an IdP or script needs for joiner/mover/leaver now without the SCIM 2.0 schema surface.",
       "reverse_if": "A buyer's IdP can only push standard SCIM 2.0 (Entra and Okta provisioning apps require it): build open.2026-10-24.scim2-compat."
     },
@@ -124,20 +124,155 @@
       "source": "model",
       "title": "SSO is verified only against an in-process fake IdP. Not verified: a real Entra ID, Okta or Google Workspace tenant (claim shapes such as Entra's missing email_verified, key rotation, Google's azp, Okta custom authorization servers).",
       "closes_when": "One sign-in each through a free developer tenant of Entra ID, Okta and Google Workspace, from a deployed VP with VP_PUBLIC_URL set, is recorded as a measure node."
+    },
+    {
+      "id": "decision.2026-10-24.sso-per-workspace-callback-post-start",
+      "type": "decision",
+      "status": "active",
+      "date": "2026-10-24",
+      "source": "model",
+      "title": "SSO return address is per workspace (/v1/sso/callback/<workspace>) and must match the workspace stored with the state; an iss parameter on the callback must equal the configured issuer (RFC 9207). A sign-in starts only by a same-origin JSON POST /v1/sso/start that returns the authorize URL; there is no GET start.",
+      "rationale": "Closes the IdP mix-up account takeover and the open redirect / forced-sign-in found in review (measure.2026-10-24.identity-security-review).",
+      "reverse_if": "An IdP refuses per-workspace redirect URIs (none of Entra, Okta or Google do) or a buyer needs IdP-initiated sign-in; then add an IdP-initiated entry that still re-starts a fresh SP-initiated flow."
+    },
+    {
+      "id": "measure.2026-10-24.identity-security-review",
+      "type": "measurement",
+      "status": "confirmed",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Independent adversarial review of the identity and audit code before push: 10 findings (2 high, 4 medium, 4 low/design); 9 fixed with a regression test each, 1 left open (domain claims without DNS proof, open.2026-10-24.sso-domain-verification).",
+      "n": 10,
+      "method": "A separate reviewer agent read the diff end to end without the builder's conclusions and ran probes against the local suite; each fix then got a failing-then-passing test in tests/workspace-identity.test.ts.",
+      "not_verified": "The IdP mix-up was confirmed by reading only (no end-to-end exploit was run); the fix is covered by tests on the callback path and iss check."
+    },
+    {
+      "id": "rejected.2026-10-24.sso-shared-callback",
+      "type": "rejection",
+      "status": "confirmed",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "One shared SSO return address (/v1/sso/callback) for all workspaces, workspace taken from the state alone.",
+      "tried": "The callback found the workspace from state and redeemed whatever code arrived.",
+      "broke": "IdP mix-up: an attacker workspace's IdP could bounce a victim to the victim workspace's real IdP and receive that workspace's code at its own token endpoint, then finish the attacker's own started sign-in as the victim. Replaced by per-workspace callbacks plus the RFC 9207 iss check."
+    },
+    {
+      "id": "rejected.2026-10-24.sso-get-start",
+      "type": "rejection",
+      "status": "confirmed",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Starting SSO with a plain GET /v1/sso/start?workspace=<id> that redirected to the workspace's authorization endpoint.",
+      "tried": "A link the sign-in page navigated to.",
+      "broke": "Any link could bounce people to an address a workspace owner chose (open redirect) and sign a victim into an attacker's workspace (login CSRF). Replaced by a same-origin JSON POST that returns the URL."
+    },
+    {
+      "id": "rejected.2026-10-24.sso-required-keeps-passwords",
+      "type": "rejection",
+      "status": "confirmed",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Keeping members' password hashes while SSO is required and refusing them with 403 only after the password matched.",
+      "tried": "The 403 was meant to hide nothing because it came after the password check.",
+      "broke": "The 403 vs 401 difference itself told a credential stuffer which leaked password was right. Passwords are now cleared for everyone but the break-glass owner."
+    },
+    {
+      "id": "rejected.2026-10-24.audit-purge-empty-chain",
+      "type": "rejection",
+      "status": "confirmed",
+      "date": "2026-10-24",
+      "source": "verified",
+      "title": "Purging every audit row of a quiet workspace and appending the next row with prev_hash null.",
+      "tried": "appendAudit chained from the last remaining row only.",
+      "broke": "verifyAudit starts from the anchor, so the next row read as tampering forever. appendAudit now continues from audit_anchor when no rows remain."
     }
   ],
   "edges": [
-    { "from": "decision.2026-10-24.sso-oidc-in-house-verifier", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
-    { "from": "decision.2026-10-24.sso-identity-is-issuer-sub", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
-    { "from": "decision.2026-10-24.sso-required-break-glass", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
-    { "from": "decision.2026-10-24.sso-domain-first-come", "to": "open.2026-10-24.sso-domain-verification", "relation": "leaves-open" },
-    { "from": "decision.2026-10-24.scim-lite-shape", "to": "open.2026-10-24.scim2-compat", "relation": "leaves-open" },
-    { "from": "decision.2026-10-24.audit-export-signed-a2", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
-    { "from": "decision.2026-10-24.audit-retention-floor-anchor", "to": "component.2026-10-24.enterprise-identity", "relation": "part-of" },
-    { "from": "rejected.2026-10-24.audit-purge-js-date-bound", "to": "decision.2026-10-24.audit-retention-floor-anchor", "relation": "informs" },
-    { "from": "component.2026-10-24.enterprise-identity", "to": "open.2026-10-24.saml-sso", "relation": "leaves-open" },
-    { "from": "component.2026-10-24.enterprise-identity", "to": "open.2026-10-24.sso-real-idp-check", "relation": "leaves-open" },
-    { "from": "component.2026-10-24.enterprise-identity", "to": "directive.2026-10-22.enterprise-english-ui", "relation": "implements" }
+    {
+      "from": "decision.2026-10-24.sso-oidc-in-house-verifier",
+      "to": "component.2026-10-24.enterprise-identity",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.sso-identity-is-issuer-sub",
+      "to": "component.2026-10-24.enterprise-identity",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.sso-required-break-glass",
+      "to": "component.2026-10-24.enterprise-identity",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.sso-domain-first-come",
+      "to": "open.2026-10-24.sso-domain-verification",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-24.scim-lite-shape",
+      "to": "open.2026-10-24.scim2-compat",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "decision.2026-10-24.audit-export-signed-a2",
+      "to": "component.2026-10-24.enterprise-identity",
+      "relation": "part-of"
+    },
+    {
+      "from": "decision.2026-10-24.audit-retention-floor-anchor",
+      "to": "component.2026-10-24.enterprise-identity",
+      "relation": "part-of"
+    },
+    {
+      "from": "rejected.2026-10-24.audit-purge-js-date-bound",
+      "to": "decision.2026-10-24.audit-retention-floor-anchor",
+      "relation": "informs"
+    },
+    {
+      "from": "component.2026-10-24.enterprise-identity",
+      "to": "open.2026-10-24.saml-sso",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "component.2026-10-24.enterprise-identity",
+      "to": "open.2026-10-24.sso-real-idp-check",
+      "relation": "leaves-open"
+    },
+    {
+      "from": "component.2026-10-24.enterprise-identity",
+      "to": "directive.2026-10-22.enterprise-english-ui",
+      "relation": "implements"
+    },
+    {
+      "from": "measure.2026-10-24.identity-security-review",
+      "to": "rejected.2026-10-24.sso-shared-callback",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.identity-security-review",
+      "to": "rejected.2026-10-24.sso-get-start",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.identity-security-review",
+      "to": "rejected.2026-10-24.sso-required-keeps-passwords",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.identity-security-review",
+      "to": "rejected.2026-10-24.audit-purge-empty-chain",
+      "relation": "informs"
+    },
+    {
+      "from": "decision.2026-10-24.sso-per-workspace-callback-post-start",
+      "to": "rejected.2026-10-24.sso-shared-callback",
+      "relation": "supersedes"
+    },
+    {
+      "from": "decision.2026-10-24.sso-per-workspace-callback-post-start",
+      "to": "component.2026-10-24.enterprise-identity",
+      "relation": "part-of"
+    }
   ],
   "events": []
 }

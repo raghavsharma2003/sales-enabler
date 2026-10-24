@@ -22,7 +22,8 @@ import { randomBytes } from 'node:crypto';
 
 export const SCIM_SCOPES = ['members:read', 'members:write', 'roles:write'] as const;
 export type ScimScope = (typeof SCIM_SCOPES)[number];
-const SCIM_ROLES = ['builder', 'operator', 'compliance', 'viewer'] as const;
+// Not owner, and not compliance: compliance approves policy changes and downloads audit exports, so it is granted by a person.
+const SCIM_ROLES = ['builder', 'operator', 'viewer'] as const;
 
 function newScimToken() {
   const prefix = randomBytes(4).toString('hex'), secret = randomToken(24);
@@ -138,7 +139,7 @@ export function scimRoutes(router: Router, pool: pg.Pool) {
     const b = createBody(req.body);
     const email = b.email.toLowerCase();
     return tx(pool, async c => {
-      await c.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['sso-admit:' + who.workspaceId + ':' + email]);
+      await c.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['member-email:' + email]);
       const here = await one<Row>(c, `SELECT ${COLS} FROM member WHERE workspace_id = $1 AND lower(email) = $2`, [who.workspaceId, email]);
       if (here) return { status: 409, body: { error: { code: 'exists', message: 'that person is already in this workspace' }, member: memberView(here) } };
       if (await one(c, 'SELECT 1 FROM member WHERE lower(email) = $1', [email])) throw new HttpError(409, 'email_elsewhere', 'that email already belongs to another Vyakti workspace');
@@ -160,6 +161,7 @@ export function scimRoutes(router: Router, pool: pg.Pool) {
       const m = await one<Row>(c, `SELECT ${COLS} FROM member WHERE id = $1 AND workspace_id = $2 FOR UPDATE`, [req.params.id, who.workspaceId]);
       if (!m) throw new HttpError(404, 'not_found', 'no such member in this workspace');
       if (m.role === 'owner') throw new HttpError(403, 'owner_protected', 'owners are managed in Vyakti by another owner, not by provisioning');
+      if (m.role === 'compliance') throw new HttpError(403, 'compliance_protected', 'compliance members are managed in Vyakti by an owner, not by provisioning');
       const out: Record<string, unknown> = {};
       if (b.role !== undefined && b.role !== m.role) {
         await c.query('UPDATE member SET role = $3 WHERE id = $1 AND workspace_id = $2', [m.id, who.workspaceId, b.role]);
@@ -173,6 +175,8 @@ export function scimRoutes(router: Router, pool: pg.Pool) {
         await audit(c, who, 'scim.member.deactivate', m.id, { endedSessions: ended.rowCount ?? 0 });
         out.endedSessions = ended.rowCount ?? 0;
       } else if (b.active === true && m.status === 'disabled') {
+        // Only a person provisioning deactivated comes back through provisioning; someone an owner removed stays removed.
+        if (!m.deactivated_at) throw new HttpError(403, 'removed_by_owner', 'this person was removed by an owner; an owner must invite them again');
         await c.query("UPDATE member SET status = 'active', deactivated_at = NULL WHERE id = $1 AND workspace_id = $2", [m.id, who.workspaceId]);
         await audit(c, who, 'scim.member.reactivate', m.id, {});
         out.reactivated = true;

@@ -10,7 +10,7 @@
 // A first-time person gets the admin's default role, never owner. A deactivated member stays out.
 //
 // "SSO required" turns password sign-in off (kernel /v1/login) except for one break-glass owner, whose sign-ins are
-// audited, and ends the password sessions already open.
+// audited; everyone else's password is cleared and their password sessions end.
 import type pg from 'pg';
 import { label } from '../../labels.ts';
 import type { Router } from '../../http.ts';
@@ -20,7 +20,7 @@ import type { Registry } from '../../tools.ts';
 import { tool } from '../../tools.ts';
 import { many, one, tx } from '../../db.ts';
 import { appendAudit } from '../../audit.ts';
-import { createSession, sessionCookie } from '../../auth.ts';
+import { createSession, sessionCookie, type Caller } from '../../auth.ts';
 import { arr, bool, obj, opt, str, uuid } from '../../../shared/validate.ts';
 import { STASH_TTL_MS } from './common.ts';
 import { open, randomToken, seal, sha256 } from './crypto.ts';
@@ -37,12 +37,14 @@ interface Config { workspace_id: string; issuer: string; client_id: string; clie
 
 const loadConfig = (q: pg.Pool | pg.PoolClient, ws: string) => one<Config>(q, 'SELECT * FROM sso_config WHERE workspace_id = $1', [ws]);
 
-/** Where the IdP sends the browser back. VP_PUBLIC_URL in production; the request's own host only outside it. */
-export function redirectUri(req?: Req): string {
+/** Where the IdP sends the browser back: one address per workspace, so a code can only ever be redeemed for the workspace
+ *  whose IdP issued it (IdP mix-up defence, with the callback's iss check). VP_PUBLIC_URL in production; the request's own
+ *  host only outside it. */
+export function redirectUri(workspaceId: string, req?: Req): string {
   const base = process.env.VP_PUBLIC_URL ?? (process.env.NODE_ENV !== 'production' && req?.headers.host ? `http://${req.headers.host}` : null);
   if (!base) throw new SetupError('Single sign-on is not available on this server yet: its public address is not set up.', 'public_url_missing',
     'set VP_PUBLIC_URL to the address people reach this server on (the SSO return address is <VP_PUBLIC_URL>/v1/sso/callback)');
-  return base.replace(/\/+$/, '') + '/v1/sso/callback';
+  return base.replace(/\/+$/, '') + '/v1/sso/callback/' + workspaceId;
 }
 
 export const domainOf = (email: string) => email.slice(email.lastIndexOf('@') + 1).toLowerCase();
@@ -51,7 +53,7 @@ function view(c: Config | null) {
   if (!c) return { configured: false as const };
   return { configured: true as const, issuer: c.issuer, clientId: c.client_id, hasClientSecret: !!c.client_secret_ciphertext, allowedDomains: c.allowed_domains,
     defaultRole: c.default_role, emailVerified: c.email_verified, enabled: c.enabled, ssoRequired: c.sso_required, breakGlassMemberId: c.break_glass_member_id,
-    version: c.version, updatedAt: c.updated_at, discoveryUrl: discoveryUrl(c.issuer), redirectUri: (() => { try { return redirectUri(); } catch { return null; } })() };
+    version: c.version, updatedAt: c.updated_at, discoveryUrl: discoveryUrl(c.issuer), redirectUri: (() => { try { return redirectUri(c.workspace_id); } catch { return null; } })() };
 }
 
 const issuerV = str({ min: 8, max: 300, desc: 'the issuer URL exactly as the IdP publishes it, e.g. https://login.microsoftonline.com/<tenant>/v2.0' });
@@ -100,7 +102,16 @@ export function registerSso(r: Registry) {
     emailVerified: opt(str({ oneOf: ['required', 'not_required'] as const })), enabled: opt(bool()),
   }), {
     name: 'sso.config.set', risk: 'policy', roles: ['owner'], summary: 'Set how people sign in to this workspace with single sign-on',
-    describe: i => `Single sign-on through ${(() => { try { return new URL(i.issuer).host; } catch { return 'the issuer you entered'; } })()} for ${i.allowedDomains.join(', ')}; new people join as ${i.defaultRole}${i.enabled === false ? ' (saved switched off)' : ''}${i.stashId ? '; the client secret is replaced' : ''}`,
+    // The card names everything an approver must see to catch a hostile change: the full issuer (a different tenant on the same
+    // host), the client, the domains, the email-verification rule, and what each was before.
+    describe: async (i, ctx) => {
+      const cur = await loadConfig(ctx.q as pg.PoolClient, ctx.workspaceId);
+      const was = (now: string, before: string | undefined) => (cur && before !== undefined && before !== now ? `${now} (was ${before})` : now);
+      const ev = i.emailVerified ?? cur?.email_verified ?? 'required';
+      return `Single sign-on with issuer ${was(i.issuer, cur?.issuer)}, client ${was(i.clientId, cur?.client_id)}, for ${was(i.allowedDomains.join(', '), cur?.allowed_domains.join(', '))}; `
+        + `new people join as ${was(i.defaultRole, cur?.default_role)}; email must be verified by the IdP: ${was(ev === 'required' ? 'yes' : 'no', cur ? (cur.email_verified === 'required' ? 'yes' : 'no') : undefined)}`
+        + `${i.enabled === false ? '; saved switched off' : ''}${i.stashId ? '; the client secret is replaced' : ''}`;
+    },
     version: async ctx => String((await one<{ version: number }>(ctx.q, 'SELECT version FROM sso_config WHERE workspace_id = $1', [ctx.workspaceId]))?.version ?? 0),
     run: async (ctx, i) => {
       checkOidcUrl(i.issuer, 'the issuer');
@@ -149,9 +160,9 @@ export function registerSso(r: Registry) {
 
   r.register(tool(obj({ required: bool(), breakGlassMemberId: opt(uuid()) }), {
     name: 'sso.required.set', risk: 'policy', roles: ['owner'],
-    summary: 'Require single sign-on for everyone except one break-glass owner, or allow passwords again',
+    summary: 'Require single sign-on for everyone except one break-glass owner (other passwords are cleared), or allow passwords again',
     describe: async (i, ctx) => i.required
-      ? `Require single sign-on; only ${i.breakGlassMemberId ? await label(ctx, 'member', i.breakGlassMemberId) : 'no one'} may still sign in with a password (break glass), and other password sessions end now`
+      ? `Require single sign-on; only ${i.breakGlassMemberId ? await label(ctx, 'member', i.breakGlassMemberId) : 'no one'} may still sign in with a password (break glass); everyone else's password is cleared and their password sessions end now`
       : 'Allow password sign-in again alongside single sign-on',
     version: async ctx => {
       const c = await one<{ v: string }>(ctx.q, "SELECT version || ':' || sso_required || ':' || enabled || ':' || coalesce(break_glass_member_id::text, '') AS v FROM sso_config WHERE workspace_id = $1", [ctx.workspaceId]);
@@ -162,7 +173,7 @@ export function registerSso(r: Registry) {
       if (!c) throw new Error('set up single sign-on first');
       if (!i.required) {
         await ctx.q.query('UPDATE sso_config SET sso_required = false, break_glass_member_id = NULL, updated_at = now(), updated_by = $2 WHERE workspace_id = $1', [ctx.workspaceId, ctx.actor.id ?? ctx.actor.type]);
-        return { ssoRequired: false, endedSessions: 0 };
+        return { ssoRequired: false, endedSessions: 0, note: 'Passwords cleared while single sign-on was required stay cleared; those people keep signing in with single sign-on.' };
       }
       if (!c.enabled) throw new Error('single sign-on is switched off; switch it on first');
       if (!i.breakGlassMemberId) throw new Error('name one owner as the break-glass account: the only one who can still sign in with a password if the IdP is down');
@@ -170,8 +181,10 @@ export function registerSso(r: Registry) {
       if (!bg || bg.role !== 'owner' || bg.status !== 'active') throw new Error('the break-glass account must be an active owner of this workspace');
       if (!bg.password_hash) throw new Error('the break-glass owner has no password set, so they could not sign in when it matters');
       await ctx.q.query('UPDATE sso_config SET sso_required = true, break_glass_member_id = $2, updated_at = now(), updated_by = $3 WHERE workspace_id = $1', [ctx.workspaceId, i.breakGlassMemberId, ctx.actor.id ?? ctx.actor.type]);
-      const ended = await ctx.q.query(`DELETE FROM session s USING member m WHERE m.id = s.member_id AND m.workspace_id = $1 AND s.method = 'password' AND m.id <> $2`, [ctx.workspaceId, i.breakGlassMemberId]);
-      return { ssoRequired: true, breakGlassMemberId: i.breakGlassMemberId, endedSessions: ended.rowCount ?? 0 };
+      // Everyone else's password goes: a kept hash would let the login answer (403 vs 401) confirm a guessed password.
+      const cleared = await ctx.q.query('UPDATE member SET password_hash = NULL WHERE workspace_id = $1 AND id <> $2 AND password_hash IS NOT NULL', [ctx.workspaceId, i.breakGlassMemberId]);
+      const ended = await ctx.q.query(`DELETE FROM session s USING member m WHERE m.id = s.member_id AND m.workspace_id = $1 AND s.method IN ('password','break_glass') AND m.id <> $2`, [ctx.workspaceId, i.breakGlassMemberId]);
+      return { ssoRequired: true, breakGlassMemberId: i.breakGlassMemberId, endedSessions: ended.rowCount ?? 0, passwordsCleared: cleared.rowCount ?? 0 };
     },
   }));
 }
@@ -207,7 +220,7 @@ function throttle(key: string, max = 30) {
 export interface SsoOutcome { memberId: string; workspaceId: string; jit: boolean; linked: boolean }
 
 /** Decide who signed in, inside the transaction that also creates the session. Throws OidcError with a short code. */
-export async function admit(c: pg.PoolClient, cfg: Config, claims: IdClaims): Promise<SsoOutcome> {
+export async function admit(c: pg.PoolClient, cfg: Config, claims: IdClaims, linkMemberId?: string): Promise<SsoOutcome> {
   const ws = cfg.workspace_id;
   const email = typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : '';
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 200) throw new OidcError('no_email', 'the IdP did not send an email address');
@@ -215,17 +228,27 @@ export async function admit(c: pg.PoolClient, cfg: Config, claims: IdClaims): Pr
   const emailOk = verified || (cfg.email_verified === 'not_required' && claims.email_verified !== false && claims.email_verified !== 'false');
   if (!emailOk) throw new OidcError('email_unverified', 'the IdP says this email address is not verified');
   if (!cfg.allowed_domains.includes(domainOf(email))) throw new OidcError('domain_mismatch', 'this email domain is not allowed to sign in to this workspace');
+  // Google's issuer is shared by every Google account: a consumer account registered with a company address passes the email
+  // check, so the hosted domain (hd) must be one of the workspace's domains too.
+  if (cfg.issuer === 'https://accounts.google.com' && !(typeof claims.hd === 'string' && cfg.allowed_domains.includes(claims.hd.toLowerCase()))) {
+    throw new OidcError('domain_mismatch', 'this Google account is not managed by an allowed Google Workspace domain');
+  }
   const subject = `${claims.iss}|${claims.sub}`;
-  await c.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['sso-admit:' + ws + ':' + email]);
+  // One lock per email across workspaces: the "one email, one workspace" check below cannot race (SCIM takes the same lock).
+  await c.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['member-email:' + email]);
   const bySub = await one<{ id: string; status: string }>(c, 'SELECT id, status FROM member WHERE workspace_id = $1 AND sso_subject = $2 FOR UPDATE', [ws, subject]);
   if (bySub) {
     if (bySub.status !== 'active') throw new OidcError('deactivated', 'this account was deactivated in this workspace');
     return { memberId: bySub.id, workspaceId: ws, jit: false, linked: false };
   }
-  const byEmail = await one<{ id: string; status: string; sso_subject: string | null }>(c, 'SELECT id, status, sso_subject FROM member WHERE workspace_id = $1 AND lower(email) = $2 FOR UPDATE', [ws, email]);
+  const byEmail = await one<{ id: string; status: string; sso_subject: string | null; role: string }>(c, 'SELECT id, status, sso_subject, role FROM member WHERE workspace_id = $1 AND lower(email) = $2 FOR UPDATE', [ws, email]);
   if (byEmail) {
     if (byEmail.status === 'disabled') throw new OidcError('deactivated', 'this account was deactivated in this workspace');
     if (byEmail.sso_subject) throw new OidcError('subject_mismatch', 'this email is already linked to a different IdP account');
+    // Linking takes over an account that already exists, so it needs more than a new account does: the IdP must say the email
+    // is verified (the admin's "not required" only lets new people in), and an owner links only from inside their own session.
+    if (!verified) throw new OidcError('link_unverified', 'an existing account is linked only when the IdP says the email address is verified');
+    if (byEmail.role === 'owner' && linkMemberId !== byEmail.id) throw new OidcError('link_required', 'an owner links single sign-on from Settings > Security while signed in');
     await c.query("UPDATE member SET sso_subject = $2, status = 'active', invite_token_hash = NULL, invite_expires_at = NULL, name = coalesce(name, $3) WHERE id = $1",
       [byEmail.id, subject, typeof claims.name === 'string' ? claims.name.slice(0, 80) : null]);
     return { memberId: byEmail.id, workspaceId: ws, jit: false, linked: true };
@@ -237,38 +260,51 @@ export async function admit(c: pg.PoolClient, cfg: Config, claims: IdClaims): Pr
 }
 
 const discoverBody = obj({ email: str({ max: 200 }) });
+const startBody = obj({ workspaceId: uuid() });
 
-export function ssoRoutes(router: Router, pool: pg.Pool) {
+export function ssoRoutes(router: Router, pool: pg.Pool, auth: (req: Req) => Promise<Caller>) {
   // Which way does this email sign in? Answers only for a domain a workspace has claimed for single sign-on.
   router.add('POST', '/v1/sso/discover', async req => {
     throttle('sso-discover:' + (req.ip ?? 'local'), 60);
     const b = discoverBody(req.body);
     const d = await one<{ workspace_id: string; sso_required: boolean }>(pool,
       'SELECT d.workspace_id, c.sso_required FROM sso_domain d JOIN sso_config c ON c.workspace_id = d.workspace_id WHERE d.domain = $1 AND c.enabled', [domainOf(b.email)]);
-    return { body: d ? { sso: true, required: d.sso_required, startUrl: `/v1/sso/start?workspace=${d.workspace_id}` } : { sso: false } };
+    return { body: d ? { sso: true, required: d.sso_required, workspaceId: d.workspace_id } : { sso: false } };
   });
 
-  router.add('GET', '/v1/sso/start', async req => {
+  // Begin a sign-in. A JSON POST, never a link: a cross-site page cannot start one (a browser preflights cross-site JSON and we
+  // grant no CORS), so nobody can bounce a person through a workspace's IdP or sign them into a workspace they did not pick,
+  // and VP never answers a GET with a redirect to an address a workspace owner chose. The page navigates to `url` itself.
+  // Called from inside a session of the same workspace it links that member (the only way an owner links).
+  router.add('POST', '/v1/sso/start', async req => {
     throttle('sso-start:' + (req.ip ?? 'local'), 60);
-    const ws = req.query.get('workspace') ?? '';
-    if (!/^[0-9a-f-]{36}$/i.test(ws)) return back('unknown_workspace');
+    const essence = String(req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
+    if (essence !== 'application/json') throw new HttpError(415, 'json_only', 'send application/json');
+    const site = String(req.headers['sec-fetch-site'] ?? '');
+    if (site === 'cross-site' || site === 'same-site') throw new HttpError(403, 'cross_site', 'this request came from another site');
+    const ws = startBody(req.body).workspaceId;
     const cfg = await loadConfig(pool, ws);
-    if (!cfg || !cfg.enabled) return back('not_configured');
-    let d, redirect: string;
-    try { redirect = redirectUri(req); } catch { return back('not_configured'); }
-    try { d = await discover(cfg.issuer); } catch { return back('idp_unreachable'); }
+    if (!cfg || !cfg.enabled) throw new HttpError(404, 'not_configured', 'single sign-on is not set up for that workspace');
+    let link: string | undefined;
+    if (String(req.headers['cookie'] ?? '').includes('vp_session=')) {
+      const c = await auth(req).catch(() => null);
+      if (c?.via === 'session' && c.workspaceId === ws) link = c.memberId;
+    }
+    const redirect = redirectUri(ws, req);
+    let d;
+    try { d = await discover(cfg.issuer); } catch { throw new HttpError(502, 'idp_unreachable', 'the identity provider could not be reached; try again shortly'); }
     const state = randomToken(32), nonce = randomToken(24), verifier = randomToken(48);
     await pool.query('DELETE FROM sso_login WHERE expires_at < now() - interval \'1 day\'');
     await pool.query('INSERT INTO sso_login (workspace_id, state_hash, sealed, config_version, expires_at) VALUES ($1,$2,$3,$4, now() + ($5 || \' milliseconds\')::interval)',
-      [ws, sha256(state), seal(ws, 'sso-login', JSON.stringify({ nonce, verifier })), cfg.version, String(LOGIN_TTL_MS)]);
+      [ws, sha256(state), seal(ws, 'sso-login', JSON.stringify({ nonce, verifier, link })), cfg.version, String(LOGIN_TTL_MS)]);
     const u = new URL(d.authorization_endpoint);
     const params = { response_type: 'code', client_id: cfg.client_id, redirect_uri: redirect, scope: 'openid email profile', state, nonce,
       code_challenge: challenge(verifier), code_challenge_method: 'S256' };
     for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
-    return { status: 302, headers: { location: u.toString(), 'set-cookie': stateCookie(state, LOGIN_TTL_MS / 1000), 'cache-control': 'no-store' }, body: {} };
+    return { body: { url: u.toString(), linking: !!link }, headers: { 'set-cookie': stateCookie(state, LOGIN_TTL_MS / 1000), 'cache-control': 'no-store' } };
   });
 
-  router.add('GET', '/v1/sso/callback', async req => {
+  router.add('GET', '/v1/sso/callback/:workspaceId', async req => {
     throttle('sso-callback:' + (req.ip ?? 'local'), 60);
     const clear = { 'set-cookie': stateCookie('', 0) };
     const state = req.query.get('state') ?? '', code = req.query.get('code') ?? '';
@@ -280,6 +316,8 @@ export function ssoRoutes(router: Router, pool: pg.Pool) {
       'UPDATE sso_login SET used_at = now() WHERE state_hash = $1 AND used_at IS NULL AND expires_at > now() RETURNING workspace_id, sealed, config_version', [sha256(state)]);
     if (!login) return back('expired', clear);
     const ws = login.workspace_id;
+    // The code came back to this workspace's own address, so it was issued for this workspace's client.
+    if (req.params.workspaceId.toLowerCase() !== ws) return back('state_mismatch', clear);
     const audit = (action: string, payload: Record<string, unknown>, memberId?: string) => tx(pool, c => appendAudit(c, {
       workspaceId: ws, actorType: memberId ? 'member' : 'system', actorId: memberId ?? 'sso', action, objectType: memberId ? 'member' : undefined, objectId: memberId,
       payload: { ...payload, ip: req.ip ?? null, ...(memberId ? { subject: { type: 'member', id: memberId } } : {}) } }));
@@ -289,14 +327,19 @@ export function ssoRoutes(router: Router, pool: pg.Pool) {
     }
     const cfg = await loadConfig(pool, ws);
     if (!cfg || !cfg.enabled || cfg.version !== login.config_version) return back('config_changed', clear);
-    const { nonce, verifier } = JSON.parse(open(ws, 'sso-login', login.sealed)) as { nonce: string; verifier: string };
+    const { nonce, verifier, link } = JSON.parse(open(ws, 'sso-login', login.sealed)) as { nonce: string; verifier: string; link?: string };
+    // RFC 9207: an IdP that names itself on the response must be the one this sign-in was started with.
+    if (req.query.get('iss') !== null && req.query.get('iss') !== cfg.issuer) {
+      await audit('auth.sso.failed', { reason: 'wrong_iss' });
+      return back('wrong_iss', clear);
+    }
     try {
       if (!code) throw new OidcError('no_code', 'the IdP did not return a code');
       const d = await discover(cfg.issuer);
-      const idToken = await exchangeCode(d, { clientId: cfg.client_id, clientSecret: open(ws, 'sso', cfg.client_secret_ciphertext), code, redirectUri: redirectUri(req), verifier });
+      const idToken = await exchangeCode(d, { clientId: cfg.client_id, clientSecret: open(ws, 'sso', cfg.client_secret_ciphertext), code, redirectUri: redirectUri(ws, req), verifier });
       const claims = await verifyIdToken(idToken, { issuer: cfg.issuer, clientId: cfg.client_id, nonce, jwksUri: d.jwks_uri });
       const out = await tx(pool, async c => {
-        const who = await admit(c, cfg, claims);
+        const who = await admit(c, cfg, claims, link);
         if (who.jit) await appendAudit(c, { workspaceId: ws, actorType: 'system', actorId: 'sso', action: 'member.jit_provision', objectType: 'member', objectId: who.memberId,
           payload: { subject: { type: 'member', id: who.memberId }, role: cfg.default_role } });
         await appendAudit(c, { workspaceId: ws, actorType: 'member', actorId: who.memberId, action: 'auth.sso.login', objectType: 'member', objectId: who.memberId,
