@@ -1,0 +1,52 @@
+# Analysis-quality bench
+
+2026-10-23T23:34:17.824Z · mode **real** · split **test** · model: gpt-4.1-mini-2025-04-14 · setting {"mode":"tiered","model":"gpt-4.1-mini","escalateModel":"gpt-4.1","threshold":0.6} · crisis judge off
+
+42 of 42 synthetic calls, 12 templates, languages: hinglish, tamil-english, bengali-english, marathi-english. Scored by code against hand-written keys; the model never grades.
+
+| Field | Accuracy |
+|---|---|
+| Outcome | 97.6% (41/42; 95% CI 87.7-99.6%) |
+| Reason code (all) | 100.0% (42/42; 95% CI 91.6-100.0%) |
+| Reason code, model-refined calls | 100.0% (28/28; 95% CI 87.9-100.0%) |
+| Reason code, decided by code | 100.0% (14/14; 95% CI 78.5-100.0%) |
+| Moments found (recall) | 100.0% (36/36; 95% CI 90.4-100.0%) |
+| Every moment found | 100.0% (42/42; 95% CI 91.6-100.0%) |
+| Crisis signal | 100.0% (42/42; 95% CI 91.6-100.0%) |
+| Crisis recall | 100.0% (3/3; 95% CI 43.9-100.0%) |
+| Opt-out, analysis | 100.0% (42/42; 95% CI 91.6-100.0%) |
+| Opt-out recall, analysis | 100.0% (5/5; 95% CI 56.6-100.0%) |
+| Opt-out recall, deterministic floor | 100.0% (5/5; 95% CI 56.6-100.0%) |
+| Follow-ups owed | 100.0% (42/42; 95% CI 91.6-100.0%) |
+| Grounded quotes (kept / proposed) | 100.0% (110/110; 95% CI 96.6-100.0%) |
+
+**Cost:** 43 model calls, 28149 input and 4923 output tokens, 769 tokens per call, bench single-rate estimate (not valid for two models; see the ledger below) ₹0.047 per call.
+
+## Tiered analysis
+
+Escalated: 10.3% (4/39; 95% CI 4.1-23.6%); why: {"no outcome":4}; second pass failed: 0.
+
+| Model | Calls | Input tokens | Output tokens |
+|---|---|---|---|
+| gpt-4.1-mini-2025-04-14 | 39 | 25528 | 4062 |
+| gpt-4.1-2025-04-14 | 4 | 2621 | 861 |
+
+## Cross-call slice
+
+16 calls with 3 planted objection themes; 16 sampled; 4 themes returned.
+
+| Measure | Result |
+|---|---|
+| Planted themes recalled (2+ quotes, all from that theme's calls) | 100.0% (3/3; 95% CI 43.9-100.0%) |
+| Themes whose quotes all come from one planted theme | 100.0% (4/4; 95% CI 51.0-100.0%) |
+| Model quotes that were verbatim | 100.0% (11/11; 95% CI 74.1-100.0%) |
+
+Funnel over the seeded slice: dialled 16, connected 16, talked 16, goal reached 4 ({"verified":0,"manager":0,"ai_guess":4}).
+
+## Misses
+
+- `opt_out.telecom.marathi-english`: outcome callback (key not_interested), reason END_OPTED_OUT (key END_OPTED_OUT), moments [opt_out] (key [opt_out])
+
+## Harness ledger (every model request)
+
+44 requests, 30357 input and 5309 output tokens, ₹3.06 at prices.ts list rates (₹95/$); 429 retries 0, HTTP errors 0, network errors 0, refused by cap 0. Served model: gpt-4.1-2025-04-14, gpt-4.1-mini-2025-04-14. By model: gpt-4.1-mini: 40 requests, 27736 in / 4448 out, ₹1.90; gpt-4.1: 4 requests, 2621 in / 861 out, ₹1.15.

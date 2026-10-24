@@ -1,0 +1,6 @@
+Pre-registered 2026-10-23T23:19Z, before the DEV run.
+Reference DEV numbers: round 1 (old contract, 2026-10-23, research/2026-10-23/benches/analysis-*.json restricted to the
+42 DEV ids of splits.json): gpt-4.1-mini 35/42 outcome, gpt-4.1 42/42. Round 2 ran TEST only (no DEV number exists).
+Stop rule: if gpt-4.1-mini DEV outcome is <= 30/42 (more than 4 below round 1's 35/42; 4/34 is mini's measured
+pass-to-pass noise), stop the analysis runs and report instead of spending on TEST. Also stop if commitment recall or
+moment recall on DEV falls more than 4 calls below round 1's DEV mini.

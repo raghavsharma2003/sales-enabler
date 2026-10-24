@@ -1,0 +1,2099 @@
+{
+ "generatedAt": "2026-10-23T23:28:20.380Z",
+ "mode": "real",
+ "model": "tiered (gpt-4.1-mini-2025-04-14 first, gpt-4.1-2025-04-14 on escalation)",
+ "split": "test",
+ "judge": false,
+ "truncated": false,
+ "analysisSetting": {
+  "mode": "tiered",
+  "model": "gpt-4.1-mini",
+  "escalateModel": "gpt-4.1",
+  "threshold": 0.6
+ },
+ "tier": {
+  "calls": 39,
+  "escalated": {
+   "k": 8,
+   "n": 39,
+   "rate": 0.20512820512820512,
+   "ci95": [
+    0.10779718175750849,
+    0.3553396814448441
+   ]
+  },
+  "why": {
+   "no outcome": 8
+  },
+  "secondFailed": 0,
+  "byModel": [
+   {
+    "model": "gpt-4.1-mini-2025-04-14",
+    "calls": 39,
+    "input": 25528,
+    "output": 3926
+   },
+   {
+    "model": "gpt-4.1-2025-04-14",
+    "calls": 8,
+    "input": 5231,
+    "output": 1621
+   }
+  ]
+ },
+ "cases": {
+  "run": 42,
+  "planned": 42,
+  "templates": 12,
+  "languages": [
+   "hinglish",
+   "tamil-english",
+   "bengali-english",
+   "marathi-english"
+  ]
+ },
+ "fields": {
+  "outcome": {
+   "k": 41,
+   "n": 42,
+   "rate": 0.9761904761904762,
+   "ci95": [
+    0.8767879830621691,
+    0.9957845959122008
+   ]
+  },
+  "reasonCode": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "reasonCodeModelRefined": {
+   "k": 28,
+   "n": 28,
+   "rate": 1,
+   "ci95": [
+    0.8793566935605294,
+    1
+   ]
+  },
+  "reasonCodeCodeDecided": {
+   "k": 14,
+   "n": 14,
+   "rate": 1,
+   "ci95": [
+    0.7846891945970195,
+    0.9999999999999998
+   ]
+  },
+  "momentRecall": {
+   "k": 36,
+   "n": 36,
+   "rate": 1,
+   "ci95": [
+    0.9035813700311206,
+    1
+   ]
+  },
+  "allMomentsFound": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "crisis": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "crisisRecall": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "optOutByAnalysis": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  },
+  "optOutRecallByAnalysis": {
+   "k": 5,
+   "n": 5,
+   "rate": 1,
+   "ci95": [
+    0.5655175313406071,
+    1
+   ]
+  },
+  "optOutRecallByFloor": {
+   "k": 5,
+   "n": 5,
+   "rate": 1,
+   "ci95": [
+    0.5655175313406071,
+    1
+   ]
+  },
+  "followUps": {
+   "k": 42,
+   "n": 42,
+   "rate": 1,
+   "ci95": [
+    0.9162012079230887,
+    1
+   ]
+  }
+ },
+ "grounding": {
+  "k": 113,
+  "n": 113,
+  "rate": 1,
+  "ci95": [
+   0.967122467332433,
+   1
+  ]
+ },
+ "cost": {
+  "modelCalls": 47,
+  "inputTokens": 30759,
+  "outputTokens": 5547,
+  "tokensPerCall": 772.468085106383,
+  "inrPerCall": null,
+  "priced": true,
+  "note": "bench single-rate INR not valid for a two-model run; see costTiered (per-call cost lines priced per model)"
+ },
+ "cross": {
+  "calls": 16,
+  "callsSampled": 16,
+  "themesReturned": 3,
+  "themeRecall": {
+   "k": 2,
+   "n": 3,
+   "rate": 0.6666666666666666,
+   "ci95": [
+    0.2076595988078242,
+    0.9385080559790691
+   ]
+  },
+  "recalled": [
+   "price",
+   "trust"
+  ],
+  "pureThemes": {
+   "k": 3,
+   "n": 3,
+   "rate": 1,
+   "ci95": [
+    0.4385029643606803,
+    1
+   ]
+  },
+  "quotesVerbatim": {
+   "k": 8,
+   "n": 9,
+   "rate": 0.8888888888888888,
+   "ci95": [
+    0.565000291629209,
+    0.9801091125830901
+   ]
+  },
+  "themesDropped": 1,
+  "usage": {
+   "inputTokens": 2208,
+   "outputTokens": 339
+  },
+  "funnel": {
+   "agentVersionId": null,
+   "dialled": 16,
+   "connected": 16,
+   "talked": 16,
+   "goalReached": 4,
+   "goalByGrade": {
+    "verified": 0,
+    "manager": 0,
+    "ai_guess": 4
+   }
+  }
+ },
+ "items": [
+  {
+   "id": "agreed.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "agreed",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "agreed",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "agreed",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "callback",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "callback",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "callback",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "not_interested",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_OBJECTION_UNRESOLVED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "not_interested",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "not_interested",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "wrong_person",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "wrong_person",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "wrong_person.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "wrong_person",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "wrong_person",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "wrong_person",
+    "reasonCode": "CONV_WRONG_PERSON",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "opt_out",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "opt_out",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "opt_out",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "complaint",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "complaint",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "complaint.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "complaint",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "needs_human",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_COMPLAINT",
+    "reasonAlt": [
+     "CONV_NEEDS_HUMAN"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": "needs_human",
+    "reasonCode": "CONV_NEEDS_HUMAN",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "question_then_agreed",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "question_then_agreed",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "question_then_agreed.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "question_then_agreed",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "question",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "question"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "language_mismatch",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "language_mismatch",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 5,
+   "quotesDropped": 0
+  },
+  {
+   "id": "language_mismatch.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "no outcome",
+    "escalated": true,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": "gpt-4.1-2025-04-14",
+    "secondFailed": false
+   },
+   "template": "language_mismatch",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "reasonAlt": [
+     "CONV_CONFUSED"
+    ],
+    "moments": [
+     {
+      "kind": "confusion",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "CONV_LANGUAGE_MISMATCH",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "crisis",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "crisis",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "crisis.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "crisis",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [],
+    "crisis": true,
+    "optOut": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_CRISIS",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": true,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "human"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "early_hangup",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "early_hangup",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "early_hangup.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "early_hangup",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "END_EARLY_HANGUP",
+    "moments": [
+     "confusion"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 1,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.ecommerce.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.education.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "no_answer.realestate.hinglish",
+   "split": "test",
+   "tier": null,
+   "template": "no_answer",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": false,
+   "key": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": null,
+    "reasonCode": "DIAL_NO_ANSWER",
+    "moments": [],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "skipped",
+   "quotesProposed": 0,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.ecommerce.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "objection_resolved",
+   "industry": "ecommerce",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.education.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "objection_resolved",
+   "industry": "education",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "objection_resolved.realestate.hinglish",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "objection_resolved",
+   "industry": "realestate",
+   "language": "hinglish",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 1
+     },
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment",
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 4,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.lending.tamil-english",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "callback",
+   "industry": "lending",
+   "language": "tamil-english",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.lending.tamil-english",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "opt_out",
+   "industry": "lending",
+   "language": "tamil-english",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "agreed.healthcare.bengali-english",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "agreed",
+   "industry": "healthcare",
+   "language": "bengali-english",
+   "refinable": true,
+   "key": {
+    "outcome": "agreed",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     {
+      "kind": "commitment",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "agreed",
+    "reasonCode": "CONV_GOAL_DONE",
+    "moments": [
+     "commitment"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "not_interested.healthcare.bengali-english",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "not_interested",
+   "industry": "healthcare",
+   "language": "bengali-english",
+   "refinable": true,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 3,
+    "reasonCode": "CONV_NOT_INTERESTED",
+    "reasonAlt": [
+     "CONV_OBJECTION_UNRESOLVED"
+    ],
+    "moments": [
+     {
+      "kind": "objection",
+      "line": 3
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "not_interested",
+    "reasonCode": "CONV_OBJECTION_UNRESOLVED",
+    "moments": [
+     "objection"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 3,
+   "quotesDropped": 0
+  },
+  {
+   "id": "callback.telecom.marathi-english",
+   "split": "test",
+   "tier": {
+    "why": null,
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "callback",
+   "industry": "telecom",
+   "language": "marathi-english",
+   "refinable": true,
+   "key": {
+    "outcome": "callback",
+    "outcomeLine": 1,
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     {
+      "kind": "callback_request",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "CONV_CALLBACK",
+    "moments": [
+     "callback_request"
+    ],
+    "crisis": false,
+    "optOutAnalysis": false,
+    "optOutFloor": false,
+    "followUps": [
+     "callback"
+    ]
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  },
+  {
+   "id": "opt_out.telecom.marathi-english",
+   "split": "test",
+   "tier": {
+    "why": "the engine decided this call's reason; it is never escalated",
+    "escalated": false,
+    "firstModel": "gpt-4.1-mini-2025-04-14",
+    "secondModel": null,
+    "secondFailed": false
+   },
+   "template": "opt_out",
+   "industry": "telecom",
+   "language": "marathi-english",
+   "refinable": false,
+   "key": {
+    "outcome": "not_interested",
+    "outcomeLine": 1,
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     {
+      "kind": "opt_out",
+      "line": 1
+     }
+    ],
+    "crisis": false,
+    "optOut": true,
+    "followUps": []
+   },
+   "predicted": {
+    "outcome": "callback",
+    "reasonCode": "END_OPTED_OUT",
+    "moments": [
+     "opt_out"
+    ],
+    "crisis": false,
+    "optOutAnalysis": true,
+    "optOutFloor": true,
+    "followUps": []
+   },
+   "analysisStatus": "done",
+   "quotesProposed": 2,
+   "quotesDropped": 0
+  }
+ ],
+ "endpoint": "Azure OpenAI: gpt-4.1-mini Standard (regional, South India), gpt-4.1 GlobalStandard",
+ "harness": {
+  "source": "harness fetch ledger (every model request, incl. compile/memory/insight calls the bench does not price)",
+  "requests": 48,
+  "inputTokens": 32967,
+  "outputTokens": 5886,
+  "inr": 4.098,
+  "byModel": {
+   "gpt-4.1-mini": {
+    "requests": 40,
+    "inputTokens": 27736,
+    "outputTokens": 4265,
+    "inr": 1.873
+   },
+   "gpt-4.1": {
+    "requests": 8,
+    "inputTokens": 5231,
+    "outputTokens": 1621,
+    "inr": 2.226
+   }
+  },
+  "retries429": 0,
+  "httpErrors": 0,
+  "httpErrorDetails": [],
+  "networkErrors": 0,
+  "refusedByCap": 0,
+  "servedModels": [
+   "gpt-4.1-2025-04-14",
+   "gpt-4.1-mini-2025-04-14"
+  ]
+ },
+ "costTiered": {
+  "source": "the bench's per-call cost lines (analysis passes only; the cross-call insight excluded), priced per model at prices.ts list rates",
+  "calls": 42,
+  "inr": 3.9493,
+  "inrPerCall": 0.094,
+  "byModel": {
+   "gpt-4.1-mini": {
+    "passes": 39,
+    "input": 25528,
+    "output": 3926,
+    "inr": 1.7235
+   },
+   "gpt-4.1": {
+    "passes": 8,
+    "input": 5231,
+    "output": 1621,
+    "inr": 2.2258
+   }
+  }
+ }
+}
