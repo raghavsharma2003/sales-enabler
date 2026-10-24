@@ -5,8 +5,8 @@
 #   python -m vpvoice.samples --out DIR [--stack v2-flashlite --stack v2-mai ...]       # real adapters (keys, India)
 #   VP_DEVSIM=1 python -m vpvoice.samples --out DIR --devsim                            # offline fakes (tests)
 #
-# Writes only inside --out: <tts>-<voice>.ogg (Opus, mono, loudness-normalised to -16 LUFS, true peak -1.5 dB) and
-# manifest.json, the shape web reads (product/web/public/samples/manifest.json): {stackId: {file, durationS, text,
+# Writes only inside --out: <tts>-<voice>.ogg (Opus) and .mp3 (for Safari), mono, loudness-normalised to -16 LUFS,
+# true peak -1.5 dB, and manifest.json, the shape web reads (product/web/public/samples/manifest.json): {stackId: {file, sources, durationS, text,
 # recordedAt, combinationId, voice, tts}}. Entries for stacks not rendered this run are kept. Refuses in production
 # mode (NODE_ENV / VP_ENV = production): a sample run is a lab job, never part of serving calls. Google requests start
 # at least 1 s apart (the Vertex rate rule) and go only through GoogleRoute (India only).
@@ -51,10 +51,15 @@ def trim(pcm, rate=RATE, pad_s=0.15, floor=200):
     return a[s:e].tobytes()
 
 
-def encode(pcm, path, rate=RATE):
-    """PCM16 mono -> Ogg/Opus at path, loudness-normalised (EBU R128, single pass). Returns the duration in seconds."""
+# The renditions of each clip, in the order a page should list them as <source>s: Opus first, MP3 for Safari.
+FORMATS = [('ogg', 'audio/ogg; codecs=opus', ['-ar', '48000', '-c:a', 'libopus', '-b:a', '48k', '-f', 'ogg']),
+           ('mp3', 'audio/mpeg', ['-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '64k', '-f', 'mp3'])]
+
+
+def encode(pcm, path, rate=RATE, fmt=FORMATS[0]):
+    """PCM16 mono -> one rendition at path, loudness-normalised (EBU R128, single pass). Returns the duration in s."""
     cmd = ['ffmpeg', '-v', 'error', '-y', '-f', 's16le', '-ar', str(rate), '-ac', '1', '-i', 'pipe:0',
-           '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'libopus', '-b:a', '48k', '-f', 'ogg', path]
+           '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11'] + fmt[2] + [path]
     p = subprocess.run(cmd, input=pcm, capture_output=True, timeout=60)
     if p.returncode: raise RuntimeError('ffmpeg: ' + p.stderr.decode(errors='replace')[:300])
     return round(len(pcm) / 2 / rate, 2)
@@ -75,21 +80,35 @@ async def speak_live(http, google, spec, voice_name, text):
     setup = setup_msg(spec, voice_name, LIVE_SYSTEM, model=google.resource(spec['model']))
     setup['setup'].pop('tools', None)
     ws = await connect(http, google, setup, spec['model'])
-    pcm = bytearray(); said = ''
     try:
         await ws.send_json({'clientContent': {'turns': [{'role': 'user', 'parts': [{'text': text}]}], 'turnComplete': True}})
-        deadline = time.monotonic() + 30
-        while time.monotonic() < deadline:
-            m = await ws.receive(timeout=20); txt = ws_text(m)
-            if txt is None: break
-            sc = json.loads(txt).get('serverContent') or {}
-            for p in (sc.get('modelTurn') or {}).get('parts') or []:
-                d = (p.get('inlineData') or {}).get('data')
-                if d: pcm += base64.b64decode(d)
-            said += (sc.get('outputTranscription') or {}).get('text', '')
-            if sc.get('turnComplete'): break
+        return await read_live(ws, ws_text)
     finally:
         await ws.close()
+
+
+LIVE_DRAIN_S = 3.0
+
+
+async def read_live(ws, ws_text, total_s=30.0, drain_s=LIVE_DRAIN_S):
+    """Audio until turnComplete, then the output transcription, which Live can send after turnComplete (the first
+    VM render, 2026-10-24, had the whole line in its audio and an empty spokenText): keep reading for drain_s, or until
+    the socket goes quiet for 1 s."""
+    pcm = bytearray(); said = ''; deadline = time.monotonic() + total_s; done_at = None
+    while time.monotonic() < deadline:
+        if done_at is not None and time.monotonic() > done_at + drain_s: break
+        try: m = await ws.receive(timeout=1.0 if done_at is not None else 20)
+        except asyncio.TimeoutError:
+            if done_at is not None: break
+            raise
+        txt = ws_text(m)
+        if txt is None: break
+        sc = json.loads(txt).get('serverContent') or {}
+        for p in (sc.get('modelTurn') or {}).get('parts') or []:
+            d = (p.get('inlineData') or {}).get('data')
+            if d: pcm += base64.b64decode(d)
+        said += (sc.get('outputTranscription') or {}).get('text', '')
+        if sc.get('turnComplete') and done_at is None: done_at = time.monotonic()
     return bytes(pcm), said.strip()
 
 
@@ -159,9 +178,12 @@ async def run(out, stack_ids, renderer, now=None):
                 if not pcm: raise RuntimeError('the voice returned no audio')
                 dur = len(pcm) / 2 / RATE
                 if dur > MAX_S: raise RuntimeError(f'sample is {dur:.1f} s, over {MAX_S:.0f} s')
-                done[clip] = (encode(pcm, inside(out, clip)), said)
+                dur = encode(pcm, inside(out, clip))
+                for ext, _, args in FORMATS[1:]: encode(pcm, inside(out, clip[:-4] + '.' + ext), fmt=(ext, _, args))
+                done[clip] = (dur, said)
             dur, said = done[clip]
-            e = {'file': clip, 'durationS': dur, 'text': TEXT, 'recordedAt': when, 'combinationId': stacks.combination_id(s, voice_name),
+            sources = [{'file': clip[:-4] + '.' + ext, 'type': mime} for ext, mime, _ in FORMATS]
+            e = {'file': clip, 'sources': sources, 'durationS': dur, 'text': TEXT, 'recordedAt': when, 'combinationId': stacks.combination_id(s, voice_name),
                  'voice': voice_name, 'tts': part}
             if said is not None: e['spokenText'] = said             # Live does not promise verbatim: what it said
             manifest[s['id']] = e

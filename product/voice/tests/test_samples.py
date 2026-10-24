@@ -21,7 +21,10 @@ class Render(unittest.TestCase):
         self.assertEqual(set(manifest), set(samples.curated()))
         self.assertIn('v2-live', manifest, 's2s gets a sample too')
         for sid, e in manifest.items():
-            self.assertEqual(set(e) - {'spokenText'}, {'file', 'durationS', 'text', 'recordedAt', 'combinationId', 'voice', 'tts'})
+            self.assertEqual(set(e) - {'spokenText'}, {'file', 'sources', 'durationS', 'text', 'recordedAt', 'combinationId', 'voice', 'tts'})
+            self.assertEqual([x['type'] for x in e['sources']], ['audio/ogg; codecs=opus', 'audio/mpeg'], 'Opus first, MP3 for Safari')
+            self.assertEqual(e['sources'][0]['file'], e['file'])
+            for x in e['sources']: self.assertTrue(os.path.isfile(os.path.join(self.out, x['file'])), x)
             self.assertTrue(os.path.isfile(os.path.join(self.out, e['file'])), sid)
             self.assertGreater(e['durationS'], 0); self.assertLessEqual(e['durationS'], samples.MAX_S)
             self.assertEqual(e['recordedAt'], '2026-10-24T01:00:00Z'); self.assertEqual(e['text'], samples.TEXT)
@@ -30,7 +33,7 @@ class Render(unittest.TestCase):
         # stacks that share a voice share one clip (one provider request, not one per stack)
         self.assertEqual(manifest['v2-flashlite']['file'], manifest['v2-54mini']['file'])
         self.assertNotEqual(manifest['v2-flashlite']['file'], manifest['v2-mai']['file'])
-        self.assertEqual(sorted(os.listdir(self.out)), sorted({e['file'] for e in manifest.values()} | {'manifest.json'}))
+        self.assertEqual(sorted(os.listdir(self.out)), sorted({x['file'] for e in manifest.values() for x in e['sources']} | {'manifest.json'}))
 
     def test_files_are_opus_and_loudness_normalised(self):
         manifest, _ = self.render(['v2-flashlite'])
@@ -38,6 +41,9 @@ class Render(unittest.TestCase):
         probe = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,channels', '-of', 'json', f], capture_output=True, text=True)
         st = json.loads(probe.stdout)['streams'][0]
         self.assertEqual((st['codec_name'], st['channels']), ('opus', 1))
+        mp3 = os.path.join(self.out, manifest['v2-flashlite']['sources'][1]['file'])
+        probe = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,channels', '-of', 'json', mp3], capture_output=True, text=True)
+        self.assertEqual(json.loads(probe.stdout)['streams'][0]['codec_name'], 'mp3')
         meas = subprocess.run(['ffmpeg', '-hide_banner', '-i', f, '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr
         lufs = float(meas.rsplit('I:', 1)[1].split('LUFS')[0])
         self.assertAlmostEqual(lufs, -16, delta=2.5)
@@ -71,6 +77,23 @@ class Render(unittest.TestCase):
         env = {'VP_DEVSIM': '1'}
         self.assertEqual(samples.main(['--out', self.out, '--devsim', '--stack', 'v2-flashlite'], env=env), 0)
         self.assertEqual(set(json.load(open(os.path.join(self.out, 'manifest.json')))), {'v2-flashlite'})
+
+
+class LiveReading(unittest.TestCase):
+    """The first VM render had the whole line in the v2-live audio and spokenText "": the transcription came late."""
+    def test_the_transcription_after_turn_complete_is_kept(self):
+        import base64
+        msgs = [{'serverContent': {'modelTurn': {'parts': [{'inlineData': {'data': base64.b64encode(b'\x01\x00' * 100).decode()}}]}}},
+                {'serverContent': {'outputTranscription': {'text': 'नमस्ते आशा जी। '}}},
+                {'serverContent': {'turnComplete': True}},
+                {'serverContent': {'outputTranscription': {'text': 'मैं एक AI असिस्टेंट हूँ।'}}}]
+        class WS:
+            def __init__(self): self.q = list(msgs)
+            async def receive(self, timeout=None):
+                if not self.q: await asyncio.sleep(min(timeout, 0.05)); raise asyncio.TimeoutError
+                return json.dumps(self.q.pop(0))
+        pcm, said = asyncio.run(samples.read_live(WS(), lambda m: m))
+        self.assertEqual(len(pcm), 200); self.assertEqual(said, 'नमस्ते आशा जी। मैं एक AI असिस्टेंट हूँ।')
 
 
 class Rules(unittest.TestCase):

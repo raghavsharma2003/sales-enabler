@@ -234,8 +234,9 @@ words alone cannot stop her quickly.
 `python -m vpvoice.samples --out DIR [--stack ID ...]` renders one short clip per curated stack (s2s included)
 through the runtime's own voice adapters, with the stack's default voice and her neutral style. The line is fixed:
 `samples.TEXT` (greets "Asha", the shared AI disclosure, no brand, no claim). Stacks that share a voice share one
-clip. Output: Ogg/Opus clips normalised to -16 LUFS plus `manifest.json` (`{stackId: {file, durationS, text,
-recordedAt, combinationId, voice, tts}}`, and `spokenText` for Live, which does not promise to read verbatim).
+clip. Output: each clip as Ogg/Opus and MP3 (for Safari), normalised to -16 LUFS, plus `manifest.json`
+(`{stackId: {file, sources: [{file, type}], durationS, text, recordedAt, combinationId, voice, tts}}`; `file` is the
+Opus one; `spokenText` for Live, which does not promise to read verbatim and may send its transcription late).
 It writes only inside `--out`, refuses in production mode, and spaces Google requests 1 s apart. Run it on the
 India lab VM, where the keys are; `VP_DEVSIM=1 ... --devsim` renders devsim's fake tone offline.
 
