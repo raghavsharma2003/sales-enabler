@@ -477,8 +477,12 @@ export async function evaluateMonitors(pool: pg.Pool, workspaceId: string): Prom
          SELECT count(*)::text AS n, count(*) FILTER (WHERE hit)::text AS hit, (array_agg(id) FILTER (WHERE hit))[1:10]::text[] AS evidence FROM w`, [workspaceId, win]);
       await c.query('UPDATE monitor SET last_read_at = now() WHERE id = $1', [m.id]);
       const n = Number(r!.n), hit = Number(r!.hit);
-      if (n < m.config.minCalls || hit / n <= m.config.threshold) continue;
-      const open = await one(c, `SELECT 1 FROM issue WHERE workspace_id = $1 AND monitor_id = $2 AND status <> 'resolved'`, [workspaceId, m.id]);
+      const open = await one<{ id: string; created_at: Date; detail: any }>(c,
+        `SELECT id, created_at, detail FROM issue WHERE workspace_id = $1 AND monitor_id = $2 AND status <> 'resolved' ORDER BY created_at DESC LIMIT 1`, [workspaceId, m.id]);
+      if (n < m.config.minCalls || hit / n <= m.config.threshold) {
+        if (open) await resolveIfRecovered(c, workspaceId, m, cond, win, open);
+        continue;
+      }
       if (open) continue;
       const row = await one<{ id: string }>(c,
         `INSERT INTO issue (workspace_id, category, severity, subject_type, detail, monitor_id) VALUES ($1,$2,$3,'monitor',$4,$5) RETURNING id`,
@@ -488,6 +492,30 @@ export async function evaluateMonitors(pool: pg.Pool, workspaceId: string): Prom
     }
     return { opened };
   });
+}
+
+/** Hysteresis: an issue opens above the threshold but closes only at or under this share of it (35% -> 28%), so a rate
+ *  that wobbles around the line does not close and reopen the issue with every call. */
+export const RECOVER_AT = 0.8;
+
+/** An open monitor issue closes when the calls that ended after it opened (at least the monitor's minimum) are back
+ *  clearly under its threshold (RECOVER_AT). Only those calls count, so re-reading the calls that raised it can never close it. When a
+ *  learned change was adopted for the issue, the resolution says so, as an observation, not as proof of cause. */
+async function resolveIfRecovered(c: Queryable, workspaceId: string, m: { config: MonitorConfig }, cond: string, win: number,
+  open: { id: string; created_at: Date; detail: any }): Promise<void> {
+  const f = await one<{ n: string; hit: string }>(c,
+    `WITH w AS (SELECT (${cond}) AS hit FROM conversation cv
+                WHERE cv.workspace_id = $1 AND cv.channel <> 'test' AND cv.status IN ('ended','processing','done') AND cv.ended_at > $3
+                ORDER BY cv.ended_at DESC LIMIT $2)
+     SELECT count(*)::text AS n, count(*) FILTER (WHERE hit)::text AS hit FROM w`, [workspaceId, win, open.created_at]);
+  const n = Number(f!.n), hit = Number(f!.hit);
+  if (n < m.config.minCalls || hit / n > m.config.threshold * RECOVER_AT) return;
+  const pct = (x: number) => `${Math.round(x * 1000) / 10}%`;
+  const adopted = open.detail?.adoptedChange;
+  const resolution = `recovered: ${hit} of ${n} calls since it opened (${pct(hit / n)}), at or under ${pct(m.config.threshold * RECOVER_AT)} (the monitor flags above ${pct(m.config.threshold)})`
+    + (adopted?.at ? `; after a change was adopted on ${String(adopted.at).slice(0, 10)}${adopted.change ? ` (${adopted.change})` : ''}. Observed together, not proof that the change caused it` : '');
+  await c.query(`UPDATE issue SET status = 'resolved', resolved_at = now(), resolution = $3, detail = detail || $4::jsonb WHERE id = $1 AND workspace_id = $2`,
+    [open.id, workspaceId, resolution, JSON.stringify({ recovered: { calls: n, hits: hit, value: hit / n } })]);
 }
 
 /** Analyse ended calls the in-process queue lost (a restart between ingest and analysis), and retry pending opt-outs. */

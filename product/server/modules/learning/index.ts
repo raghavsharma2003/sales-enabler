@@ -527,6 +527,7 @@ async function adoptionCheck(ctx: ToolCtx, e: ExperimentRow) {
     await addLesson(ctx.q, ws, e.agent_id, `Adopted: the ${p?.kind ?? ''} change now runs on every ${e.design.binding} call (${decision.label}). `
       + (edit.status === 'confirmed' ? 'The agent\'s draft carries it, so the next published version keeps it.' : `The draft could not take it (${adoption.draft}); edit it before the next publish.`),
       'won', e.proposal_id, p?.change_hash ?? null, { experimentId: e.id, deploymentId: dep!.id });
+    await linkIssue(ctx.q, ws, e, p?.change ?? [], adoption.at as string);
   } else if (card && ['cancelled', 'expired'].includes(card.status)) {
     adoption = { status: 'declined', at: new Date().toISOString() };
     await addLesson(ctx.q, ws, e.agent_id, `Won but not adopted: the rollout was ${card.status === 'expired' ? 'left to expire' : 'declined'} (${decision.label}). The current version keeps every call.`,
@@ -534,6 +535,18 @@ async function adoptionCheck(ctx: ToolCtx, e: ExperimentRow) {
   } else return { state: e.state, decision, adoption: { status: 'waiting', actionId: e.result?.publish?.actionId ?? null } };
   await ctx.q.query(`UPDATE experiment SET result = coalesce(result, '{}'::jsonb) || $2 WHERE id = $1`, [e.id, JSON.stringify({ adoption })]);
   return { state: e.state, decision, adoption };
+}
+
+/** The monitor issue a proposal came from records the adopted change, in words. It stays open: the calls module's monitor
+ *  closes it when the calls after it opened are back under the threshold, and its resolution names the change. */
+async function linkIssue(q: Queryable, ws: string, e: ExperimentRow, ops: ChangeOp[], at: string): Promise<void> {
+  if (!e.proposal_id) return;
+  const src = await one<{ issue_id: string | null }>(q, `SELECT evidence->>'issueId' AS issue_id FROM proposal WHERE id = $1 AND workspace_id = $2`, [e.proposal_id, ws]);
+  if (!src?.issue_id) return;
+  const base = await versionById(q, ws, e.control_version_id);
+  const change = base ? describeChange(agentOf(base), ops).map(c => c.part).join('; ') : 'a learned change';
+  await q.query(`UPDATE issue SET detail = detail || $3::jsonb WHERE id = $1 AND workspace_id = $2`,
+    [src.issue_id, ws, JSON.stringify({ adoptedChange: { at, proposalId: e.proposal_id, experimentId: e.id, change } })]);
 }
 
 /** A win is proposed as deployment.split at 100% treatment on the experiment's binding. That tool must be

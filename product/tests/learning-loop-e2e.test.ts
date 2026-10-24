@@ -200,6 +200,11 @@ test('the learning loop runs from finished calls to an adopted change carried by
   const lessons = ok(await admin.tool('lesson.list'), 'lesson.list') as any[];
   assert.ok(lessons.some((l: any) => /^Adopted/.test(l.text)), 'a lesson records the adoption');
 
+  // ---- 11b. the issue that started the loop records the adopted change; its monitor closes it once calls recover
+  const src = (await one<{ status: string; detail: any; resolution: string | null }>(pool, 'SELECT status, detail, resolution FROM issue WHERE id = $1', [issue!.id]))!;
+  assert.equal(src.detail.adoptedChange?.experimentId, experimentId, JSON.stringify(src.detail));
+  t.diagnostic('source issue after adoption: ' + src.status + ' ' + (src.resolution ?? ''));
+
   // ---- 12. the draft carries the change, and the next published version's brief says it
   const g1 = ok(await admin.tool('agent.get', { agentId }), 'agent.get');
   assert.equal(g1.draft.opening.usefulFirst, NEW_OPENING);

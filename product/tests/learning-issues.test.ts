@@ -115,3 +115,32 @@ test('the daily cap stops automatic runs for the rest of the day without marking
   assert.equal(asked.length, 0, 'no model call over the cap');
   assert.equal(await one(pool, 'SELECT 1 FROM learning_issue_run WHERE issue_id = $1', [opened[0]]), null, 'the issue is retried on a later day');
 });
+
+test('a monitor issue closes itself when the calls since it opened are back under the threshold; the calls that raised it never close it', { skip }, async () => {
+  const s = await setup(30, 15, 0);                          // 50% early hang-ups: the monitor opens an issue
+  const { opened } = await evaluateMonitors(pool, s.ws);
+  assert.equal(opened.length, 1);
+  const id = opened[0]!;
+  // Re-evaluating on the same calls never closes it.
+  await evaluateMonitors(pool, s.ws);
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM issue WHERE id = $1', [id]))!.status, 'open');
+  // A change was adopted for it (what learning writes on adoption).
+  await pool.query(`UPDATE issue SET detail = detail || $2::jsonb WHERE id = $1`, [id, JSON.stringify({ adoptedChange: { at: new Date().toISOString(), proposalId: null, change: 'the opening' } })]);
+  const newer = async (n: number, early: number, from: number) => { for (let i = 0; i < n; i++) {
+    await pool.query(`INSERT INTO conversation (workspace_id, agent_version_id, channel, status, reason_code, end_reason, started_at, ended_at)
+      VALUES ($1,$2,'phone','done',$3,'caller_hangup', now(), now() + make_interval(secs => $4))`, [s.ws, s.versionId, i < early ? 'END_EARLY_HANGUP' : 'CONV_GOAL_DONE', from + i]);
+  } };
+  // Just under the threshold is not recovered: 15 of 50 (30%) against 35% would close and reopen with every wobble.
+  await newer(50, 15, 1);
+  await evaluateMonitors(pool, s.ws);
+  assert.equal((await one<{ status: string }>(pool, 'SELECT status FROM issue WHERE id = $1', [id]))!.status, 'open', 'no flapping at the line');
+  // Clearly under it (at most 80% of the threshold): the last 50 calls have 3 early hang-ups (6%).
+  await newer(50, 3, 51);
+  await evaluateMonitors(pool, s.ws);
+  const r = await one<{ status: string; resolution: string; resolved_at: Date | null }>(pool, 'SELECT status, resolution, resolved_at FROM issue WHERE id = $1', [id]);
+  assert.equal(r!.status, 'resolved', JSON.stringify(r));
+  assert.ok(r!.resolved_at);
+  assert.match(r!.resolution, /3 of 50 calls since it opened \(6%\)/);
+  assert.match(r!.resolution, /after a change was adopted/);
+  assert.match(r!.resolution, /not proof/);
+});

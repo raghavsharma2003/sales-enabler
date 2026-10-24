@@ -75,6 +75,7 @@ export default function Insights() {
             {d => <ul className="issues">{d.issues.map(i => (
               <li key={i.id}><div className="row"><Chip tone={i.severity === 'critical' ? 'brick' : i.severity === 'warning' ? 'marigold' : 'neutral'} icon={<AlertTriangle size={12} aria-hidden />}>{prettyCode(i.severity)}</Chip><span className="small muted">first seen {ago(i.created_at)}</span></div>
                 <h3>{prettyCode(i.category)}</h3><p className="small">{issueText(i.detail)}</p>
+                {i.detail?.adoptedChange?.at && <p className="small" role="status">A change was adopted for this on {date(i.detail.adoptedChange.at)} ({i.detail.adoptedChange.change}). It closes by itself once the calls since it opened are back under the threshold.</p>}
                 <div><Btn size="sm" onClick={() => say(`Issue ${i.category}: ${issueText(i.detail)} What should I change? Prepare it as a change I can accept.`)}>Ask the assistant what to change</Btn></div></li>))}</ul>}</Async></Card>
 
         <Card aria-labelledby="mo-h"><CardHead id="mo-h" title="What is being watched" sub="A monitor that has not read any calls yet is shown as not read, never as all good." />

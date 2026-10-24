@@ -571,6 +571,9 @@ test('adopting a winner: once its 100% split is approved, the agent draft carrie
     const { experimentId, accepted } = await runningExperiment(t, { baselineRate: 0.2, mdeAbs: 0.3, minDays: 0 });
     const perArm = accepted.perArm as number;
     await dialUntil(t, bothReach(perArm), (arm, i) => (arm === 'treatment' ? (i % 10 < 8 ? 'confirmed' : 'declined') : (i % 10 < 2 ? 'confirmed' : 'declined')));
+    // The proposal came from a monitor issue (what proposeFromIssues records); adoption must say so on the issue.
+    const issueId = (await one<{ id: string }>(pool, "INSERT INTO issue (workspace_id, category, severity, subject_type, detail) VALUES ($1,'Conversation','warning','monitor','{}') RETURNING id", [t.ws]))!.id;
+    await pool.query(`UPDATE proposal SET evidence = evidence || jsonb_build_object('issueId', $2::text) WHERE id = (SELECT proposal_id FROM experiment WHERE id = $1)`, [experimentId, issueId]);
     const won = await t.call('experiment.check', { experimentId });
     assert.equal(won.result.verdict, 'win');
     const actionId = won.result.publish.actionId as string;
@@ -583,6 +586,10 @@ test('adopting a winner: once its 100% split is approved, the agent draft carrie
       assert.equal(r.result.adoption.status, 'adopted', JSON.stringify(r.result));
       assert.equal(draft.opening.usefulFirst, 'your AC visit on 24 October is ready to confirm', 'the next version is published from a draft that carries the change');
       assert.match(lessons, /Adopted/);
+      const linked = (await one<{ detail: any; status: string }>(pool, 'SELECT detail, status FROM issue WHERE id = $1', [issueId]))!;
+      assert.equal(linked.detail.adoptedChange?.experimentId, experimentId, 'the issue that started it records the adopted change');
+      assert.match(linked.detail.adoptedChange.change, /What she says first/);
+      assert.equal(linked.status, 'open', 'the issue stays open until its monitor sees the rate recover');
     } else {
       assert.equal(r.result.adoption.status, 'declined', JSON.stringify(r.result));
       assert.notEqual(draft.opening?.usefulFirst, 'your AC visit on 24 October is ready to confirm');
