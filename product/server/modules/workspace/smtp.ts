@@ -52,7 +52,7 @@ class Replies {
 export async function sendMail(cfg: SmtpConfig, m: { to: string[]; subject: string; text: string }, timeoutMs = 10_000): Promise<void> {
   const to = m.to.filter(validEmail);
   if (!to.length) throw new Error('no valid recipient address');
-  if (!validEmail(cfg.from.replace(/^.*<([^>]+)>\s*$/, '$1'))) throw new Error('VP_SMTP_FROM is not an email address');
+  if (!validEmail(cfg.from.replace(/^.*<([^>]+)>\s*$/, '$1'))) throw new Error("this server's mail sender is not an email address");
   let sock: Socket | TLSSocket;
   let fail!: (e: Error) => void;
   const failed = new Promise<never>((_, rej) => { fail = rej; });

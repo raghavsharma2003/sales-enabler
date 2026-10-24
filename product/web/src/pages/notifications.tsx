@@ -38,7 +38,7 @@ export default function Notifications() {
   ];
   return <Async q={q} what="Notifications" tool="notification.destination.list">{d => <div className="stack">
     {!d.email.configured && <div className="callout" role="note"><div className="grow"><p className="callout-l"><AlertTriangle size={14} aria-hidden /> Email not set up</p>
-      <p className="small">This server has no outgoing mail settings, so email alerts are recorded as not sent. Slack alerts and the alerts in the app are not affected. Whoever runs this server sets VP_SMTP_HOST and VP_SMTP_FROM.</p></div></div>}
+      <p className="small">This server has no outgoing mail settings, so email alerts are recorded as not sent. Slack alerts and the alerts in the app are not affected. Whoever runs this server can set up outgoing mail.</p></div></div>}
     <Card><CardHead title="Where alerts go" sub="Alerts also appear in the app. A crisis alert says only that a caller may be in distress, with a link to the call: never what they said, their name or their number." />
       {d.destinations.length === 0 ? <Empty title="No alert destinations yet" body="Add a Slack channel or email below so on-duty people hear about a caller in distress even when the app is closed." />
         : <Table caption="Alert destinations" cols={cols} rows={d.destinations} rowKey={r => r.id} />}</Card>

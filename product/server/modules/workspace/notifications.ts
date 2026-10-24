@@ -166,7 +166,7 @@ export function registerNotifications(r: Registry) {
             (SELECT status FROM notification_delivery x WHERE x.destination_id = d.id ORDER BY x.created_at DESC LIMIT 1) AS "lastStatus"
           FROM notification_destination d LEFT JOIN integration i ON i.id = d.integration_id AND i.workspace_id = d.workspace_id
           WHERE d.workspace_id = $1 AND d.status = 'active' ORDER BY d.created_at`, [ctx.workspaceId]),
-        email: cfg ? { configured: true, from: cfg.from } : { configured: false, from: null, note: 'Email not set up: this server has no outgoing mail settings (VP_SMTP_HOST and VP_SMTP_FROM). Email alerts are recorded as not sent and stay in the app.' },
+        email: cfg ? { configured: true, from: cfg.from } : { configured: false, from: null, note: 'Email not set up: this server has no outgoing mail settings. Email alerts are recorded as not sent and stay in the app.' },
         events: NOTIFY_EVENTS,
       };
     },
