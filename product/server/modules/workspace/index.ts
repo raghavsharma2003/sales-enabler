@@ -1,4 +1,5 @@
-// Workspace module: team and roles, API keys, brand, knowledge, offerings, integrations, webhooks, activity, search, sharing.
+// Workspace module: team and roles, API keys, brand, knowledge, offerings, integrations, webhooks and the results that
+// leave Vyakti (call records, the calls export), activity, search, sharing.
 import type { Module } from '../../app.ts';
 import { HttpError } from '../../http.ts';
 import { createSession, sessionCookie } from '../../auth.ts';
@@ -19,6 +20,7 @@ import { registerSearch } from './search.ts';
 import { registerShare, viewShared } from './share.ts';
 import { registerUndo } from './undo.ts';
 import { deliverPending, registerWebhooks } from './webhooks.ts';
+import { registerResults, resultsRoutes } from './results.ts';
 import { tool } from '../../tools.ts';
 
 const accept = obj({ token: str({ min: 20, max: 200 }), name: str({ min: 1, max: 80 }), password: str({ min: 10, max: 200 }) });
@@ -60,6 +62,7 @@ export const module: Module = {
     registerOffering(registry);
     registerIntegrations(registry);
     registerWebhooks(registry);
+    registerResults(registry);
     registerActivity(registry);
     registerUndo(registry);
     registerSearch(registry);
@@ -120,6 +123,7 @@ export const module: Module = {
     ssoRoutes(router, pool, auth);
     scimRoutes(router, pool);
     auditExportRoutes(router, pool, auth);
+    resultsRoutes(router, pool, auth);
 
     // Send queued webhooks every few seconds while the server runs. unref() so it never holds a process open.
     if (process.env.NODE_ENV !== 'test') {

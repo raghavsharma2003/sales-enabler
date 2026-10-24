@@ -10,7 +10,8 @@ import { obj, opt, record, str, uuid } from '../../../shared/validate.ts';
 import { open, seal } from './crypto.ts';
 import { STASH_TTL_MS } from './common.ts';
 
-export interface Kind { label: string; secrets: readonly string[]; config: readonly string[] }
+// `usedBy` says what reads the stored credentials today. A kind without it is stored, and nothing uses it yet.
+export interface Kind { label: string; secrets: readonly string[]; config: readonly string[]; usedBy?: string }
 export const INTEGRATION_KINDS: Record<string, Kind> = {
   hubspot: { label: 'HubSpot CRM', secrets: ['access_token'], config: ['portal_id'] },
   zoho_crm: { label: 'Zoho CRM', secrets: ['client_id', 'client_secret', 'refresh_token'], config: ['datacenter'] },
@@ -19,7 +20,8 @@ export const INTEGRATION_KINDS: Record<string, Kind> = {
   whatsapp_cloud: { label: 'WhatsApp Cloud API', secrets: ['access_token'], config: ['phone_number_id'] },
   exotel: { label: 'Exotel', secrets: ['api_key', 'api_token'], config: ['account_sid', 'subdomain'] },
   slack: { label: 'Slack', secrets: ['webhook_url'], config: [] },
-  custom_http: { label: 'Your own HTTP service', secrets: ['bearer_token'], config: ['base_url'] },
+  custom_http: { label: 'Your own HTTP service', secrets: ['bearer_token'], config: ['base_url'],
+    usedBy: 'Webhooks on its base address send its bearer token with every event' },
 };
 
 const kind = str({ oneOf: Object.keys(INTEGRATION_KINDS) });
@@ -29,10 +31,15 @@ export async function integrationSecrets(q: Queryable, workspaceId: string, name
   return row?.secret_ciphertext ? JSON.parse(open(workspaceId, 'integration', row.secret_ciphertext)) : null;
 }
 
+export async function integrationSecretsById(q: Queryable, workspaceId: string, id: string): Promise<Record<string, string> | null> {
+  const row = await one<{ secret_ciphertext: string | null }>(q, "SELECT secret_ciphertext FROM integration WHERE workspace_id = $1 AND id = $2 AND status = 'connected'", [workspaceId, id]);
+  return row?.secret_ciphertext ? JSON.parse(open(workspaceId, 'integration', row.secret_ciphertext)) : null;
+}
+
 export function registerIntegrations(r: Registry) {
   r.register(tool(obj({}), {
     name: 'integration.kinds', risk: 'read', summary: 'List the kinds of integration that can be connected and what each needs',
-    run: async () => ({ kinds: Object.entries(INTEGRATION_KINDS).map(([id, k]) => ({ id, label: k.label, secrets: k.secrets, config: k.config })) }),
+    run: async () => ({ kinds: Object.entries(INTEGRATION_KINDS).map(([id, k]) => ({ id, label: k.label, secrets: k.secrets, config: k.config, usedBy: k.usedBy ?? null })) }),
   }));
 
   r.register(tool(obj({ kind, secrets: record(str({ min: 1, max: 8000 }), { maxKeys: 10 }) }), {

@@ -326,6 +326,11 @@ export async function analyse(pool: pg.Pool, workspaceId: string, conversationId
         const followups = await afterCall(pool, registry, workspaceId, conversationId);
         rec.followups = followups;
         await pool.query(`UPDATE conversation SET analysis = jsonb_set(analysis, '{followups}', $3::jsonb) WHERE id = $1 AND workspace_id = $2`, [conversationId, workspaceId, JSON.stringify(followups)]);
+        // Results out: one call.ended per call and webhook (keyed by the call), its record built when sent (workspace results.ts).
+        if (followups.skipped !== 'test call' && registry.get('webhook.emit')) {
+          await registry.execute(pool, 'webhook.emit', { event: 'call.ended', key: conversationId, build: 'call.v1', data: { conversationId } }, { workspaceId, actor: { type: 'system', id: 'calls.analysis' } })
+            .catch(e => console.error('[vp] call.ended webhook', conversationId, e instanceof Error ? e.message : e));
+        }
       }
     }
     return rec;

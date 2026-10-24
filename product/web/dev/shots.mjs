@@ -32,6 +32,10 @@ const screens = (id) => [
   ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.optout}`], ['insights', '/insights'], ['numbers', '/numbers'],
   ['settings-team', '/settings/team'], ['settings-keys', '/settings/keys'], ['settings-brand', '/settings/brand'], ['settings-knowledge', '/settings/knowledge'], ['settings-billing', '/settings/billing'],
   ['settings-compliance', '/settings/compliance'], ['settings-privacy', '/settings/privacy'], ['settings-activity', '/settings/activity'], ['settings-operator', '/settings/operator'], ['settings-integrations', '/settings/integrations'],
+  // Webhooks: one made through the real tools (approved via POST /v1/actions/:id/decide, as the approval sheet does) to a synthetic address that does
+  // not resolve, then a test event sent to it, so the list shows a real failed delivery and its reason.
+  ['settings-webhooks', '/settings/webhooks', { before: async (p) => { await makeWebhook(p); } }],
+  ['calls-export', '/calls', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.getByRole('dialog').waitFor(); await p.waitForTimeout(300); } }],
   ['integrations-connect', '/settings/integrations', { after: async (p) => { await p.getByRole('button', { name: 'Connect HubSpot CRM' }).click(); await p.waitForTimeout(500); } }],
   // Security. The empty state comes first on a fresh workspace; the next screens configure single sign-on through the real tools (the secret is staged, the
   // A2 change is approved through POST /v1/actions/:id/decide, as the approval sheet does). The issuer is synthetic and does not resolve, so the connection test fails: that is the failure state.
@@ -64,6 +68,14 @@ async function configureSso(p) {
   if (cfg.configured) return;
   const { stashId } = await toolDo(p, 'sso.secret.stage', { clientSecret: 'demo-secret-not-real-0001' });
   await toolDo(p, 'sso.config.set', { ...SSO, stashId });
+  await p.reload({ waitUntil: 'networkidle' });
+}
+async function makeWebhook(p) {
+  const hooks = (await toolDo(p, 'webhook.list')).webhooks;
+  if (!hooks.some(h => h.description === 'Data warehouse')) {
+    const made = await toolDo(p, 'webhook.create', { url: 'https://hooks.saanjh-warehouse.invalid/vyakti', events: ['call.ended', 'contact.opted_out'], description: 'Data warehouse' });
+    await toolDo(p, 'webhook.test', { id: made.id });
+  }
   await p.reload({ waitUntil: 'networkidle' });
 }
 async function makeTokenAndExport(p) {
@@ -115,7 +127,7 @@ for (const [tag, viewport, extra] of SIZES) {
     if (o?.after) await o.after(page, tag);
     const file = `${out}${name}-${tag}.png`;
     if (tag === 'm') await page.addStyleTag({ content: '.bottombar{position:static!important}' });
-    if (tag === 'd' && name.startsWith('security')) await page.setViewportSize({ width: 1440, height: Math.min(4200, Math.max(900, await page.evaluate(() => document.documentElement.scrollHeight))) });   // a tall window, not a stitched full page, so the fixed menu and dock draw once
+    if (tag === 'd' && (name.startsWith('security') || name === 'settings-webhooks')) await page.setViewportSize({ width: 1440, height: Math.min(4200, Math.max(900, await page.evaluate(() => document.documentElement.scrollHeight))) });   // a tall window, not a stitched full page, so the fixed menu and dock draw once
     await page.screenshot({ path: file, fullPage: tag === 'm' && name !== 'security-require' });
     if (tag === 'd') await page.setViewportSize(viewport);
     const m = await page.evaluate(() => {

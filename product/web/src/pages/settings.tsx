@@ -1,4 +1,4 @@
-// Settings: team, API keys, brand, knowledge, billing (real cost, price "not set"), compliance, privacy, operator, integrations, activity.
+// Settings: team, API keys, brand, knowledge, billing (real cost, price "not set"), compliance, privacy, operator, integrations, webhooks, activity.
 import { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { run } from '../api.ts';
@@ -14,13 +14,14 @@ import { Link } from '../router.tsx';
 import Integrations from './integrations.tsx';
 import Security from './security.tsx';
 import Outcomes from './outcomes.tsx';
+import Webhooks from './webhooks.tsx';
 import { RevealSheet } from '../reveal.tsx';
 import { activitySentence, foldRepeats, pageFor, RULE_LABEL } from '../labels.ts';
 import type { ActivityRow, ApiKey, KnowledgeItem, Member } from '../types.ts';
 
-const TABS = ['team', 'keys', 'brand', 'knowledge', 'outcomes', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'activity'] as const;
+const TABS = ['team', 'keys', 'brand', 'knowledge', 'outcomes', 'billing', 'compliance', 'privacy', 'security', 'operator', 'integrations', 'webhooks', 'activity'] as const;
 type Tab = (typeof TABS)[number];
-const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', outcomes: 'Outcomes and checks', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', activity: 'Activity' };
+const LABEL: Record<Tab, string> = { team: 'Team', keys: 'API keys', brand: 'Brand', knowledge: 'Knowledge', outcomes: 'Outcomes and checks', billing: 'Billing', compliance: 'Compliance', privacy: 'Privacy', security: 'Security', operator: 'Assistant', integrations: 'Integrations', webhooks: 'Webhooks', activity: 'Activity' };
 
 export default function Settings({ tab }: { tab?: string }) {
   const go = useNav();
@@ -30,7 +31,7 @@ export default function Settings({ tab }: { tab?: string }) {
       <PageHead title="Settings" sub="Who can do what, what it costs, and the rules every call follows." />
       <Tabs label="Settings sections" value={t} onChange={v => go('/settings/' + v)} items={TABS.map(id => ({ id, label: LABEL[id] }))} />
       {t === 'team' && <Team />}{t === 'keys' && <Keys />}{t === 'brand' && <Brand />}{t === 'knowledge' && <Knowledge />}{t === 'outcomes' && <Outcomes />}{t === 'billing' && <Billing />}
-      {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'security' && <Security />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'activity' && <Activity />}
+      {t === 'compliance' && <Compliance />}{t === 'privacy' && <Privacy />}{t === 'security' && <Security />}{t === 'operator' && <OperatorTab />}{t === 'integrations' && <Integrations />}{t === 'webhooks' && <Webhooks />}{t === 'activity' && <Activity />}
     </div>
   );
 }

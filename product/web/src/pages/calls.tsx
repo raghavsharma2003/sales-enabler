@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Check, CircleX, Info, Play } from 'lucide-react';
 import { useApp, useData } from '../store.tsx';
 import { Link, useQuery } from '../router.tsx';
+import { CallsExportButton } from './calls-export.tsx';
 import { Async, Btn, Card, CardHead, Chip, Empty, Kv, NotMeasured, PageHead, SelectField, Table, Tabs, TextField, type Col, scrollMotion } from '../ui.tsx';
 import { callExplain, callGet, callSearch, campaignList } from '../data.ts';
 import { prettyCode } from './contacts.tsx';
@@ -34,7 +35,7 @@ function List() {
   ];
   return (
     <div className="page">
-      <PageHead title="Calls" sub="Every call, with what was said, why it ended, and what it cost. Practice calls are hidden unless you ask." />
+      <PageHead title="Calls" sub="Every call, with what was said, why it ended, and what it cost. Practice calls are hidden unless you ask." actions={<CallsExportButton campaignId={campaignId || undefined} campaignName={campName(campaignId || null)} />} />
       <Card>
         <Tabs label="Which calls" value={view} onChange={v => setQs({ view: v || null })} items={[{ id: '', label: 'Real calls' }, { id: 'test', label: 'With practice calls' }]} />
         <div className="filters"><TextField label="Filter by name" type="search" value={text} onChange={e => setText(e.target.value)} />

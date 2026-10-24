@@ -14,7 +14,7 @@ export const SUBJECT_KEYS: readonly (readonly [string, SubjectType])[] = [
 /** Id arguments that are deliberately not a subject: internal handles a buyer never names (a revision, an upload, a
  *  delivery, a one-time reveal, ...). The guard test makes every new *Id argument land in one of the two lists. */
 export const INTERNAL_ID_KEYS: readonly string[] = ['revisionId', 'auditEventId', 'scopeId', 'requestId', 'mergeId', 'suppressionId', 'stashId',
-  'sourceMessageId', 'revealId', 'objectId', 'uploadId', 'receiptId', 'endpointId', 'deliveryId', 'fromVersionId', 'exportId', 'handOffId', 'alertId', 'importId', 'integrationId'];
+  'sourceMessageId', 'revealId', 'objectId', 'uploadId', 'receiptId', 'endpointId', 'deliveryId', 'fromVersionId', 'exportId', 'handOffId', 'alertId', 'importId', 'integrationId', 'authIntegrationId'];
 export type SubjectType = 'call' | 'attempt' | 'agent' | 'campaign' | 'contact' | 'audience' | 'version' | 'experiment' | 'proposal' | 'issue' | 'number'
   | 'outcome' | 'judge' | 'member' | 'offering' | 'source' | 'tool' | 'fact';
 export interface Subject { type: SubjectType; id: string }

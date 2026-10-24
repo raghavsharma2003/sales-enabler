@@ -169,7 +169,7 @@ test('webhooks refuse private addresses unless the test switch is on', { skip },
     await deliverPending(b.pool, { workspaceId: owner.workspaceId });
     const d = (await owner.tool('webhook.deliveries')).result.deliveries[0];
     assert.equal(d.status, 'pending');
-    assert.match(d.error, /private network|ENOTFOUND|EAI_AGAIN|ENODATA/);
+    assert.match(d.error, /private network|ENOTFOUND|EAI_AGAIN|ENODATA|could not be found/);
   } finally { process.env.VP_WEBHOOK_ALLOW_PRIVATE = was; }
 });
 

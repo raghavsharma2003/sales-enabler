@@ -105,6 +105,35 @@ test('API key: create, approve by holding, the secret shows once, a second revea
   else assert.ok(!JSON.stringify(done.result ?? {}).includes(shown), 'the executed action did not keep the secret');
 });
 
+test('Webhooks: add one (approved), the secret shows once, a test event is tried at once and listed with its result', async () => {
+  await page.goto(BASE + '/settings/webhooks');
+  await page.getByRole('heading', { name: 'New webhook' }).waitFor();
+  // A synthetic address that does not resolve: the test event must fail, and the list must say why in words.
+  await page.getByLabel('Address').fill('https://hooks.e2e-vyakti.invalid/in');
+  await page.getByLabel('Description (optional)').fill('e2e warehouse');
+  await page.getByRole('switch', { name: /A campaign changed state/ }).click();
+  await page.getByRole('button', { name: 'Ask to add' }).click();
+  await sheet().getByRole('heading', { name: 'Approve to continue' }).waitFor();
+  assert.match(await sheet().innerText(), /phone numbers masked/, 'the card says numbers are masked');
+  await hold(sheet().locator('.hold'));
+  await page.getByRole('heading', { name: 'Copy the signing secret now' }).waitFor({ timeout: 8000 });
+  const shown = (await page.locator('.secret').innerText()).trim();
+  assert.match(shown, /^whsec_/);
+  await page.getByRole('button', { name: 'I have saved it' }).click();
+  const hooks = (await tool('webhook.list')).result.webhooks;
+  const made = hooks.find(h => h.description === 'e2e warehouse');
+  assert.ok(made, 'the server holds the webhook');
+  assert.deepEqual([...made.events].sort(), ['call.ended', 'campaign.state_changed']);
+  assert.equal(made.contactNumber, 'masked');
+  assert.ok(!JSON.stringify(hooks).includes(shown), 'the list never contains the secret');
+
+  await page.getByRole('button', { name: 'Send a test event to hooks.e2e-vyakti.invalid/in' }).click();
+  await page.getByText(/The test event was not delivered: the address could not be found/).waitFor({ timeout: 15000 });
+  const rows = (await tool('webhook.deliveries', { endpointId: made.id })).result.deliveries;
+  assert.equal(rows.length, 1); assert.equal(rows[0].status, 'failed'); assert.equal(rows[0].test, true);
+  await page.getByRole('table', { name: 'Webhook deliveries' }).getByText('the address could not be found', { exact: false }).first().waitFor();
+});
+
 test('Learning: propose, simulate, accept shows an approval card, and the screen matches the server', async t => {
   const agent = (await pool.query("SELECT id FROM agent WHERE workspace_id = $1 AND name = 'Renewals, Pune'", [ws])).rows[0].id;
   // The probe needs a saved practice caller for this agent; simcaller.save makes one.

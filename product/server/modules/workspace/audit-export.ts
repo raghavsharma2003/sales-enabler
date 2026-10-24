@@ -185,6 +185,8 @@ export const auditRetentionJob: Job = {
   async run(deps) {
     await deps.pool.query("UPDATE audit_export SET content = NULL WHERE content IS NOT NULL AND expires_at < now()");
     await deps.pool.query("DELETE FROM sso_login WHERE expires_at < now() - interval '1 day'");
+    // Fanned-out webhook events hold only ids; a week is long enough to look into one.
+    await deps.pool.query("DELETE FROM webhook_outbox WHERE fanned_at < now() - interval '7 days'");
     for (const w of await many<{ id: string }>(deps.pool, 'SELECT id FROM workspace')) await tx(deps.pool, c => applyAuditRetention(c, w.id));
   },
 };

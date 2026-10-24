@@ -1,0 +1,140 @@
+{
+  "nodes": [
+    {
+      "id": "decision.2026-10-24.results-built-at-send",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Webhook records are built when they are sent, not when the event is queued. webhook_delivery stores only ids plus a build name (call.v1, contact_opt_out.v1, hand_off.v1, test.v1); deliverPending builds the record from what the database holds at that try (results.ts). The first send, every retry and a replay therefore respect an erasure or the transcripts retention that landed in between, the recording link is signed fresh with the runtime's 1 h maximum, and webhook.deliveries (readable by viewers) never holds a phone number or a transcript.",
+      "rationale": "Storing the full record would put the caller's words and number in a second table that memory's transcript purge does not touch, keep a recording link that expires in 10 to 60 minutes, and exceed webhook.emit's 100 KB cap on long calls. Building at send costs one read per delivery.",
+      "reverse_if": "A receiver needs the record exactly as it was at the event (for example, an audit of what was known then), or build reads become a measurable load at volume; then store a redactable snapshot and add webhook_delivery to the purge.",
+      "path": "product/server/modules/workspace/results.ts"
+    },
+    {
+      "id": "decision.2026-10-24.results-outbox-triggers",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "campaign.state_changed, contact.opted_out and hand_off.created come from a transactional outbox: AFTER triggers on campaign (state changed), suppression (insert, reason not 'erased') and hand_off (insert, not on a test call) write webhook_outbox rows in the same transaction (migration 1020, workspace range). deliverPending fans each row out once (SKIP LOCKED, dedupe key outbox:<id>), only to endpoints created at or before the event. call.ended goes through webhook.emit from calls/analysis.ts after afterCall, keyed by the call id, never for a test call.",
+      "rationale": "Campaign state changes in at least seven places across campaigns/index.ts and worker.ts, suppressions in three across intake, hand-offs in calls ingest. Hooking each is a diff in three modules other builders own, and the next code path that changes state would forget to announce it. A trigger catches every path, fires only on commit, and needs no change to those modules.",
+      "reverse_if": "The owner or the integrator rules out triggers on another module's tables (hidden behaviour), or a module needs to suppress an event the trigger cannot tell apart; then move to explicit webhook.emit calls in each module.",
+      "path": "product/db/migrations/1020_workspace_results_out.sql"
+    },
+    {
+      "id": "decision.2026-10-24.webhook-numbers-masked-default",
+      "type": "decision",
+      "status": "proposed",
+      "source": "inference",
+      "date": "2026-10-24",
+      "title": "A webhook sends phone numbers masked (+91•••••1234, name as initials) unless it was created with contactNumber 'full', which the approval card states as 'personal data leaves Vyakti' and only an owner or compliance member can approve. call.record masks for viewers. call.export (owner or compliance only) has full numbers.",
+      "rationale": "DPDP data minimisation by default. A CRM sync needs the full number and gets it by one explicit choice.",
+      "reverse_if": "Buyers in the first pilots all turn 'full' on, so the default only adds a step; then default to full for owner-approved endpoints.",
+      "path": "product/server/modules/workspace/webhooks.ts"
+    },
+    {
+      "id": "decision.2026-10-24.call-export-streamed-at-download",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "call.export (policy, owner or compliance, approved like contact.export) stores only the filter and returns /v1/exports/calls/<id>, valid 24 h. Each download by a signed-in owner or compliance member streams the CSV from the database in pages of 500 (cap 200,000) and is audited (call.export.download). Test and live calls, workspace-suppressed people, erased people and people with an erase_me request are left out at download time. Cells a person or model wrote go through csvCell; the E.164 is validated and written as is.",
+      "rationale": "No stored file means nothing to purge, and someone suppressed or erased after the approval is not in a later download. Streaming keeps memory flat for large workspaces, where contact.export's in-receipt CSV would not scale.",
+      "reverse_if": "Compliance needs a fixed, checksummed file per approval, like audit.export; then store the content with a sha256 and signature.",
+      "path": "product/server/modules/workspace/results.ts"
+    },
+    {
+      "id": "decision.2026-10-24.custom-http-used-rest-labelled",
+      "type": "decision",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Custom HTTP is the one integration read for real. A webhook may name a connected custom_http integration (authIntegrationId); every delivery then sends Authorization: Bearer <token>, read through integrationSecretsById at send time. The webhook address must be on the integration's base_url (same origin and path prefix), so the token is never sent elsewhere. A disconnected integration fails the delivery with a reason rather than sending without the token. Every other kind is labelled 'Stored, not used yet' on Integrations (integration.kinds usedBy is null).",
+      "rationale": "Brief 1 asked for one integration wired or an honest label. Custom HTTP serves Zapier, n8n and in-house APIs that want a bearer token rather than HMAC checks, with no third-party account needed to test.",
+      "reverse_if": "In-call tools (brief 3) define how custom HTTP is used and need a different shape (per-tool URL and method).",
+      "path": "product/server/modules/workspace/webhooks.ts"
+    },
+    {
+      "id": "rejected.2026-10-24.replay-without-build",
+      "type": "rejection",
+      "status": "rejected",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "The first cut of webhook.replay copied the delivery's payload but not its build, so a replayed call.ended would have sent only {conversationId}. It was caught by the results-out test 'a replay after retention sends no words' (the transcript came back undefined). replay now copies build and test, and the record is rebuilt at send.",
+      "path": "product/tests/results-out.test.ts"
+    },
+    {
+      "id": "rejected.2026-10-24.fanout-to-later-endpoints",
+      "type": "rejection",
+      "status": "rejected",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Fan-out first matched every active endpoint at fan-out time. The seeded workspace's opt-outs, made before any webhook existed, were then sent to a webhook added later; this was seen in the Settings > Webhooks screenshot at 1440. Fan-out now matches only endpoints created at or before the event, and the test asserts that a webhook added later gets nothing earlier.",
+      "path": "product/server/modules/workspace/webhooks.ts"
+    },
+    {
+      "id": "measure.2026-10-24.results-out-tests",
+      "type": "measurement",
+      "status": "confirmed",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "tests/results-out.test.ts, 6 tests on a fresh Postgres 16, with a 127.0.0.1 receiver. They cover: an ended call gives exactly 1 signed delivery, even when analysed twice; another workspace's endpoint receives 0; a test call gives 0, and so does a hand-off on one; an erase_me request filed after the call ended and before the send gives no number, no name and no words, with transcriptRemoved.reason 'erased'; a masked endpoint never gets the full number; a replay after retention sends transcript [] and reason 'retention'; campaign (2 transitions), opt-out (1, erasure not announced, the caller's quote not sent) and hand-off (1) arrive once each; a late webhook gets 0 earlier events; a test event is delivered at once with x-vp-test; the bearer token goes only to the integration's base address and fails once disconnected; call.export is refused to a builder and approved by the owner; it has 2 of 5 calls (the suppressed, erased and test calls are absent), formula cells are escaped, each download is audited, and a later suppression drops the row from the next download. Full gates on the final tree are listed in the commit and the message to the integrator.",
+      "n": 6,
+      "method": "node --test against a throwaway Postgres 16; synthetic contacts +91 90000xxxxx",
+      "path": "product/tests/results-out.test.ts"
+    },
+    {
+      "id": "open.2026-10-24.results-out-unverified",
+      "type": "open-question",
+      "status": "open",
+      "source": "inference",
+      "date": "2026-10-24",
+      "title": "Results out is not yet verified against a real internet receiver: every test uses 127.0.0.1 with VP_WEBHOOK_ALLOW_PRIVATE, and the e2e flow sends to an address that does not resolve. Also not measured: a calls export above a few thousand rows, delivery throughput with many endpoints, and two replicas fanning out at once (SKIP LOCKED by design, not exercised). The next step is one staging run that sends to a request bin the owner controls."
+    }
+  ],
+  "edges": [
+    {
+      "from": "decision.2026-10-24.results-built-at-send",
+      "to": "decision.2026-10-24.transcript-redact-not-delete",
+      "relation": "depends_on"
+    },
+    {
+      "from": "decision.2026-10-24.results-outbox-triggers",
+      "to": "decision.2026-10-24.results-built-at-send",
+      "relation": "informs"
+    },
+    {
+      "from": "rejected.2026-10-24.replay-without-build",
+      "to": "decision.2026-10-24.results-built-at-send",
+      "relation": "informs"
+    },
+    {
+      "from": "rejected.2026-10-24.fanout-to-later-endpoints",
+      "to": "decision.2026-10-24.results-outbox-triggers",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.results-out-tests",
+      "to": "decision.2026-10-24.results-built-at-send",
+      "relation": "informs"
+    },
+    {
+      "from": "measure.2026-10-24.results-out-tests",
+      "to": "decision.2026-10-24.call-export-streamed-at-download",
+      "relation": "informs"
+    },
+    {
+      "from": "open.2026-10-24.results-out-unverified",
+      "to": "measure.2026-10-24.results-out-tests",
+      "relation": "informs"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "results-out-built",
+      "details": "Brief 1 of research/2026-10-24/must-be-audit 'Results out'. call.ended through webhook.emit from calls/analysis.ts, and campaign.state_changed, contact.opted_out and hand_off.created through a trigger-fed outbox. The versioned records (vyakti.call.v1 and others) are built at send time. Added: Settings > Webhooks (create, secret shown once, test event, deliveries, replay); call.export, streamed and formula-escaped; custom HTTP bearer sign-in; the other integrations labelled 'Stored, not used yet'. The schema is in product/docs/webhooks.md. Not verified: a real internet receiver, or an export at scale."
+    }
+  ]
+}
