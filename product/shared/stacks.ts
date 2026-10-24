@@ -5,6 +5,7 @@
 // Measured figures carry their grade and source so the picker never shows an unlabelled number.
 
 import { getComponent, type Component, type Part } from './components.ts';
+import { LANGUAGES, type Language } from './agent-config.ts';
 
 export type Grade = 'measured' | 'computed' | 'vendor' | 'not_measured';
 
@@ -166,4 +167,37 @@ export function combinationId(stack: VoiceStack, voiceName?: string): string {
   const c = stack.components;
   const core = stack.kind === 's2s' ? c.s2s : `${c.ears}${c.gatedEars ? '' : '/ungated'}+${c.brain}+${c.voice}`;
   return `${stack.brief}|${core}${voiceName ? '~' + voiceName : ''}`;
+}
+
+// ---------------------------------------------------------------- languages (2026-10-24)
+// A stack serves a language only if every part does: the ears hear it, the brain understands and writes it, the voice
+// speaks it (or one speech-to-speech engine does all three). The grade is the weakest part's: 'measured' only when every
+// part ran in that language in our own tests, else 'stated' (the makers say so). Never upgraded by inference.
+
+export type LanguageGrade = 'measured' | 'stated';
+export interface PartLanguage { part: Part; id: string; label: string; grade: LanguageGrade | null }
+export interface StackLanguage { language: Language; ok: boolean; grade: LanguageGrade | null; parts: PartLanguage[]; missing: PartLanguage[] }
+
+const LANG_PART_WORD: Record<Part, string> = { ears: 'speech recognition', brain: 'language model', voice: 'voice', s2s: 'speech-to-speech engine' };
+export const partWord = (p: Part) => LANG_PART_WORD[p];
+
+function partsOf(stack: VoiceStack): { part: Part; id: string }[] {
+  const c = stack.components;
+  if (stack.kind === 's2s') return [{ part: 's2s', id: c.s2s ?? '' }];
+  return [{ part: 'ears', id: c.ears ?? '' }, { part: 'brain', id: c.brain ?? '' }, { part: 'voice', id: c.voice ?? '' }];
+}
+
+export function stackLanguage(stack: VoiceStack, language: Language): StackLanguage {
+  const parts = partsOf(stack).map(({ part, id }) => {
+    const comp = getComponent(part, id);
+    const grade: LanguageGrade | null = !comp ? null : comp.languages.measured.includes(language) ? 'measured' : comp.languages.stated.includes(language) ? 'stated' : null;
+    return { part, id, label: comp?.label ?? id, grade };
+  });
+  const missing = parts.filter(p => !p.grade);
+  return { language, ok: !missing.length, grade: missing.length ? null : parts.every(p => p.grade === 'measured') ? 'measured' : 'stated', parts, missing };
+}
+
+/** Every VP language against this stack: what the picker shows and agent validation checks. */
+export function stackLanguages(stack: VoiceStack): StackLanguage[] {
+  return LANGUAGES.map(l => stackLanguage(stack, l));
 }

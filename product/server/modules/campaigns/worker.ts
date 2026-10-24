@@ -16,6 +16,7 @@ import type { Registry } from '../../tools.ts';
 import { explainRefusal, type Explained } from './explain.ts';
 import type { Series } from './telephony.ts';
 import { DISPATCH_STALE_MS, MEMORY_BRIEF_TIMEOUT_MS } from './defaults.ts';
+import { routeAttempt } from './languages.ts';
 import { LIVE_ATTEMPT, runGate, type AttemptRow, type GatePass, type GateVerdict, type PredialFn } from './gate.ts';
 
 export interface WorkerDeps {
@@ -111,10 +112,13 @@ export async function claimNext(d: WorkerDeps): Promise<ClaimOutcome> {
     }
 
     a.agent_version_id = await resolveVersion(d.registry, c, a);
+    // Then the contact's language: a version that speaks it, else the main one with the reason recorded (precheck.language).
+    const language = await routeAttempt(c, a.workspace_id, a);
+    if (language) a.agent_version_id = language.versionId;
     const rate = async (q: unknown, ws: string, stackId: string, minutes: number, components?: StackComponents) =>
       (await readTool<{ perMinuteInrMilli?: number }>(d.registry, c, ws, 'money.estimate', { stackId, minutes, calls: 1, ...(components ? { components } : {}) }))?.perMinuteInrMilli ?? null;
     const v = await runGate(c, a, { now, predial: d.predial, rate });
-    const precheck = { gateVersion: v.gateVersion, at: now.toISOString(), allowed: v.allowed, trace: v.trace, warnings: v.warnings,
+    const precheck = { gateVersion: v.gateVersion, at: now.toISOString(), allowed: v.allowed, trace: v.trace, warnings: v.warnings, ...(language ? { language } : {}),
       ...(v.allowed ? {} : { outcome: v.outcome, code: v.code, gate: v.gate, detail: v.detail, nextEligibleAt: v.nextEligibleAt?.toISOString() ?? null,
         // What a person sees: plain words, no rule ids. detail above stays for developers.
         explain: await explainFor(c, a, v) }) };

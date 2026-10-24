@@ -4,7 +4,7 @@
 import { label } from '../../labels.ts';
 import type { AgentConfig, ToolGrant } from '../../../shared/agent-config.ts';
 import { RISK_CLASSES } from '../../../shared/approval.ts';
-import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
+import { CUSTOM_STACK_ID, DEFAULT_STACK_ID, resolveStack, stackLanguages, stackOf, STACKS, StackError, type Figure, type StackComponents, type VoiceStack } from '../../../shared/stacks.ts';
 import { COMPONENTS, getComponent, type Component } from '../../../shared/components.ts';
 import { lintAgentConfig } from '../../../shared/safety/index.ts';
 import { any, arr, bool, num, obj, opt, record, str, uuid, ValidationError } from '../../../shared/validate.ts';
@@ -16,8 +16,12 @@ import { runtime, type RuntimeHealth } from '../../runtime-client.ts';
 import { BriefBudgetError, BriefLintError, compile, compileReport } from './compile.ts';
 import { agentConfigV, draftHash, validateConfig, versionHashOf } from './config.ts';
 import { DraftError, draftFromDescription } from './draft.ts';
+import { DISCLOSURE } from '../../../shared/safety/disclosure.ts';
+import { LANGUAGES, type Language } from '../../../shared/agent-config.ts';
 import { shapeLint } from './lint.ts';
 import { guardDraft } from './guard.ts';
+import { agentLanguages, languageName, languageProblems } from './languages.ts';
+import { stackLanguage } from '../../../shared/stacks.ts';
 import { assertPublishable, BRIEF_REVIEW, reviewBrief, reviewConfigured, reviewSummary } from './review.ts';
 import { passCriteriaV, simulate, type SimCaller, type SimResult } from './simulate.ts';
 import { getTemplate, TEMPLATES } from './templates.ts';
@@ -34,7 +38,16 @@ async function loadAgent(ctx: ToolCtx, agentId: string, lock = false): Promise<A
 /** Every draft write goes through here, so a hard safety finding is never saved (guard.ts). prev is the draft before. */
 async function saveDraft(ctx: ToolCtx, agentId: string, draft: AgentConfig, prev: AgentConfig | null) {
   guardDraft(prev, draft);
+  guardLanguages(prev, draft);
   await ctx.q.query('UPDATE agent SET draft = $3, job = $4, updated_at = now() WHERE id = $1 AND workspace_id = $2', [agentId, ctx.workspaceId, JSON.stringify(draft), draft.job]);
+}
+
+/** Refuse a write that leaves the agent with a language its voice stack cannot hear or speak (only problems this write
+ *  introduces, so a legacy draft can still take unrelated edits). The message names the stack and the part. */
+function guardLanguages(prev: AgentConfig | null, next: AgentConfig) {
+  const before = new Set(prev ? languageProblems(prev).map(p => p.language + '|' + p.stack) : []);
+  const added = languageProblems(next).filter(p => !before.has(p.language + '|' + p.stack));
+  if (added.length) throw new ValidationError('languages', added[0].message);
 }
 
 /** What the brief editor shows: lint findings, the budget meters, and the compiled text when it compiles. */
@@ -126,6 +139,8 @@ function stackCard(s: VoiceStack, h: RuntimeHealth | null = null, pricePerMinute
   return { id: s.id, label: s.label, kind: s.kind, status: s.status, note: s.note, replyGap: s.replyGap, requires: s.requires ?? [], risks: s.risks ?? [],
     availability: availabilityOf(s.id, h, s.components),
     components: s.components,
+    // Languages this stack serves end to end, graded: 'measured' only where every part ran in it in our tests.
+    languages: stackLanguages(s).filter(l => l.ok).map(l => ({ language: l.language, name: languageName(l.language), grade: l.grade })),
     // Each part in plain words: what it is, how it is routed and where it is processed (a part not in the catalog is left out).
     parts: (['ears', 'brain', 'voice', 's2s'] as const).flatMap(part => {
       const c = s.components[part] ? getComponent(part, s.components[part]!) : undefined;
@@ -351,8 +366,10 @@ const libraryRow = (c: LibraryCaller) => ({ id: c.id, source: 'default' as const
 /** The agent's live version: its newest published one. Experiment candidates are newer but never live. */
 const LIVE_VERSION_SQL = `SELECT id, number FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1`;
 
-async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null, kind: 'published' | 'candidate' = 'published') {
+async function createVersion(ctx: ToolCtx, agentId: string, cfg: AgentConfig, parentId: string | null, note: string | null, kind: 'published' | 'candidate' | 'variant' = 'published') {
   try { resolveStack(cfg.voice); } catch (e) { if (e instanceof StackError) throw new ValidationError('voice.stackId', e.message); throw e; }
+  const lp = languageProblems(cfg);                // no version, of any kind, calls in a language its stack cannot serve
+  if (lp.length) throw new ValidationError('languages', lp[0].message);
   await ctx.q.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['agent_version:' + agentId]);
   const n = await one<{ n: number }>(ctx.q, 'SELECT coalesce(max(number), 0) + 1 AS n FROM agent_version WHERE agent_id = $1', [agentId]);
   const agent: AgentConfig = validateConfig({ ...cfg, agentId, version: n!.n, versionHash: '' });
@@ -692,6 +709,49 @@ export function registerAgentTools(r: Registry): void {
     },
   }));
 
+  // ---- version.language_variant: the same agent in another language, for contacts who prefer it (2026-10-24) ----
+  const variantIn = obj({ agentId: uuid(), language: str({ oneOf: LANGUAGES }), fromVersionId: opt(uuid()), stackId: opt(str({ min: 1, max: 60 })),
+    components: opt(obj({ ears: opt(str({ max: 60 })), brain: opt(str({ max: 60 })), voice: opt(str({ max: 60 })), s2s: opt(str({ max: 60 })), gatedEars: opt(bool()) })),
+    voiceId: opt(str({ max: 80 })), note: opt(str({ max: 300 })) },
+    "Make the agent speak another language for the contacts who prefer it: same facts and agenda, that language first. Give stackId when the agent's own stack does not support the language.");
+  const variantBase = async (ctx: ToolCtx, agentId: string, fromVersionId?: string) => fromVersionId
+    ? await one<{ id: string; number: number; config: { agent: AgentConfig } }>(ctx.q, "SELECT id, number, config FROM agent_version WHERE id = $1 AND agent_id = $2 AND kind = 'published'", [fromVersionId, agentId])
+    : await one<{ id: string; number: number; config: { agent: AgentConfig } }>(ctx.q, "SELECT id, number, config FROM agent_version WHERE agent_id = $1 AND kind = 'published' ORDER BY number DESC LIMIT 1", [agentId]);
+  const variantConfig = (base: AgentConfig, i: { language: Language; stackId?: string; components?: StackComponents; voiceId?: string }): AgentConfig => {
+    const voice = i.stackId ? { stackId: i.stackId, ...(i.components ? { components: i.components } : {}), ...(i.voiceId ? { voiceId: i.voiceId } : {}) } : base.voice;
+    const stack = stackOf(voice);
+    const extra = (['en-IN'] as Language[]).filter(l => l !== i.language && stack && stackLanguage(stack, l).ok);
+    return { ...base, languages: { primary: i.language, allowed: [i.language, ...extra], mirrorCaller: true }, voice };
+  };
+  r.register(tool(variantIn, {
+    name: 'version.language_variant', risk: 'external', summary: 'Publish the agent in another language, for the campaign contacts who prefer it',
+    describe: async (i, ctx) => {
+      const name = await label(ctx, 'agent', i.agentId);
+      const base = await variantBase(ctx, i.agentId, i.fromVersionId);
+      const lang = languageName(i.language as Language);
+      if (!base) return `Publish ${name} in ${lang}`;
+      const stack = stackOf(variantConfig(base.config.agent, i as never).voice);
+      return `Publish ${name} in ${lang}, from version ${base.number}, with the same facts and agenda.` + (stack ? ` Voice: ${stack.label}.` : '') +
+        ` Campaign contacts who prefer ${lang} are called by this version.`;
+    },
+    version: async (ctx, i) => (await variantBase(ctx, i.agentId, i.fromVersionId))?.id ?? 'none',
+    run: async (ctx, i) => {
+      const a = await loadAgent(ctx, i.agentId);
+      const language = i.language as Language;
+      const base = await variantBase(ctx, a.id, i.fromVersionId);
+      if (!base) throw new ValidationError(i.fromVersionId ? 'fromVersionId' : 'agentId', i.fromVersionId ? 'that is not a published version of this agent' : 'publish the agent first; a language version is made from a published one');
+      if (agentLanguages(base.config.agent)[0] === language) throw new ValidationError('language', `version ${base.number} already speaks ${languageName(language)} first`);
+      // Her spoken AI disclosure comes from shared/safety per language (disclosure.json); without a checked line she
+      // cannot call people in that language, so the variant waits for the safety team to add one.
+      if (!DISCLOSURE.lines[language]) throw new ValidationError('language',
+        `Vyakti has no checked AI disclosure line in ${languageName(language)} yet, so a ${languageName(language)} version cannot call people. The safety team adds it to the shared disclosure file.`);
+      const cfg = variantConfig(base.config.agent, { ...i, language, components: i.components as StackComponents | undefined });
+      guardDraft(null, cfg);
+      const v = await createVersion(ctx, a.id, cfg, base.id, i.note ?? `${languageName(language)} version of version ${base.number}`, 'variant');
+      return { ...v, language, languageName: languageName(language), from: base.number };
+    },
+  }));
+
   // ---- version.restore: a one-step rollback that never rewrites history (integrator 2026-10-24) ----
   type VersionRow = { id: string; number: number; config: { agent: AgentConfig; brief?: { hash: string } } };
   /** The live version: the one carrying most of the agent's latest campaign deployment, else the latest published one. */
@@ -767,8 +827,8 @@ export function registerAgentTools(r: Registry): void {
     name: 'version.list', risk: 'read', summary: "List an agent's published versions",
     run: async (ctx, i) => {
       const a = await loadAgent(ctx, i.agentId);
-      const rows = await many(ctx.q, `SELECT id, number, hash, parent_id, author_type, author_id, note, created_at,
-        config->'brief'->>'hash' AS brief_hash, (config->'brief'->>'bytes')::int AS brief_bytes FROM agent_version WHERE agent_id = $1 ORDER BY number DESC`, [a.id]);
+      const rows = await many(ctx.q, `SELECT id, number, hash, parent_id, author_type, author_id, note, created_at, kind,
+        config->'agent'->'languages'->>'primary' AS language, config->'brief'->>'hash' AS brief_hash, (config->'brief'->>'bytes')::int AS brief_bytes FROM agent_version WHERE agent_id = $1 ORDER BY number DESC`, [a.id]);
       return { agentId: a.id, versions: rows };
     },
   }));

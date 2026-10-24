@@ -9,7 +9,7 @@ import { label } from '../../labels.ts';
 import type { Deps, Module } from '../../app.ts';
 import { HttpError, type Req, type Res } from '../../http.ts';
 import { verify } from '../../runtime-client.ts';
-import { CALL_CATEGORIES, type CallCategory } from '../../../shared/agent-config.ts';
+import { CALL_CATEGORIES, LANGUAGES, type CallCategory } from '../../../shared/agent-config.ts';
 import { normaliseIndianPhone } from '../../../shared/phone.ts';
 import { formatInr } from '../../../shared/money.ts';
 import { stackOf } from '../../../shared/stacks.ts';
@@ -28,6 +28,8 @@ import { verifyConfirm, verifyStart } from './verify.ts';
 import { callHoldInrMilli, walletBlocker } from '../money/blockers.ts';
 // The agents module's pure fact-to-column matcher, the same rule the dial-time fill uses (walkthrough round 2, R3).
 import { factColumns, missingFactsSentence } from '../agents/columns.ts';
+import { agentLanguages, languageName, routeContact, serves, toLanguage } from '../agents/languages.ts';
+import { languageOptions } from './languages.ts';
 import { routeSeries, SERIES, telephony, TelephonyDisabled, type Series } from './telephony.ts';
 import { addDays, describeWindow, eligibility, isNarrowing, localNow, localToUtc, toMin, validateOuterBand, validateWindow } from './windows.ts';
 
@@ -125,35 +127,26 @@ export async function launchBlockers(q: Queryable, ws: string, c: CampaignRow): 
   return out;
 }
 
-const LANG_NAMES: Record<string, string> = { hi: 'Hindi', en: 'English', kn: 'Kannada', bn: 'Bengali', ta: 'Tamil', te: 'Telugu', mr: 'Marathi', gu: 'Gujarati',
-  ml: 'Malayalam', pa: 'Punjabi', or: 'Odia' };
-const LANG_WORDS: Record<string, string> = { hindi: 'hi', english: 'en', kannada: 'kn', bengali: 'bn', bangla: 'bn', tamil: 'ta', telugu: 'te', marathi: 'mr',
-  gujarati: 'gu', malayalam: 'ml', punjabi: 'pa', odia: 'or', oriya: 'or' };
-/** A contact's or agent's language as base codes: 'kn-IN' -> kn, 'Kannada' -> kn, 'hinglish' -> hi and en. */
-function langCodes(v: string | null | undefined): string[] {
-  const t = (v ?? '').trim().toLowerCase();
-  if (!t) return [];
-  if (t === 'hinglish') return ['hi', 'en'];
-  if (LANG_WORDS[t]) return [LANG_WORDS[t]];
-  const m = /^([a-z]{2})(?:[-_][a-z]{2})?$/.exec(t);
-  return m ? [m[1]] : [];
-}
-
-/** Launch warnings: worth knowing before launch, but they do not block it (walkthrough round 2, R2). */
+/** Launch warnings: worth knowing before launch, but they do not block it (walkthrough round 2, R2). People are counted
+ *  only when no version can serve their language: the main version, a language variant of the agent, or a route. */
 export async function launchWarnings(q: Queryable, ws: string, c: CampaignRow): Promise<Explained[]> {
   const out: Explained[] = [];
-  const agent = (await loadVersion(q, ws, c.agent_version_id))?.config?.agent;
-  if (!agent || !c.audience_id) return out;
-  const speaks = new Set((agent.languages?.allowed ?? []).flatMap(l => langCodes(l)));
+  const v = await loadVersion(q, ws, c.agent_version_id);
+  const agent = v?.config?.agent;
+  if (!v || !agent || !c.audience_id) return out;
+  const main = { ...v, agent };
+  const options = await languageOptions(q, ws, v, c.policy);
   const people = await many<{ language: string | null }>(q, `SELECT ct.language FROM audience_member m JOIN audience au ON au.id = m.audience_id
     JOIN contact ct ON ct.id = m.contact_id WHERE au.id = $1 AND au.workspace_id = $2`, [c.audience_id, ws]);
-  const unmet = people.map(p => langCodes(p.language)).filter(codes => codes.length && !codes.some(x => speaks.has(x)));
-  if (unmet.length) {
-    const names = [...new Set(unmet.map(codes => LANG_NAMES[codes[0]] ?? codes[0]))].sort();
+  const unserved = people.map(p => routeContact(p.language, main, options)).filter(r => r.servedBy === 'fallback');
+  if (unserved.length) {
+    const names = [...new Set(unserved.map(r => languageName(r.language!)))].sort();
+    const speaks = [...new Set([main, ...options].flatMap(o => agentLanguages(o.agent)))].map(languageName);
     out.push({ code: 'language_mismatch',
-      message: `${unmet.length} of ${people.length} people prefer a language this agent does not speak (${names.join(', ')}).`,
-      why: `The agent speaks ${[...speaks].map(x => LANG_NAMES[x] ?? x).join(', ')}. Add their languages to the agent, or call them with another agent.`,
-      fix: { tool: 'brief.edit', label: "Change the agent's languages", role: 'builder' } });
+      message: `${unserved.length} of ${people.length} people prefer a language this agent does not speak (${names.join(', ')}).`,
+      why: `They will be called in ${languageName(agent.languages.primary)}. This agent${options.length ? ' and its language versions' : ''} speak ${speaks.join(', ')}. ` +
+        `Add a language version of the agent, or call them with another agent.`,
+      fix: { tool: 'version.language_variant', label: 'Add a language version', role: 'builder' } });
   }
   return out;
 }
@@ -225,6 +218,8 @@ export function registerCampaignTools(registry: Registry): void {
     concurrency: opt(num({ int: true, min: 1, max: 1000 })), cliPool: opt(arr(uuid(), { max: 50 })),
     perMinuteInrMilli: opt(num({ int: true, min: 1, max: 100_000 })), maxDurationS: opt(num({ int: true, min: 30, max: 3600 })),
     capInrMilli: opt(num({ int: true, min: 1 })), startAt: opt(iso()), endAt: opt(iso()), predialUrl: opt(str({ pattern: /^https:\/\//, max: 500 })),
+    languageRoutes: opt(described(arr(obj({ language: str({ oneOf: LANGUAGES }), agentVersionId: uuid() }), { max: 11 }),
+      'optional: for contacts who prefer a language, the published agent version (or language version) that calls them')),
   }), {
     name: 'campaign.draft', risk: 'draft', summary: 'Create or edit a draft campaign: category first, then window, retries, budget and cap',
     run: async (ctx, i) => {
@@ -242,6 +237,13 @@ export function registerCampaignTools(registry: Registry): void {
         if (v.kind === 'candidate') throw new ValidationError('agentVersionId', "this version is a test candidate from an experiment; a campaign runs the agent's published version");
         if (v.config.agent?.category && v.config.agent.category !== category) warnings.push(`the agent version is for ${v.config.agent.category} calls; launch is blocked until they match`);
       }
+      for (const [k, route] of (i.languageRoutes ?? []).entries()) {
+        const rv = await loadVersion(ctx.q, ctx.workspaceId, route.agentVersionId);
+        const want = toLanguage(route.language)!;
+        if (!rv?.config?.agent || rv.kind === 'candidate') throw new ValidationError(`languageRoutes[${k}].agentVersionId`, 'must be a published agent version or language version in this workspace');
+        if (rv.config.agent.category !== category) throw new ValidationError(`languageRoutes[${k}].agentVersionId`, `that version is for ${categoryWord(rv.config.agent.category)} calls, but the campaign is for ${categoryWord(category)} calls`);
+        if (!serves(rv.config.agent, want)) throw new ValidationError(`languageRoutes[${k}].language`, `that version does not speak ${languageName(want)}`);
+      }
       if (i.audienceId && !(await one(ctx.q, 'SELECT 1 FROM audience WHERE id = $1 AND workspace_id = $2', [i.audienceId, ctx.workspaceId])))
         throw new ValidationError('audienceId', 'no such audience in this workspace; use an id from audience.list, or make one with audience.create');
       if (i.cliPool?.length) {
@@ -254,7 +256,7 @@ export function registerCampaignTools(registry: Registry): void {
         ...(i.preset ? { preset: i.preset } : {}), ...(i.concurrency ? { concurrency: i.concurrency } : {}), ...(i.cliPool ? { cliPool: i.cliPool } : {}),
         ...(i.perMinuteInrMilli ? { perMinuteInrMilli: i.perMinuteInrMilli } : {}), ...(i.maxDurationS ? { maxDurationS: i.maxDurationS } : {}),
         ...(i.capInrMilli ? { capInrMilli: i.capInrMilli } : {}), ...(i.startAt ? { startAt: i.startAt } : {}), ...(i.endAt ? { endAt: i.endAt } : {}),
-        ...(i.predialUrl ? { predial: { url: i.predialUrl } } : {}),
+        ...(i.predialUrl ? { predial: { url: i.predialUrl } } : {}), ...(i.languageRoutes ? { languageRoutes: i.languageRoutes } : {}),
       };
       if (prev) {
         await setPolicy(ctx.q, prev, policy, { name: i.name, call_category: category, agent_version_id: i.agentVersionId ?? prev.agent_version_id, audience_id: i.audienceId ?? prev.audience_id });

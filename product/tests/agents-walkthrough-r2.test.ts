@@ -69,7 +69,7 @@ test('R2 and R3 at launch: languages warn without blocking; unfilled per-contact
   const lang = g.warnings.find((x: { code: string }) => x.code === 'language_mismatch');
   assert.ok(lang, JSON.stringify(g.warnings));
   assert.equal(lang.message, '4 of 6 people prefer a language this agent does not speak (Bengali, Kannada, Tamil, Telugu).');
-  assert.equal(lang.fix.tool, 'brief.edit');
+  assert.equal(lang.fix.tool, 'version.language_variant', 'the fix is a language version of the agent');
   assert.ok(!g.blockers.some((b: { code: string }) => b.code === 'language_mismatch'), 'a language mismatch never blocks launch');
 
   const facts = g.blockers.find((b: { code: string }) => b.code === 'per_contact_fact_unmapped');

@@ -43,6 +43,8 @@ export interface CampaignPolicy {
   window?: WindowPolicy; budgets?: PersonBudget; concurrency?: number; cliPool?: string[]; perMinuteInrMilli?: number;
   maxDurationS?: number; predial?: { url: string }; capInrMilli?: number; startAt?: string; endAt?: string;
   reviewStopAfter?: number; preset?: string; categoryOverride?: { from: CallCategory; reason: string; by: string };
+  /** Contacts who prefer one of these languages meet that version (campaigns/languages.ts); variants route on their own. */
+  languageRoutes?: { language: string; agentVersionId: string }[];
 }
 
 export interface VersionRow { id: string; hash: string; kind?: string; config: { agent?: AgentConfig; brief?: { text: string; hash: string; bytes: number }; lint?: { ok: boolean } }; agent_status: string; agent_id: string }
