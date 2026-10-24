@@ -1,7 +1,7 @@
 // The data layer: turns the real tools' answers into the view models the pages draw, and turns page actions into tool calls.
 // Pure TypeScript (no JSX). Every read goes through run(), so a tool that is not registered throws ToolMissing and the page
 // shows its "not switched on yet" state. Shapes here follow product/shared/tool-catalog.json and the module code.
-import { run } from './api.ts';
+import { run, uploadContacts } from './api.ts';
 import { partsRan } from './catalog.ts';
 import type {
   ActivityRow, AgentConfigDraft, AgentDoc, AgentRow, ApiKey, AudienceRow, Blocker, CallDoc, CallExplain, CallRow, CallTurn, CampaignDoc, CampaignRow, ContactDoc, ContactRow,
@@ -117,24 +117,46 @@ const REJECT_TEXT: Record<string, string> = {
 export function parseCsvSample(text: string, col: number): string[] {
   return text.split(/\r?\n/).slice(1, 4).map(l => (l.split(',')[col] ?? '').trim());
 }
+/** Agents by name, for the import screen's "Which agent will call them?" (no per-agent detail fetched). */
+export async function agentNames(): Promise<{ id: string; name: string }[]> {
+  return arr<any>((await run<{ agents: unknown[] }>('agent.list', {})).agents).map(a => ({ id: a.id, name: a.name }));
+}
 export async function importUpload(text: string, name: string): Promise<string> {
   const r = await run<{ uploadId: string }>('source.upload', { kind: 'csv', name, text, filename: name });
   return r.uploadId;
 }
-export async function importMap(uploadId: string, text: string, overrides?: Record<string, { field: string; key?: string }>): Promise<ImportPreview> {
-  const r = await run<any>('source.map', { uploadId, overrides, previewRows: 100 });
+/** A chosen file to an upload: Excel goes as base64 and is read on the server; text files go as text. Up to 20 MB. */
+export const MAX_IMPORT_BYTES = 20 * 1024 * 1024;
+export const isExcel = (f: File) => /\.xlsx$/i.test(f.name) || f.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+export async function importUploadFile(f: File): Promise<{ uploadId: string; text: string }> {
+  if (isExcel(f)) {
+    const bytes = new Uint8Array(await f.arrayBuffer());
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return { uploadId: (await uploadContacts({ base64: btoa(bin), filename: f.name })).uploadId, text: '' };
+  }
+  const text = await f.text();
+  return { uploadId: (await uploadContacts({ text, filename: f.name })).uploadId, text };
+}
+const OVERRIDE_NOTE = /^(voice|first message): /;
+export async function importMap(uploadId: string, text: string, overrides?: Record<string, { field: string; key?: string }>, agentId?: string): Promise<ImportPreview> {
+  const r = await run<any>('source.map', { uploadId, overrides, previewRows: 100, ...(agentId ? { agentId } : {}) });
   const nameOf = (p: any) => p.attributes?.name as string | undefined;
   const rows: ImportRowVerdict[] = arr<any>(r.preview).map(p => {
     const v: string = p.verdict;
+    const refused = arr<string>(p.notes).filter(n => OVERRIDE_NOTE.test(n));
+    if ((v === 'new' || v === 'update' || v === 'unchanged') && refused.length) return { row: p.row, phone: p.phone, verdict: 'review', name: nameOf(p), reason: `Will be called, but not with this ${refused.map(n => n.replace(/^(voice|first message): .*/, '$1')).join(' or ')}: ${refused[0].replace(OVERRIDE_NOTE, '')}` };
     if (v === 'new' || v === 'update' || v === 'unchanged') return { row: p.row, phone: p.phone, verdict: 'ok', name: nameOf(p), reason: v === 'update' ? 'Already on file; details will be merged' : undefined };
     if (v === 'duplicate_in_file') return { row: p.row, phone: p.phone, verdict: 'duplicate', name: nameOf(p), reason: 'Same number as an earlier row' };
     if (v === 'suppressed' || v === 'tombstoned') return { row: p.row, phone: p.phone, verdict: 'suppressed', name: nameOf(p), reason: 'This person asked not to be called' };
     if (v === 'conflict_review') return { row: p.row, phone: p.phone, verdict: 'review', name: nameOf(p), reason: 'Two sources disagree; a person should look' };
     return { row: p.row, phone: null, verdict: 'skipped', name: nameOf(p), reason: REJECT_TEXT[v] ?? v };
   });
-  const cols = arr<any>(r.columns).map(c => ({ header: c.header, sample: parseCsvSample(text, c.column), field: c.field === 'attribute' ? `attribute:${c.key}` : c.field, key: c.key, confidence: c.confidence, why: c.why }));
+  const cols = arr<any>(r.columns).map(c => ({ header: c.header, sample: Array.isArray(c.samples) ? c.samples : parseCsvSample(text, c.column), field: c.field === 'attribute' ? `attribute:${c.key}` : c.field, key: c.key, confidence: c.confidence, why: c.why }));
   const rej = Object.values<number>(r.phones?.rejected ?? {}).reduce((a, b) => a + b, 0);
-  return { uploadId, columns: cols, rows, counts: { in: r.rowsTotal, callable: r.phones?.ok ?? 0, duplicate: r.phones?.duplicatesInFile ?? 0, skipped: rej }, questions: arr<any>(r.questions).map(q => ({ text: typeof q === 'string' ? q : q.text ?? JSON.stringify(q) })) };
+  return { uploadId, columns: cols, rows, counts: { in: r.rowsTotal, callable: r.phones?.ok ?? 0, duplicate: r.phones?.duplicatesInFile ?? 0, skipped: rej }, questions: arr<any>(r.questions).map(q => ({ text: typeof q === 'string' ? q : q.text ?? JSON.stringify(q) })),
+    ...(r.agentFacts ? { agentFacts: { agent: r.agentFacts.agent, facts: arr<any>(r.agentFacts.facts).map(f => ({ key: f.key, label: f.label, status: f.status, column: f.column, suggestions: arr<string>(f.suggestions) })) } } : {}),
+    ...(r.converted ? { converted: { sheet: r.converted.sheet, rows: r.converted.rows, formulaCells: r.converted.formulaCells, formulaWithoutValue: r.converted.formulaWithoutValue } } : {}) };
 }
 export function overridesFrom(cols: ImportPreview['columns']): Record<string, { field: string; key?: string }> {
   return Object.fromEntries(cols.map(c => c.field.startsWith('attribute:') ? [c.header, { field: 'attribute', key: c.key }] : [c.header, { field: c.field, key: c.key }]));

@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import pg from 'pg';
 import { audit, axe } from './a11y.mjs';
+import { EMI_ROWS, xlsxFile } from '../dev/xlsx-sample.mjs';
 
 let pw = null;
 for (const base of [import.meta.url, 'file:///opt/node-tools/node_modules/']) { try { pw = createRequire(base)('playwright'); break; } catch { /* next */ } }
@@ -651,6 +652,34 @@ test('Contacts list: check DND for the people shown, and export them as a CSV th
   const text = fs.readFileSync(await file.path(), 'utf8');
   assert.match(text.split(/\r?\n/)[0], /^phone,name,language/, 'the file has the header the server wrote');
   assert.ok((await actions('executed')).filter(a => a.tool === 'contact.export').length === before + 1, 'the export ran once, after approval');
+});
+
+test('Import an Excel file for an agent: the missing detail shows with a suggestion, one tap matches it, and the server keeps it under the agent\'s key', async () => {
+  await page.goto(`${BASE}/contacts/import`);
+  const agents = (await tool('agent.list')).result.agents;
+  const emi = agents.find(a => a.name === 'EMI pre-due reminder');
+  assert.ok(emi, 'the seed has the EMI agent');
+  await page.getByLabel('Which agent will call them? (optional)').selectOption(emi.id);
+  const file = xlsxFile(EMI_ROWS);
+  await page.getByLabel('Choose a file: Excel, CSV or TSV').setInputFiles({ name: 'emi-december.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: file });
+  await page.getByText('emi-december.xlsx').waitFor();
+  await page.getByText('Excel, read on our server', { exact: false }).waitFor();
+  await page.getByRole('button', { name: 'Check the file' }).click();
+  const card = page.locator('.card', { hasText: "What EMI pre-due reminder says from each person's record" });
+  await card.waitFor();
+  await page.getByText('Read from the sheet “EMI list” of your Excel file. 1 formula cell used the value Excel last saved.', { exact: false }).waitFor();
+  await card.getByText('No column').first().waitFor();
+  await card.getByRole('button', { name: 'Use “Due date”' }).click();
+  await card.getByText('From “Due date”').waitFor({ timeout: 10000 });
+  await page.getByLabel('Audience name').fill('EMI December (Excel)');
+  await page.getByRole('button', { name: /^Save 2 contacts$/ }).click();
+  await page.waitForURL(/\/audiences$/, { timeout: 15000 });
+  const kavita = (await tool('contact.search', { q: '9000030101' })).result.contacts[0];
+  assert.ok(kavita, 'the Devanagari number was saved as +91 9000030101');
+  const attrs = Object.fromEntries((await tool('contact.get', { id: kavita.id })).result.attributes.map(a => [a.key, a.value]));
+  assert.equal(attrs.emi_due, '2026-12-05', 'the confirmed column is stored under the agent\'s key');
+  assert.equal(attrs.emi_amount, 4250);
+  assert.ok((await tool('contact.search', { q: '9000030102' })).result.contacts.length === 1, 'the formula cell gave its saved value');
 });
 
 test('Integrations: a service can be connected from Settings, and the credentials never come back', async () => {

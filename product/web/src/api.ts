@@ -50,6 +50,10 @@ function fail(r: { status: number; json: any }): never {
   throw new ApiError(r.status, e?.code ?? 'error', e?.message ?? `The server answered ${r.status}.`, e?.path);
 }
 
+/** A contacts file: JSON {text, filename} or, for Excel, {base64, filename}; up to 20 MB. Not a tool: files are a raw route. */
+export async function uploadContacts(body: { text?: string; base64?: string; filename: string }): Promise<{ uploadId: string; bytes: number }> {
+  const r = await http('POST', '/v1/uploads/contacts', { ...body, final: true }); if (r.status >= 300) fail(r); return r.json;
+}
 export async function signup(b: { workspace: string; name: string; email: string; password: string }) {
   const r = await http('POST', '/v1/signup', b); if (r.status >= 300) fail(r); return r.json;
 }

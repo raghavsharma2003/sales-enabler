@@ -68,3 +68,8 @@ export function phone(e164: string | null | undefined): string {
 }
 export const initials = (name: string) => name.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
 export const plural = (n: number, one: string, many = one + 's') => `${count(n)} ${n === 1 ? one : many}`;
+/** A file size in plain units: "820 KB", "14.3 MB". */
+export function bytes(n: number): string {
+  if (n < 1024 * 1024) return `${Math.max(1, Math.round(n / 1024))} KB`;
+  return `${(n / (1024 * 1024)).toFixed(n < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+}

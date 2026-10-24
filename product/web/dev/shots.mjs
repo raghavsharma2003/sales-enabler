@@ -4,6 +4,7 @@
 import { createRequire } from 'node:module';
 import { mkdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { EMI_ROWS, xlsxFile } from './xlsx-sample.mjs';
 const require = createRequire('/opt/node-tools/node_modules/');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:8788';
@@ -20,6 +21,12 @@ const screens = (id) => [
   ['operator-plan', '/', { after: async (p, tag) => { if (tag === 'm') await p.getByRole('button', { name: 'Assistant' }).click(); await p.locator('#dock-input').fill('Launch the appointment reminders campaign'); await p.keyboard.press('Enter'); await p.waitForTimeout(3500); } }],
   ['approval', '/', { after: async (p) => { await p.getByRole('button', { name: 'Review' }).first().click(); await p.waitForTimeout(600); } }],
   ['contacts', '/contacts'], ['contacts-import', '/contacts/import', { after: async (p) => { await p.getByRole('button', { name: 'Use a made-up sample' }).click(); await p.getByRole('button', { name: 'Check the file' }).click(); await p.waitForTimeout(1200); } }],
+  ['contacts-import-excel', '/contacts/import', { after: async (p) => {
+    await p.getByLabel('Which agent will call them? (optional)').selectOption(id.emi);
+    await p.getByLabel('Choose a file: Excel, CSV or TSV').setInputFiles({ name: 'emi-december.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: xlsxFile(EMI_ROWS) });
+    await p.getByRole('button', { name: 'Check the file' }).click();
+    const head = p.getByRole('heading', { name: /says from each person's record/ });
+    await head.waitFor({ timeout: 15000 }); await head.scrollIntoViewIfNeeded(); await p.waitForTimeout(400); } }],
   ['contact', `/contacts/${id.contact}`], ['contact-suppressed', `/contacts/${id.suppressed}`], ['contacts-export', '/contacts', { after: async (p) => { await p.getByRole('button', { name: 'Export as CSV…' }).click(); await p.waitForTimeout(500); } }], ['audiences', '/audiences'],
   ['campaigns', '/campaigns'], ['campaign-new', '/campaigns/new'], ['campaign-draft', `/campaigns/${id.camp}`], ['campaign-draft2', `/campaigns/${id.camp2}`], ['campaign-cap', `/campaigns/${id.camp2}`, { after: async (p) => { await p.getByRole('button', { name: /^(Set|Change) spend cap$/ }).click(); await p.waitForTimeout(900); } }],
   ['calls', '/calls'], ['call', `/calls/${id.call}`], ['call-optout', `/calls/${id.optout}`], ['insights', '/insights'], ['numbers', '/numbers'],

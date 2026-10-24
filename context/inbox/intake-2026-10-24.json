@@ -1,0 +1,96 @@
+{
+  "nodes": [
+    {
+      "id": "component.2026-10-24.intake-xlsx-import",
+      "type": "component",
+      "status": "built",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Excel (.xlsx) import, server-side with no new dependency: first sheet, formulas never evaluated (cached values only), up to 20 MB, plus the web import screen with the agent's column contract (must-be brief 9)",
+      "path": "product/server/modules/intake/xlsx.ts",
+      "details": "Zip reader on node:zlib with entry, per-entry and total inflate limits; OOXML shared/inline strings, numbers with every digit, date styles to ISO, booleans, errors as empty. Tests: intake-xlsx 8/8 (Devanagari .xlsx = its CSV; formula cells; refusals; a 17.0 MB .xlsx); browser flow 'Import an Excel file for an agent'. Not verified: zip bombs, zip64, encrypted workbooks."
+    },
+    {
+      "id": "decision.2026-10-24.xlsx-own-reader-no-dependency",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "Read .xlsx with a ~200-line reader of our own (node:zlib + OOXML) instead of adding a spreadsheet package",
+      "rationale": "The build adds no new packages (ARCHITECTURE.md). jszip is present only transitively (mammoth). The first sheet's values are a small part of OOXML; formulas are never evaluated by design, which a full spreadsheet library would tempt.",
+      "reverse_if": "Real buyer files fail in ways the reader cannot cover cheaply (zip64, encryption, rich formats), or a well-known maintained parser is approved as a dependency."
+    },
+    {
+      "id": "decision.2026-10-24.row-overrides-inside-agent-rules",
+      "type": "decision",
+      "status": "proposed",
+      "source": "model",
+      "date": "2026-10-24",
+      "title": "A row's first_message replaces only opening.usefulFirst and must pass the agent's own opening lints; a row's voice applies only if the agent's stack offers it; the disclosure clause is never touched",
+      "rationale": "Brief 9 asks for per-row overrides inside the brief's rules. Literal lines are recited (the recitable-line lint), and a row must never get round the AI disclosure. rowOverrides throws if the clause would change; the runtime's RD1 still prefixes the fixed AI line.",
+      "reverse_if": "Buyers need scripted per-person openings and the recitation evidence changes, or the runtime moves the opening out of shapes."
+    },
+    {
+      "id": "measure.2026-10-24.intake-xlsx-17mb",
+      "type": "measurement",
+      "status": "measured",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "A 17.0 MB .xlsx (20,000 rows, stored sheet XML, long notes column) uploads in 0.56-0.64 s and commits in 8.0-37.6 s",
+      "n": 2,
+      "method": "product/tests/intake-xlsx.test.ts 'a 15 MB Excel file imports' on the coding sandbox, throwaway Postgres 16, wall-clock; the 37.6 s run coincided with a Postgres restart in the same session."
+    },
+    {
+      "id": "open.2026-10-24.row-overrides-not-in-ticket",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "Per-row voice and first_message are validated and stored, but no call uses them until campaigns calls rowOverrides in buildTicket and the runtime reads opening.usefulFirst from the ticket",
+      "closes_when": "A ticket built for a contact with a valid first_message carries it as agent.opening.usefulFirst and the runtime's brief tail uses it, with RD1 unchanged (tested in campaigns and voice)."
+    },
+    {
+      "id": "open.2026-10-24.t-l7-false-urgency-gap",
+      "type": "open-question",
+      "status": "open",
+      "source": "verified",
+      "date": "2026-10-24",
+      "title": "T-L7 (manipulation lint) passes 'the offer ends tonight so they must decide now or lose it forever'",
+      "closes_when": "shared/safety rules refuse that sentence and its variants, with a test."
+    }
+  ],
+  "edges": [
+    {
+      "from": "component.2026-10-24.intake-xlsx-import",
+      "to": "decision.2026-10-24.xlsx-own-reader-no-dependency",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-24.intake-xlsx-import",
+      "to": "decision.2026-10-24.row-overrides-inside-agent-rules",
+      "relation": "implements"
+    },
+    {
+      "from": "measure.2026-10-24.intake-xlsx-17mb",
+      "to": "component.2026-10-24.intake-xlsx-import",
+      "relation": "tests"
+    },
+    {
+      "from": "component.2026-10-24.intake-xlsx-import",
+      "to": "decision.2026-10-24.per-contact-facts-need-a-column",
+      "relation": "implements"
+    },
+    {
+      "from": "component.2026-10-24.intake-xlsx-import",
+      "to": "open.2026-10-24.row-overrides-not-in-ticket",
+      "relation": "leaves-open"
+    }
+  ],
+  "events": [
+    {
+      "date": "2026-10-24",
+      "event": "intake-brief-9-import",
+      "details": "Must-be brief 9 built: .xlsx import (server-side, formulas never evaluated, 20 MB), per-row voice and first_message inside the agent's rules (rowOverrides; disclosure untouched), source.map samples, web import screen with the agent's column contract. Verified: tsc clean (server, web); intake 19/19, intake-xlsx 8/8, product+review suite green; browser flows 57 pass, 2 skipped (no devsim); screenshots contacts-import-excel-d/m. Not verified: ticket honouring (campaigns, voice), zip bombs."
+    }
+  ]
+}

@@ -260,7 +260,9 @@ export function registerSourceTools(reg: Registry): void {
       return {
         ...(agentFacts ? { agentFacts } : {}),
         uploadId: u.id, delimiter: t.delimiter === '\t' ? 'tab' : t.delimiter, hasHeader: t.mapping.hasHeader, ...(u.converted ? { converted: u.converted } : {}),
-        columns: t.mapping.columns, ignoredByDesign: t.mapping.columns.filter(c => c.why === 'pii_by_design').map(c => c.header),
+        // A few values per column for the mapping screen (an Excel file has no text in the browser). Viewers get none.
+        columns: t.mapping.columns.map(c => ctx.actor.role === 'viewer' || c.field === 'ignore' ? c : { ...c, samples: t.rows.slice(t.mapping.hasHeader ? 1 : 0)
+          .map(r => (r[c.column] ?? '').trim()).filter(Boolean).slice(0, 3).map(v => v.slice(0, 40)) }), ignoredByDesign: t.mapping.columns.filter(c => c.why === 'pii_by_design').map(c => c.header),
         rowsTotal: rows.length, phones: { ok, duplicatesInFile: dup, rejected: reasons },
         preview, questions: questions.slice(0, agentFacts ? 4 : 3),
       };

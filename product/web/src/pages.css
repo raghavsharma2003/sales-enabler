@@ -168,3 +168,6 @@ a.btn.btn-primary { color: var(--on-terra); }
 .auth-or::before, .auth-or::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
 .auth-sso { display: grid; gap: 8px; }
 .auth-sso .btn-wrap { display: flex; } .auth-sso .btn { width: 100%; }
+/* Import: a chosen file shown instead of the text box (Excel, or a file too big to show). */
+.filepick { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border: 1px dashed var(--line-strong); border-radius: 10px; padding: 12px; }
+.filepick p { margin: 0; overflow-wrap: anywhere; }

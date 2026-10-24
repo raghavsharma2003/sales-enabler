@@ -105,14 +105,16 @@
     "product/db/migrations/0102_intake_attr_index.sql",
     "product/db/migrations/0103_intake_retention.sql",
     "product/db/migrations/0104_intake_suppression_evidence.sql",
-    "product/db/migrations/0105_intake_consent_effective.sql"
+    "product/db/migrations/0105_intake_consent_effective.sql",
+    "product/db/migrations/0106_intake_xlsx.sql"
   ],
   "tests": {
-    "passed": 20,
-    "total": 20,
+    "passed": 28,
+    "total": 28,
     "files": [
       "product/tests/intake.test.ts (19)",
-      "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)"
+      "product/tests/intake-scale.test.ts (1: 5,000 rows by default; 50,000 rows and the 60 s bound with VP_PERF=1)",
+      "product/tests/intake-xlsx.test.ts (8)"
     ],
     "full_suite": "242/242 on the rebased head; the scale test no longer gates on wall-clock unless VP_PERF=1"
   },
@@ -135,7 +137,11 @@
     "policy.retention.set/get: versioned policy, approval voided when a newer version exists; nightly purge of uploaded file text and receipt row issues; consent, suppression and tombstones always kept",
     "Risk classes follow research/2026-10-21/blueprint/data/workspace-tool-registry.json for every registered blueprint tool (contact.suppress external since it joined A3_VERBS)",
     "Consent ordered by effective_at (stated time, else insert; clamped to insert); an older or undated imported grant after a withdrawal is history only and reported as consent_older_than_latest (review WGC-06)",
-    "DPDP erase_me cancels the person's created/queued attempts through campaigns' cancelContactAttempts in the same transaction (review WGC-07); the receipt counts them"
+    "DPDP erase_me cancels the person's created/queued attempts through campaigns' cancelContactAttempts in the same transaction (review WGC-07); the receipt counts them",
+    "Excel (.xlsx) import, server-side and dependency-free (xlsx.ts: zip reader on node:zlib + OOXML first sheet). Formulas are never evaluated: cached values only; uncomputed formulas read as empty and are counted. Old .xls, Word files and damaged zips get a plain refusal. Up to 20 MB via POST /v1/uploads/contacts (raw bytes, or JSON base64 from the web).",
+    "Per-row voice and first_message: checked at import (a Vyakti voice; an opening note passing the agent's own lints: recitable-line, T-L1, T-L6, T-L7), refused cells counted on the receipt and not stored. rowOverrides(agent, attrs) exported for the ticket builder; never changes the disclosure clause.",
+    "source.map returns up to 3 sample values per column (none for viewers) and, with agentId, the agent's per-contact fact contract (agents/columns.ts).",
+    "Web import screen: Excel/CSV/TSV up to 20 MB, \"Which agent will call them?\", the fact-contract card with one-tap \"Use <column>\", per-person voice and opening as column choices. Browser flow and screenshots contacts-import-excel-d/m."
   ],
   "untested": [
     "XLSX and Google Sheets (no parser: the build adds no new packages)",
@@ -146,7 +152,10 @@
     "Commit time for a full 20 MB file (only the 2.9 MB / 50k-row file was timed)",
     "API-key scopes on the upload route; webhook rate limiting",
     "Erasure of transcripts and recordings (calls module), CRM delete via an outbox",
-    "Calls and memory honouring recordings_days / transcripts_days from policy.retention.get"
+    "Calls and memory honouring recordings_days / transcripts_days from policy.retention.get",
+    "A zip-bomb .xlsx (the inflate limits are in code, not exercised by a test)",
+    "Ticket honouring of voice/first_message (needs campaigns to call rowOverrides and the runtime to read opening.usefulFirst from the ticket)",
+    ".xlsx with zip64, encrypted workbooks, or the first sheet being a chart sheet"
   ],
   "needs_from_others": [
     {
@@ -180,13 +189,26 @@
     {
       "from": "memory",
       "what": "minor.ts: read birth_year (younger possible age) and age_group (fail closed if any bound < 18 or unreadable), ideally via AGE_KEY_SYNONYMS / canonicalAgeKey from ../intake/index.ts."
+    },
+    {
+      "from": "campaigns",
+      "what": "Call rowOverrides(agent, freshAttributes(['voice','first_message'])) in buildTicket and use its agent (and voiceId in combinationId). Asked 2026-10-24."
+    },
+    {
+      "from": "voice",
+      "what": "Read ticket.agent.opening.usefulFirst in the brief tail when it differs from the compiled brief, so a row's first_message is what she leads with (RD1 disclosure unchanged)."
+    },
+    {
+      "from": "safety",
+      "what": "T-L7 misses 'the offer ends tonight so they must decide now or lose it forever' (false urgency); found while testing first_message."
     }
   ],
   "jobs": [
     "intake.retention (daily 03:10 IST)"
   ],
   "cross_module_imports": [
-    "forgetContactMemory from ../memory/index.ts and cancelContactAttempts from ../campaigns/index.ts: the sanctioned data functions (integrator, 2026-10-21), so DPDP erasure forgets memory and cancels queued attempts inside its own transaction. Everything else goes through the registry."
+    "forgetContactMemory from ../memory/index.ts and cancelContactAttempts from ../campaigns/index.ts: the sanctioned data functions (integrator, 2026-10-21), so DPDP erasure forgets memory and cancels queued attempts inside its own transaction. Everything else goes through the registry.",
+    "shapeLint from ../agents/lint.ts (pure): a row's first_message passes the same recitable-line lint as the agent's opening.usefulFirst."
   ],
   "suppression_sources": {
     "in_call": "contact.suppress_after_opt_out (evidence: conversationId, campaignId, quote)",
